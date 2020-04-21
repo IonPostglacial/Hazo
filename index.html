@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script src="libs/vue.js"></script>
+    <script src="index.js"></script>
+    <div id="app" class="vertical-flexbox lightgrey-background">
+        <nav class="topbar centered">
+            <div class="selector" v-for="tab, index in tabs">
+                <input v-model="selectedTab" :id="'tab-radio-' + index" class="selector-radio" name="tab-radio" :value="index" type="radio" />
+                <label class="selector-label" :for="'tab-radio-' + index">
+                    {{ tab }}
+                </label>
+            </div>
+        </nav>
+        <div class="horizontal-flexbox flex-grow-1 scroll">
+            <nav class="sidebar scroll medium-margin thin-border white-background">
+                <ul v-if="selectedTab == 0">
+                    <item-list-entry v-for="item, index in items" name="item" :val="index" v-model="selectedItem">
+                        {{ item.name }}
+                    </item-list-entry>
+                    <li>
+                        <input type="text" id="new-item" />
+                        <button v-on:click="addItem">
+                            Add
+                        </button>
+                    </li>
+                </ul>
+                <ul v-if="selectedTab == 1">
+                    <li v-for="description, index in descriptions">
+                        <label>
+                            <input v-on:click="selectDescription([index])" type="radio" :value="index" name="description" />
+                            {{ description.name }}
+                        </label>
+                        <ul>
+                            <li v-for="subDescription, subIndex in description.children">
+                                <label>
+                                    <input v-on:click="selectDescription([index, subIndex])" type="radio" :value="index" name="description" />
+                                    {{ subDescription.name }}
+                                </label>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <input type="text" id="new-description" />
+                        <button v-on:click="addDescription">
+                            Add
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            <section class="content flex-grow-1 medium-margin thin-border white-background">
+                <div v-if="selectedTab == 0 && selectedItem < items.length" class="horizontal-flexbox start-aligned">
+                    <img class="item-img" :src="items[selectedItem].photo"><br/>
+                    <div>
+                        <label class="item-property">Name</label>
+                        <input type="text" v-model="items[selectedItem].name" /><br/>
+        
+                        <label class="item-property">Detail</label>
+                        <textarea v-model="items[selectedItem].detail"></textarea><br/>
+                        
+                        <label class="item-property">Photo</label>
+                        <input type="text" v-model="items[selectedItem].photo" /><br/>
+        
+                        <label class="item-property">Description</label>
+                        <ul>
+                            <li v-for="description, index in descriptions">
+                                <label class="description-name">{{ description.name }}</label>
+                                <div class="selector" v-for="state, stateIndex in description.states">
+                                    <input class="selector-radio" :id="'descriptor-' + stateIndex" :name="'item-state-' + index" type="radio" />
+                                    <label class="selector-label" :for="'descriptor-' + stateIndex" class="description-state" >
+                                        {{ state.name }}
+                                    </label>
+                                </div>
+
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <ul v-if="selectedTab == 1 && selectedDescription.length > 0">
+                    <div v-if="selectedDescription.length > 1">
+                        <label>Applicable states: </label>
+                        <label v-for="state in getDescription(selectedDescription.slice(0, selectedDescription.length - 1)).states">
+                            <input type="checkbox" :checked="getDescription(selectedDescription).applicableStates.includes(state.name)" /> {{ state.name }}
+                        </label>
+                    </div>
+    
+                    <li v-for="state in getDescription(selectedDescription).states">
+                        {{ state.name }}
+                    </li>
+                    <li>
+                        <input type="text" />
+                        <button v-on:click="addState(getDescription(selectedDescription), $event)">Add a State</button>
+                    </li>
+                </ul>
+            </section>
+        </div>
+        <section class="medium-margin">
+            <button type="button" v-on:click="saveData">Save</button>
+            <button type="button" v-on:click="importData">Import</button>
+            <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
+            <button type="button" v-on:click="exportData">Export</button>
+        </section>
+    </div>
+</body>
+</html>
