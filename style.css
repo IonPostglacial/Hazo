@@ -17,6 +17,11 @@ button:active {
 	background-color: #bbb;
 }
 
+ul {
+    padding: 0;
+    margin: 0;
+}
+
 #app {
     font-family: Arial, Helvetica, sans-serif;
     height: 100vh;
@@ -44,6 +49,30 @@ button:active {
     margin: 8px;
 }
 
+.thin-margin {
+    margin: 4px;
+}
+
+.left-arrow {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border: none;
+    border-top: 1px solid #000000;
+    border-left: 1px solid #000000;
+    transform: rotate(135deg);
+}
+
+.bottom-arrow {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border: none;
+    border-top: 1px solid #000000;
+    border-left: 1px solid #000000;
+    transform: rotate(-135deg);
+}
+
 .medium-margin-vertical {
     margin-top: 8px;
     margin-bottom: 8px;
@@ -59,6 +88,24 @@ button:active {
 
 .flex-grow-1 {
     flex-grow: 1;
+}
+
+.hide-next-unchecked + ul {
+    display: none;
+}
+
+.small-square {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+}
+
+.centered-text {
+    text-align: center;
+}
+
+.hide-next-unchecked:checked + ul {
+    display: initial;
 }
 
 .lightgrey-background {
@@ -97,13 +144,13 @@ button:active {
     position: relative;
 }
 
+.sidebar ul > li ul > li {
+    margin-left: 28px;
+} 
+
 .sidebar li > div {
     position: relative;
     width: 100%;
-}
-
-.sidebar li > div > label {
-    display: inline-block;
 }
 
 .sidebar li > div > label:hover,
@@ -143,6 +190,11 @@ button:active {
 
 .selector {
     display: inline-block;
+}
+
+.flex-centered {
+    align-items: center;
+    justify-content: center;
 }
 
 .selector-label {

@@ -25,13 +25,18 @@ function main() {
             <ul>
                 <li v-for="item, index in items">
                     <div class="horizontal-flexbox start-aligned">
+                        <label class="small-square thin-margin vertical-flexbox flex-centered" v-if="Object.keys(item?.children ?? {}).length > 0" :for="name + '-open-' + index">
+                            <div v-if="item.open" class="bottom-arrow">&nbsp</div>
+                            <div v-if="!item.open" class="left-arrow">&nbsp;</div>
+                        </label>
                         <input type="radio" class="invisible" :value="index" :id="name + '-' + index" :name="name" v-on:input="$emit('input', $event.target.value)" />
                         <label class="flex-grow-1 medium-padding" :for="name + '-' + index">
                             {{ item.entry.name }}
                             <slot></slot>
                         </label>
                     </div>
-                    <tree-menu v-if="item?.children !== undefined && Object.keys(item.children).length > 0"
+                    <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + index" />
+                    <tree-menu v-if="Object.keys(item?.children ?? {}).length > 0"
                         :name="name"
                         :items="item.children"
                         v-on="$listeners">
@@ -55,7 +60,7 @@ function main() {
                 const newItemName = document.getElementById('new-item');
                 const newItemId = "myt-" + Object.keys(this.items).length;
                 Vue.set(this.items, newItemId, { name: newItemName.value, photo: '' });
-                Vue.set(this.itemsHierarchy, newItemId, { entry: this.items[newItemId], children: {} });
+                Vue.set(this.itemsHierarchy, newItemId, { entry: this.items[newItemId], children: {}, open: false });
                 newItemName.value = '';
             },
             addDescription() {
@@ -145,13 +150,12 @@ function main() {
 
                                 const hierarchyItem = {
                                     entry: items[taxonName.getAttribute("ref")],
-                                    children: {}
+                                    children: {},
+                                    open: false
                                 };
                                 if (parent.length === 0) {
-                                    console.log("lvl 0");
                                     itemsHierarchy[taxonName.getAttribute("ref")] = hierarchyItem;
                                 } else {
-                                    console.log("adopted");
                                     const parentTaxonId = taxonNameByHierarchyId.get(parent[0].getAttribute("ref"));
                                     itemsHierarchy[parentTaxonId].children[taxonName.getAttribute("ref")] = hierarchyItem;
                                 }
