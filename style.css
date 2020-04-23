@@ -6,10 +6,11 @@ body {
 
 button {
 	min-height: 28px;
-	padding: 4px 8px;
-	border: 1px solid #ccc;
+	padding: 8px;
+	border: none;
 	background-color: white;
-	border-radius: 3px;
+	border-radius: 5px;
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 button:active {
@@ -19,6 +20,11 @@ button:active {
 #app {
     font-family: Arial, Helvetica, sans-serif;
     height: 100vh;
+}
+
+.background-color-1 {
+    background-color: rgb(37, 113, 212);
+    color: white;
 }
 
 .invisible {
@@ -34,12 +40,17 @@ button:active {
     margin: 8px;
 }
 
+.medium-margin-vertical {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
 .scroll {
     overflow: scroll;
 }
 
 .thin-border {
-    border: 1px solid #ccc;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .flex-grow-1 {
@@ -106,6 +117,7 @@ button:active {
     display: inline-block;
     padding: 8px;
     width: 100px;
+    vertical-align: top;
 }
 
 .description-list {
@@ -129,22 +141,24 @@ button:active {
 .selector-label {
     display: inline-block;
     padding: 8px;
-    border: 2px solid black;
+    border: 1px solid #ccc;
     background-color: white;
+    border-left-width: 0;
 }
 
 .selector:first-of-type .selector-label {
-    border-radius: 8px 0 0 8px;
-    border-right: none;
+    border-left-width: 1px;
+    border-radius: 5px 0 0 5px;
 }
 
 .selector:last-of-type .selector-label {
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 5px 5px 0;
 }
 
 .selector-radio:checked + .selector-label {
-    background-color: blue;
-    color: white;
+	background-color: #777;
+	box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
+	color: white;
 }
 
 .selector-radio {

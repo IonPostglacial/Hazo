@@ -1,7 +1,7 @@
 window.addEventListener("load", main);
 
 function main() {
-    const savedData = JSON.parse(localStorage.getItem("data")) ?? {
+    const defaultData = {
         selectedItem: 0,
         selectedDescription: [],
         selectedTab: 0,
@@ -9,18 +9,39 @@ function main() {
             "Items",
             "Descriptions"
         ],
-        items: [],
+        items: {},
+        itemsHierarchy: {},
         descriptions: []
     };
-    Vue.component("item-list-entry", {
-        props: ["name", "val"],
+    const savedData = JSON.parse(localStorage.getItem("data")) ?? defaultData;
+    Vue.component("tree-menu", {
+        props: ["name", "items", "onAdd"],
+        methods: {
+            addItem() {
+                this.$emit('add-item');
+            }
+        },
         template: `
-            <li>
-                <label>
-                    <input type="radio" :value="val" :name="name" v-on:input="$emit('input', $event.target.value)" />
-                    <slot></slot>
-                </label>
-            </li>
+            <ul>
+                <li v-for="item, index in items">
+                    <label>
+                        <input type="radio" :value="index" :name="name" v-on:input="$emit('input', $event.target.value)" />
+                        {{ item.entry.name }}
+                        <slot></slot>
+                    </label>
+                    <tree-menu v-if="item?.entry?.children !== undefined"
+                        :name="name"
+                        :items="item.entry.children"
+                        v-on="$listeners">
+                    </tree-menu>
+                </li>
+                <li>
+                    <input type="text" :id="'new-' + name" />
+                    <button v-on:click="addItem" class="background-color-1">
+                        Add
+                    </button>
+                </li>
+            </ul>
         `
     });
 
@@ -30,7 +51,9 @@ function main() {
         methods: {
             addItem() {
                 const newItemName = document.getElementById('new-item');
-                this.items.push({ name: newItemName.value, photo: '' });
+                const newItemId = "myt-" + Object.keys(this.items).length;
+                Vue.set(this.items, newItemId, { name: newItemName.value, photo: '' });
+                Vue.set(this.itemsHierarchy, newItemId, { entry: this.items[newItemId], children: {} });
                 newItemName.value = '';
             },
             addDescription() {
@@ -61,6 +84,11 @@ function main() {
             saveData() {
                 localStorage.setItem("data", JSON.stringify(this.$data));
             },
+            resetData() {
+                Vue.set(this.$data, "items", defaultData.items);
+                Vue.set(this.$data, "itemsHierarchy", defaultData.itemsHierarchy);
+                Vue.set(this.$data, "descriptions", defaultData.descriptions);
+            },
             importData() {
                 const dataImport = document.getElementById("import-data");
 
@@ -70,6 +98,8 @@ function main() {
                 const file = e.target.files[0];
 
                 (async () => {
+                    const items = {};
+                    const itemsHierarchy = {};
                     const text = await file.text();
                     const node = new DOMParser().parseFromString(text, "text/xml").firstElementChild;
 
@@ -87,18 +117,23 @@ function main() {
                         const taxonNames = dataset.getElementsByTagName("TaxonNames")[0];
 
                         for (const taxonName of taxonNames.getElementsByTagName("TaxonName")) {
-                            const representation = taxonName.getElementsByTagName("Representation")[0];
+                            const id = taxonName.getAttribute("id");
                             const label = taxonName.getElementsByTagName("Label")[0];
                             const detail = taxonName.getElementsByTagName("Detail")[0];
                             const mediaObject = taxonName.getElementsByTagName("MediaObject")[0];
                             
-                            this.$data.items.push({
+                            items[id] = {
                                 name: label.textContent,
                                 detail: detail.textContent,
                                 photo: imagesById.get(mediaObject?.getAttribute("ref"))
-                            });
+                            };
+                            itemsHierarchy[id] = {
+                                entry: items[id]
+                            };
                         }
                     }
+                    Vue.set(this.$data, "items", items);
+                    Vue.set(this.$data, "itemsHierarchy", itemsHierarchy);
                 })();
             },
             exportData() {

@@ -10,7 +10,7 @@
     <script src="libs/vue.js"></script>
     <script src="index.js"></script>
     <div id="app" class="vertical-flexbox lightgrey-background">
-        <nav class="topbar centered">
+        <nav class="topbar centered medium-margin-vertical">
             <div class="selector" v-for="tab, index in tabs">
                 <input v-model="selectedTab" :id="'tab-radio-' + index" class="selector-radio" name="tab-radio" :value="index" type="radio" />
                 <label class="selector-label" :for="'tab-radio-' + index">
@@ -20,17 +20,8 @@
         </nav>
         <div class="horizontal-flexbox flex-grow-1 scroll">
             <nav class="sidebar scroll medium-margin thin-border white-background">
-                <ul v-if="selectedTab == 0">
-                    <item-list-entry v-for="item, index in items" name="item" :val="index" v-model="selectedItem">
-                        {{ item.name }}
-                    </item-list-entry>
-                    <li>
-                        <input type="text" id="new-item" />
-                        <button v-on:click="addItem">
-                            Add
-                        </button>
-                    </li>
-                </ul>
+                <tree-menu v-if="selectedTab == 0" v-model="selectedItem" :items="itemsHierarchy" name="item" v-model="selectedItem" v-on:add-item="addItem">
+                </tree-menu>
                 <ul v-if="selectedTab == 1">
                     <li v-for="description, index in descriptions">
                         <label>
@@ -48,14 +39,14 @@
                     </li>
                     <li>
                         <input type="text" id="new-description" />
-                        <button v-on:click="addDescription">
+                        <button v-on:click="addDescription" class="background-color-1">
                             Add
                         </button>
                     </li>
                 </ul>
             </nav>
             <section class="content flex-grow-1 medium-margin thin-border white-background">
-                <div v-if="selectedTab == 0 && selectedItem < items.length" class="horizontal-flexbox start-aligned">
+                <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned">
                     <img class="item-img" :src="items[selectedItem].photo"><br/>
                     <div>
                         <label class="item-property">Name</label>
@@ -102,6 +93,7 @@
         </div>
         <section class="medium-margin">
             <button type="button" v-on:click="saveData">Save</button>
+            <button type="button" v-on:click="resetData">Reset</button>
             <button type="button" v-on:click="importData">Import</button>
             <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
             <button type="button" v-on:click="exportData">Export</button>
