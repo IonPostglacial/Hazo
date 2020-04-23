@@ -24,11 +24,13 @@ function main() {
         template: `
             <ul>
                 <li v-for="item, index in items">
-                    <label>
-                        <input type="radio" :value="index" :name="name" v-on:input="$emit('input', $event.target.value)" />
-                        {{ item.entry.name }}
-                        <slot></slot>
-                    </label>
+                    <div class="horizontal-flexbox start-aligned">
+                        <input type="radio" class="invisible" :value="index" :id="name + '-' + index" :name="name" v-on:input="$emit('input', $event.target.value)" />
+                        <label class="flex-grow-1 medium-padding" :for="name + '-' + index">
+                            {{ item.entry.name }}
+                            <slot></slot>
+                        </label>
+                    </div>
                     <tree-menu v-if="item?.children !== undefined && Object.keys(item.children).length > 0"
                         :name="name"
                         :items="item.children"

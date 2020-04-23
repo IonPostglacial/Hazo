@@ -36,6 +36,10 @@ button:active {
     margin-right: auto;
 }
 
+.medium-padding {
+    padding: 4px;
+}
+
 .medium-margin {
     margin: 8px;
 }
@@ -93,14 +97,17 @@ button:active {
     position: relative;
 }
 
-.sidebar li > label {
-    text-decoration: none;
-    color: black;
-    display: inline-block;
+.sidebar li > div {
+    position: relative;
     width: 100%;
 }
 
-.sidebar li > label:hover {
+.sidebar li > div > label {
+    display: inline-block;
+}
+
+.sidebar li > div > label:hover,
+.sidebar li > div > input:checked + label {
     background-color: rgb(37, 113, 212);
     color: white;
 }
