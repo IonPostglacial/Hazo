@@ -29,9 +29,9 @@ function main() {
                         {{ item.entry.name }}
                         <slot></slot>
                     </label>
-                    <tree-menu v-if="item?.entry?.children !== undefined"
+                    <tree-menu v-if="item?.children !== undefined && Object.keys(item.children).length > 0"
                         :name="name"
-                        :items="item.entry.children"
+                        :items="item.children"
                         v-on="$listeners">
                     </tree-menu>
                 </li>
@@ -127,10 +127,35 @@ function main() {
                                 detail: detail.textContent,
                                 photo: imagesById.get(mediaObject?.getAttribute("ref"))
                             };
-                            itemsHierarchy[id] = {
-                                entry: items[id]
-                            };
                         }
+
+                        const taxonHierarchies = dataset.getElementsByTagName("TaxonHierarchies")[0];
+                        const taxonNameByHierarchyId = new Map();
+
+                        for (const taxonHierarchy of taxonHierarchies.getElementsByTagName("TaxonHierarchy")) {
+                            const nodes = taxonHierarchy.getElementsByTagName("Nodes")[0];
+
+                            for (const node of nodes.getElementsByTagName("Node")) {
+                                const taxonName = node.getElementsByTagName("TaxonName")[0];
+                                const parent = node.getElementsByTagName("Parent");
+
+                                taxonNameByHierarchyId.set(node.getAttribute("id"), taxonName.getAttribute("ref"));
+
+                                const hierarchyItem = {
+                                    entry: items[taxonName.getAttribute("ref")],
+                                    children: {}
+                                };
+                                if (parent.length === 0) {
+                                    console.log("lvl 0");
+                                    itemsHierarchy[taxonName.getAttribute("ref")] = hierarchyItem;
+                                } else {
+                                    console.log("adopted");
+                                    const parentTaxonId = taxonNameByHierarchyId.get(parent[0].getAttribute("ref"));
+                                    itemsHierarchy[parentTaxonId].children[taxonName.getAttribute("ref")] = hierarchyItem;
+                                }
+                            }
+                        }
+
                     }
                     Vue.set(this.$data, "items", items);
                     Vue.set(this.$data, "itemsHierarchy", itemsHierarchy);
