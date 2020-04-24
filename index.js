@@ -7,7 +7,7 @@ function main() {
         selectedTab: 0,
         tabs: [
             "Items",
-            "Descriptions"
+            "Descriptors"
         ],
         items: {},
         itemsHierarchy: {},
@@ -92,6 +92,7 @@ function main() {
                 localStorage.setItem("data", JSON.stringify(this.$data));
             },
             resetData() {
+                Vue.set(this.$data, "tabs", defaultData.tabs);
                 Vue.set(this.$data, "items", defaultData.items);
                 Vue.set(this.$data, "itemsHierarchy", defaultData.itemsHierarchy);
                 Vue.set(this.$data, "descriptions", defaultData.descriptions);
@@ -105,64 +106,7 @@ function main() {
                 const file = e.target.files[0];
 
                 (async () => {
-                    const items = {};
-                    const itemsHierarchy = {};
-                    const text = await file.text();
-                    const node = new DOMParser().parseFromString(text, "text/xml").firstElementChild;
-
-                    for (const dataset of node.getElementsByTagName("Dataset")) {
-                        const imagesById = new Map();
-
-                        const mediaObjects = dataset.getElementsByTagName("MediaObjects")[0];
-
-                        for (const mediaObject of mediaObjects.getElementsByTagName("MediaObject")) {
-                            if (mediaObject.getElementsByTagName("Type")[0].textContent !== "Image") { continue; }
-
-                            imagesById.set(mediaObject.id, mediaObject.getElementsByTagName("Source")[0].getAttribute("href"));
-                        }
-
-                        const taxonNames = dataset.getElementsByTagName("TaxonNames")[0];
-
-                        for (const taxonName of taxonNames.getElementsByTagName("TaxonName")) {
-                            const id = taxonName.getAttribute("id");
-                            const label = taxonName.getElementsByTagName("Label")[0];
-                            const detail = taxonName.getElementsByTagName("Detail")[0];
-                            const mediaObject = taxonName.getElementsByTagName("MediaObject")[0];
-                            
-                            items[id] = {
-                                name: label.textContent,
-                                detail: detail.textContent,
-                                photo: imagesById.get(mediaObject?.getAttribute("ref"))
-                            };
-                        }
-
-                        const taxonHierarchies = dataset.getElementsByTagName("TaxonHierarchies")[0];
-                        const taxonNameByHierarchyId = new Map();
-
-                        for (const taxonHierarchy of taxonHierarchies.getElementsByTagName("TaxonHierarchy")) {
-                            const nodes = taxonHierarchy.getElementsByTagName("Nodes")[0];
-
-                            for (const node of nodes.getElementsByTagName("Node")) {
-                                const taxonName = node.getElementsByTagName("TaxonName")[0];
-                                const parent = node.getElementsByTagName("Parent");
-
-                                taxonNameByHierarchyId.set(node.getAttribute("id"), taxonName.getAttribute("ref"));
-
-                                const hierarchyItem = {
-                                    entry: items[taxonName.getAttribute("ref")],
-                                    children: {},
-                                    open: false
-                                };
-                                if (parent.length === 0) {
-                                    itemsHierarchy[taxonName.getAttribute("ref")] = hierarchyItem;
-                                } else {
-                                    const parentTaxonId = taxonNameByHierarchyId.get(parent[0].getAttribute("ref"));
-                                    itemsHierarchy[parentTaxonId].children[taxonName.getAttribute("ref")] = hierarchyItem;
-                                }
-                            }
-                        }
-
-                    }
+                    const { items, itemsHierarchy } = await SDD.load(file);
                     Vue.set(this.$data, "items", items);
                     Vue.set(this.$data, "itemsHierarchy", itemsHierarchy);
                 })();
