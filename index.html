@@ -21,30 +21,34 @@
         </nav>
         <div class="horizontal-flexbox flex-grow-1 scroll">
             <nav class="sidebar scroll medium-margin thin-border white-background">
-                <tree-menu v-if="selectedTab == 0" v-model="selectedItem" :items="itemsHierarchy" name="item" v-model="selectedItem" v-on:add-item="addItem">
+                <tree-menu v-if="selectedTab == 0" :items="itemsHierarchy" name="item" v-model="selectedItem" v-on:add-item="addItem">
                 </tree-menu>
-                <ul v-if="selectedTab == 1">
-                    <li v-for="description, index in descriptions">
-                        <label>
-                            <input v-on:click="selectDescription([index])" type="radio" :value="index" name="description" />
-                            {{ description.name }}
-                        </label>
-                        <ul>
-                            <li v-for="subDescription, subIndex in description.children">
-                                <label>
-                                    <input v-on:click="selectDescription([index, subIndex])" type="radio" :value="index" name="description" />
-                                    {{ subDescription.name }}
-                                </label>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <input type="text" id="new-description" />
-                        <button v-on:click="addDescription" class="background-color-1">
-                            Add
-                        </button>
-                    </li>
-                </ul>
+                <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptionsHierarchy" name="description" v-on:add-item="addDescription">
+                </tree-menu>
+                <!--
+                    <ul v-if="selectedTab == 1">
+                        <li v-for="description, index in descriptions">
+                            <label>
+                                <input v-on:click="selectDescription([index])" type="radio" :value="index" name="description" />
+                                {{ description.name }}
+                            </label>
+                            <ul>
+                                <li v-for="subDescription, subIndex in description.children">
+                                    <label>
+                                        <input v-on:click="selectDescription([index, subIndex])" type="radio" :value="index" name="description" />
+                                        {{ subDescription.name }}
+                                    </label>
+                                </li>
+                            </ul>
+                        </li>
+                        <li>
+                            <input type="text" id="new-description" />
+                            <button v-on:click="addDescription" class="background-color-1">
+                                Add
+                            </button>
+                        </li>
+                    </ul>
+                -->
             </nav>
             <section class="content flex-grow-1 medium-margin thin-border white-background">
                 <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned">

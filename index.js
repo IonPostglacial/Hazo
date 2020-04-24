@@ -3,7 +3,7 @@ window.addEventListener("load", main);
 function main() {
     const defaultData = {
         selectedItem: 0,
-        selectedDescription: [],
+        selectedDescription: 0,
         selectedTab: 0,
         tabs: [
             "Items",
@@ -11,7 +11,8 @@ function main() {
         ],
         items: {},
         itemsHierarchy: {},
-        descriptions: []
+        descriptions: {},
+        descriptionsHierarchy: {}
     };
     const savedData = JSON.parse(localStorage.getItem("data")) ?? defaultData;
     Vue.component("tree-menu", {
@@ -96,6 +97,7 @@ function main() {
                 Vue.set(this.$data, "items", defaultData.items);
                 Vue.set(this.$data, "itemsHierarchy", defaultData.itemsHierarchy);
                 Vue.set(this.$data, "descriptions", defaultData.descriptions);
+                Vue.set(this.$data, "descriptionsHierarchy", defaultData.descriptionsHierarchy);
             },
             importData() {
                 const dataImport = document.getElementById("import-data");
@@ -106,9 +108,11 @@ function main() {
                 const file = e.target.files[0];
 
                 (async () => {
-                    const { items, itemsHierarchy } = await SDD.load(file);
+                    const { items, itemsHierarchy, characters, charactersHierarchy } = await SDD.load(file);
                     Vue.set(this.$data, "items", items);
                     Vue.set(this.$data, "itemsHierarchy", itemsHierarchy);
+                    Vue.set(this.$data, "descriptions", characters);
+                    Vue.set(this.$data, "descriptionsHierarchy", charactersHierarchy);
                 })();
             },
             exportData() {
