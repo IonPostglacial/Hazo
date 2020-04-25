@@ -25,30 +25,6 @@
                 </tree-menu>
                 <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptionsHierarchy" name="description" v-on:add-item="addDescription">
                 </tree-menu>
-                <!--
-                    <ul v-if="selectedTab == 1">
-                        <li v-for="description, index in descriptions">
-                            <label>
-                                <input v-on:click="selectDescription([index])" type="radio" :value="index" name="description" />
-                                {{ description.name }}
-                            </label>
-                            <ul>
-                                <li v-for="subDescription, subIndex in description.children">
-                                    <label>
-                                        <input v-on:click="selectDescription([index, subIndex])" type="radio" :value="index" name="description" />
-                                        {{ subDescription.name }}
-                                    </label>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <input type="text" id="new-description" />
-                            <button v-on:click="addDescription" class="background-color-1">
-                                Add
-                            </button>
-                        </li>
-                    </ul>
-                -->
             </nav>
             <section class="content flex-grow-1 medium-margin thin-border white-background">
                 <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned">
@@ -78,20 +54,22 @@
                         </ul>
                     </div>
                 </div>
-                <ul v-if="selectedTab == 1 && selectedDescription.length > 0">
+                <ul v-if="selectedTab == 1 && descriptions[selectedDescription] !== undefined">
+                    <label class="description-name">Name</label>
+                    <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
                     <div v-if="selectedDescription.length > 1">
                         <label>Applicable states: </label>
-                        <label v-for="state in getDescription(selectedDescription.slice(0, selectedDescription.length - 1)).states">
-                            <input type="checkbox" :checked="getDescription(selectedDescription).applicableStates.includes(state.name)" /> {{ state.name }}
+                        <label v-for="state in descriptions[selectedDescription].states">
+                            <input type="checkbox" :checked="descriptions[selectedDescription].applicableStates.includes(state.name)" /> {{ state.name }}
                         </label>
                     </div>
     
-                    <li v-for="state in getDescription(selectedDescription).states">
+                    <li v-for="state in descriptions[selectedDescription].states">
                         {{ state.name }}
                     </li>
                     <li>
                         <input type="text" />
-                        <button v-on:click="addState(getDescription(selectedDescription), $event)">Add a State</button>
+                        <button v-on:click="addState(descriptions[selectedDescription], $event)">Add a State</button>
                     </li>
                 </ul>
             </section>

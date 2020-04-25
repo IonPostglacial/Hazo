@@ -1,5 +1,11 @@
+html {
+    box-sizing: border-box;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}  
+
 body {
-	box-sizing: border-box;
 	padding: 0  ;
 	margin: 0;
 }
@@ -153,10 +159,15 @@ ul {
     width: 100%;
 }
 
-.sidebar li > div > label:hover,
+.blue-hover:hover,
 .sidebar li > div > input:checked + label {
     background-color: rgb(37, 113, 212);
     color: white;
+}
+
+.blue-circle-hover:hover {
+    border: 1px solid rgb(37, 113, 212);;
+    border-radius: 100%;
 }
 
 .content {

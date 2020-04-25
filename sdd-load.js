@@ -5,9 +5,9 @@
         
         const items = {};
         const itemsHierarchy = {};
-        const tmpHierarchyByHID = {};
-        const characters = {};
-        const charactersHierarchy = {};
+        const flatItemsHierarchy = {};
+        const descriptors = {};
+        const descriptorsHierarchy = {};
         
         for (const dataset of node.getElementsByTagName("Dataset")) {
             const imagesById = new Map();
@@ -29,6 +29,7 @@
                 const mediaObject = taxonName.getElementsByTagName("MediaObject")[0];
                 
                 items[id] = {
+                    id: id,
                     name: label.textContent,
                     detail: detail.textContent,
                     photo: imagesById.get(mediaObject?.getAttribute("ref"))
@@ -36,7 +37,6 @@
             }
 
             const taxonHierarchies = dataset.getElementsByTagName("TaxonHierarchies")[0];
-            const taxonNameByHierarchyId = new Map();
 
             for (const taxonHierarchy of taxonHierarchies.getElementsByTagName("TaxonHierarchy")) {
                 const nodes = taxonHierarchy.getElementsByTagName("Nodes")[0];
@@ -45,33 +45,32 @@
                     const taxonName = node.getElementsByTagName("TaxonName")[0];
                     const taxonId = taxonName.getAttribute("ref");
                     const parent = node.getElementsByTagName("Parent");
-                    const tmpHierarchyItem = tmpHierarchyByHID[node.getAttribute("id")];
+                    const alreadyExistingEntry = flatItemsHierarchy[node.getAttribute("id")];
 
-                    taxonNameByHierarchyId.set(node.getAttribute("id"), taxonId);
+                    if (typeof alreadyExistingEntry !== "undefined") {
+                        alreadyExistingEntry.entry = items[taxonId];
+                    }
 
-                    const hierarchyItem = tmpHierarchyItem ?? {
+                    const hierarchyItem = alreadyExistingEntry ?? {
                         entry: items[taxonId],
                         children: {},
                         open: false
                     };
-                    if (typeof tmpHierarchyItem !== "undefined") {
-                        tmpHierarchyItem.entry = items[taxonId];
-                        tmpHierarchyByHID[node.getAttribute("id")] = undefined;
-                    }
-                    if (parent.length === 0 && typeof itemsHierarchy[taxonId] === "undefined") {
-                        itemsHierarchy[taxonId] = hierarchyItem;
-                    } else {
-                        const parentTaxonId = taxonNameByHierarchyId.get(parent[0].getAttribute("ref"));
+                    flatItemsHierarchy[node.getAttribute("id")] = hierarchyItem;
 
-                        if (typeof itemsHierarchy[parentTaxonId] === "undefined") {
-                            tmpHierarchyByHID[parent[0].getAttribute("ref")] = {
+                    if (parent.length === 0) {
+                        itemsHierarchy[node.getAttribute("id")] = hierarchyItem;
+                    } else {
+                        const parentTaxon = flatItemsHierarchy[parent[0].getAttribute("ref")];
+
+                        if (typeof parentTaxon === "undefined") {
+                            flatItemsHierarchy[parent[0].getAttribute("ref")] = {
                                 entry: undefined,
                                 children: { [taxonId]: hierarchyItem },
                                 open: false
                             };
-                        } else {
-                            itemsHierarchy[parentTaxonId].children[taxonId] = hierarchyItem;
                         }
+                        flatItemsHierarchy[parent[0].getAttribute("ref")].children[taxonId] = hierarchyItem;
                     }
                 }
             }
@@ -82,7 +81,8 @@
                 const representation = character.getElementsByTagName("Representation")[0];
                 const label = representation.getElementsByTagName("Label")[0];
 
-                characters[character.getAttribute("id")] = {
+                descriptors[character.getAttribute("id")] = {
+                    id: character.getAttribute("id"),
                     name: label.textContent,
                     states: []
                 };
@@ -92,9 +92,11 @@
                 const representation = character.getElementsByTagName("Representation")[0];
                 const label = representation.getElementsByTagName("Label")[0];
 
-                characters[character.getAttribute("id")] = {
+                descriptors[character.getAttribute("id")] = {
+                    id: character.getAttribute("id"),
                     name: label.textContent,
-                    states: []
+                    states: [],
+                    applicableStates: []
                 };
             }
 
@@ -117,7 +119,7 @@
                 for (const node of nodes.getElementsByTagName("Node")) {
                     const descriptiveConcept = node.getElementsByTagName("DescriptiveConcept")[0];
                     conceptIdByHierarchyId.set(node.getAttribute("id"), descriptiveConcept.getAttribute("ref"));
-                    charactersHierarchy[descriptiveConcept.getAttribute("ref")] = {
+                    descriptorsHierarchy[descriptiveConcept.getAttribute("ref")] = {
                         entry: concepts[descriptiveConcept.getAttribute("ref")],
                         children: {},
                         open: false
@@ -128,21 +130,22 @@
                     const parent = charNode.getElementsByTagName("Parent");
                     const character = charNode.getElementsByTagName("Character")[0];
                     const menuItem =  {
-                        entry: characters[character.getAttribute("ref")],
+                        entry: descriptors[character.getAttribute("ref")],
                         children: {},
                         open: false
                     };
 
                     if (parent.length > 0) {
                         const parentId = conceptIdByHierarchyId.get(parent[0].getAttribute("ref"));
-                        charactersHierarchy[parentId].children[character.getAttribute("ref")] = menuItem;
+                        descriptorsHierarchy[parentId].children[character.getAttribute("ref")] = menuItem;
                     } else {
-                        charactersHierarchy[character.getAttribute("ref")] = menuItem;
+                        descriptorsHierarchy[character.getAttribute("ref")] = menuItem;
                     }
                 }
             }
         }
-        return { items, itemsHierarchy, characters, charactersHierarchy };
+        console.log(items);
+        return { items, itemsHierarchy, descriptors, descriptorsHierarchy };
     }
 
     window.SDD = window.SDD ?? {};
