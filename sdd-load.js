@@ -8,6 +8,7 @@
         const flatItemsHierarchy = {};
         const descriptors = {};
         const descriptorsHierarchy = {};
+        const flatDescriptorsHierarchy = {};
         
         for (const dataset of node.getElementsByTagName("Dataset")) {
             const imagesById = new Map();
@@ -107,23 +108,26 @@
                 const representation = descriptiveConcept.getElementsByTagName("Representation")[0];
                 const label = representation.getElementsByTagName("Label")[0];
 
-                concepts[descriptiveConcept.getAttribute("id")] = { name: label.textContent };
+                concepts[descriptiveConcept.getAttribute("id")] = {
+                    id: descriptiveConcept.getAttribute("id"),
+                    name: label.textContent
+                };
             }
 
             const characterTrees = dataset.getElementsByTagName("CharacterTrees")[0];
-            const conceptIdByHierarchyId = new Map();
 
             for (const characterTree of characterTrees.getElementsByTagName("CharacterTree")) {
                 const nodes = characterTree.getElementsByTagName("Nodes")[0];
 
                 for (const node of nodes.getElementsByTagName("Node")) {
                     const descriptiveConcept = node.getElementsByTagName("DescriptiveConcept")[0];
-                    conceptIdByHierarchyId.set(node.getAttribute("id"), descriptiveConcept.getAttribute("ref"));
-                    descriptorsHierarchy[descriptiveConcept.getAttribute("ref")] = {
+                    const entry = {
                         entry: concepts[descriptiveConcept.getAttribute("ref")],
                         children: {},
                         open: false
                     };
+                    descriptorsHierarchy[node.getAttribute("id")] = entry;
+                    flatDescriptorsHierarchy[node.getAttribute("id")] = entry;
                 }
 
                 for (const charNode of nodes.getElementsByTagName("CharNode")) {
@@ -134,17 +138,14 @@
                         children: {},
                         open: false
                     };
+                    flatDescriptorsHierarchy[node.getAttribute("id")] = menuItem;
 
                     if (parent.length > 0) {
-                        const parentId = conceptIdByHierarchyId.get(parent[0].getAttribute("ref"));
-                        descriptorsHierarchy[parentId].children[character.getAttribute("ref")] = menuItem;
-                    } else {
-                        descriptorsHierarchy[character.getAttribute("ref")] = menuItem;
+                        flatDescriptorsHierarchy[parent[0].getAttribute("ref")].children[character.getAttribute("ref")] = menuItem;
                     }
                 }
             }
         }
-        console.log(items);
         return { items, itemsHierarchy, descriptors, descriptorsHierarchy };
     }
 
