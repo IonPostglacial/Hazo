@@ -9,6 +9,7 @@
 <body>
     <script src="libs/vue.js"></script>
     <script src="sdd-load.js"></script>
+    <script src="tree-menu.js"></script>
     <script src="index.js"></script>
     <div id="app" class="vertical-flexbox lightgrey-background">
         <nav class="topbar centered medium-margin-vertical">
@@ -57,6 +58,14 @@
                 <ul v-if="selectedTab == 1 && descriptions[selectedDescription] !== undefined">
                     <label class="description-name">Name</label>
                     <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
+                    <div v-if="descriptions[selectedDescription].inapplicableStates.length > 0">
+                        <label>Inapplicable If</label>
+                        <ul class="indented">
+                            <li class="medium-padding" v-for="state in descriptions[selectedDescription].inapplicableStates">
+                                {{ state.descriptor.name }} IS {{ state.name }}
+                            </li>
+                        </ul>
+                    </div>
                     <label>States</label>
                     <ul class="indented">
                         <li class="medium-padding" v-for="state in descriptions[selectedDescription].states">

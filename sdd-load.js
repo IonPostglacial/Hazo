@@ -9,6 +9,7 @@
         const descriptors = {};
         const descriptorsHierarchy = {};
         const flatDescriptorsHierarchy = {};
+        const statesById = {};
         
         for (const dataset of node.getElementsByTagName("Dataset")) {
             const imagesById = new Map();
@@ -84,26 +85,26 @@
 
                 const states = character.getElementsByTagName("States");
 
-                const characterStates = [];
+                descriptors[character.getAttribute("id")] = {
+                    id: character.getAttribute("id"),
+                    name: label.textContent,
+                    states: [],
+                    inapplicableStates: []
+                };
 
                 if (states.length > 0) {
                     for (const state of states[0].getElementsByTagName("StateDefinition")) {
                         const representation = state.getElementsByTagName("Representation")[0];
                         const label = representation.getElementsByTagName("Label")[0];
 
-                        characterStates.push({
+                        statesById[state.getAttribute("id")] = {
                             id: state.getAttribute("id"),
+                            descriptor: descriptors[character.getAttribute("id")],
                             name: label.textContent
-                        });
+                        };
+                        descriptors[character.getAttribute("id")].states.push(statesById[state.getAttribute("id")]);
                     }
                 }
-
-                descriptors[character.getAttribute("id")] = {
-                    id: character.getAttribute("id"),
-                    name: label.textContent,
-                    states: characterStates,
-                    applicableStates: []
-                };
             }
 
             for (const character of characters.getElementsByTagName("QuantitativeCharacter")) {
@@ -114,7 +115,7 @@
                     id: character.getAttribute("id"),
                     name: label.textContent,
                     states: [],
-                    applicableStates: []
+                    inapplicableStates: []
                 };
             }
 
@@ -150,6 +151,17 @@
                 for (const charNode of nodes.getElementsByTagName("CharNode")) {
                     const parent = charNode.getElementsByTagName("Parent");
                     const character = charNode.getElementsByTagName("Character")[0];
+
+                    const dependencyRules = charNode.getElementsByTagName("DependencyRules");
+
+                    if (dependencyRules.length > 0) {
+                        const inapplicableIf = dependencyRules[0].getElementsByTagName("InapplicableIf")[0];
+
+                        for (const state of inapplicableIf.getElementsByTagName("State")) {
+                            descriptors[character.getAttribute("ref")].inapplicableStates.push(statesById[state.getAttribute("ref")]);
+                        }
+                    }
+
                     const menuItem =  {
                         entry: descriptors[character.getAttribute("ref")],
                         children: {},
@@ -163,7 +175,10 @@
                 }
             }
         }
-        return { items, itemsHierarchy, descriptors, descriptorsHierarchy };
+        return {
+            items, itemsHierarchy, flatItemsHierarchy,
+            descriptors, descriptorsHierarchy, flatDescriptorsHierarchy
+        };
     }
 
     window.SDD = window.SDD ?? {};
