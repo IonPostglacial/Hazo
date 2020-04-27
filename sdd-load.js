@@ -82,10 +82,27 @@
                 const representation = character.getElementsByTagName("Representation")[0];
                 const label = representation.getElementsByTagName("Label")[0];
 
+                const states = character.getElementsByTagName("States");
+
+                const characterStates = [];
+
+                if (states.length > 0) {
+                    for (const state of states[0].getElementsByTagName("StateDefinition")) {
+                        const representation = state.getElementsByTagName("Representation")[0];
+                        const label = representation.getElementsByTagName("Label")[0];
+
+                        characterStates.push({
+                            id: state.getAttribute("id"),
+                            name: label.textContent
+                        });
+                    }
+                }
+
                 descriptors[character.getAttribute("id")] = {
                     id: character.getAttribute("id"),
                     name: label.textContent,
-                    states: []
+                    states: characterStates,
+                    applicableStates: []
                 };
             }
 

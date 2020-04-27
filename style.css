@@ -150,10 +150,6 @@ ul {
     position: relative;
 }
 
-.sidebar ul > li ul > li {
-    margin-left: 42px;
-} 
-
 .sidebar li > div {
     position: relative;
     width: 100%;
@@ -206,6 +202,10 @@ ul {
 .flex-centered {
     align-items: center;
     justify-content: center;
+}
+
+.indented {
+    margin-left: 42px;
 }
 
 .selector-label {

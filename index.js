@@ -36,12 +36,11 @@ function main() {
                             <slot></slot>
                         </label>
                     </div>
-                    <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.entry.id" />
-                    <tree-menu v-if="Object.keys(item?.children ?? {}).length > 0"
-                        :name="name"
-                        :items="item.children"
-                        v-on="$listeners">
-                    </tree-menu>
+                    <div class="indented" v-if="Object.keys(item?.children ?? {}).length > 0">
+                        <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.entry.id" />
+                        <tree-menu :name="name" :items="item.children" v-on="$listeners">
+                        </tree-menu>
+                    </div>
                 </li>
                 <li>
                     <input type="text" :id="'new-' + name" />
