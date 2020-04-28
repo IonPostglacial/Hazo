@@ -27,10 +27,10 @@
                 <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptionsHierarchy" name="description" v-on:add-item="addDescription">
                 </tree-menu>
             </nav>
-            <section class="content flex-grow-1 medium-margin thin-border white-background">
+            <section class="content flex-grow-1 medium-margin thin-border white-background scroll">
                 <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned">
                     <img class="item-img" :src="items[selectedItem].photo"><br/>
-                    <div>
+                    <div class="">
                         <label class="item-property">Name</label>
                         <input type="text" v-model="items[selectedItem].name" /><br/>
         
@@ -41,12 +41,12 @@
                         <input type="text" v-model="items[selectedItem].photo" /><br/>
         
                         <label class="item-property">Description</label>
-                        <ul>
+                        <ul class="indented">
                             <li v-for="description, index in descriptions">
-                                <label class="description-name">{{ description.name }}</label>
-                                <div class="selector" v-for="state, stateIndex in description.states">
-                                    <input class="selector-radio" :id="'descriptor-' + stateIndex" :name="'item-state-' + index" type="radio" />
-                                    <label class="selector-label" :for="'descriptor-' + stateIndex" class="description-state" >
+                                <label>{{ description.name }}</label>
+                                <div v-for="state, stateIndex in description.states">
+                                    <input :id="'descriptor-' + stateIndex" :name="'item-state-' + index" type="radio" />
+                                    <label :for="'descriptor-' + stateIndex">
                                         {{ state.name }}
                                     </label>
                                 </div>

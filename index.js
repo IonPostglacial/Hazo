@@ -11,10 +11,8 @@ function main() {
         ],
         items: {},
         itemsHierarchy: {},
-        flatItemsHierarchy: {},
         descriptions: {},
-        descriptionsHierarchy: {},
-        flatDescriptionsHierarchy: {}
+        descriptionsHierarchy: {}
     };
     const savedData = JSON.parse(localStorage.getItem("data")) ?? defaultData;
 
@@ -27,11 +25,10 @@ function main() {
                 const newItemId = "myt-" + Object.keys(this.items).length;
                 
                 Vue.set(this.items, newItemId, { id: newItemId, name: newItemName.value, photo: "" });
-                const newItem = { entry: this.items[newItemId], children: {}, open: false };
+                const newItem = { entry: this.items[newItemId], topLevel: typeof parentId === "undefined", children: {}, open: false };
                 if (typeof parentId !== "undefined") {
-                    Vue.set(this.flatItemsHierarchy[parentId].children, newItemId, newItem);
+                    Vue.set(this.itemsHierarchy[parentId].children, newItemId, newItem);
                 } else {
-                    Vue.set(this.flatItemsHierarchy, newItemId, newItem);
                     Vue.set(this.itemsHierarchy, newItemId, newItem);
                 }
                 newItemName.value = "";
@@ -46,11 +43,12 @@ function main() {
                 });
                 const newDescription = {
                     entry: this.descriptions[newDescriptionId],
+                    topLevel: typeof parentId === "undefined",
                     children: {},
                     open: false
                 };
                 if(typeof parentId !== "undefined") {
-                    Vue.set(this.flatDescriptionsHierarchy[parentId].children, newDescriptionId, newDescription);
+                    Vue.set(this.descriptionsHierarchy[parentId].children, newDescriptionId, newDescription);
                 } else {
                     Vue.set(this.descriptionsHierarchy, newDescriptionId, newDescription);
                 }
@@ -81,15 +79,13 @@ function main() {
 
                 (async () => {
                     const {
-                        items, itemsHierarchy, flatItemsHierarchy,
-                        descriptors, descriptorsHierarchy, flatDescriptorsHierarchy
+                        items, itemsHierarchy,
+                        descriptors, descriptorsHierarchy
                     } = await SDD.load(file);
                     Vue.set(this.$data, "items", items);
                     Vue.set(this.$data, "itemsHierarchy", itemsHierarchy);
-                    Vue.set(this.$data, "flatItemsHierarchy", flatItemsHierarchy);
                     Vue.set(this.$data, "descriptions", descriptors);
                     Vue.set(this.$data, "descriptionsHierarchy", descriptorsHierarchy);
-                    Vue.set(this.$data, "flatDescriptionsHierarchy", flatDescriptorsHierarchy);
                 })();
             },
             exportData() {
