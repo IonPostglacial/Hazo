@@ -26,7 +26,7 @@ Vue.component("tree-menu", {
                 </div>
             </li>
             <li>
-                <input type="text" :id="'new-' + name" />
+                <input type="text" :id="'new-' + name + '-' + parent" />
                 <button v-on:click="addItem(parent)" class="background-color-1">
                     Add
                 </button>

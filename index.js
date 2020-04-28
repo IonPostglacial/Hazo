@@ -23,7 +23,7 @@ function main() {
         data: savedData,
         methods: {
             addItem(parentId) {
-                const newItemName = document.getElementById("new-item");
+                const newItemName = document.getElementById("new-item-" + parentId);
                 const newItemId = "myt-" + Object.keys(this.items).length;
                 
                 Vue.set(this.items, newItemId, { id: newItemId, name: newItemName.value, photo: "" });
@@ -31,12 +31,13 @@ function main() {
                 if (typeof parentId !== "undefined") {
                     Vue.set(this.flatItemsHierarchy[parentId].children, newItemId, newItem);
                 } else {
+                    Vue.set(this.flatItemsHierarchy, newItemId, newItem);
                     Vue.set(this.itemsHierarchy, newItemId, newItem);
                 }
                 newItemName.value = "";
             },
             addDescription(parentId) {
-                const newDescriptionName = document.getElementById("new-description");
+                const newDescriptionName = document.getElementById("new-description-" + parentId);
                 const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
                 Vue.set(this.descriptions, newDescriptionId, {
                     id: newDescriptionId,
