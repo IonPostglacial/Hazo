@@ -85,7 +85,8 @@ ul {
 }
 
 .scroll {
-    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 .thin-border {
@@ -179,20 +180,6 @@ ul {
     padding: 8px;
     width: 100px;
     vertical-align: top;
-}
-
-.description-list {
-    grid-area: footer;
-}
-
-.description-name {
-    display: inline-block;
-    width: 150px;
-}
-
-.description-state {
-    display: inline-block;
-    margin: 8px;
 }
 
 .selector {
