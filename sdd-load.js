@@ -38,6 +38,7 @@
                 vernacularName: findInDescription(detail?.textContent, "NV"),
                 meaning: findInDescription(detail?.textContent, "Sense"),
                 noHerbier: findInDescription(detail?.textContent, "N° Herbier"),
+                herbariumPicture: findInDescription(detail?.textContent, "Herbarium Picture"),
                 fasc: fasc?.trim(),
                 page: page?.trim(),
                 detail: detail?.textContent,
@@ -219,7 +220,6 @@
         const concepts = {};
         const descriptorsHierarchy = {};
         const statesById = {};
-        const codedDescriptionsByTaxon = {};
         
         for (const dataset of node.getElementsByTagName("Dataset")) {
             const imagesById = getDatasetImagesById(dataset);
