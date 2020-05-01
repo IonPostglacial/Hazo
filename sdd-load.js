@@ -1,9 +1,11 @@
 (function () { "use strict;"
     function getDatasetImagesById(dataset) {
         const imagesById = new Map();
-        const mediaObjects = dataset.getElementsByTagName("MediaObjects")[0];
+        const mediaObjects = dataset.getElementsByTagName("MediaObjects");
 
-        for (const mediaObject of mediaObjects.getElementsByTagName("MediaObject")) {
+        if (mediaObjects.length === 0) return imagesById;
+
+        for (const mediaObject of mediaObjects[0].getElementsByTagName("MediaObject")) {
             if (mediaObject.getElementsByTagName("Type")[0].textContent !== "Image") { continue; }
 
             imagesById.set(mediaObject.id, mediaObject.getElementsByTagName("Source")[0].getAttribute("href"));
@@ -24,7 +26,7 @@
             items[id] = {
                 id: id,
                 name: label.textContent,
-                detail: detail.textContent,
+                detail: detail?.textContent,
                 photo: imagesById.get(mediaObject?.getAttribute("ref"))
             };
         }   
@@ -127,9 +129,11 @@
 
     function getDatasetDescriptiveConcepts(dataset) {
         const concepts = {};
-        const descriptiveConcepts = dataset.getElementsByTagName("DescriptiveConcepts")[0];
+        const descriptiveConcepts = dataset.getElementsByTagName("DescriptiveConcepts");
 
-        for (const descriptiveConcept of descriptiveConcepts.getElementsByTagName("DescriptiveConcept")) {
+        if (descriptiveConcepts.length === 0) return concepts;
+
+        for (const descriptiveConcept of descriptiveConcepts[0].getElementsByTagName("DescriptiveConcept")) {
             const representation = descriptiveConcept.getElementsByTagName("Representation")[0];
             const label = representation.getElementsByTagName("Label")[0];
 
