@@ -11,6 +11,9 @@
     <input type="file" name="file2" id="file2"><br>
     <button type="button" onclick="merge();">Merge</button>
     <script>
+        // QuantitativeCharacter ' later
+        // CharNode manquants
+
         function download(filename, text) {
             const element = document.createElement("a");
             element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
@@ -31,7 +34,7 @@
                     source: { selector: "TaxonNames > TaxonName", attribute: "id" },
                     references: [
                         { selector: "TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName", attribute: "ref" },
-                        { selector: "CodedDescription > CodedDescription > Scope > TaxonName", attribute: "ref" },
+                        { selector: "CodedDescriptions > CodedDescription > Scope > TaxonName", attribute: "ref" },
                     ]
                 },
                 taxonHierarchies: {
@@ -82,6 +85,11 @@
                         { selector: "CharacterTrees > CharacterTree > Nodes > Node > Parent", attribute: "ref" },
                         { selector: "CharacterTrees > CharacterTree > Nodes > CharNode > Parent", attribute: "ref" },
                     ]
+                },
+                characterNodes: {
+                    parent: { selector: "CharacterTrees > CharacterTree > Nodes" },
+                    source: { selector: "CharacterTrees > CharacterTree > Nodes > CharNode", attribute: "id" },
+                    references: []
                 },
                 mediaObjects: {
                     parent: { selector: "MediaObjects" },
@@ -139,8 +147,12 @@
                     continue;
                 }
 
-                const origin = xml2.querySelector(stuff.parent.selector);
-                parent.innerHTML += origin.innerHTML;
+                for (const child of xml2.querySelectorAll(stuff.source.selector)) {
+                    parent.append(child.cloneNode(true));
+                    parent.append("\n");
+                }
+                //const origin = xml2.querySelector(stuff.parent.selector);
+                //parent.innerHTML += origin.innerHTML;
             }
             download("merged.sdd.xml",`<?xml version="1.0" encoding="UTF-8"?>` + xml1.documentElement.outerHTML);
         }
