@@ -4,158 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SDD Merger</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>SDD Merger</h1>
-    <input type="file" name="file1" id="file1"><br>
-    <input type="file" name="file2" id="file2"><br>
-    <button type="button" onclick="merge();">Merge</button>
-    <script>
-        // QuantitativeCharacter ' later
-        // CharNode manquants
-
-        function download(filename, text) {
-            const element = document.createElement("a");
-            element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
-            element.setAttribute("download", filename);
-
-            element.style.display = "none";
-            document.body.appendChild(element);
-
-            element.click();
-
-            document.body.removeChild(element);
-        }
-
-        async function merge() {
-            const stuffToMerge = {
-                taxons: {
-                    parent: { selector: "TaxonNames" },
-                    source: { selector: "TaxonNames > TaxonName", attribute: "id" },
-                    references: [
-                        { selector: "TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName", attribute: "ref" },
-                        { selector: "CodedDescriptions > CodedDescription > Scope > TaxonName", attribute: "ref" },
-                    ]
-                },
-                taxonHierarchies: {
-                    parent: { selector: "TaxonHierarchies > TaxonHierarchy > Nodes" },
-                    source: { selector: "TaxonHierarchies > TaxonHierarchy > Nodes > Node", attribute: "id" },
-                    references: [
-                        { selector: "TaxonHierarchies > TaxonHierarchy > Nodes > Node > Parent", attribute: "ref" }
-                    ]
-                },
-                descriptiveConcepts: {
-                    parent: { selector: "DescriptiveConcepts" },
-                    source: { selector: "DescriptiveConcepts > DescriptiveConcept", attribute: "id" },
-                    references: [
-                        { selector: "CharacterTrees > CharacterTree > Nodes > Node > DescriptiveConcept", attribute: "ref" }
-                    ]
-                },
-                categoricalCharacters: {
-                    parent: { selector: "Characters" },
-                    source: { selector: "Characters > CategoricalCharacter", attribute: "id" },
-                    references: [
-                        { selector: "CharacterTrees > CharacterTree > Nodes > CharNode > Character", attribute: "ref" },
-                        { selector: "CodedDescriptions > CodedDescription > SummaryData > Categorical", attribute: "ref" },
-                    ]
-                },
-                states: {
-                    parent: { selector: "Characters > CategoricalCharacter > States" },
-                    source: { selector: "Characters > CategoricalCharacter > States > StateDefinition", attribute: "id" },
-                    references: [
-                        {
-                            selector: "CharacterTrees > CharacterTree > Nodes > CharNode > DependencyRules > InapplicableIf > State", 
-                            attribute: "ref"
-                        },
-                        { selector: "CodedDescriptions > CodedDescription > SummaryData > Categorical > State", attribute: "ref" },
-                    ]
-                },
-                quantitativeCharacters: {
-                    parent: { selector: "Characters" },
-                    source: { selector: "Characters > QuantitativeCharacter", attribute: "id" },
-                    references: [
-                        { selector: "CharacterTrees > CharacterTree > Nodes > CharNode > Character", attribute: "ref" },
-                        { selector: "CodedDescriptions > CodedDescription > SummaryData > Quantitative", attribute: "ref" },
-                    ]
-                },
-                characterTrees: {
-                    parent: { selector: "CharacterTrees > CharacterTree > Nodes" },
-                    source: { selector: "CharacterTrees > CharacterTree > Nodes > Node", attribute: "id" },
-                    references: [
-                        { selector: "CharacterTrees > CharacterTree > Nodes > Node > Parent", attribute: "ref" },
-                        { selector: "CharacterTrees > CharacterTree > Nodes > CharNode > Parent", attribute: "ref" },
-                    ]
-                },
-                characterNodes: {
-                    parent: { selector: "CharacterTrees > CharacterTree > Nodes" },
-                    source: { selector: "CharacterTrees > CharacterTree > Nodes > CharNode", attribute: "id" },
-                    references: []
-                },
-                mediaObjects: {
-                    parent: { selector: "MediaObjects" },
-                    source: { selector: "MediaObjects > MediaObject", attribute: "id" },
-                    references: [
-                        { selector: "TaxonNames > TaxonName > Representation > MediaObject", attribute: "ref" },
-                    ]                    
-                },
-                codedDescriptions: {
-                    parent: { selector: "CodedDescriptions" },
-                    source: { selector: "CodedDescriptions > CodedDescription", attribute: "id" },
-                    references: []
-                }
-            };
-            function lookupIds(xml, stuff) {
-                return Array.from(xml.querySelectorAll(stuff.source.selector)).map(e => e.getAttribute(stuff.source.attribute));
+    <div id="app">
+        <h1 class="medium-padding thin-margin">Select SDD files to merge</h1>
+        <br>
+        <div class="indented">
+            <label class="medium-padding thin-margin">File 1</label><input type="file" name="file1" id="file1"><br><br>
+            <label class="medium-padding thin-margin">File 2</label><input type="file" name="file2" id="file2"><br>
+            <br>
+            <button class="background-color-1" type="button" onclick="merge();">Merge</button>
+        </div>
+        <script>
+            function download(filename, text) {
+                const element = document.createElement("a");
+                element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
+                element.setAttribute("download", filename);
+    
+                element.style.display = "none";
+                document.body.appendChild(element);
+    
+                element.click();
+    
+                document.body.removeChild(element);
             }
-            function replaceReferences(xml, stuff, newRefsByOldRefs) {
-                for (const referencingElement of xml.querySelectorAll(stuff.source.selector)) {
-                    const newRef = newRefsByOldRefs.get(referencingElement.getAttribute(stuff.source.attribute));
-                    if (typeof newRef !== "undefined") {
-                        referencingElement.setAttribute(stuff.source.attribute, newRef);
+    
+            async function merge() {
+                const stuffToMerge = {
+                    taxons: {
+                        parent: { selector: "TaxonNames" },
+                        source: { selector: "TaxonNames > TaxonName", attribute: "id" },
+                        references: [
+                            { selector: "TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName", attribute: "ref" },
+                            { selector: "CodedDescriptions > CodedDescription > Scope > TaxonName", attribute: "ref" },
+                        ]
+                    },
+                    taxonHierarchies: {
+                        parent: { selector: "TaxonHierarchies > TaxonHierarchy > Nodes" },
+                        source: { selector: "TaxonHierarchies > TaxonHierarchy > Nodes > Node", attribute: "id" },
+                        references: [
+                            { selector: "TaxonHierarchies > TaxonHierarchy > Nodes > Node > Parent", attribute: "ref" }
+                        ]
+                    },
+                    descriptiveConcepts: {
+                        parent: { selector: "DescriptiveConcepts" },
+                        source: { selector: "DescriptiveConcepts > DescriptiveConcept", attribute: "id" },
+                        references: [
+                            { selector: "CharacterTrees > CharacterTree > Nodes > Node > DescriptiveConcept", attribute: "ref" }
+                        ]
+                    },
+                    categoricalCharacters: {
+                        parent: { selector: "Characters" },
+                        source: { selector: "Characters > CategoricalCharacter", attribute: "id" },
+                        references: [
+                            { selector: "CharacterTrees > CharacterTree > Nodes > CharNode > Character", attribute: "ref" },
+                            { selector: "CodedDescriptions > CodedDescription > SummaryData > Categorical", attribute: "ref" },
+                        ]
+                    },
+                    states: {
+                        parent: { selector: "Characters > CategoricalCharacter > States" },
+                        source: { selector: "Characters > CategoricalCharacter > States > StateDefinition", attribute: "id" },
+                        references: [
+                            {
+                                selector: "CharacterTrees > CharacterTree > Nodes > CharNode > DependencyRules > InapplicableIf > State", 
+                                attribute: "ref"
+                            },
+                            { selector: "CodedDescriptions > CodedDescription > SummaryData > Categorical > State", attribute: "ref" },
+                        ]
+                    },
+                    quantitativeCharacters: {
+                        parent: { selector: "Characters" },
+                        source: { selector: "Characters > QuantitativeCharacter", attribute: "id" },
+                        references: [
+                            { selector: "CharacterTrees > CharacterTree > Nodes > CharNode > Character", attribute: "ref" },
+                            { selector: "CodedDescriptions > CodedDescription > SummaryData > Quantitative", attribute: "ref" },
+                        ]
+                    },
+                    characterTrees: {
+                        parent: { selector: "CharacterTrees > CharacterTree > Nodes" },
+                        source: { selector: "CharacterTrees > CharacterTree > Nodes > Node", attribute: "id" },
+                        references: [
+                            { selector: "CharacterTrees > CharacterTree > Nodes > Node > Parent", attribute: "ref" },
+                            { selector: "CharacterTrees > CharacterTree > Nodes > CharNode > Parent", attribute: "ref" },
+                        ]
+                    },
+                    characterNodes: {
+                        parent: { selector: "CharacterTrees > CharacterTree > Nodes" },
+                        source: { selector: "CharacterTrees > CharacterTree > Nodes > CharNode", attribute: "id" },
+                        references: []
+                    },
+                    mediaObjects: {
+                        parent: { selector: "MediaObjects" },
+                        source: { selector: "MediaObjects > MediaObject", attribute: "id" },
+                        references: [
+                            { selector: "TaxonNames > TaxonName > Representation > MediaObject", attribute: "ref" },
+                        ]                    
+                    },
+                    codedDescriptions: {
+                        parent: { selector: "CodedDescriptions" },
+                        source: { selector: "CodedDescriptions > CodedDescription", attribute: "id" },
+                        references: []
                     }
+                };
+                function lookupIds(xml, stuff) {
+                    return Array.from(xml.querySelectorAll(stuff.source.selector)).map(e => e.getAttribute(stuff.source.attribute));
                 }
-                for (const reference of stuff.references) {
-                    for (const referencingElement of xml.querySelectorAll(reference.selector)) {
-                        const newRef = newRefsByOldRefs.get(referencingElement.getAttribute(reference.attribute));
+                function replaceReferences(xml, stuff, newRefsByOldRefs) {
+                    for (const referencingElement of xml.querySelectorAll(stuff.source.selector)) {
+                        const newRef = newRefsByOldRefs.get(referencingElement.getAttribute(stuff.source.attribute));
                         if (typeof newRef !== "undefined") {
-                            referencingElement.setAttribute(reference.attribute, newRef);
+                            referencingElement.setAttribute(stuff.source.attribute, newRef);
+                        }
+                    }
+                    for (const reference of stuff.references) {
+                        for (const referencingElement of xml.querySelectorAll(reference.selector)) {
+                            const newRef = newRefsByOldRefs.get(referencingElement.getAttribute(reference.attribute));
+                            if (typeof newRef !== "undefined") {
+                                referencingElement.setAttribute(reference.attribute, newRef);
+                            }
                         }
                     }
                 }
-            }
-            function uniquifyIds(xml) {
-                for (const stuff of Object.values(stuffToMerge)) {
-                    const ids = lookupIds(xml, stuff);
-                    const newRefsByOldRefs = new Map(ids.map(id => [id, id + "-" + Date.now()]));
-                    replaceReferences(xml, stuff, newRefsByOldRefs);
-                }                
-            }
-            const file1 = document.getElementById("file1").files[0];
-            const file2 = document.getElementById("file2").files[0];
-
-            const txt1 = await file1.text();
-            const txt2 = await file2.text();
-            const xml1 = new DOMParser().parseFromString(txt1, "application/xml");
-            const xml2 = new DOMParser().parseFromString(txt2, "application/xml");
-
-            uniquifyIds(xml2);
-
-            for (const [type, stuff] of Object.entries(stuffToMerge)) {
-                const parent = xml1.querySelector(stuff.parent.selector);
-
-                if (parent === null) {
-                    continue;
+                function uniquifyIds(xml) {
+                    for (const stuff of Object.values(stuffToMerge)) {
+                        const ids = lookupIds(xml, stuff);
+                        const newRefsByOldRefs = new Map(ids.map(id => [id, id + "-" + Date.now()]));
+                        replaceReferences(xml, stuff, newRefsByOldRefs);
+                    }                
                 }
-
-                for (const child of xml2.querySelectorAll(stuff.source.selector)) {
-                    parent.append(child.cloneNode(true));
-                    parent.append("\n");
+                const file1 = document.getElementById("file1").files[0];
+                const file2 = document.getElementById("file2").files[0];
+    
+                const txt1 = await file1.text();
+                const txt2 = await file2.text();
+                const xml1 = new DOMParser().parseFromString(txt1, "application/xml");
+                const xml2 = new DOMParser().parseFromString(txt2, "application/xml");
+    
+                uniquifyIds(xml2);
+    
+                for (const [type, stuff] of Object.entries(stuffToMerge)) {
+                    const parent = xml1.querySelector(stuff.parent.selector);
+    
+                    if (parent === null) {
+                        continue;
+                    }
+    
+                    for (const child of xml2.querySelectorAll(stuff.source.selector)) {
+                        parent.append(child.cloneNode(true));
+                        parent.append("\n");
+                    }
+                    //const origin = xml2.querySelector(stuff.parent.selector);
+                    //parent.innerHTML += origin.innerHTML;
                 }
-                //const origin = xml2.querySelector(stuff.parent.selector);
-                //parent.innerHTML += origin.innerHTML;
+                download("merged.sdd.xml",`<?xml version="1.0" encoding="UTF-8"?>` + xml1.documentElement.outerHTML);
             }
-            download("merged.sdd.xml",`<?xml version="1.0" encoding="UTF-8"?>` + xml1.documentElement.outerHTML);
-        }
-    </script>
+        </script>
+    </div>
 </body>
 </html>
