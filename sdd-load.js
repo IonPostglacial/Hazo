@@ -13,6 +13,12 @@
         return imagesById;
     }
 
+    function findInDescription(description, section) {
+        const re = new RegExp(`${section}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
+        const match = description?.match(re) ?? null;
+        return match !== null ? match[1].trim() : "";
+    }
+
     function getDatasetItems(dataset, imagesById) {
         const items = {};
         const taxonNames = dataset.getElementsByTagName("TaxonNames")[0];
@@ -22,10 +28,18 @@
             const label = taxonName.getElementsByTagName("Label")[0];
             const detail = taxonName.getElementsByTagName("Detail")[0];
             const mediaObject = taxonName.getElementsByTagName("MediaObject")[0];
-            
+            const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
+            const m = detail?.textContent?.match(floreRe);
+            const [, fasc, page] = m !== null ? m : [];
+
             items[id] = {
                 id: id,
                 name: label.textContent,
+                vernacularName: findInDescription(detail?.textContent, "NV"),
+                meaning: findInDescription(detail?.textContent, "Sense"),
+                noHerbier: findInDescription(detail?.textContent, "N° Herbier"),
+                fasc: fasc?.trim(),
+                page: page?.trim(),
                 detail: detail?.textContent,
                 photo: imagesById.get(mediaObject?.getAttribute("ref"))
             };
@@ -205,6 +219,7 @@
         const concepts = {};
         const descriptorsHierarchy = {};
         const statesById = {};
+        const codedDescriptionsByTaxon = {};
         
         for (const dataset of node.getElementsByTagName("Dataset")) {
             const imagesById = getDatasetImagesById(dataset);
@@ -218,6 +233,24 @@
             Object.assign(statesById, datasetStatesById);
             Object.assign(concepts, getDatasetDescriptiveConcepts(dataset));
             Object.assign(descriptorsHierarchy, getDatasetDescriptorsHierarchy(dataset, concepts, descriptors, statesById));
+
+            const codedDescriptions = dataset.getElementsByTagName("CodedDescriptions")[0];
+
+            for (const codedDescription of codedDescriptions.getElementsByTagName("CodedDescription")) {
+                const scope = codedDescription.getElementsByTagName("Scope")[0];
+                const taxonName = scope.getElementsByTagName("TaxonName")[0];
+                const summaryData = codedDescription.getElementsByTagName("SummaryData")[0];
+                const categoricals = summaryData.getElementsByTagName("Categorical");
+                
+                items[taxonName.getAttribute("ref")].descriptions = [];
+
+                for (const categorical of categoricals) {
+                    items[taxonName.getAttribute("ref")].descriptions.push({
+                        concept: descriptors[categorical.getAttribute("ref")],
+                        states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])
+                    });
+                }
+            }
         }
         return {
             items, itemsHierarchy,

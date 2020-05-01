@@ -28,11 +28,29 @@
                 </tree-menu>
             </nav>
             <section class="content flex-grow-1 medium-margin thin-border white-background scroll">
-                <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned">
-                    <img class="item-img" :src="items[selectedItem].photo"><br/>
-                    <div class="">
+                <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned relative">
+                    <img style="flex:1;overflow:hidden;object-fit:contain;" :src="items[selectedItem].photo">
+                    <div style="flex:2;">
                         <label class="item-property">Name</label>
                         <input type="text" v-model="items[selectedItem].name" /><br/>
+
+                        <label class="item-property">Vernacular Name</label>
+                        <input type="text" v-model="items[selectedItem].vernacularName" /><br/>
+
+                        <label class="item-property">Meaning</label>
+                        <textarea v-model="items[selectedItem].meaning" /></textarea><br/>
+
+                        <label class="item-property">N° Herbier</label>
+                        <input type="text" v-model="items[selectedItem].noHerbier" /><br/>
+
+                        <fieldset>
+                            <legend>Flore de Madagascar et Comores</legend>
+                            <label class="item-property">Fasc</label>
+                            <input type="text" v-model="items[selectedItem].fasc" /><br/>
+    
+                            <label class="item-property">Page</label>
+                            <input type="text" v-model="items[selectedItem].page" /><br/>
+                        </fieldset>
         
                         <label class="item-property">Detail</label>
                         <textarea v-model="items[selectedItem].detail"></textarea><br/>
@@ -42,14 +60,13 @@
         
                         <label class="item-property">Description</label>
                         <ul class="indented">
-                            <li v-for="description, index in descriptions">
-                                <label>{{ description.name }}</label>
-                                <div v-for="state, stateIndex in description.states">
-                                    <input :id="'descriptor-' + stateIndex" :name="'item-state-' + index" type="radio" />
-                                    <label :for="'descriptor-' + stateIndex">
+                            <li v-for="description, index in items[selectedItem].descriptions">
+                                <label>{{ description.concept.name }}</label>
+                                <ul class="indented">
+                                    <li v-for="state, stateIndex in description.states">
                                         {{ state.name }}
-                                    </label>
-                                </div>
+                                    </li>
+                                </ul>
 
                             </li>
                         </ul>

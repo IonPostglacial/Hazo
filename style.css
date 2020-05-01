@@ -97,6 +97,14 @@ ul {
     flex-grow: 1;
 }
 
+.flex-grow-2 {
+    flex-grow: 2;
+}
+
+.flex-grow-2 {
+    flex-grow: 3;
+}
+
 .hide-next-unchecked + ul {
     display: none;
 }
@@ -140,10 +148,15 @@ ul {
 
 .horizontal-flexbox.start-aligned {
     justify-content: flex-start;
+    align-items: flex-start;
 }
 
 .sidebar > ul {
     padding: 4px;
+}
+
+.relative {
+    position: relative;
 }
 
 .sidebar li {
@@ -171,8 +184,8 @@ ul {
     padding: 8px;
 }
 
-.item-img {
-    max-width: 400px;
+.width-1-3 {
+    width: 33%;
 }
 
 .item-property {
