@@ -163,12 +163,13 @@
     function getDatasetDescriptorsHierarchy(dataset, concepts, descriptors, statesById) {
         const descriptorsHierarchy = {};
 
-        const characterTrees = dataset.getElementsByTagName("CharacterTrees")[0];
+        const characterTrees = dataset.getElementsByTagName("CharacterTrees");
 
-        for (const characterTree of characterTrees.getElementsByTagName("CharacterTree")) {
-            const nodes = characterTree.getElementsByTagName("Nodes")[0];
+        for (const characterTree of characterTrees[0].getElementsByTagName("CharacterTree")) {
+            const nodes = characterTree.getElementsByTagName("Nodes");
+            console.log(nodes);
 
-            for (const node of nodes.getElementsByTagName("Node")) {
+            for (const node of nodes[0].getElementsByTagName("Node")) {
                 const descriptiveConcept = node.getElementsByTagName("DescriptiveConcept")[0];
                 const entry = {
                     entry: concepts[descriptiveConcept.getAttribute("ref")],
@@ -179,7 +180,7 @@
                 descriptorsHierarchy[node.getAttribute("id")] = entry;
             }
 
-            for (const charNode of nodes.getElementsByTagName("CharNode")) {
+            for (const charNode of nodes[0].getElementsByTagName("CharNode")) {
                 const parent = charNode.getElementsByTagName("Parent");
                 const character = charNode.getElementsByTagName("Character")[0];
 
@@ -199,14 +200,14 @@
                     children: {},
                     open: false
                 };
-                descriptorsHierarchy[charNode.getAttribute("id")] = menuItem;
+                descriptorsHierarchy[character.getAttribute("ref")] = menuItem;
 
                 if (!menuItem.topLevel) {
                     descriptorsHierarchy[parent[0].getAttribute("ref")].children[character.getAttribute("ref")] = menuItem;
                 }
             }
         }
-
+        console.log(descriptorsHierarchy);
         return descriptorsHierarchy;
     }
 
