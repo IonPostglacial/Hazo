@@ -95,18 +95,20 @@
         return itemsHierarchy;
     }
 
-    function getDescriptorFromCharRepresentation(character, representation) {
+    function getDescriptorFromCharRepresentation(character, representation, imagesById) {
         const label = representation.getElementsByTagName("Label")[0];
+        const mediaObject = character.getElementsByTagName("MediaObject")[0];
 
         return {
             id: character.getAttribute("id"),
             name: label.textContent,
             states: [],
-            inapplicableStates: []
+            inapplicableStates: [],
+            photo: imagesById.get(mediaObject?.getAttribute("ref"))
         };        
     }
 
-    function getDatasetDescriptors(dataset) {
+    function getDatasetDescriptors(dataset, imagesById) {
         const descriptors = {}, statesById = {};
 
         const characters = dataset.getElementsByTagName("Characters")[0];
@@ -114,7 +116,7 @@
         for (const character of characters.getElementsByTagName("CategoricalCharacter")) {
             const representation = character.getElementsByTagName("Representation")[0];
 
-            descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation);
+            descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation, imagesById);
 
             const states = character.getElementsByTagName("States");
 
@@ -207,7 +209,6 @@
                 }
             }
         }
-        console.log(descriptorsHierarchy);
         return descriptorsHierarchy;
     }
 
@@ -228,7 +229,7 @@
             Object.assign(items, getDatasetItems(dataset, imagesById));
             Object.assign(itemsHierarchy, getDatasetItemsHierarchy(dataset, items));
 
-            const [datasetDescriptors, datasetStatesById] = getDatasetDescriptors(dataset);
+            const [datasetDescriptors, datasetStatesById] = getDatasetDescriptors(dataset, imagesById);
 
             Object.assign(descriptors, datasetDescriptors);
             Object.assign(statesById, datasetStatesById);

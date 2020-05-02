@@ -147,6 +147,8 @@
                     const parent = xml1.querySelector(stuff.parent.selector);
     
                     if (parent === null) {
+                        const otherParent = xml2.querySelector(stuff.parent.selector);
+                        xml1.querySelector(otherParent.parentNode.tagName).append(otherParent.cloneNode(true));
                         continue;
                     }
     
@@ -154,8 +156,6 @@
                         parent.append(child.cloneNode(true));
                         parent.append("\n");
                     }
-                    //const origin = xml2.querySelector(stuff.parent.selector);
-                    //parent.innerHTML += origin.innerHTML;
                 }
                 download("merged.sdd.xml",`<?xml version="1.0" encoding="UTF-8"?>` + xml1.documentElement.outerHTML);
             }

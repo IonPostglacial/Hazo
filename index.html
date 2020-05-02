@@ -76,6 +76,7 @@
                     </div>
                 </div>
                 <ul v-if="selectedTab == 1 && descriptions[selectedDescription] !== undefined">
+                    <img style="flex:1;overflow:hidden;object-fit:contain;" :src="descriptions[selectedDescription].photo">
                     <label class="description-name">Name</label>
                     <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
                     <div v-if="descriptions[selectedDescription].inapplicableStates.length > 0">
