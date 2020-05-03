@@ -9,6 +9,7 @@
 <body>
     <script src="libs/vue.js"></script>
     <script src="sdd-load.js"></script>
+    <script src="sdd-save.js"></script>
     <script src="tree-menu.js"></script>
     <script src="index.js"></script>
     <div id="app" class="vertical-flexbox lightgrey-background">
@@ -64,7 +65,7 @@
                         <label class="item-property">Description</label>
                         <ul class="indented">
                             <li v-for="description, index in items[selectedItem].descriptions">
-                                <label>{{ description.concept.name }}</label>
+                                <label>{{ description.descriptor.name }}</label>
                                 <ul class="indented">
                                     <li v-for="state, stateIndex in description.states">
                                         {{ state.name }}
@@ -106,6 +107,7 @@
             <button type="button" v-on:click="importData">Import</button>
             <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
             <button type="button" v-on:click="exportData">Export</button>
+            <a href="./merger.html">Merger</a>
         </section>
     </div>
 </body>

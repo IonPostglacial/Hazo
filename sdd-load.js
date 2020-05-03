@@ -30,7 +30,7 @@
             const mediaObject = taxonName.getElementsByTagName("MediaObject")[0];
             const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
             const m = detail?.textContent?.match(floreRe);
-            const [, fasc, page] = m !== null ? m : [];
+            const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
 
             items[id] = {
                 id: id,
@@ -69,6 +69,7 @@
                 }
 
                 const hierarchyItem = alreadyExistingEntry ?? {
+                    id: node.getAttribute("id"),
                     entry: items[taxonId],
                     topLevel: parent.length === 0,
                     children: {},
@@ -81,6 +82,7 @@
 
                     if (typeof parentTaxon === "undefined") {
                         itemsHierarchy[parent[0].getAttribute("ref")] = {
+                            id: parent[0].getAttribute("ref"),
                             entry: undefined, // We don't know yet (see [adj.1])
                             topLevel: undefined, // We don't know yet (see [adj.1])
                             children: {},
@@ -138,7 +140,7 @@
         for (const character of characters.getElementsByTagName("QuantitativeCharacter")) {
             const representation = character.getElementsByTagName("Representation")[0];
 
-            descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation);
+            descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation, imagesById);
         }
 
         return [descriptors, statesById];
@@ -169,12 +171,13 @@
 
         for (const characterTree of characterTrees[0].getElementsByTagName("CharacterTree")) {
             const nodes = characterTree.getElementsByTagName("Nodes");
-            console.log(nodes);
 
             for (const node of nodes[0].getElementsByTagName("Node")) {
                 const descriptiveConcept = node.getElementsByTagName("DescriptiveConcept")[0];
                 const entry = {
+                    id: node.getAttribute("id"),
                     entry: concepts[descriptiveConcept.getAttribute("ref")],
+                    type: "concept",
                     topLevel: true,
                     children: {},
                     open: false
@@ -198,6 +201,7 @@
 
                 const menuItem = {
                     entry: descriptors[character.getAttribute("ref")],
+                    type: "character",
                     topLevel: parent.length === 0,
                     children: {},
                     open: false
@@ -248,7 +252,7 @@
 
                 for (const categorical of categoricals) {
                     items[taxonName.getAttribute("ref")].descriptions.push({
-                        concept: descriptors[categorical.getAttribute("ref")],
+                        descriptor: descriptors[categorical.getAttribute("ref")],
                         states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])
                     });
                 }

@@ -1,6 +1,19 @@
 window.addEventListener("load", main);
 
 function main() {
+    function download(filename, text) {
+        const element = document.createElement("a");
+        element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
+        element.setAttribute("download", filename);
+
+        element.style.display = "none";
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
     const defaultData = {
         selectedItem: 0,
         selectedDescription: 0,
@@ -89,7 +102,13 @@ function main() {
                 })();
             },
             exportData() {
-
+                const xml = SDD.save({
+                    items: this.items,
+                    itemsHierarchy: this.itemsHierarchy,
+                    descriptors: this.descriptions,
+                    descriptorsHierarchy: this.descriptionsHierarchy,
+                });
+                download("export.sdd.xml",`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML);
             }
         }
     });

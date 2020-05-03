@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Datasets xmlns="http://rs.tdwg.org/UBIF/2006/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://rs.tdwg.org/UBIF/2006/ http://rs.tdwg.org/UBIF/2006/Schema/1.1/SDD.xsd">
+ <TechnicalMetadata created="2020-05-01T14:20:31">
+  <Generator name="Xper2"
+   notes="This software is developed and distributed by LIS - Laboratoire Informatique et Systematique (LIS) - Universite Pierre et Marie Curie - Paris VI - Copyright (c) 2004-2009" version="1.1"/>
+ </TechnicalMetadata>
+ <Dataset xml:lang="fr">
+  <Representation>
+   <Label>Test2</Label>
+  </Representation>
+  <RevisionData>
+   <Creators>
+    <Agent ref="a0" role="aut"/>
+   </Creators>
+   <DateCreated>2020-05-01T14:18:17</DateCreated>
+   <DateModified>2020-05-01T14:18:17</DateModified>
+  </RevisionData>
+  <TaxonNames>
+   <TaxonName id="t1">
+    <Representation>
+     <Label>It1</Label>
+    </Representation>
+   </TaxonName>
+   <TaxonName id="t2">
+    <Representation>
+     <Label>It2</Label>
+    </Representation>
+   </TaxonName>
+   <TaxonName id="t3">
+    <Representation>
+     <Label>It3</Label>
+    </Representation>
+   </TaxonName>
+   <TaxonName id="t4">
+    <Representation>
+     <Label>It4</Label>
+    </Representation>
+   </TaxonName>
+   <TaxonName id="t5">
+    <Representation>
+     <Label>It5</Label>
+    </Representation>
+   </TaxonName>
+  </TaxonNames>
+  <TaxonHierarchies>
+   <TaxonHierarchy id="th1">
+    <Representation>
+     <Label>Default Entity Tree</Label>
+    </Representation>
+    <TaxonHierarchyType>UnspecifiedTaxonomy</TaxonHierarchyType>
+    <Nodes>
+     <Node id="tn1">
+      <TaxonName ref="t1"/>
+     </Node>
+     <Node id="tn2">
+      <Parent ref="tn1"/>
+      <TaxonName ref="t2"/>
+     </Node>
+     <Node id="tn3">
+      <Parent ref="tn1"/>
+      <TaxonName ref="t3"/>
+     </Node>
+     <Node id="tn4">
+      <TaxonName ref="t4"/>
+     </Node>
+     <Node id="tn5">
+      <Parent ref="tn4"/>
+      <TaxonName ref="t5"/>
+     </Node>
+    </Nodes>
+   </TaxonHierarchy>
+  </TaxonHierarchies>
+  <Characters>
+   <CategoricalCharacter id="c1">
+    <Representation>
+     <Label>De1</Label>
+    </Representation>
+    <States>
+     <StateDefinition id="s1">
+      <Representation>
+       <Label>Etat 1</Label>
+      </Representation>
+     </StateDefinition>
+     <StateDefinition id="s2">
+      <Representation>
+       <Label>Etat 2</Label>
+      </Representation>
+     </StateDefinition>
+    </States>
+   </CategoricalCharacter>
+   <CategoricalCharacter id="c2">
+    <Representation>
+     <Label>De2</Label>
+    </Representation>
+    <States>
+     <StateDefinition id="s3">
+      <Representation>
+       <Label>Etat 1</Label>
+      </Representation>
+     </StateDefinition>
+     <StateDefinition id="s4">
+      <Representation>
+       <Label>Etat 2</Label>
+      </Representation>
+     </StateDefinition>
+    </States>
+   </CategoricalCharacter>
+   <QuantitativeCharacter id="c3">
+    <Representation>
+     <Label>De3</Label>
+    </Representation>
+   </QuantitativeCharacter>
+   <CategoricalCharacter id="c4">
+    <Representation>
+     <Label>De4</Label>
+    </Representation>
+    <States>
+     <StateDefinition id="s5">
+      <Representation>
+       <Label>Etat 1</Label>
+      </Representation>
+     </StateDefinition>
+     <StateDefinition id="s6">
+      <Representation>
+       <Label>Etat 2</Label>
+      </Representation>
+     </StateDefinition>
+    </States>
+   </CategoricalCharacter>
+   <CategoricalCharacter id="c5">
+    <Representation>
+     <Label>De5</Label>
+    </Representation>
+    <States>
+     <StateDefinition id="s7">
+      <Representation>
+       <Label>Etat 1</Label>
+      </Representation>
+     </StateDefinition>
+     <StateDefinition id="s8">
+      <Representation>
+       <Label>Etat 2</Label>
+      </Representation>
+     </StateDefinition>
+    </States>
+   </CategoricalCharacter>
+  </Characters>
+  <CharacterTrees>
+   <CharacterTree id="ct1">
+    <Representation>
+     <Label>Ordre et dependance entre caracteres</Label>
+    </Representation>
+    <ShouldContainAllCharacters>true</ShouldContainAllCharacters>
+    <Nodes>
+     <CharNode>
+      <Character ref="c1"/>
+     </CharNode>
+     <CharNode>
+      <Character ref="c4"/>
+     </CharNode>
+    </Nodes>
+   </CharacterTree>
+  </CharacterTrees>
+  <CodedDescriptions>
+   <CodedDescription id="D1">
+    <Representation>
+     <Label>It1</Label>
+    </Representation>
+    <Scope>
+     <TaxonName ref="t1"/>
+    </Scope>
+    <SummaryData>
+     <Categorical ref="c1">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c2">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c4">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c5">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+    </SummaryData>
+   </CodedDescription>
+   <CodedDescription id="D2">
+    <Representation>
+     <Label>It2</Label>
+    </Representation>
+    <Scope>
+     <TaxonName ref="t2"/>
+    </Scope>
+    <SummaryData>
+     <Categorical ref="c1">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c2">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c4">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c5">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+    </SummaryData>
+   </CodedDescription>
+   <CodedDescription id="D3">
+    <Representation>
+     <Label>It3</Label>
+    </Representation>
+    <Scope>
+     <TaxonName ref="t3"/>
+    </Scope>
+    <SummaryData>
+     <Categorical ref="c1">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c2">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c4">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c5">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+    </SummaryData>
+   </CodedDescription>
+   <CodedDescription id="D4">
+    <Representation>
+     <Label>It4</Label>
+    </Representation>
+    <Scope>
+     <TaxonName ref="t4"/>
+    </Scope>
+    <SummaryData>
+     <Categorical ref="c1">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c2">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c4">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c5">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+    </SummaryData>
+   </CodedDescription>
+   <CodedDescription id="D5">
+    <Representation>
+     <Label>It5</Label>
+    </Representation>
+    <Scope>
+     <TaxonName ref="t5"/>
+    </Scope>
+    <SummaryData>
+     <Categorical ref="c1">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c2">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c4">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+     <Categorical ref="c5">
+      <Ratings>
+       <Rating context="ObservationConvenience" rating="Rating3of5"/>
+      </Ratings>
+     </Categorical>
+    </SummaryData>
+   </CodedDescription>
+  </CodedDescriptions>
+  <Agents>
+   <Agent id="a0">
+    <Representation>
+     <Label>Unknown</Label>
+    </Representation>
+   </Agent>
+  </Agents>
+ </Dataset>
+</Datasets>
