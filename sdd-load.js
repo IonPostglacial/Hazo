@@ -19,6 +19,16 @@
         return match !== null ? match[1].trim() : "";
     }
 
+    function removeFromDescription(description, sections) {
+        let desc = description;
+
+        for (const section of sections) {
+            const re = new RegExp(`${section}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
+            desc = desc.replace(re, "");
+        }
+        return desc;
+    }
+
     function getDatasetItems(dataset, imagesById) {
         const items = {};
         const taxonNames = dataset.getElementsByTagName("TaxonNames")[0];
@@ -28,20 +38,26 @@
             const label = taxonName.getElementsByTagName("Label")[0];
             const detail = taxonName.getElementsByTagName("Detail")[0];
             const mediaObject = taxonName.getElementsByTagName("MediaObject")[0];
+
+            const vernacularName = findInDescription(detail?.textContent, "NV");
+            const meaning = findInDescription(detail?.textContent, "Sense");
+            const noHerbier = findInDescription(detail?.textContent, "N° Herbier");
+            const herbariumPicture = findInDescription(detail?.textContent, "Herbarium Picture");
+            
             const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
             const m = detail?.textContent?.match(floreRe);
             const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
+            const details = removeFromDescription(detail?.textContent, [
+                    "NV", "Sense", "N° Herbier", "Herbarium Picture"
+                ])?.replace(floreRe, "");
 
             items[id] = {
                 id: id,
-                name: label.textContent,
-                vernacularName: findInDescription(detail?.textContent, "NV"),
-                meaning: findInDescription(detail?.textContent, "Sense"),
-                noHerbier: findInDescription(detail?.textContent, "N° Herbier"),
-                herbariumPicture: findInDescription(detail?.textContent, "Herbarium Picture"),
+                name: label.textContent.trim(),
+                vernacularName, meaning, noHerbier, herbariumPicture,
                 fasc: fasc?.trim(),
                 page: page?.trim(),
-                detail: detail?.textContent,
+                detail: details,
                 photo: imagesById.get(mediaObject?.getAttribute("ref"))
             };
         }   

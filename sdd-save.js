@@ -4,7 +4,7 @@
         const label = Object.assign(xml.createElement("Label"), { textContent: labelText });
         representation.appendChild(label);
 
-        if (typeof detailText !== "undefined") {
+        if (typeof detailText !== "undefined" && detailText !== "") {
             const detail = Object.assign(xml.createElement("Detail"), { textContent: detailText });
             representation.appendChild(detail);
         }
@@ -69,7 +69,15 @@
             if(typeof taxonName.photo !== "undefined") {
                 medias.push(newMediaObject(item.name, item.details, item.photo));
             }
-            taxonName.appendChild(createRepresentation(xml, item.name, item.detail, medias));
+
+            const itemDetail = "" +
+                (item.vernacularName   ? `NV: ${item.vernacularName}<br><br>` : "") +
+                (item.meaning          ? `Sense: ${item.meaning}<br><br>` : "") +
+                (item.noHerbier        ? `N° Herbier: ${item.noHerbier}<br><br>` : "") +
+                (item.herbariumPicture ? `Herbarium Picture: ${item.herbariumPicture}<br><br>` : "") +
+                (item.fasc             ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
+                (item.detail);
+            taxonName.appendChild(createRepresentation(xml, item.name, itemDetail, medias));
 
             taxonNames.appendChild(taxonName);
         }
