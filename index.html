@@ -69,9 +69,9 @@
                         <label class="item-property">Description</label>
                         <ul class="indented">
                             <li v-for="description, index in items[selectedItem].descriptions">
-                                <label>{{ description.descriptor.name }}</label>
+                                <label :class="description.states.length < 1 ? 'warning-color' : ''">{{ description.descriptor.name }}</label>
                                 <ul class="indented">
-                                    <li v-for="state, stateIndex in description.states">
+                                    <li v-for="state in description.states">
                                         {{ state.name }}
                                     </li>
                                 </ul>

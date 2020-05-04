@@ -94,6 +94,10 @@ ul {
     overflow-y: scroll;
 }
 
+.warning-color {
+    color: #b13a00;
+}
+
 .thin-border {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
