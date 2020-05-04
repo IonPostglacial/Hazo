@@ -101,8 +101,6 @@ function main() {
                 const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
                 const stateIndex = selectedDescription.states.findIndex(s => s.id === state.id);
 
-                console.log(selectedDescription.states);
-
                 if (e.target.checked) {
                     if (stateIndex < 0) {
                         selectedDescription.states.push(state);
