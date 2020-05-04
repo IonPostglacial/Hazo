@@ -9,7 +9,7 @@ Vue.component("tree-menu", {
         },
     },
     template: `
-        <ul>
+        <ul class="menu">
             <li v-for="item, hierarchyId in items" v-if="parent !== undefined || item.topLevel">
                 <div class="horizontal-flexbox start-aligned">
                     <label class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" v-if="Object.keys(item?.children ?? {}).length > 0" :for="name + '-open-' + item.entry.id">

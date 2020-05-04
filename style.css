@@ -1,6 +1,7 @@
 html {
     box-sizing: border-box;
 }
+
 *, *:before, *:after {
     box-sizing: inherit;
 }  
@@ -127,6 +128,7 @@ ul {
 .close:hover {
     opacity: 1;
 }
+
 .close:before, .close:after {
     position: absolute;
     left: 8px;
@@ -135,9 +137,11 @@ ul {
     width: 2px;
     background-color: #333;
 }
+
 .close:before {
     transform: rotate(45deg);
 }
+
 .close:after {
     transform: rotate(-45deg);
 }
@@ -178,7 +182,8 @@ ul {
     align-items: flex-start;
 }
 
-.sidebar > ul {
+.sidebar > ul,
+.menu > ul {
     padding: 4px;
 }
 
@@ -186,18 +191,18 @@ ul {
     position: relative;
 }
 
-.sidebar li {
+.menu li {
     list-style: none;
     position: relative;
 }
 
-.sidebar li > div {
+.menu li > div {
     position: relative;
     width: 100%;
 }
 
 .blue-hover:hover,
-.sidebar li > div > input:checked + label {
+.menu li > div > input:checked + label {
     background-color: rgb(37, 113, 212);
     color: white;
 }

@@ -96,6 +96,24 @@ function main() {
                 }
                 newItemName.value = "";
             },
+            addItemState(e, state) {
+                const selectedItem = this.items[this.selectedItem];
+                const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
+                const stateIndex = selectedDescription.states.findIndex(s => s.id === state.id);
+
+                console.log(selectedDescription.states);
+
+                if (e.target.checked) {
+                    if (stateIndex < 0) {
+                        selectedDescription.states.push(state);
+                    }
+                } else {
+                    if (stateIndex >= 0) {
+                        selectedDescription.states.splice(stateIndex, 1);
+                    }
+                }
+                console.log(selectedDescription.states);
+            },
             deleteItem({ parentId, id, itemId }) {
                 Vue.delete(this.items, itemId);
                 Vue.delete(this.itemsHierarchy, id);

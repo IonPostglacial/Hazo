@@ -80,9 +80,18 @@
                         </ul>
                     </div>
                         <tree-menu v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
-                        v-on:add-item="addDescription"
-                        v-on:delete-item="deleteDescription">
-                    </tree-menu>
+                            v-on:add-item="addDescription"
+                            v-on:delete-item="deleteDescription">
+                        </tree-menu>
+                    <div>
+                        <ul class="indented" v-if="selectedItemDescriptor !== 0">
+                            <li v-for="state, stateIndex in descriptions[selectedItemDescriptor].states">
+                                <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" id="'state-' + stateIndex"
+                                    :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s.id)?.includes(state.id)">
+                                {{ state.name }}
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 <ul v-if="selectedTab == 1 && descriptions[selectedDescription] !== undefined">
                     <img style="flex:1;overflow:hidden;object-fit:contain;" :src="descriptions[selectedDescription].photo">
