@@ -3,7 +3,10 @@ Vue.component("tree-menu", {
     methods: {
         addItem(parentId) {
             this.$emit("add-item", parentId);
-        }
+        },
+        deleteItem(parentId, id, itemId) {
+            this.$emit("delete-item", { parentId, id, itemId });
+        },
     },
     template: `
         <ul>
@@ -18,11 +21,15 @@ Vue.component("tree-menu", {
                         {{ item.entry.name }}
                         <slot></slot>
                     </label>
+                    <div class="close" v-on:click="deleteItem(item.parentId, item.id, item.entry.id)"></div>
                 </div>
-                <div class="indented" v-if="Object.keys(item?.children ?? {}).length > 0">
-                    <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.entry.id" />
-                    <tree-menu :name="name" :items="item.children" v-on="$listeners" :parent="hierarchyId">
-                    </tree-menu>
+                <div v-if="Object.keys(item?.children ?? {}).length > 0" class="horizontal-flexbox start-aligned">
+                    <div class="indentation-width"></div>
+                    <div>
+                        <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.entry.id" />
+                        <tree-menu :name="name" :items="item.children" v-on="$listeners" :parent="hierarchyId">
+                        </tree-menu>
+                    </div>
                 </div>
             </li>
             <li>

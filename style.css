@@ -115,6 +115,33 @@ ul {
     height: 18px;
 }
 
+.close {
+	position: relative;
+	right: 0;
+	top: 0px;
+	width: 18px;
+	height: 18px;
+	opacity: 0.3;
+}
+
+.close:hover {
+    opacity: 1;
+}
+.close:before, .close:after {
+    position: absolute;
+    left: 8px;
+    content: ' ';
+    height: 19px;
+    width: 2px;
+    background-color: #333;
+}
+.close:before {
+    transform: rotate(45deg);
+}
+.close:after {
+    transform: rotate(-45deg);
+}
+
 .centered-text {
     text-align: center;
 }
@@ -202,6 +229,10 @@ ul {
 .flex-centered {
     align-items: center;
     justify-content: center;
+}
+
+.indentation-width {
+    width: 42px;
 }
 
 .indented {

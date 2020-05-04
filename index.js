@@ -56,6 +56,13 @@ function main() {
                 }
                 newItemName.value = "";
             },
+            deleteItem({ parentId, id, itemId }) {
+                Vue.delete(this.items, itemId);
+                Vue.delete(this.itemsHierarchy, id);
+                if (typeof parentId !== "undefined") {
+                    Vue.delete(this.itemsHierarchy[parentId].children, itemId);
+                }
+            },
             addDescription(parentId) {
                 const newDescriptionName = document.getElementById("new-description-" + parentId);
                 const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
@@ -76,6 +83,13 @@ function main() {
                     Vue.set(this.descriptionsHierarchy, newDescriptionId, newDescription);
                 }
                 newDescriptionName.value = "";
+            },
+            deleteDescription({ parentId, id, itemId }) {
+                Vue.delete(this.descriptions, itemId);
+                Vue.delete(this.descriptionsHierarchy, itemId);
+                if (typeof parentId !== "undefined") {
+                    Vue.delete(this.descriptionsHierarchy[parentId].children, itemId);
+                }
             },
             addState(description, event) {
                 description.states.push({

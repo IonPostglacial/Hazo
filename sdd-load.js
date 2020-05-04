@@ -85,12 +85,14 @@
 
                 if (typeof alreadyExistingEntry !== "undefined") {
                     // [adj.1] Adjust properties that were unknown at item creation time
+                    alreadyExistingEntry.parentId = parent.length > 0 ? parent[0].getAttribute("ref") : undefined;
                     alreadyExistingEntry.entry = items[taxonId];
                     alreadyExistingEntry.topLevel = parent.length === 0;
                 }
 
                 const hierarchyItem = alreadyExistingEntry ?? {
                     id: node.getAttribute("id"),
+                    parentId: parent.length > 0 ? parent[0].getAttribute("ref") : undefined,
                     entry: items[taxonId],
                     topLevel: parent.length === 0,
                     children: {},
@@ -98,7 +100,7 @@
                 };
                 itemsHierarchy[node.getAttribute("id")] = hierarchyItem;
 
-                if (parent.length !== 0) {
+                if (parent.length > 0) {
                     const parentTaxon = itemsHierarchy[parent[0].getAttribute("ref")];
 
                     if (typeof parentTaxon === "undefined") {
@@ -221,6 +223,7 @@
                 }
 
                 const menuItem = {
+                    parentId: parent.length > 0 ? parent[0].getAttribute("ref") : undefined,
                     entry: descriptors[character.getAttribute("ref")],
                     type: "character",
                     topLevel: parent.length === 0,

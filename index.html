@@ -23,9 +23,13 @@
         </nav>
         <div class="horizontal-flexbox flex-grow-1 scroll">
             <nav class="sidebar scroll medium-margin thin-border white-background">
-                <tree-menu v-if="selectedTab == 0" :items="itemsHierarchy" name="item" v-model="selectedItem" v-on:add-item="addItem">
+                <tree-menu v-if="selectedTab == 0" :items="itemsHierarchy" name="item" v-model="selectedItem"
+                    v-on:add-item="addItem"
+                    v-on:delete-item="deleteItem">
                 </tree-menu>
-                <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptionsHierarchy" name="description" v-on:add-item="addDescription">
+                <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptionsHierarchy" name="description" 
+                    v-on:add-item="addDescription"
+                    v-on:delete-item="deleteDescription">
                 </tree-menu>
             </nav>
             <section class="content flex-grow-1 medium-margin thin-border white-background scroll">
