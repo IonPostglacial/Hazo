@@ -24,9 +24,35 @@
 
         for (const section of sections) {
             const re = new RegExp(`${section}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
-            desc = desc.replace(re, "");
+            desc = desc?.replace(re, "");
         }
         return desc;
+    }
+
+    function setItemRepresentation(item, representation, imagesById) {
+        const label = representation.getElementsByTagName("Label")[0];
+        const detail = representation.getElementsByTagName("Detail")[0];
+        const mediaObject = representation.getElementsByTagName("MediaObject")[0];
+
+        const vernacularName = findInDescription(detail?.textContent, "NV");
+        const meaning = findInDescription(detail?.textContent, "Sense");
+        const noHerbier = findInDescription(detail?.textContent, "N° Herbier");
+        const herbariumPicture = findInDescription(detail?.textContent, "Herbarium Picture");
+        
+        const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
+        const m = detail?.textContent?.match(floreRe);
+        const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
+        const details = removeFromDescription(detail?.textContent, [
+                "NV", "Sense", "N° Herbier", "Herbarium Picture"
+            ])?.replace(floreRe, "");
+        Object.assign(item, {
+            name: label.textContent.trim(),
+            vernacularName, meaning, noHerbier, herbariumPicture,
+            fasc: fasc?.trim(),
+            page: page?.trim(),
+            detail: details,
+            photo: imagesById.get(mediaObject?.getAttribute("ref"))
+        });
     }
 
     function getDatasetItems(dataset, imagesById) {
@@ -34,32 +60,11 @@
         const taxonNames = dataset.getElementsByTagName("TaxonNames")[0];
 
         for (const taxonName of taxonNames.getElementsByTagName("TaxonName")) {
-            const id = taxonName.getAttribute("id");
-            const label = taxonName.getElementsByTagName("Label")[0];
-            const detail = taxonName.getElementsByTagName("Detail")[0];
-            const mediaObject = taxonName.getElementsByTagName("MediaObject")[0];
+            const item = { id: taxonName.getAttribute("id") };
 
-            const vernacularName = findInDescription(detail?.textContent, "NV");
-            const meaning = findInDescription(detail?.textContent, "Sense");
-            const noHerbier = findInDescription(detail?.textContent, "N° Herbier");
-            const herbariumPicture = findInDescription(detail?.textContent, "Herbarium Picture");
-            
-            const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
-            const m = detail?.textContent?.match(floreRe);
-            const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
-            const details = removeFromDescription(detail?.textContent, [
-                    "NV", "Sense", "N° Herbier", "Herbarium Picture"
-                ])?.replace(floreRe, "");
+            setItemRepresentation(item, taxonName.getElementsByTagName("Representation")[0], imagesById);
 
-            items[id] = {
-                id: id,
-                name: label.textContent.trim(),
-                vernacularName, meaning, noHerbier, herbariumPicture,
-                fasc: fasc?.trim(),
-                page: page?.trim(),
-                detail: details,
-                photo: imagesById.get(mediaObject?.getAttribute("ref"))
-            };
+            items[item.id] = item;
         }   
         return items;
     }
@@ -232,9 +237,24 @@
         return descriptorsHierarchy;
     }
 
+    function loadXmlFile(file) {
+        return new Promise(function (resolve, reject) {
+            const fileReader = Object.assign(new FileReader(), {
+                onload() {
+                    const xml = new DOMParser().parseFromString(fileReader.result,  "application/xml");
+                    resolve(xml);
+                },
+                onerror() {
+                    reject(error);
+                },
+            });
+            fileReader.readAsText(file);
+        });
+    }
+
     async function loadSDD(file) {
-        const text = await file.text();
-        const node = new DOMParser().parseFromString(text, "text/xml").firstElementChild;
+        const xml = await loadXmlFile(file);
+        const node = xml.firstElementChild;
         
         const items = {};
         const itemsHierarchy = {};
@@ -261,13 +281,18 @@
             for (const codedDescription of codedDescriptions.getElementsByTagName("CodedDescription")) {
                 const scope = codedDescription.getElementsByTagName("Scope")[0];
                 const taxonName = scope.getElementsByTagName("TaxonName")[0];
+                const representation = codedDescription.getElementsByTagName("Representation")[0];
                 const summaryData = codedDescription.getElementsByTagName("SummaryData")[0];
                 const categoricals = summaryData.getElementsByTagName("Categorical");
+                const taxon = items[taxonName.getAttribute("ref")];
                 
-                items[taxonName.getAttribute("ref")].descriptions = [];
+                if (typeof taxon.detail === "undefined" || taxon.detail === "") {
+                    setItemRepresentation(taxon, representation, imagesById);
+                }
+                taxon.descriptions = [];
 
                 for (const categorical of categoricals) {
-                    items[taxonName.getAttribute("ref")].descriptions.push({
+                    taxon.descriptions.push({
                         descriptor: descriptors[categorical.getAttribute("ref")],
                         states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])
                     });
