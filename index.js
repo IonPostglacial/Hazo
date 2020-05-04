@@ -15,8 +15,10 @@ function main() {
     }
 
     const defaultData = {
+        showLeftMenu: true,
         selectedItem: 0,
         selectedDescription: 0,
+        selectedItemDescriptor: 0,
         selectedTab: 0,
         tabs: [
             "Items",
@@ -32,14 +34,52 @@ function main() {
     var app = new Vue({
         el: '#app',
         data: savedData,
+        computed: {
+            descriptorsDependencyTree() {
+                const dependencyTree = {};
+
+                for (const description of Object.values(this.descriptions)) {
+                    const newEntry = {
+                        id: description.id,
+                        entry: description,
+                        topLevel: description.inapplicableStates.length === 0,
+                        open: true,
+                        children: dependencyTree[description.id]?.children ?? {},
+                    };
+                    dependencyTree[description.id] = newEntry;
+                    if (description.inapplicableStates.length > 0) {
+                        const parentDependency = this.descriptions[description.inapplicableStates[0].descriptorId];
+                        
+                        if (dependencyTree[description.inapplicableStates[0].descriptorId] === undefined) {
+                            dependencyTree[description.inapplicableStates[0].descriptorId] = {
+                                id: parentDependency.id,
+                                entry: parentDependency,
+                                topLevel: undefined,
+                                open: true,
+                                children: {}
+                            }
+                        }
+                        dependencyTree[description.inapplicableStates[0].descriptorId].children[description.id] = newEntry;
+                    }
+                }
+                return dependencyTree;
+            }
+        },
         methods: {
+            toggleLeftMenu() {
+                this.showLeftMenu = !this.showLeftMenu;
+            },
             openAll() {
-                for (const entry of Object.values(this.itemsHierarchy)) {
+                const hierarchy = this.selectedTab == 0 ? this.itemsHierarchy : this.descriptionsHierarchy;
+
+                for (const entry of Object.values(hierarchy)) {
                     entry.open = true;
                 }
             },
             closeAll() {
-                for (const entry of Object.values(this.itemsHierarchy)) {
+                const hierarchy = this.selectedTab == 0 ? this.itemsHierarchy : this.descriptionsHierarchy;
+
+                for (const entry of Object.values(hierarchy)) {
                     entry.open = false;
                 }                
             },

@@ -22,20 +22,20 @@
             </div>
         </nav>
         <div class="horizontal-flexbox flex-grow-1 scroll">
-            <nav class="sidebar scroll medium-margin thin-border white-background">
+            <nav v-if="showLeftMenu" class="sidebar scroll medium-margin thin-border white-background">
                 <tree-menu v-if="selectedTab == 0" :items="itemsHierarchy" name="item" v-model="selectedItem"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem">
                 </tree-menu>
-                <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptionsHierarchy" name="description" 
+                <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
                     v-on:add-item="addDescription"
                     v-on:delete-item="deleteDescription">
                 </tree-menu>
             </nav>
             <section class="content flex-grow-1 medium-margin thin-border white-background scroll">
                 <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned relative">
-                    <img style="flex:1;overflow:hidden;object-fit:contain;" :src="items[selectedItem].photo">
-                    <div style="flex:2;">
+                    <div>
+                        <img style="overflow:hidden;object-fit:contain;" :src="items[selectedItem].photo"><br/>
                         <label class="item-property">Name</label>
                         <input type="text" v-model="items[selectedItem].name" /><br/>
 
@@ -79,6 +79,10 @@
                             </li>
                         </ul>
                     </div>
+                        <tree-menu v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
+                        v-on:add-item="addDescription"
+                        v-on:delete-item="deleteDescription">
+                    </tree-menu>
                 </div>
                 <ul v-if="selectedTab == 1 && descriptions[selectedDescription] !== undefined">
                     <img style="flex:1;overflow:hidden;object-fit:contain;" :src="descriptions[selectedDescription].photo">
@@ -106,6 +110,7 @@
             </section>
         </div>
         <section class="medium-margin">
+            <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
             <button type="button" v-on:click="openAll">Open All</button>
             <button type="button" v-on:click="closeAll">Close All</button>
             <button type="button" v-on:click="saveData">Save</button>
