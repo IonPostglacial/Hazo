@@ -85,6 +85,10 @@ ul {
     margin-bottom: 8px;
 }
 
+.medium-max-width {
+    max-width: 300px;
+}
+
 .scroll {
     overflow-x: hidden;
     overflow-y: scroll;

@@ -112,7 +112,6 @@ function main() {
                         selectedDescription.states.splice(stateIndex, 1);
                     }
                 }
-                console.log(selectedDescription.states);
             },
             deleteItem({ parentId, id, itemId }) {
                 Vue.delete(this.items, itemId);

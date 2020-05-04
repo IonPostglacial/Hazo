@@ -35,7 +35,7 @@
             <section class="content flex-grow-1 medium-margin thin-border white-background scroll">
                 <div v-if="selectedTab == 0 && items[selectedItem] !== undefined" class="horizontal-flexbox start-aligned relative">
                     <div>
-                        <img style="overflow:hidden;object-fit:contain;" :src="items[selectedItem].photo"><br/>
+                        <img class="medium-max-width" :src="items[selectedItem].photo"><br/>
                         <label class="item-property">Name</label>
                         <input type="text" v-model="items[selectedItem].name" /><br/>
 
