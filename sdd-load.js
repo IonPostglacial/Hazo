@@ -150,7 +150,7 @@
 
                     statesById[state.getAttribute("id")] = {
                         id: state.getAttribute("id"),
-                        descriptor: descriptors[character.getAttribute("id")],
+                        descriptorId: character.getAttribute("id"),
                         name: label.textContent
                     };
                     descriptors[character.getAttribute("id")].states.push(statesById[state.getAttribute("id")]);

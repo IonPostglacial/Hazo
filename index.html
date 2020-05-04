@@ -84,7 +84,7 @@
                         <label>Inapplicable If</label>
                         <ul class="indented">
                             <li class="medium-padding" v-for="state in descriptions[selectedDescription].inapplicableStates">
-                                {{ state.descriptor.name }} IS {{ state.name }}
+                                {{ descriptions[state.descriptorId].name }} IS {{ state.name }}
                             </li>
                         </ul>
                     </div>
