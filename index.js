@@ -33,6 +33,16 @@ function main() {
         el: '#app',
         data: savedData,
         methods: {
+            openAll() {
+                for (const entry of Object.values(this.itemsHierarchy)) {
+                    entry.open = true;
+                }
+            },
+            closeAll() {
+                for (const entry of Object.values(this.itemsHierarchy)) {
+                    entry.open = false;
+                }                
+            },
             addItem(parentId) {
                 const newItemName = document.getElementById("new-item-" + parentId);
                 const newItemId = "myt-" + Object.keys(this.items).length;
