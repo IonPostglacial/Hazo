@@ -208,10 +208,10 @@
                         state.setAttribute("ref", inapplicableState.id);
                         inapplicableIf.appendChild(state);
                     }
-        
-                    dependencyRules.appendChild(inapplicableIf);
-                    charNode.appendChild(dependencyRules);
-
+                    if (inapplicableIf.children.length > 0) {
+                        dependencyRules.appendChild(inapplicableIf);
+                        charNode.appendChild(dependencyRules);
+                    }
                     nodesElement.appendChild(charNode);
                 }
                 if (typeof parentRef !== "undefined") {
