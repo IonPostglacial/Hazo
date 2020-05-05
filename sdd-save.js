@@ -1,11 +1,14 @@
 (function () { "use strict";
-    function createRepresentation(xml, labelText, detailText, mediaObjectsRefs = []) {
+    function createRepresentation(xml, labelText, detailText, mediaObjectsRefs = [], role = undefined) {
         const representation = xml.createElement("Representation");
         const label = Object.assign(xml.createElement("Label"), { textContent: labelText });
         representation.appendChild(label);
 
         if (typeof detailText !== "undefined" && detailText !== "") {
             const detail = Object.assign(xml.createElement("Detail"), { textContent: detailText });
+            if (typeof role !== "undefined") {
+                detail.setAttribute("role", role);
+            }
             representation.appendChild(detail);
         }
 
@@ -49,7 +52,7 @@
             source.setAttribute("href", src);
 
             mediaObject.setAttribute("id", id);
-            mediaObject.appendChild(createRepresentation(xml, `${label} - ${mediaObjectsCount}`, detail));
+            mediaObject.appendChild(createRepresentation(xml, `${label} - ${mediaObjectsCount}`, detail, "Caption"));
             mediaObject.appendChild(Object.assign(xml.createElement("Type"), { textContent: "Image" }));
             mediaObject.appendChild(source);
 
