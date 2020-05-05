@@ -219,7 +219,7 @@
                 if (dependencyRules.length > 0) {
                     const inapplicableIf = dependencyRules[0].getElementsByTagName("InapplicableIf")[0];
 
-                    for (const state of inapplicableIf.getElementsByTagName("State")) {
+                    for (const state of inapplicableIf?.getElementsByTagName("State") ?? []) {
                         descriptors[character.getAttribute("ref")].inapplicableStates.push(statesById[state.getAttribute("ref")]);
                     }
                 }
