@@ -44,11 +44,14 @@
         function newMediaObject(label, detail, src) {
             mediaObjectsCount++;
             const mediaObject = xml.createElement("MediaObject");
-            const id = `m${mediaObjectsCount}`
+            const id = `m${mediaObjectsCount}`;
+            const source = xml.createElement("Source");
+            source.setAttribute("href", src);
+
             mediaObject.setAttribute("id", id);
             mediaObject.appendChild(createRepresentation(xml, `${label} - ${mediaObjectsCount}`, detail));
             mediaObject.appendChild(Object.assign(xml.createElement("Type"), { textContent: "Image" }));
-            mediaObject.innerHTML += `<Source href="${src}" />`;
+            mediaObject.appendChild(source);
 
             mediaObjects.appendChild(mediaObject);
 
@@ -244,13 +247,13 @@
             taxonName.setAttribute("ref", id);
             scope.appendChild(taxonName);
 
-            codedDescription.setAttribute("id", `D${codedDescriptionsCount}`);
+            codedDescription.setAttribute("id", "D" + codedDescriptionsCount);
             codedDescription.appendChild(createRepresentation(xml, item.name, item.detail));
             codedDescription.appendChild(scope);
 
             const summaryData = xml.createElement("SummaryData");
 
-            for (const description of item.descriptions) {
+            for (const description of item.descriptions ?? []) {
                 const categorical = xml.createElement("Categorical");
                 categorical.setAttribute("ref", description.descriptor.id);
                 
