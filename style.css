@@ -48,6 +48,10 @@ ul {
     margin-right: auto;
 }
 
+.no-list-style {
+    list-style: none;
+}
+
 .medium-padding {
     padding: 4px;
 }
@@ -108,10 +112,6 @@ ul {
 
 .flex-grow-2 {
     flex-grow: 2;
-}
-
-.flex-grow-2 {
-    flex-grow: 3;
 }
 
 .hide-next-unchecked + ul {
@@ -180,7 +180,7 @@ ul {
 .horizontal-flexbox {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    /* justify-content: center; */
     align-items: stretch;
     align-content: stretch;
 }

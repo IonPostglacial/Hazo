@@ -122,11 +122,13 @@
 
     function getDescriptorFromCharRepresentation(character, representation, imagesById) {
         const label = representation.getElementsByTagName("Label")[0];
+        const detail = representation.getElementsByTagName("Detail")[0];
         const mediaObject = character.getElementsByTagName("MediaObject")[0];
 
         return {
             id: character.getAttribute("id"),
-            name: label.textContent,
+            name: label?.textContent,
+            detail: detail?.textContent,
             states: [],
             inapplicableStates: [],
             photo: imagesById.get(mediaObject?.getAttribute("ref"))

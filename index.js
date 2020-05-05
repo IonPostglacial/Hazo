@@ -35,6 +35,12 @@ function main() {
         el: '#app',
         data: savedData,
         computed: {
+            showItems() {
+                return this.selectedTab == 0 && typeof this.items[this.selectedItem] !== "undefined";
+            },
+            showDescriptors() {
+                return this.selectedTab == 1 && typeof this.descriptions[this.selectedDescription] !== "undefined";
+            },
             descriptorsDependencyTree() {
                 const dependencyTree = {};
 
