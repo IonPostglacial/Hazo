@@ -194,12 +194,6 @@
                         
                     addDescriptorHierarchyNodes(descriptorHierarchy.children, charTreeConceptsNodes, descriptorHierarchy.id);
                 } else if (descriptorHierarchy.type === "character") {
-                    const charNode = node = xml.createElement("CharNode");
-                    const character = xml.createElement("Character");
-                    character.setAttribute("ref", descriptorHierarchy.entry.id);
-                    
-                    charNode.appendChild(character);
-
                     const dependencyRules = xml.createElement("DependencyRules");
                     const inapplicableIf = xml.createElement("InapplicableIf");
         
@@ -208,9 +202,15 @@
                         state.setAttribute("ref", inapplicableState.id);
                         inapplicableIf.appendChild(state);
                     }
-        
-                    dependencyRules.appendChild(inapplicableIf);
+                    if (inapplicableIf.children.length > 0) {
+                        dependencyRules.appendChild(inapplicableIf);
+                    }
+                    const charNode = node = xml.createElement("CharNode");
+                    const character = xml.createElement("Character");
+                    character.setAttribute("ref", descriptorHierarchy.entry.id);
+                    
                     charNode.appendChild(dependencyRules);
+                    charNode.appendChild(character);
 
                     nodesElement.appendChild(charNode);
                 }
