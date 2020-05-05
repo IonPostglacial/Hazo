@@ -200,6 +200,18 @@
                     
                     charNode.appendChild(character);
 
+                    const dependencyRules = xml.createElement("DependencyRules");
+                    const inapplicableIf = xml.createElement("InapplicableIf");
+        
+                    for (const inapplicableState of descriptorHierarchy.entry.inapplicableStates ?? []) {
+                        const state = xml.createElement("State");
+                        state.setAttribute("ref", inapplicableState.id);
+                        inapplicableIf.appendChild(state);
+                    }
+        
+                    dependencyRules.appendChild(inapplicableIf);
+                    charNode.appendChild(dependencyRules);
+
                     nodesElement.appendChild(charNode);
                 }
                 if (typeof parentRef !== "undefined") {
