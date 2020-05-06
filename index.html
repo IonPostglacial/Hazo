@@ -90,7 +90,7 @@
                 </div>
                 <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
                     <li v-for="state, stateIndex in descriptions[selectedItemDescriptor].states">
-                        <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" id="'state-' + stateIndex"
+                        <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
                             :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s.id)?.includes(state.id)">
                             <input type="text" v-model="state.name" />
                     </li>
