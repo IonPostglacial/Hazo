@@ -168,6 +168,7 @@ function main() {
             },
             addState(description, event) {
                 description.states.push({
+                    id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
                     name: event.currentTarget.previousSibling.previousSibling.value
                 });
             },
