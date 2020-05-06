@@ -1,5 +1,5 @@
 Vue.component("tree-menu", {
-    props: ["name", "items", "parent", "onAdd"],
+    props: ["name", "items", "parent", "onAdd", "editable"],
     methods: {
         addItem(parentId) {
             this.$emit("add-item", parentId);
@@ -10,7 +10,7 @@ Vue.component("tree-menu", {
     },
     template: `
         <ul class="menu">
-            <li v-for="item, hierarchyId in items" v-if="parent !== undefined || item.topLevel">
+            <li v-for="item, hierarchyId in items" v-if="!item.hidden && (parent !== undefined || item.topLevel)">
                 <div class="horizontal-flexbox start-aligned">
                     <label class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" v-if="Object.keys(item?.children ?? {}).length > 0" :for="name + '-open-' + item.entry.id">
                         <div v-if="item.open" class="bottom-arrow">&nbsp</div>
@@ -18,10 +18,10 @@ Vue.component("tree-menu", {
                     </label>
                     <input type="radio" class="invisible" :value="item.entry.id" :id="name + '-' + item.entry.id" :name="name" v-on:input="$emit('input', $event.target.value)" />
                     <label class="blue-hover flex-grow-1 medium-padding" :for="name + '-' + item.entry.id">
-                        {{ item.entry.name }}
+                        <span :class="item.warning ? 'warning-color' : ''">{{ item.entry.name }}</span>
                         <slot></slot>
                     </label>
-                    <div class="close" v-on:click="deleteItem(item.parentId, item.id, item.entry.id)"></div>
+                    <div v-if="editable" class="close" v-on:click="deleteItem(item.parentId, item.id, item.entry.id)"></div>
                 </div>
                 <div v-if="Object.keys(item?.children ?? {}).length > 0" class="horizontal-flexbox start-aligned">
                     <div class="indentation-width"></div>
@@ -32,7 +32,7 @@ Vue.component("tree-menu", {
                     </div>
                 </div>
             </li>
-            <li>
+            <li v-if="editable">
                 <input type="text" :id="'new-' + name + '-' + parent" />
                 <button v-on:click="addItem(parent)" class="background-color-1">
                     Add

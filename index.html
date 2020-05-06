@@ -23,11 +23,11 @@
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 scroll">
             <nav v-if="showLeftMenu" class="sidebar scroll medium-margin thin-border white-background">
-                <tree-menu v-if="selectedTab == 0" :items="itemsHierarchy" name="item" v-model="selectedItem"
+                <tree-menu editable="true" v-if="selectedTab == 0" :items="itemsHierarchy" name="item" v-model="selectedItem"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem">
                 </tree-menu>
-                <tree-menu v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
+                <tree-menu editable="true" v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
                     v-on:add-item="addDescription"
                     v-on:delete-item="deleteDescription">
                 </tree-menu>
@@ -65,20 +65,10 @@
                 <input type="text" v-model="items[selectedItem].photo" /><br/>
 
                 <label class="item-property">Description</label>
-                <ul class="indented">
-                    <li v-for="description, index in items[selectedItem].descriptions">
-                        <label :class="description.states.length < 1 ? 'warning-color' : ''">{{ description.descriptor.name }}</label>
-                        <ul class="indented">
-                            <li v-for="state in description.states">
-                                {{ state?.name ?? "fuck" }}
-                            </li>
-                        </ul>
-
-                    </li>
-                </ul>
+                <tree-menu :items="selectedItemDescriptorTree"></tree-menu>
             </div>
             <div v-if="showItems" class="thin-border medium-margin white-background scroll">
-                <tree-menu v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
+                <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
                     v-on:add-item="addDescription"
                     v-on:delete-item="deleteDescription">
                 </tree-menu>

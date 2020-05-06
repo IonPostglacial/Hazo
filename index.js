@@ -14,6 +14,36 @@ function main() {
         document.body.removeChild(element);
     }
 
+    function getDependencyTree(descriptors) {
+        const dependencyTree = {};
+
+        for (const description of Object.values(descriptors)) {
+            const newEntry = {
+                id: description.id,
+                entry: description,
+                topLevel: description.inapplicableStates.length === 0,
+                open: true,
+                children: dependencyTree[description.id]?.children ?? {},
+            };
+            dependencyTree[description.id] = newEntry;
+            if (description.inapplicableStates.length > 0) {
+                const parentDependency = descriptors[description.inapplicableStates[0].descriptorId];
+                
+                if (dependencyTree[description.inapplicableStates[0].descriptorId] === undefined) {
+                    dependencyTree[description.inapplicableStates[0].descriptorId] = {
+                        id: parentDependency.id,
+                        entry: parentDependency,
+                        topLevel: undefined,
+                        open: true,
+                        children: {}
+                    }
+                }
+                dependencyTree[description.inapplicableStates[0].descriptorId].children[description.id] = newEntry;
+            }
+        }
+        return dependencyTree;
+    }
+
     const defaultData = {
         showLeftMenu: true,
         selectedItem: 0,
@@ -36,6 +66,42 @@ function main() {
         el: '#app',
         data: savedData,
         computed: {
+            selectedItemStates() {
+                const states = [];
+
+                for (const description of this.items[this.selectedItem].descriptions) {
+                    for (const state of description.states) {
+                        states.push(state);
+                    }
+                }
+
+                return states;
+            },
+            selectedItemDescriptorTree() {
+                const itemStatesIds = [];
+                const selectedItemDescriptions = this.items[this.selectedItem].descriptions;
+                const dependencyTree = getDependencyTree(selectedItemDescriptions.map(d => d.descriptor));
+                for (const description of selectedItemDescriptions) {
+                    for (const state of description.states) {
+                        itemStatesIds.push(state.id);
+                    }
+                }
+                for (const descriptor of Object.values(dependencyTree)) {
+                    const descriptorStates = selectedItemDescriptions.find(d => d.descriptor.id === descriptor.entry.id).states;
+
+                    if (descriptor.entry.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
+                        descriptor.hidden = true;
+                        console.log("hidden", descriptor.entry.name);
+                    }
+
+                    if (descriptorStates.length === 0) {
+                        descriptor.warning = true;
+                        descriptor.children = {};
+                    }
+                    Object.assign(descriptor.children, descriptorStates.map(s => ({ entry: s })));
+                }
+                return dependencyTree;
+            },
             showItems() {
                 return this.selectedTab == 0 && typeof this.items[this.selectedItem] !== "undefined";
             },
@@ -43,33 +109,7 @@ function main() {
                 return this.selectedTab == 1 && typeof this.descriptions[this.selectedDescription] !== "undefined";
             },
             descriptorsDependencyTree() {
-                const dependencyTree = {};
-
-                for (const description of Object.values(this.descriptions)) {
-                    const newEntry = {
-                        id: description.id,
-                        entry: description,
-                        topLevel: description.inapplicableStates.length === 0,
-                        open: true,
-                        children: dependencyTree[description.id]?.children ?? {},
-                    };
-                    dependencyTree[description.id] = newEntry;
-                    if (description.inapplicableStates.length > 0) {
-                        const parentDependency = this.descriptions[description.inapplicableStates[0].descriptorId];
-                        
-                        if (dependencyTree[description.inapplicableStates[0].descriptorId] === undefined) {
-                            dependencyTree[description.inapplicableStates[0].descriptorId] = {
-                                id: parentDependency.id,
-                                entry: parentDependency,
-                                topLevel: undefined,
-                                open: true,
-                                children: {}
-                            }
-                        }
-                        dependencyTree[description.inapplicableStates[0].descriptorId].children[description.id] = newEntry;
-                    }
-                }
-                return dependencyTree;
+                return getDependencyTree(this.descriptions);
             }
         },
         methods: {
@@ -107,7 +147,7 @@ function main() {
                 const selectedItem = this.items[this.selectedItem];
                 const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
                 const stateIndex = selectedDescription.states.findIndex(s => s.id === state.id);
-                console.log(e.target.checked);
+
                 if (e.target.checked) {
                     if (stateIndex < 0) {
                         selectedDescription.states.push(state);
@@ -122,8 +162,6 @@ function main() {
                 const selectedItem = this.items[this.selectedItem];
                 const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
 
-                console.log(this.descriptions);
-                console.log(selectedDescription);
                 selectedDescription.states = [...this.descriptions[selectedDescription.descriptor.id].states];
             },
             removeAllItemStates() {
@@ -142,6 +180,7 @@ function main() {
             addDescription(parentId) {
                 const newDescriptionName = document.getElementById("new-description-" + parentId);
                 const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
+
                 Vue.set(this.descriptions, newDescriptionId, {
                     id: newDescriptionId,
                     name: newDescriptionName.value,
