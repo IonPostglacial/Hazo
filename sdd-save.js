@@ -52,7 +52,7 @@
             source.setAttribute("href", src);
 
             mediaObject.setAttribute("id", id);
-            mediaObject.appendChild(createRepresentation(xml, `${label} - ${mediaObjectsCount}`, detail, "Caption"));
+            mediaObject.appendChild(createRepresentation(xml, `${label} - ${mediaObjectsCount}`, detail, [], "Caption"));
             mediaObject.appendChild(Object.assign(xml.createElement("Type"), { textContent: "Image" }));
             mediaObject.appendChild(source);
 
