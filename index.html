@@ -70,7 +70,7 @@
                         <label :class="description.states.length < 1 ? 'warning-color' : ''">{{ description.descriptor.name }}</label>
                         <ul class="indented">
                             <li v-for="state in description.states">
-                                {{ state.name }}
+                                {{ state?.name ?? "fuck" }}
                             </li>
                         </ul>
 
@@ -91,7 +91,7 @@
                 <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
                     <li v-for="state, stateIndex in descriptions[selectedItemDescriptor].states">
                         <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
-                            :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s.id)?.includes(state.id)">
+                            :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s?.id)?.includes(state.id)">
                             <input type="text" v-model="state.name" />
                     </li>
                     <li>

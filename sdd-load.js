@@ -6,7 +6,7 @@
         if (mediaObjects.length === 0) return imagesById;
 
         for (const mediaObject of mediaObjects[0].getElementsByTagName("MediaObject")) {
-            if (mediaObject.getElementsByTagName("Type")[0].textContent !== "Image") { continue; }
+            if (mediaObject.getElementsByTagName("Type")[0].textContent.trim() !== "Image") { continue; }
 
             imagesById.set(mediaObject.id, mediaObject.getElementsByTagName("Source")[0].getAttribute("href"));
         }
@@ -127,8 +127,8 @@
 
         return {
             id: character.getAttribute("id"),
-            name: label?.textContent,
-            detail: detail?.textContent,
+            name: label?.textContent?.trim(),
+            detail: detail?.textContent?.trim(),
             states: [],
             inapplicableStates: [],
             photo: imagesById.get(mediaObject?.getAttribute("ref"))
@@ -155,7 +155,7 @@
                     statesById[state.getAttribute("id")] = {
                         id: state.getAttribute("id"),
                         descriptorId: character.getAttribute("id"),
-                        name: label.textContent
+                        name: label.textContent.trim().replace(/[\s\n]/, "")
                     };
                     descriptors[character.getAttribute("id")].states.push(statesById[state.getAttribute("id")]);
                 }
@@ -183,7 +183,7 @@
 
             concepts[descriptiveConcept.getAttribute("id")] = {
                 id: descriptiveConcept.getAttribute("id"),
-                name: label.textContent
+                name: label.textContent.trim()
             };
         }
         return concepts;
