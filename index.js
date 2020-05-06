@@ -19,6 +19,7 @@ function main() {
         selectedItem: 0,
         selectedDescription: 0,
         selectedItemDescriptor: 0,
+        itemDescriptorSearch: "",
         selectedTab: 0,
         tabs: [
             "Items",
@@ -27,7 +28,7 @@ function main() {
         items: {},
         itemsHierarchy: {},
         descriptions: {},
-        descriptionsHierarchy: {}
+        descriptionsHierarchy: {},
     };
     const savedData = JSON.parse(localStorage.getItem("data")) ?? defaultData;
 
