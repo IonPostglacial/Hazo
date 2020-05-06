@@ -106,7 +106,7 @@ function main() {
                 const selectedItem = this.items[this.selectedItem];
                 const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
                 const stateIndex = selectedDescription.states.findIndex(s => s.id === state.id);
-
+                console.log(e.target.checked);
                 if (e.target.checked) {
                     if (stateIndex < 0) {
                         selectedDescription.states.push(state);
@@ -116,6 +116,20 @@ function main() {
                         selectedDescription.states.splice(stateIndex, 1);
                     }
                 }
+            },
+            addAllItemStates() {
+                const selectedItem = this.items[this.selectedItem];
+                const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
+
+                console.log(this.descriptions);
+                console.log(selectedDescription);
+                selectedDescription.states = [...this.descriptions[selectedDescription.descriptor.id].states];
+            },
+            removeAllItemStates() {
+                const selectedItem = this.items[this.selectedItem];
+                const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
+
+                selectedDescription.states = [];
             },
             deleteItem({ parentId, id, itemId }) {
                 Vue.delete(this.items, itemId);

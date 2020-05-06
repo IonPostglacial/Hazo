@@ -84,6 +84,10 @@
                 </tree-menu>
             </div>
             <div v-if="showItems" class="thin-border medium-margin medium-padding white-background scroll">
+                <div v-if="selectedItemDescriptor !== 0">
+                    <button v-on:click="addAllItemStates">Check All</button>
+                    <button v-on:click="removeAllItemStates"> Uncheck All</button>
+                </div>
                 <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
                     <li v-for="state, stateIndex in descriptions[selectedItemDescriptor].states">
                         <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" id="'state-' + stateIndex"
