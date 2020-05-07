@@ -91,7 +91,6 @@ function main() {
 
                     if (descriptor.entry.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                         descriptor.hidden = true;
-                        console.log("hidden", descriptor.entry.name);
                     }
 
                     if (descriptorStates.length === 0) {

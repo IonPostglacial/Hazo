@@ -32,7 +32,7 @@
         datasets.innerHTML += `
             <TechnicalMetadata created="${new Date().toISOString()}">
                 <Generator name="Bunga"
-                    notes="This software is developed and distributed by Nicolas Galipot - Copyright (c) 2020" version="0.9"/>
+                    notes="This software is developed and distributed by Li Tian & Nicolas Galipot - Copyright (c) 2020" version="0.9"/>
             </TechnicalMetadata>
         `;
         const dataset = xml.createElement("Dataset");
@@ -82,7 +82,7 @@
                 (item.noHerbier        ? `N° Herbier: ${item.noHerbier}<br><br>` : "") +
                 (item.herbariumPicture ? `Herbarium Picture: ${item.herbariumPicture}<br><br>` : "") +
                 (item.fasc             ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
-                (item.detail);
+                (item.detail ?? "");
             taxonName.appendChild(createRepresentation(xml, item.name, itemDetail, medias));
 
             taxonNames.appendChild(taxonName);

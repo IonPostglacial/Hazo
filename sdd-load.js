@@ -29,6 +29,37 @@
         return desc;
     }
 
+    function startOfInterestingText(txt, br) {
+        let cur;
+        loop: for (cur = 0; cur < txt.length; cur++) {
+          switch(txt[cur]) {
+            case " ":
+            case "\t":
+            case "\n":
+              break;
+            case br[0]:
+              if (txt.length - cur > 3 && txt.substring(cur, cur + 4) === br) {
+                cur += 3;
+                break;
+              } else {
+                break loop;
+              }
+            default:
+              break loop;
+          }
+        }
+        return cur;
+      }
+      
+      function extractInterestingText(txt) {
+        const start = startOfInterestingText(txt, "<br>");
+        const end = txt.length - startOfInterestingText(txt.split("").reverse().join(""), ">rb<");
+
+        if (start >= end) return "";
+        
+        return txt.substring(start, end);
+      }
+
     function setItemRepresentation(item, representation, imagesById) {
         const label = representation.getElementsByTagName("Label")[0];
         const detail = representation.getElementsByTagName("Detail")[0];
@@ -42,18 +73,19 @@
         const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
         const m = detail?.textContent?.match(floreRe);
         const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
-        const details = removeFromDescription(detail?.textContent, [
+        let details = removeFromDescription(detail?.textContent, [
                 "NV", "Sense", "N° Herbier", "Herbarium Picture"
             ])?.replace(floreRe, "");
 
-        Object.assign(item, {
-            name: label.textContent.trim(),
-            vernacularName, meaning, noHerbier, herbariumPicture,
-            fasc: fasc?.trim(),
-            page: page?.trim(),
-            detail: details,
-            photos: [...item.photos, ...mediaObjects.map(m => imagesById.get(m.getAttribute("ref")))]
-        });
+        item.name = item.name ?? label.textContent.trim();
+        item.vernacularName = item.vernacularName ?? vernacularName;
+        item.meaning = item.meaning ?? meaning;
+        item.noHerbier = item.noHerbier ?? noHerbier;
+        item.herbariumPicture = item.herbariumPicture ?? herbariumPicture;
+        item.fasc = item.fasc ?? fasc?.trim();
+        item.page = item.page ?? page?.trim();
+        item.detail = item.detail ?? extractInterestingText(details ?? "");
+        item.photos = [...item.photos, ...mediaObjects.map(m => imagesById.get(m.getAttribute("ref")))];
     }
 
     function getDatasetItems(dataset, imagesById) {
