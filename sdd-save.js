@@ -72,8 +72,8 @@
         
             taxonName.setAttribute("id", id);
 
-            if(typeof taxonName.photo !== "undefined") {
-                medias.push(newMediaObject(item.name, item.details, item.photo));
+            for (const photo of item.photos) {
+                medias.push(newMediaObject(item.name, item.details, photo));
             }
 
             const itemDetail = "" +
@@ -136,8 +136,8 @@
             const character = xml.createElement("CategoricalCharacter");
             const charMedias = [];
 
-            if (typeof descriptor.photo !== "undefined") {
-                charMedias.push(newMediaObject(descriptor.name, descriptor.detail, descriptor.photo));
+            for (const photo of typeof descriptor.photos) {
+                charMedias.push(newMediaObject(descriptor.name, descriptor.detail, photo));
             }
 
             character.setAttribute("id", id);
@@ -148,8 +148,8 @@
                 const stateDefinition = xml.createElement("StateDefinition");
                 const stateMedias = [];
 
-                if (typeof state.photo !== "undefined") {
-                    stateMedias.push(newMediaObject(state.name, state.detail, state.photo))
+                for (const photo of state.photos ?? []) {
+                    stateMedias.push(newMediaObject(state.name, state.detail, photo))
                 }
 
                 stateDefinition.setAttribute("id", state.id);
