@@ -34,7 +34,9 @@
                 </tree-menu>
             </nav>
             <div v-if="showItems" class="thin-border medium-margin white-background scroll flex-grow-1">
-                <img class="medium-max-width" :src="items[selectedItem].photo"><br/>
+                <div v-for="photo in items[selectedItem].photos" class="vertical-flexbox">
+                    <img class="medium-max-width" :src="photo">
+                </div>
                 <label class="item-property">Name</label>
                 <input type="text" v-model="items[selectedItem].name" /><br/>
 
@@ -63,7 +65,7 @@
                 <textarea v-model="items[selectedItem].detail"></textarea><br/>
                 
                 <label class="item-property">Photo</label>
-                <input type="text" v-model="items[selectedItem].photo" /><br/>
+                <input type="text" v-model="items[selectedItem].photos[0]" /><br/>
 
                 <label class="item-property">Description</label>
                 <tree-menu :items="selectedItemDescriptorTree"></tree-menu>
@@ -92,12 +94,14 @@
                 </ul>
             </div>
             <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
-                <img style="flex:1;overflow:hidden;object-fit:contain;" :src="descriptions[selectedDescription].photo"><br/>
+                <div class="vertical-flexbox" v-for="photo in descriptions[selectedDescription].photos">
+                    <img style="flex:1;overflow:hidden;object-fit:contain;" :src="photo">
+                </div>
                 <label class="item-property">Name</label>
                 <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
 
                 <label class="item-property">Photo</label>
-                <input type="text" v-model="descriptions[selectedDescription].photo" /><br/>
+                <input type="text" v-model="descriptions[selectedDescription].photos[0]" /><br/>
 
                 <label class="item-property">Detail</label>
                 <textarea v-model="descriptions[selectedDescription].detail"></textarea><br/>

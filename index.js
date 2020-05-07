@@ -133,7 +133,7 @@ function main() {
             addItem({ value, parentId }) {
                 const newItemId = "myt-" + Object.keys(this.items).length;
                 
-                Vue.set(this.items, newItemId, { id: newItemId, name: value, photo: "" });
+                Vue.set(this.items, newItemId, { id: newItemId, name: value, photos: [] });
                 const newItem = { entry: this.items[newItemId], topLevel: typeof parentId === "undefined", children: {}, open: false };
                 if (typeof parentId !== "undefined") {
                     Vue.set(this.itemsHierarchy[parentId].children, newItemId, newItem);

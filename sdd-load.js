@@ -32,7 +32,7 @@
     function setItemRepresentation(item, representation, imagesById) {
         const label = representation.getElementsByTagName("Label")[0];
         const detail = representation.getElementsByTagName("Detail")[0];
-        const mediaObject = representation.getElementsByTagName("MediaObject")[0];
+        const mediaObjects = Array.from(representation.getElementsByTagName("MediaObject"));
 
         const vernacularName = findInDescription(detail?.textContent, "NV");
         const meaning = findInDescription(detail?.textContent, "Sense");
@@ -45,13 +45,14 @@
         const details = removeFromDescription(detail?.textContent, [
                 "NV", "Sense", "N° Herbier", "Herbarium Picture"
             ])?.replace(floreRe, "");
+
         Object.assign(item, {
             name: label.textContent.trim(),
             vernacularName, meaning, noHerbier, herbariumPicture,
             fasc: fasc?.trim(),
             page: page?.trim(),
             detail: details,
-            photo: imagesById.get(mediaObject?.getAttribute("ref"))
+            photos: [...item.photos, ...mediaObjects.map(m => imagesById.get(m.getAttribute("ref")))]
         });
     }
 
@@ -60,7 +61,7 @@
         const taxonNames = dataset.getElementsByTagName("TaxonNames")[0];
 
         for (const taxonName of taxonNames.getElementsByTagName("TaxonName")) {
-            const item = { id: taxonName.getAttribute("id") };
+            const item = { id: taxonName.getAttribute("id"), photos: [] };
 
             setItemRepresentation(item, taxonName.getElementsByTagName("Representation")[0], imagesById);
 
@@ -123,7 +124,7 @@
     function getDescriptorFromCharRepresentation(character, representation, imagesById) {
         const label = representation.getElementsByTagName("Label")[0];
         const detail = representation.getElementsByTagName("Detail")[0];
-        const mediaObject = character.getElementsByTagName("MediaObject")[0];
+        const mediaObjects = Array.from(character.getElementsByTagName("MediaObject"));
 
         return {
             id: character.getAttribute("id"),
@@ -131,7 +132,7 @@
             detail: detail?.textContent?.trim(),
             states: [],
             inapplicableStates: [],
-            photo: imagesById.get(mediaObject?.getAttribute("ref"))
+            photos: mediaObjects.map(m => imagesById.get(m.getAttribute("ref")))
         };        
     }
 
