@@ -10,6 +10,7 @@
     <script src="libs/vue.js"></script>
     <script src="sdd-load.js"></script>
     <script src="sdd-save.js"></script>
+    <script src="add-item.js"></script>
     <script src="tree-menu.js"></script>
     <script src="index.js"></script>
     <div id="app" class="vertical-flexbox lightgrey-background">
@@ -85,11 +86,8 @@
                             :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s?.id)?.includes(state.id)">
                         <input class="flex-grow-1" type="text" v-model="state.name" />
                     </li>
-                    <li class="horizontal-flexbox">
-                        <input class="flex-grow-1" type="text" />
-                        <button class="background-color-1" v-on:click="addState(descriptions[selectedItemDescriptor], $event)">
-                            Add
-                        </button>
+                    <li class="">
+                        <add-item v-on:add-item="addState(descriptions[selectedItemDescriptor], $event)"></add-item>
                     </li>
                 </ul>
             </div>
@@ -118,8 +116,7 @@
                         <input type="text" v-model="state.name" />
                     </li>
                     <li>
-                        <input type="text" />
-                        <button class="background-color-1" v-on:click="addState(descriptions[selectedDescription], $event)">Add</button>
+                        <add-item v-on:add-item="addState(descriptions[selectedDescription], $event)"></add-item>
                     </li>
                 </ul>
             </ul>

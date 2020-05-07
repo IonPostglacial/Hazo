@@ -130,18 +130,16 @@ function main() {
                     entry.open = false;
                 }                
             },
-            addItem(parentId) {
-                const newItemName = document.getElementById("new-item-" + parentId);
+            addItem({ value, parentId }) {
                 const newItemId = "myt-" + Object.keys(this.items).length;
                 
-                Vue.set(this.items, newItemId, { id: newItemId, name: newItemName.value, photo: "" });
+                Vue.set(this.items, newItemId, { id: newItemId, name: value, photo: "" });
                 const newItem = { entry: this.items[newItemId], topLevel: typeof parentId === "undefined", children: {}, open: false };
                 if (typeof parentId !== "undefined") {
                     Vue.set(this.itemsHierarchy[parentId].children, newItemId, newItem);
                 } else {
                     Vue.set(this.itemsHierarchy, newItemId, newItem);
                 }
-                newItemName.value = "";
             },
             addItemState(e, state) {
                 const selectedItem = this.items[this.selectedItem];
@@ -177,13 +175,12 @@ function main() {
                     Vue.delete(this.itemsHierarchy[parentId].children, itemId);
                 }
             },
-            addDescription(parentId) {
-                const newDescriptionName = document.getElementById("new-description-" + parentId);
+            addDescription({ value, parentId }) {
                 const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
 
                 Vue.set(this.descriptions, newDescriptionId, {
                     id: newDescriptionId,
-                    name: newDescriptionName.value,
+                    name: value,
                     states: []
                 });
                 const newDescription = {
@@ -197,7 +194,6 @@ function main() {
                 } else {
                     Vue.set(this.descriptionsHierarchy, newDescriptionId, newDescription);
                 }
-                newDescriptionName.value = "";
             },
             deleteDescription({ parentId, id, itemId }) {
                 Vue.delete(this.descriptions, itemId);
@@ -206,10 +202,10 @@ function main() {
                     Vue.delete(this.descriptionsHierarchy[parentId].children, itemId);
                 }
             },
-            addState(description, event) {
+            addState(description, value) {
                 description.states.push({
                     id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
-                    name: event.currentTarget.previousSibling.previousSibling.value
+                    name: value
                 });
             },
             saveData() {

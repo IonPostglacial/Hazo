@@ -1,8 +1,8 @@
 Vue.component("tree-menu", {
-    props: ["name", "items", "parent", "onAdd", "editable"],
+    props: ["name", "items", "parent", "editable"],
     methods: {
-        addItem(parentId) {
-            this.$emit("add-item", parentId);
+        addItem(value, parentId) {
+            this.$emit("add-item", { value, parentId });
         },
         deleteItem(parentId, id, itemId) {
             this.$emit("delete-item", { parentId, id, itemId });
@@ -33,10 +33,7 @@ Vue.component("tree-menu", {
                 </div>
             </li>
             <li v-if="editable">
-                <input type="text" :id="'new-' + name + '-' + parent" />
-                <button v-on:click="addItem(parent)" class="background-color-1">
-                    Add
-                </button>
+                <add-item v-on:add-item="addItem($event, parent)"></add-item>
             </li>
         </ul>
     `
