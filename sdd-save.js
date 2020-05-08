@@ -1,6 +1,15 @@
 (function () { "use strict";
+    function itemSort(it1, it2) {
+        const i1 = parseInt(it1.id.substring(1));
+        const i2 = parseInt(it2.id.substring(1));
+        return i1 - i2;
+    }
     function createRepresentation(xml, labelText, detailText, mediaObjectsRefs = [], role = undefined) {
         const representation = xml.createElement("Representation");
+
+        if (typeof labelText === "undefined" || labelText === "") {
+            labelText = "_";
+        }
         const label = Object.assign(xml.createElement("Label"), { textContent: labelText });
         representation.appendChild(label);
 
@@ -148,7 +157,7 @@
             character.appendChild(createRepresentation(xml, descriptor.name, descriptor.detail, charMedias));
             const states = xml.createElement("States");
 
-            for (const [stateId, state] of Object.entries(descriptor.states)) {
+            for (const state of Object.values(descriptor.states).sort(itemSort)) {
                 const stateDefinition = xml.createElement("StateDefinition");
                 const stateMedias = [];
 
@@ -272,7 +281,7 @@
                 ratings.appendChild(rating);
                 categorical.appendChild(ratings);
 
-                for (const state of description.states) {
+                for (const state of description.states.sort(itemSort)) {
                     const stateElement = xml.createElement("State");
                     stateElement.setAttribute("ref", state.id);
                     categorical.appendChild(stateElement);
