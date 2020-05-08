@@ -25,21 +25,25 @@
     function saveSDD({ items, itemsHierarchy, descriptors, descriptorsHierarchy }) {
         const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");
         const datasets = xml.documentElement;
+        
+        const technicalMetadata = xml.createElement("TechnicalMetadata");
+        const generator = xml.createElement("Generator");
+        generator.setAttribute("name", "Bunga");
+        generator.setAttribute("notes", "This software is developed and distributed by Li Tian & Nicolas Galipot - Copyright (c) 2020");
+        generator.setAttribute("version", "0.9");
+
+        technicalMetadata.setAttribute("created", new Date().toISOString());
+        technicalMetadata.appendChild(generator);
 
         datasets.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         datasets.setAttribute("xsi:schemaLocation", "http://rs.tdwg.org/UBIF/2006/Schema/1.1/SDD.xsd");
-
-        datasets.innerHTML += `
-            <TechnicalMetadata created="${new Date().toISOString()}">
-                <Generator name="Bunga"
-                    notes="This software is developed and distributed by Li Tian & Nicolas Galipot - Copyright (c) 2020" version="0.9"/>
-            </TechnicalMetadata>
-        `;
+        
         const dataset = xml.createElement("Dataset");
-        datasets.appendChild(dataset);
+        dataset.appendChild(technicalMetadata);
         dataset.setAttribute("xml:lang", "fr");
-
         dataset.appendChild(createRepresentation(xml, "Sample"));
+
+        datasets.appendChild(dataset);
 
         const mediaObjects = xml.createElement("MediaObjects");
         let mediaObjectsCount = 0;
