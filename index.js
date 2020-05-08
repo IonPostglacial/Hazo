@@ -46,10 +46,12 @@ function main() {
 
     const defaultData = {
         showLeftMenu: true,
+        showImageBox: true,
         selectedItem: 0,
         selectedDescription: 0,
         selectedItemDescriptor: 0,
         itemDescriptorSearch: "",
+        newItemPhoto: "",
         selectedTab: 0,
         tabs: [
             "Items",
@@ -115,6 +117,9 @@ function main() {
             toggleLeftMenu() {
                 this.showLeftMenu = !this.showLeftMenu;
             },
+            toggleImageBox() {
+                this.showImageBox = !this.showImageBox;
+            },
             openAll() {
                 const hierarchy = this.selectedTab == 0 ? this.itemsHierarchy : this.descriptionsHierarchy;
 
@@ -129,6 +134,9 @@ function main() {
                     entry.open = false;
                 }                
             },
+            openPhoto(photo) {
+                window.open(photo, "_blank");
+            },
             addItem({ value, parentId }) {
                 const newItemId = "myt-" + Object.keys(this.items).length;
                 
@@ -139,6 +147,12 @@ function main() {
                 } else {
                     Vue.set(this.itemsHierarchy, newItemId, newItem);
                 }
+            },
+            addItemPhoto(photo) {
+                this.items[this.selectedItem].photos.push(photo);
+            },
+            deleteItemPhoto(index) {
+                this.items[this.selectedItem].photos.splice(index, 1);
             },
             addItemState(e, state) {
                 const selectedItem = this.items[this.selectedItem];

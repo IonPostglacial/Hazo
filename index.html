@@ -14,12 +14,22 @@
     <script src="tree-menu.js"></script>
     <script src="index.js"></script>
     <div id="app" class="vertical-flexbox lightgrey-background">
-        <nav class="topbar centered medium-margin-vertical">
-            <div class="selector" v-for="tab, index in tabs">
-                <input v-model="selectedTab" :id="'tab-radio-' + index" class="selector-radio" name="tab-radio" :value="index" type="radio" />
-                <label class="selector-label" :for="'tab-radio-' + index">
-                    {{ tab }}
-                </label>
+        <nav class="horizontal-flexbox space-between">
+            <div class="medium-margin">
+                <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
+                <button type="button" v-on:click="openAll">Open All</button>
+                <button type="button" v-on:click="closeAll">Close All</button>
+            </div>
+            <div class="medium-margin">
+                <div class="selector" v-for="tab, index in tabs">
+                    <input v-model="selectedTab" :id="'tab-radio-' + index" class="selector-radio" name="tab-radio" :value="index" type="radio" />
+                    <label class="selector-label" :for="'tab-radio-' + index">
+                        {{ tab }}
+                    </label>
+                </div>
+            </div>
+            <div class="medium-margin">
+                <button type="button" v-on:click="toggleImageBox">Image Box</button>
             </div>
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 scroll">
@@ -33,66 +43,79 @@
                     v-on:delete-item="deleteDescription">
                 </tree-menu>
             </nav>
-            <div v-if="showItems" class="thin-border medium-margin white-background scroll flex-grow-1">
-                <div v-for="photo in items[selectedItem].photos" class="vertical-flexbox">
-                    <img class="medium-max-width" :src="photo">
+            <section v-if="showItems" class="vertical-flexbox flex-grow-1">
+                <div v-if="showImageBox" class="horizontal-flexbox thin-border medium-margin white-background">
+                    <div v-for="photo, index in items[selectedItem].photos" class="vertical-flexbox space-between relative">
+                        <div v-on:click="deleteItemPhoto(index)" class="close absolute-top-right"></div>
+                        <a class="small-margin thin-border" href="#1" v-on:click="openPhoto(photo)">
+                            <img class="medium-max-width" :src="photo">
+                        </a>
+                        <input type="text" v-model="items[selectedItem].photos[index]" />
+                    </div>
+                    <div class="vertical-flexbox space-between relative">
+                        <div class="small-margin thin-border">
+                            <img class="medium-max-width" :src="newItemPhoto">
+                        </div>
+                        <add-item v-on:add-item="addItemPhoto" v-model="newItemPhoto"></add-item>
+                    </div>
                 </div>
-                <label class="item-property">Name</label>
-                <input type="text" v-model="items[selectedItem].name" /><br/>
-
-                <label class="item-property">Vernacular Name</label>
-                <input type="text" v-model="items[selectedItem].vernacularName" /><br/>
-
-                <label class="item-property">Meaning</label>
-                <textarea v-model="items[selectedItem].meaning" /></textarea><br/>
-
-                <label class="item-property">N° Herbier</label>
-                <input type="text" v-model="items[selectedItem].noHerbier" /><br/>
-
-                <label class="item-property">Herbarium Picture</label>
-                <input type="text" v-model="items[selectedItem].herbariumPicture" /><br/>
-
-                <fieldset>
-                    <legend>Flore de Madagascar et Comores</legend>
-                    <label class="item-property">Fasc</label>
-                    <input type="text" v-model="items[selectedItem].fasc" /><br/>
-
-                    <label class="item-property">Page</label>
-                    <input type="text" v-model="items[selectedItem].page" /><br/>
-                </fieldset>
-
-                <label class="item-property">Detail</label>
-                <textarea id="item-detail" v-model="items[selectedItem].detail"></textarea><br/>
-                
-                <label class="item-property">Photo</label>
-                <input type="text" v-model="items[selectedItem].photos[0]" /><br/>
-
-                <label class="item-property">Description</label>
-                <tree-menu :items="selectedItemDescriptorTree"></tree-menu>
-            </div>
-            <div v-if="showItems" class="thin-border medium-margin white-background scroll">
-                <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
-                    v-on:add-item="addDescription"
-                    v-on:delete-item="deleteDescription">
-                </tree-menu>
-            </div>
-            <div v-if="showItems" class="thin-border medium-margin medium-padding white-background scroll">
-                <div class="horizontal-flexbox" v-if="selectedItemDescriptor !== 0">
-                    <button v-on:click="addAllItemStates">Check All</button>
-                    <button v-on:click="removeAllItemStates"> Uncheck All</button>
+                <div class="horizontal-flexbox start-align flex-grow-1 scroll">
+                    <div class="thin-border medium-margin white-background scroll flex-grow-1">
+                        <label class="item-property">Name</label>
+                        <input type="text" v-model="items[selectedItem].name" /><br/>
+        
+                        <label class="item-property">Vernacular Name</label>
+                        <input type="text" v-model="items[selectedItem].vernacularName" /><br/>
+        
+                        <label class="item-property">Meaning</label>
+                        <textarea v-model="items[selectedItem].meaning" /></textarea><br/>
+        
+                        <label class="item-property">N° Herbier</label>
+                        <input type="text" v-model="items[selectedItem].noHerbier" /><br/>
+        
+                        <label class="item-property">Herbarium Picture</label>
+                        <input type="text" v-model="items[selectedItem].herbariumPicture" /><br/>
+        
+                        <fieldset>
+                            <legend>Flore de Madagascar et Comores</legend>
+                            <label class="item-property">Fasc</label>
+                            <input type="text" v-model="items[selectedItem].fasc" /><br/>
+        
+                            <label class="item-property">Page</label>
+                            <input type="text" v-model="items[selectedItem].page" /><br/>
+                        </fieldset>
+        
+                        <label class="item-property">Detail</label>
+                        <textarea id="item-detail " v-model="items[selectedItem].detail"></textarea><br/>
+        
+                        <label class="item-property">Description</label>
+                        <tree-menu :items="selectedItemDescriptorTree"></tree-menu>
+                    </div>
+                    <div class="thin-border medium-margin white-background scroll">
+                        <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
+                            v-on:add-item="addDescription"
+                            v-on:delete-item="deleteDescription">
+                        </tree-menu>
+                    </div>
+                    <div class="thin-border medium-margin medium-padding white-background scroll">
+                        <div class="horizontal-flexbox" v-if="selectedItemDescriptor !== 0">
+                            <button v-on:click="addAllItemStates">Check All</button>
+                            <button v-on:click="removeAllItemStates"> Uncheck All</button>
+                        </div>
+                        <input type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
+                        <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
+                            <li class="horizontal-flexbox" v-for="state, stateIndex in descriptions[selectedItemDescriptor].states" v-if="state.name.startsWith(itemDescriptorSearch)">
+                                <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
+                                    :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s?.id)?.includes(state.id)">
+                                <input class="flex-grow-1" type="text" v-model="state.name" />
+                            </li>
+                            <li class="">
+                                <add-item v-on:add-item="addState(descriptions[selectedItemDescriptor], $event)"></add-item>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <input type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
-                <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
-                    <li class="horizontal-flexbox" v-for="state, stateIndex in descriptions[selectedItemDescriptor].states" v-if="state.name.startsWith(itemDescriptorSearch)">
-                        <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
-                            :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s?.id)?.includes(state.id)">
-                        <input class="flex-grow-1" type="text" v-model="state.name" />
-                    </li>
-                    <li class="">
-                        <add-item v-on:add-item="addState(descriptions[selectedItemDescriptor], $event)"></add-item>
-                    </li>
-                </ul>
-            </div>
+            </section>
             <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
                 <div class="vertical-flexbox" v-for="photo in descriptions[selectedDescription].photos">
                     <img style="flex:1;overflow:hidden;object-fit:contain;" :src="photo">
@@ -125,15 +148,16 @@
                 </ul>
             </ul>
         </div>
-        <section class="medium-margin">
-            <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
-            <button type="button" v-on:click="openAll">Open All</button>
-            <button type="button" v-on:click="closeAll">Close All</button>
-            <button type="button" v-on:click="saveData">Save</button>
-            <button type="button" v-on:click="resetData">Reset</button>
-            <button type="button" v-on:click="importData">Import</button>
-            <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
-            <button type="button" v-on:click="exportData">Export</button>
+        <section class="medium-margin horizontal-flexbox space-between">
+            <div>
+                <button type="button" v-on:click="importData">Import</button>
+                <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
+                <button type="button" v-on:click="exportData">Export</button>
+            </div>
+            <div>
+                <button type="button" v-on:click="saveData">Save</button>
+                <button type="button" v-on:click="resetData">Reset</button>
+            </div>
             <a href="./merger.html">Merger</a>
         </section>
     </div>

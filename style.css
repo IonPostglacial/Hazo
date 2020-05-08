@@ -56,8 +56,17 @@ ul {
     padding: 4px;
 }
 
+.small-margin {
+    margin: 2px;
+}
+
 .medium-margin {
-    margin: 8px;
+    margin: 4px;
+}
+
+.medium-margin-vertical {
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 .thin-margin {
@@ -82,11 +91,6 @@ ul {
     border-top: 1px solid #000000;
     border-left: 1px solid #000000;
     transform: rotate(-135deg);
-}
-
-.medium-margin-vertical {
-    margin-top: 8px;
-    margin-bottom: 8px;
 }
 
 .medium-max-width {
@@ -158,6 +162,12 @@ ul {
     text-align: center;
 }
 
+.absolute-top-right {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+}
+
 .hide-next-unchecked:checked + ul {
     display: initial;
 }
@@ -177,15 +187,23 @@ ul {
     align-content: stretch;
 }
 
+.space-between {
+    justify-content: space-between;
+}
+
 .horizontal-flexbox {
     display: flex;
     flex-direction: row;
-    /* justify-content: center; */
     align-items: stretch;
     align-content: stretch;
 }
 
-.horizontal-flexbox.start-aligned {
+.cented-aligned {
+    justify-content: center;
+    align-items: center;    
+}
+
+.start-aligned {
     justify-content: flex-start;
     align-items: flex-start;
 }

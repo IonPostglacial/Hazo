@@ -25,7 +25,7 @@ Vue.component("tree-menu", {
                 </div>
                 <div v-if="Object.keys(item?.children ?? {}).length > 0" class="horizontal-flexbox start-aligned">
                     <div class="indentation-width"></div>
-                    <div>
+                    <div class="flex-grow-1">
                         <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.entry.id" />
                         <tree-menu :editable="editable" :name="name" :items="item.children" v-on="$listeners" :parent="hierarchyId">
                         </tree-menu>
