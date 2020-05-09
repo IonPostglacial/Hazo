@@ -75,10 +75,10 @@
             const label = representation.getElementsByTagName("Label")[0];
             const detail = representation.getElementsByTagName("Detail")[0];
             const taxonId = taxonName.getAttribute("ref");
-            const mediaObjects = [
-                ...Array.from(representation.getElementsByTagName("MediaObject") ?? []),
-                ...Array.from(dataset.querySelectorAll(`TaxonNames > TaxonName[id="${taxonId}"] > Representation > MediaObject`) ?? []),
-            ];
+            const codedMediaObjects = representation.getElementsByTagName("MediaObject");
+            const mediaObjects = codedMediaObjects.length > 0 ?
+                codedMediaObjects :
+                dataset.querySelectorAll(`TaxonNames > TaxonName[id="${taxonId}"] > Representation > MediaObject`);
             const detailText = (!detail?.textContent || detail.textContent === "undefined" || detail.textContent === "_" ) ?
                 dataset.querySelector(`TaxonNames > TaxonName[id="${taxonId}"] > Representation > Detail`)?.textContent
                 : detail.textContent;
@@ -99,7 +99,7 @@
                 name: label.textContent.trim(),
                 vernacularName, meaning, noHerbier, herbariumPicture, fasc, page,
                 detail: extractInterestingText(details ?? ""),
-                photos: mediaObjects.map(m => imagesById.get(m.getAttribute("ref"))),
+                photos: Array.from(mediaObjects).map(m => imagesById.get(m.getAttribute("ref"))),
                 descriptions: Array.from(categoricals).map(categorical => ({
                     descriptor: descriptors[categorical.getAttribute("ref")],
                     states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])

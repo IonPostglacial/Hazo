@@ -1,25 +1,4 @@
 (function () { "use strict";
-    function createRepresentation(xml, item, role = undefined) {
-        const representation = xml.createElement("Representation");
-        const label = Object.assign(xml.createElement("Label"), { textContent: item.name || "_" });
-        representation.appendChild(label);
-
-        if (item.detail) {
-            const detail = Object.assign(xml.createElement("Detail"), { textContent: item.detail || "_" });
-            if (typeof role !== "undefined") {
-                detail.setAttribute("role", role);
-            }
-            representation.appendChild(detail);
-        }
-        for (const ref of item.photos) {
-            const mediaObject = xml.createElement("MediaObject");
-
-            mediaObject.setAttribute("ref", ref);
-            representation.appendChild(mediaObject);
-        }
-        return representation;
-    }
-
     function saveSDD({ items, itemsHierarchy, descriptors, descriptorsHierarchy }) {
         const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");
         const datasets = xml.documentElement;
@@ -39,7 +18,7 @@
         const dataset = xml.createElement("Dataset");
         dataset.appendChild(technicalMetadata);
         dataset.setAttribute("xml:lang", "fr");
-        dataset.appendChild(createRepresentation(xml, "Sample"));
+        dataset.appendChild(createRepresentation(xml, { name: "Sample" }));
 
         datasets.appendChild(dataset);
 
@@ -54,13 +33,41 @@
             source.setAttribute("href", src);
 
             mediaObject.setAttribute("id", id);
-            mediaObject.appendChild(createRepresentation(xml, `${label} - ${mediaObjectsCount}`, detail, [], "Caption"));
+            mediaObject.appendChild(createRepresentation(xml, { name: `${label} - ${mediaObjectsCount}`, detail }, "Caption"));
             mediaObject.appendChild(Object.assign(xml.createElement("Type"), { textContent: "Image" }));
             mediaObject.appendChild(source);
 
             mediaObjects.appendChild(mediaObject);
 
             return id;
+        }
+
+        function createRepresentation(xml, item, role = undefined) {
+            const representation = xml.createElement("Representation");
+            const label = Object.assign(xml.createElement("Label"), { textContent: item.name || "_" });
+            representation.appendChild(label);
+    
+            const itemDetail = "" +
+                (item.vernacularName   ? `NV: ${item.vernacularName}<br><br>` : "") +
+                (item.meaning          ? `Sense: ${item.meaning}<br><br>` : "") +
+                (item.noHerbier        ? `N° Herbier: ${item.noHerbier}<br><br>` : "") +
+                (item.herbariumPicture ? `Herbarium Picture: ${item.herbariumPicture}<br><br>` : "") +
+                (item.fasc             ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
+                (item.detail ?? "");
+            if (itemDetail) {
+                const detail = Object.assign(xml.createElement("Detail"), { textContent: itemDetail });
+                if (typeof role !== "undefined") {
+                    detail.setAttribute("role", role);
+                }
+                representation.appendChild(detail);
+            }
+            for (const photo of item.photos ?? []) {
+                const ref = newMediaObject(item.name, item.details, photo);
+                const mediaObject = xml.createElement("MediaObject");
+                mediaObject.setAttribute("ref", ref);
+                representation.appendChild(mediaObject);
+            }
+            return representation;
         }
 
         // Taxon Names
@@ -70,22 +77,9 @@
 
         for (const [id, item] of Object.entries(items)) {
             const taxonName = xml.createElement("TaxonName");
-            const medias = [];
-        
+
             taxonName.setAttribute("id", id);
-
-            for (const photo of item.photos) {
-                medias.push(newMediaObject(item.name, item.details, photo));
-            }
-
-            const itemDetail = "" +
-                (item.vernacularName   ? `NV: ${item.vernacularName}<br><br>` : "") +
-                (item.meaning          ? `Sense: ${item.meaning}<br><br>` : "") +
-                (item.noHerbier        ? `N° Herbier: ${item.noHerbier}<br><br>` : "") +
-                (item.herbariumPicture ? `Herbarium Picture: ${item.herbariumPicture}<br><br>` : "") +
-                (item.fasc             ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
-                (item.detail ?? "");
-            taxonName.appendChild(createRepresentation(xml, item.name, itemDetail, medias));
+            taxonName.appendChild(createRepresentation(xml, item));
 
             taxonNames.appendChild(taxonName);
         }
@@ -111,7 +105,7 @@
         taxonHierarchy.setAttribute("id", "th1");
         const nodes = xml.createElement("Nodes");
 
-        taxonHierarchy.appendChild(createRepresentation(xml, "Default Entity Tree"));
+        taxonHierarchy.appendChild(createRepresentation(xml, { name: "Default Entity Tree" }));
         taxonHierarchy.appendChild(Object.assign(xml.createElement("TaxonHierarchyType"), { textContent: "UnspecifiedTaxonomy" }));
         taxonHierarchy.appendChild(nodes);
 
@@ -156,26 +150,14 @@
 
         for (const [id, descriptor] of Object.entries(descriptors)) {
             const character = xml.createElement("CategoricalCharacter");
-            const charMedias = [];
-
-            for (const photo of typeof descriptor.photos) {
-                charMedias.push(newMediaObject(descriptor.name, descriptor.detail, photo));
-            }
-
             character.setAttribute("id", id);
-            character.appendChild(createRepresentation(xml, descriptor.name, descriptor.detail, charMedias));
+            character.appendChild(createRepresentation(xml, descriptor));
             const states = xml.createElement("States");
 
             for (const state of Object.values(descriptor.states)) {
                 const stateDefinition = xml.createElement("StateDefinition");
-                const stateMedias = [];
-
-                for (const photo of state.photos ?? []) {
-                    stateMedias.push(newMediaObject(state.name, state.detail, photo))
-                }
-
                 stateDefinition.setAttribute("id", state.id);
-                stateDefinition.appendChild(createRepresentation(xml, state.name, state.detail, stateMedias));
+                stateDefinition.appendChild(createRepresentation(xml, state));
 
                 states.appendChild(stateDefinition);
             }
@@ -190,14 +172,14 @@
         
         const characterTree = xml.createElement("CharacterTree");
         characterTree.setAttribute("id", "ct1");
-        characterTree.appendChild(createRepresentation(xml, "Ordre et dependance entre caracteres"));
+        characterTree.appendChild(createRepresentation(xml, { name: "Ordre et dependance entre caracteres" }));
         characterTree.appendChild(Object.assign(xml.createElement("ShouldContainAllCharacters"), { textContent: "true" }));
         const charTreeNodes = xml.createElement("Nodes");
         characterTree.appendChild(charTreeNodes);
         
         const characterTreeConcepts = xml.createElement("CharacterTree");
         characterTreeConcepts.setAttribute("id", "ct2");
-        characterTreeConcepts.appendChild(createRepresentation(xml, "Arbre secondaire Xper2 : groupes et variables contenues dans ces groupes"));
+        characterTreeConcepts.appendChild(createRepresentation(xml, { name: "Arbre secondaire Xper2 : groupes et variables contenues dans ces groupes" }));
         const charTreeConceptsNodes = xml.createElement("Nodes");
         characterTreeConcepts.appendChild(charTreeConceptsNodes);
 
@@ -207,8 +189,7 @@
                 if (descriptorHierarchy.type === "concept") {
                     const descriptiveConcept = node = xml.createElement("DescriptiveConcept");
                     descriptiveConcept.setAttribute("id", descriptorHierarchy.entry.id);
-                    descriptiveConcept.appendChild(createRepresentation(xml,
-                        descriptorHierarchy.entry.name, descriptorHierarchy.entry.detail));
+                    descriptiveConcept.appendChild(createRepresentation(xml, descriptorHierarchy.entry));
                     descriptiveConcepts.appendChild(descriptiveConcept);
 
                     const descriptiveConceptElement = xml.createElement("DescriptiveConcept");
@@ -273,7 +254,7 @@
             scope.appendChild(taxonName);
 
             codedDescription.setAttribute("id", "D" + codedDescriptionsCount);
-            codedDescription.appendChild(createRepresentation(xml, item.name, item.detail, item.photos));
+            codedDescription.appendChild(createRepresentation(xml, item));
             codedDescription.appendChild(scope);
 
             const summaryData = xml.createElement("SummaryData");
