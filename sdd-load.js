@@ -1,14 +1,10 @@
 (function () { "use strict;"
     function getDatasetImagesById(dataset) {
         const imagesById = new Map();
-        const mediaObjects = dataset.getElementsByTagName("MediaObjects");
+        const mediaObjects = dataset.querySelectorAll("MediaObjects > MediaObject");
 
-        if (mediaObjects.length === 0) return imagesById;
-
-        for (const mediaObject of mediaObjects[0].getElementsByTagName("MediaObject")) {
-            if (mediaObject.getElementsByTagName("Type")[0].textContent.trim() !== "Image") { continue; }
-
-            imagesById.set(mediaObject.id, mediaObject.getElementsByTagName("Source")[0].getAttribute("href"));
+        for (const mediaObject of mediaObjects) {
+            imagesById.set(mediaObject.id, mediaObject.querySelector("Source")?.getAttribute("href"));
         }
         return imagesById;
     }
@@ -61,19 +57,17 @@
     }
 
     function getDatasetItems(dataset, descriptors, imagesById, statesById) {
-        const codedDescriptions = dataset.getElementsByTagName("CodedDescriptions");
+        const codedDescriptions = dataset.querySelectorAll("CodedDescriptions > CodedDescription");
         const taxons = {};
 
-        if (codedDescriptions === null) return {};
-
-        for (const codedDescription of codedDescriptions[0].getElementsByTagName("CodedDescription")) {
-            const scope = codedDescription.getElementsByTagName("Scope")[0];
-            const taxonName = scope.getElementsByTagName("TaxonName")[0];
-            const representation = codedDescription.getElementsByTagName("Representation")[0];
-            const summaryData = codedDescription.getElementsByTagName("SummaryData")[0];
+        for (const codedDescription of codedDescriptions) {
+            const scope = codedDescription.querySelector("Scope");
+            const taxonName = scope.querySelector("TaxonName");
+            const representation = codedDescription.querySelector("Representation");
+            const summaryData = codedDescription.querySelector("SummaryData");
             const categoricals = summaryData.getElementsByTagName("Categorical");
-            const label = representation.getElementsByTagName("Label")[0];
-            const detail = representation.getElementsByTagName("Detail")[0];
+            const label = representation.querySelector("Label");
+            const detail = representation.querySelector("Detail");
             const taxonId = taxonName.getAttribute("ref");
             const codedMediaObjects = representation.getElementsByTagName("MediaObject");
             const mediaObjects = codedMediaObjects.length > 0 ?
@@ -112,47 +106,47 @@
     function getDatasetItemsHierarchy(dataset, items) {
         const itemsHierarchy = {};
 
-        const taxonHierarchies = dataset.getElementsByTagName("TaxonHierarchies")[0];
+        const taxonHierarchies = dataset.querySelectorAll("TaxonHierarchies > TaxonHierarchy");
 
-        for (const taxonHierarchy of taxonHierarchies.getElementsByTagName("TaxonHierarchy")) {
-            const nodes = taxonHierarchy.getElementsByTagName("Nodes")[0];
+        for (const taxonHierarchy of taxonHierarchies) {
+            const nodes = taxonHierarchy.querySelectorAll("Nodes > Node");
 
-            for (const node of nodes.getElementsByTagName("Node")) {
-                const taxonName = node.getElementsByTagName("TaxonName")[0];
+            for (const node of nodes) {
+                const taxonName = node.querySelector("TaxonName");
                 const taxonId = taxonName.getAttribute("ref");
-                const parent = node.getElementsByTagName("Parent");
+                const parent = node.querySelector("Parent");
                 const alreadyExistingEntry = itemsHierarchy[node.getAttribute("id")];
 
                 if (typeof alreadyExistingEntry !== "undefined") {
                     // [adj.1] Adjust properties that were unknown at item creation time
-                    alreadyExistingEntry.parentId = parent.length > 0 ? parent[0].getAttribute("ref") : undefined;
+                    alreadyExistingEntry.parentId = parent?.getAttribute("ref");
                     alreadyExistingEntry.entry = items[taxonId];
                     alreadyExistingEntry.topLevel = parent.length === 0;
                 }
 
                 const hierarchyItem = alreadyExistingEntry ?? {
                     id: node.getAttribute("id"),
-                    parentId: parent.length > 0 ? parent[0].getAttribute("ref") : undefined,
+                    parentId: parent?.getAttribute("ref"),
                     entry: items[taxonId],
-                    topLevel: parent.length === 0,
+                    topLevel: parent === null,
                     children: {},
                     open: false
                 };
                 itemsHierarchy[node.getAttribute("id")] = hierarchyItem;
 
-                if (parent.length > 0) {
-                    const parentTaxon = itemsHierarchy[parent[0].getAttribute("ref")];
+                if (!hierarchyItem.topLevel) {
+                    const parentTaxon = itemsHierarchy[parent.getAttribute("ref")];
 
                     if (typeof parentTaxon === "undefined") {
-                        itemsHierarchy[parent[0].getAttribute("ref")] = {
-                            id: parent[0].getAttribute("ref"),
+                        itemsHierarchy[parent.getAttribute("ref")] = {
+                            id: parent.getAttribute("ref"),
                             entry: undefined, // We don't know yet (see [adj.1])
                             topLevel: undefined, // We don't know yet (see [adj.1])
                             children: {},
                             open: false
                         };
                     }
-                    itemsHierarchy[parent[0].getAttribute("ref")].children[taxonId] = hierarchyItem;
+                    itemsHierarchy[parent.getAttribute("ref")].children[taxonId] = hierarchyItem;
                 }
             }
         }
@@ -161,8 +155,8 @@
     }
 
     function getDescriptorFromCharRepresentation(character, representation, imagesById) {
-        const label = representation.getElementsByTagName("Label")[0];
-        const detail = representation.getElementsByTagName("Detail")[0];
+        const label = representation.querySelector("Label");
+        const detail = representation.querySelector("Detail");
         const mediaObjects = Array.from(character.getElementsByTagName("MediaObject"));
 
         return {
@@ -178,32 +172,32 @@
     function getDatasetDescriptors(dataset, imagesById) {
         const descriptors = {}, statesById = {};
 
-        const characters = dataset.getElementsByTagName("Characters")[0];
+        const characters = dataset.querySelectorAll("Characters > CategoricalCharacter");
 
-        for (const character of characters.getElementsByTagName("CategoricalCharacter")) {
-            const representation = character.getElementsByTagName("Representation")[0];
+        for (const character of characters) {
+            const representation = character.querySelector("Representation");
 
             descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation, imagesById);
 
-            const states = character.getElementsByTagName("States");
+            const states = character.querySelectorAll("States > StateDefinition");
 
-            if (states.length > 0) {
-                for (const state of states[0].getElementsByTagName("StateDefinition")) {
-                    const representation = state.getElementsByTagName("Representation")[0];
-                    const label = representation.getElementsByTagName("Label")[0];
+            for (const state of states) {
+                const representation = state.querySelector("Representation");
+                const label = representation.querySelector("Label");
 
-                    statesById[state.getAttribute("id")] = {
-                        id: state.getAttribute("id"),
-                        descriptorId: character.getAttribute("id"),
-                        name: label.textContent.trim().replace(/[\s\n]/, "")
-                    };
-                    descriptors[character.getAttribute("id")].states.push(statesById[state.getAttribute("id")]);
-                }
+                statesById[state.getAttribute("id")] = {
+                    id: state.getAttribute("id"),
+                    descriptorId: character.getAttribute("id"),
+                    name: label.textContent.trim().replace(/[\s\n]/, "")
+                };
+                descriptors[character.getAttribute("id")].states.push(statesById[state.getAttribute("id")]);
             }
         }
 
-        for (const character of characters.getElementsByTagName("QuantitativeCharacter")) {
-            const representation = character.getElementsByTagName("Representation")[0];
+        const qCharacters = dataset.querySelectorAll("Characters > QuantitativeCharacter");
+
+        for (const character of qCharacters) {
+            const representation = character.querySelector("Representation");
 
             descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation, imagesById);
         }
@@ -213,13 +207,11 @@
 
     function getDatasetDescriptiveConcepts(dataset) {
         const concepts = {};
-        const descriptiveConcepts = dataset.getElementsByTagName("DescriptiveConcepts");
+        const descriptiveConcepts = dataset.querySelectorAll("DescriptiveConcepts > DescriptiveConcept");
 
-        if (descriptiveConcepts.length === 0) return concepts;
-
-        for (const descriptiveConcept of descriptiveConcepts[0].getElementsByTagName("DescriptiveConcept")) {
-            const representation = descriptiveConcept.getElementsByTagName("Representation")[0];
-            const label = representation.getElementsByTagName("Label")[0];
+        for (const descriptiveConcept of descriptiveConcepts) {
+            const representation = descriptiveConcept.querySelector("Representation");
+            const label = representation.querySelector("Label");
 
             concepts[descriptiveConcept.getAttribute("id")] = {
                 id: descriptiveConcept.getAttribute("id"),
@@ -232,13 +224,11 @@
     function getDatasetDescriptorsHierarchy(dataset, concepts, descriptors, statesById) {
         const descriptorsHierarchy = {};
 
-        const characterTrees = dataset.getElementsByTagName("CharacterTrees");
+        const characterTrees = dataset.querySelectorAll("CharacterTrees > CharacterTree");
 
-        for (const characterTree of characterTrees[0].getElementsByTagName("CharacterTree")) {
-            const nodes = characterTree.getElementsByTagName("Nodes");
-
-            for (const node of nodes[0].getElementsByTagName("Node")) {
-                const descriptiveConcept = node.getElementsByTagName("DescriptiveConcept")[0];
+        for (const characterTree of characterTrees) {
+            for (const node of characterTree.querySelectorAll("Nodes > Node")) {
+                const descriptiveConcept = node.querySelector("DescriptiveConcept");
                 const entry = {
                     id: node.getAttribute("id"),
                     entry: concepts[descriptiveConcept.getAttribute("ref")],
@@ -249,33 +239,27 @@
                 };
                 descriptorsHierarchy[node.getAttribute("id")] = entry;
             }
-
-            for (const charNode of nodes[0].getElementsByTagName("CharNode")) {
-                const parent = charNode.getElementsByTagName("Parent");
-                const character = charNode.getElementsByTagName("Character")[0];
-
-                const dependencyRules = charNode.getElementsByTagName("DependencyRules");
-
-                if (dependencyRules.length > 0) {
-                    const inapplicableIf = dependencyRules[0].getElementsByTagName("InapplicableIf")[0];
-
-                    for (const state of inapplicableIf?.getElementsByTagName("State") ?? []) {
-                        descriptors[character.getAttribute("ref")].inapplicableStates.push(statesById[state.getAttribute("ref")]);
-                    }
+            for (const charNode of characterTree.querySelectorAll("Nodes > CharNode")) {
+                const parent = charNode.querySelector("Parent");
+                const character = charNode.querySelector("Character");
+                const inapplicableStates = charNode.querySelectorAll("DependencyRules > InapplicableIf > State") ?? [];
+                
+                for (const state of inapplicableStates) {
+                    descriptors[character.getAttribute("ref")].inapplicableStates.push(statesById[state.getAttribute("ref")]);
                 }
 
                 const menuItem = {
-                    parentId: parent.length > 0 ? parent[0].getAttribute("ref") : undefined,
-                    entry: descriptors[character.getAttribute("ref")],
+                    parentId: parent?.getAttribute("ref"),
+                    entry: descriptors[character?.getAttribute("ref")],
                     type: "character",
-                    topLevel: parent.length === 0,
+                    topLevel: parent === null,
                     children: {},
                     open: false
                 };
                 descriptorsHierarchy[character.getAttribute("ref")] = menuItem;
 
                 if (!menuItem.topLevel) {
-                    descriptorsHierarchy[parent[0].getAttribute("ref")].children[character.getAttribute("ref")] = menuItem;
+                    descriptorsHierarchy[parent.getAttribute("ref")].children[character.getAttribute("ref")] = menuItem;
                 }
             }
         }
@@ -308,7 +292,7 @@
         const descriptorsHierarchy = {};
         const statesById = {};
         
-        for (const dataset of node.getElementsByTagName("Dataset")) {
+        for (const dataset of node.querySelectorAll("Dataset")) {
             const imagesById = getDatasetImagesById(dataset);            
             const [datasetDescriptors, datasetStatesById] = getDatasetDescriptors(dataset, imagesById);
             
