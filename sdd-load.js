@@ -64,8 +64,7 @@
             const scope = codedDescription.querySelector("Scope");
             const taxonName = scope.querySelector("TaxonName");
             const representation = codedDescription.querySelector("Representation");
-            const summaryData = codedDescription.querySelector("SummaryData");
-            const categoricals = summaryData.getElementsByTagName("Categorical");
+            const categoricals = codedDescription.querySelectorAll("SummaryData > Categorical");
             const label = representation.querySelector("Label");
             const detail = representation.querySelector("Detail");
             const taxonId = taxonName.getAttribute("ref");
@@ -112,41 +111,40 @@
             const nodes = taxonHierarchy.querySelectorAll("Nodes > Node");
 
             for (const node of nodes) {
-                const taxonName = node.querySelector("TaxonName");
-                const taxonId = taxonName.getAttribute("ref");
-                const parent = node.querySelector("Parent");
+                const parentRef = node.querySelector("Parent")?.getAttribute("ref");
+                const taxonRef = node.querySelector("TaxonName").getAttribute("ref");
                 const alreadyExistingEntry = itemsHierarchy[node.getAttribute("id")];
 
                 if (typeof alreadyExistingEntry !== "undefined") {
                     // [adj.1] Adjust properties that were unknown at item creation time
-                    alreadyExistingEntry.parentId = parent?.getAttribute("ref");
-                    alreadyExistingEntry.entry = items[taxonId];
-                    alreadyExistingEntry.topLevel = parent.length === 0;
+                    alreadyExistingEntry.parentId = parentRef;
+                    alreadyExistingEntry.entry = items[taxonRef];
+                    alreadyExistingEntry.topLevel = !parentRef;
                 }
 
                 const hierarchyItem = alreadyExistingEntry ?? {
                     id: node.getAttribute("id"),
-                    parentId: parent?.getAttribute("ref"),
-                    entry: items[taxonId],
-                    topLevel: parent === null,
+                    parentId: parentRef,
+                    entry: items[taxonRef],
+                    topLevel: !parentRef,
                     children: {},
                     open: false
                 };
                 itemsHierarchy[node.getAttribute("id")] = hierarchyItem;
 
                 if (!hierarchyItem.topLevel) {
-                    const parentTaxon = itemsHierarchy[parent.getAttribute("ref")];
+                    const parentTaxon = itemsHierarchy[parentRef];
 
                     if (typeof parentTaxon === "undefined") {
-                        itemsHierarchy[parent.getAttribute("ref")] = {
-                            id: parent.getAttribute("ref"),
+                        itemsHierarchy[parentRef] = {
+                            id: parentRef,
                             entry: undefined, // We don't know yet (see [adj.1])
                             topLevel: undefined, // We don't know yet (see [adj.1])
                             children: {},
                             open: false
                         };
                     }
-                    itemsHierarchy[parent.getAttribute("ref")].children[taxonId] = hierarchyItem;
+                    itemsHierarchy[parentRef].children[taxonRef] = hierarchyItem;
                 }
             }
         }
