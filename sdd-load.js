@@ -32,74 +32,81 @@
     function startOfInterestingText(txt, br) {
         let cur;
         loop: for (cur = 0; cur < txt.length; cur++) {
-          switch(txt[cur]) {
-            case " ":
-            case "\t":
-            case "\n":
-              break;
-            case br[0]:
-              if (txt.length - cur > 3 && txt.substring(cur, cur + 4) === br) {
-                cur += 3;
-                break;
-              } else {
-                break loop;
-              }
-            default:
-              break loop;
-          }
+            switch(txt[cur]) {
+                case " ":
+                case "\t":
+                case "\n":
+                    break;
+                case br[0]:
+                    if (txt.length - cur > 3 && txt.substring(cur, cur + 4) === br) {
+                        cur += 3;
+                        break;
+                    } else {
+                        break loop;
+                    }
+                default:
+                    break loop;
+            }
         }
         return cur;
-      }
+    }
       
-      function extractInterestingText(txt) {
+    function extractInterestingText(txt) {
         const start = startOfInterestingText(txt, "<br>");
         const end = txt.length - startOfInterestingText(txt.split("").reverse().join(""), ">rb<");
 
         if (start >= end) return "";
-        
+
         return txt.substring(start, end);
-      }
-
-    function setItemRepresentation(item, representation, imagesById) {
-        const label = representation.getElementsByTagName("Label")[0];
-        const detail = representation.getElementsByTagName("Detail")[0];
-        const mediaObjects = Array.from(representation.getElementsByTagName("MediaObject"));
-
-        const vernacularName = findInDescription(detail?.textContent, "NV");
-        const meaning = findInDescription(detail?.textContent, "Sense");
-        const noHerbier = findInDescription(detail?.textContent, "N° Herbier");
-        const herbariumPicture = findInDescription(detail?.textContent, "Herbarium Picture");
-        
-        const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
-        const m = detail?.textContent?.match(floreRe);
-        const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
-        let details = removeFromDescription(detail?.textContent, [
-                "NV", "Sense", "N° Herbier", "Herbarium Picture"
-            ])?.replace(floreRe, "");
-
-        item.name = item.name ?? label.textContent.trim();
-        item.vernacularName = item.vernacularName ?? vernacularName;
-        item.meaning = item.meaning ?? meaning;
-        item.noHerbier = item.noHerbier ?? noHerbier;
-        item.herbariumPicture = item.herbariumPicture ?? herbariumPicture;
-        item.fasc = item.fasc ?? fasc?.trim();
-        item.page = item.page ?? page?.trim();
-        item.detail = item.detail ?? extractInterestingText(details ?? "");
-        item.photos = [...item.photos, ...mediaObjects.map(m => imagesById.get(m.getAttribute("ref")))];
     }
 
-    function getDatasetItems(dataset, imagesById) {
-        const items = {};
-        const taxonNames = dataset.getElementsByTagName("TaxonNames")[0];
+    function getDatasetItems(dataset, descriptors, imagesById, statesById) {
+        const codedDescriptions = dataset.getElementsByTagName("CodedDescriptions");
+        const taxons = {};
 
-        for (const taxonName of taxonNames.getElementsByTagName("TaxonName")) {
-            const item = { id: taxonName.getAttribute("id"), photos: [] };
+        if (codedDescriptions === null) return {};
 
-            setItemRepresentation(item, taxonName.getElementsByTagName("Representation")[0], imagesById);
-
-            items[item.id] = item;
-        }   
-        return items;
+        for (const codedDescription of codedDescriptions[0].getElementsByTagName("CodedDescription")) {
+            const scope = codedDescription.getElementsByTagName("Scope")[0];
+            const taxonName = scope.getElementsByTagName("TaxonName")[0];
+            const representation = codedDescription.getElementsByTagName("Representation")[0];
+            const summaryData = codedDescription.getElementsByTagName("SummaryData")[0];
+            const categoricals = summaryData.getElementsByTagName("Categorical");
+            const label = representation.getElementsByTagName("Label")[0];
+            const detail = representation.getElementsByTagName("Detail")[0];
+            const taxonId = taxonName.getAttribute("ref");
+            const mediaObjects = [
+                ...Array.from(representation.getElementsByTagName("MediaObject") ?? []),
+                ...Array.from(dataset.querySelectorAll(`TaxonNames > TaxonName[id="${taxonId}"] > Representation > MediaObject`) ?? []),
+            ];
+            const detailText = (!detail?.textContent || detail.textContent === "undefined" || detail.textContent === "_" ) ?
+                dataset.querySelector(`TaxonNames > TaxonName[id="${taxonId}"] > Representation > Detail`)?.textContent
+                : detail.textContent;
+            const vernacularName = findInDescription(detailText, "NV");
+            const meaning = findInDescription(detailText, "Sense");
+            const noHerbier = findInDescription(detailText, "N° Herbier");
+            const herbariumPicture = findInDescription(detailText, "Herbarium Picture");
+            
+            const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
+            const m = detailText?.match(floreRe);
+            const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
+            let details = removeFromDescription(detailText, [
+                    "NV", "Sense", "N° Herbier", "Herbarium Picture"
+                ])?.replace(floreRe, "");
+            
+            taxons[taxonId] = {
+                id: taxonId,
+                name: label.textContent.trim(),
+                vernacularName, meaning, noHerbier, herbariumPicture, fasc, page,
+                detail: extractInterestingText(details ?? ""),
+                photos: mediaObjects.map(m => imagesById.get(m.getAttribute("ref"))),
+                descriptions: Array.from(categoricals).map(categorical => ({
+                    descriptor: descriptors[categorical.getAttribute("ref")],
+                    states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])
+                }))
+            };
+        }
+        return taxons;
     }
 
     function getDatasetItemsHierarchy(dataset, items) {
@@ -300,51 +307,17 @@
         const concepts = {};
         const descriptorsHierarchy = {};
         const statesById = {};
-
-        const taxonE = Array.from(xml.querySelectorAll("TaxonNames > TaxonName")).map(e => e.getAttribute("id"));
-        const nodesE = Array.from(xml.querySelectorAll("TaxonHierarchy > Nodes > Node > TaxonName")).map(e => e.getAttribute("ref"));
-
-        for (const te of taxonE) {
-            if (!nodesE.includes(te)) {
-                console.log("hierarchy missing", te);
-            }
-        }
         
         for (const dataset of node.getElementsByTagName("Dataset")) {
-            const imagesById = getDatasetImagesById(dataset);
-
-            Object.assign(items, getDatasetItems(dataset, imagesById));
-            Object.assign(itemsHierarchy, getDatasetItemsHierarchy(dataset, items));
-
+            const imagesById = getDatasetImagesById(dataset);            
             const [datasetDescriptors, datasetStatesById] = getDatasetDescriptors(dataset, imagesById);
-
+            
             Object.assign(descriptors, datasetDescriptors);
             Object.assign(statesById, datasetStatesById);
             Object.assign(concepts, getDatasetDescriptiveConcepts(dataset));
             Object.assign(descriptorsHierarchy, getDatasetDescriptorsHierarchy(dataset, concepts, descriptors, statesById));
-
-            const codedDescriptions = dataset.getElementsByTagName("CodedDescriptions")[0];
-
-            for (const codedDescription of codedDescriptions.getElementsByTagName("CodedDescription")) {
-                const scope = codedDescription.getElementsByTagName("Scope")[0];
-                const taxonName = scope.getElementsByTagName("TaxonName")[0];
-                const representation = codedDescription.getElementsByTagName("Representation")[0];
-                const summaryData = codedDescription.getElementsByTagName("SummaryData")[0];
-                const categoricals = summaryData.getElementsByTagName("Categorical");
-                const taxon = items[taxonName.getAttribute("ref")];
-                
-                if (typeof taxon.detail === "undefined" || taxon.detail === "") {
-                    setItemRepresentation(taxon, representation, imagesById);
-                }
-                taxon.descriptions = [];
-
-                for (const categorical of categoricals) {
-                    taxon.descriptions.push({
-                        descriptor: descriptors[categorical.getAttribute("ref")],
-                        states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])
-                    });
-                }
-            }
+            Object.assign(items, getDatasetItems(dataset, descriptors, imagesById, statesById));
+            Object.assign(itemsHierarchy, getDatasetItemsHierarchy(dataset, items));
         }
         return {
             items, itemsHierarchy,

@@ -1,28 +1,22 @@
 (function () { "use strict";
-    function createRepresentation(xml, labelText, detailText, mediaObjectsRefs = [], role = undefined) {
+    function createRepresentation(xml, item, role = undefined) {
         const representation = xml.createElement("Representation");
-
-        if (typeof labelText === "undefined" || labelText === "") {
-            labelText = "_";
-        }
-        const label = Object.assign(xml.createElement("Label"), { textContent: labelText });
+        const label = Object.assign(xml.createElement("Label"), { textContent: item.name || "_" });
         representation.appendChild(label);
 
-        if (typeof detailText !== "undefined" && detailText !== "") {
-            const detail = Object.assign(xml.createElement("Detail"), { textContent: detailText });
+        if (item.detail) {
+            const detail = Object.assign(xml.createElement("Detail"), { textContent: item.detail || "_" });
             if (typeof role !== "undefined") {
                 detail.setAttribute("role", role);
             }
             representation.appendChild(detail);
         }
-
-        for (const ref of mediaObjectsRefs) {
+        for (const ref of item.photos) {
             const mediaObject = xml.createElement("MediaObject");
 
             mediaObject.setAttribute("ref", ref);
             representation.appendChild(mediaObject);
         }
-
         return representation;
     }
 
@@ -279,7 +273,7 @@
             scope.appendChild(taxonName);
 
             codedDescription.setAttribute("id", "D" + codedDescriptionsCount);
-            codedDescription.appendChild(createRepresentation(xml, item.name, item.detail));
+            codedDescription.appendChild(createRepresentation(xml, item.name, item.detail, item.photos));
             codedDescription.appendChild(scope);
 
             const summaryData = xml.createElement("SummaryData");
