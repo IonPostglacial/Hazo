@@ -1,5 +1,5 @@
 (function () { "use strict";
-    function saveSDD({ items, itemsHierarchy, descriptors, descriptorsHierarchy }) {
+    function saveSDD({ items, descriptors }) {
         const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");
         const datasets = xml.documentElement;
         
@@ -75,30 +75,16 @@
         const taxonNames = xml.createElement("TaxonNames");
         dataset.appendChild(taxonNames);
 
-        for (const [id, item] of Object.entries(items)) {
+        for (const item of Object.values(items)) {
             const taxonName = xml.createElement("TaxonName");
 
-            taxonName.setAttribute("id", id);
+            taxonName.setAttribute("id", item.id);
             taxonName.appendChild(createRepresentation(xml, item));
 
             taxonNames.appendChild(taxonName);
         }
 
         // Taxon Hierarchies
-        
-        // TODO: Data corruption check
-        // Rescue items missing a hierarchy, for whatever reason.
-        const hierarchiesTaxIds = Object.values(itemsHierarchy).map(h => h.entry.id);
-        for (const taxon of Object.values(items)) {
-            if (!hierarchiesTaxIds.includes(taxon.id)) {
-                itemsHierarchy["thx-" + taxon.id] = {
-                    id: "thx-" + taxon.id,
-                    entry: taxon,
-                    topLevel: true,
-                    children: {}
-                };
-            }
-        }
 
         const taxonHierarchies = xml.createElement("TaxonHierarchies");
         const taxonHierarchy = xml.createElement("TaxonHierarchy");
@@ -112,14 +98,8 @@
         taxonHierarchies.appendChild(taxonHierarchy);
         dataset.appendChild(taxonHierarchies);
 
-        const alreadyTreatedTaxons = new Set();
-
         (function addItemHierarchyNode(hierarchies, parentRef) {
             for (const hierarchy of Object.values(hierarchies)) {
-                if (alreadyTreatedTaxons.has(hierarchy.entry.id)) { // TODO: Data corruption check
-                    continue;
-                }
-                alreadyTreatedTaxons.add(hierarchy.entry.id);
                 const node = xml.createElement("Node");
 
                 if (typeof parentRef !== "undefined") {
@@ -129,16 +109,16 @@
                 }
 
                 const taxonName = xml.createElement("TaxonName");
-                taxonName.setAttribute("ref", hierarchy.entry.id);
+                taxonName.setAttribute("ref", hierarchy.id);
     
                 node.appendChild(taxonName);
-                node.setAttribute("id", hierarchy.id);
+                node.setAttribute("id", hierarchy.hid);
     
                 nodes.appendChild(node);
 
-                addItemHierarchyNode(hierarchy.children, hierarchy.id);
+                addItemHierarchyNode(hierarchy.children, hierarchy.hid);
             }
-        }(Object.fromEntries(Object.entries(itemsHierarchy).filter(([_, h]) => h.topLevel))));
+        }(Object.fromEntries(Object.entries(items).filter(([_, h]) => h.topLevel))));
 
         // Characters
 
@@ -184,35 +164,35 @@
         characterTreeConcepts.appendChild(charTreeConceptsNodes);
 
         (function addDescriptorHierarchyNodes (hierarchy, nodesElement, parentRef) {
-            for (const [id, descriptorHierarchy] of Object.entries(hierarchy)) {
+            for (const descriptorHierarchy of Object.values(hierarchy)) {
                 let node;
                 if (descriptorHierarchy.type === "concept") {
                     const descriptiveConcept = node = xml.createElement("DescriptiveConcept");
-                    descriptiveConcept.setAttribute("id", descriptorHierarchy.entry.id);
-                    descriptiveConcept.appendChild(createRepresentation(xml, descriptorHierarchy.entry));
+                    descriptiveConcept.setAttribute("id", descriptorHierarchy.id);
+                    descriptiveConcept.appendChild(createRepresentation(xml, descriptorHierarchy));
                     descriptiveConcepts.appendChild(descriptiveConcept);
 
                     const descriptiveConceptElement = xml.createElement("DescriptiveConcept");
-                    descriptiveConceptElement.setAttribute("ref", descriptorHierarchy.entry.id);
+                    descriptiveConceptElement.setAttribute("ref", descriptorHierarchy.id);
 
                     const nodeElement = xml.createElement("Node");
-                    nodeElement.setAttribute("id", descriptorHierarchy.id);
+                    nodeElement.setAttribute("id", descriptorHierarchy.hid);
                     nodeElement.appendChild(descriptiveConceptElement);
 
                     charTreeConceptsNodes.appendChild(nodeElement);
                         
-                    addDescriptorHierarchyNodes(descriptorHierarchy.children, charTreeConceptsNodes, descriptorHierarchy.id);
+                    addDescriptorHierarchyNodes(descriptorHierarchy.children, charTreeConceptsNodes, descriptorHierarchy.hid);
                 } else if (descriptorHierarchy.type === "character") {
                     const charNode = node = xml.createElement("CharNode");
                     const character = xml.createElement("Character");
-                    character.setAttribute("ref", descriptorHierarchy.entry.id);
+                    character.setAttribute("ref", descriptorHierarchy.id);
                     
                     charNode.appendChild(character);
 
                     const dependencyRules = xml.createElement("DependencyRules");
                     const inapplicableIf = xml.createElement("InapplicableIf");
         
-                    for (const inapplicableState of descriptorHierarchy.entry.inapplicableStates ?? []) {
+                    for (const inapplicableState of descriptorHierarchy.inapplicableStates ?? []) {
                         const state = xml.createElement("State");
                         state.setAttribute("ref", inapplicableState.id);
                         inapplicableIf.appendChild(state);
@@ -229,7 +209,7 @@
                     node?.prepend(parent);
                 }
             }
-        }(descriptorsHierarchy, charTreeNodes));
+        }(descriptors, charTreeNodes));
 
         characterTrees.appendChild(characterTree);
         if (charTreeConceptsNodes.children.length > 0) {
@@ -244,13 +224,13 @@
 
         dataset.appendChild(codedDescriptions);
 
-        for (const [id, item] of Object.entries(items)) {
+        for (const item of Object.values(items)) {
             codedDescriptionsCount++;
             const codedDescription = xml.createElement("CodedDescription");
             const taxonName = xml.createElement("TaxonName");
             const scope = xml.createElement("Scope");
             
-            taxonName.setAttribute("ref", id);
+            taxonName.setAttribute("ref", item.id);
             scope.appendChild(taxonName);
 
             codedDescription.setAttribute("id", "D" + codedDescriptionsCount);

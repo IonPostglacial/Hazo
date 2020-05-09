@@ -5,7 +5,6 @@ Vue.component("add-item", {
             const input = e.target.tagName === "INPUT" ? e.target : e.target.previousElementSibling;
             const val = input.value;
             input.value = "";
-            console.log(val);
             this.$emit("add-item", val);
         }
     },

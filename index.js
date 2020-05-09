@@ -14,36 +14,6 @@ function main() {
         document.body.removeChild(element);
     }
 
-    function getDependencyTree(descriptors) {
-        const dependencyTree = {};
-
-        for (const description of Object.values(descriptors)) {
-            const newEntry = {
-                id: description.id,
-                entry: description,
-                topLevel: description.inapplicableStates.length === 0,
-                open: true,
-                children: dependencyTree[description.id]?.children ?? {},
-            };
-            dependencyTree[description.id] = newEntry;
-            if (description.inapplicableStates.length > 0) {
-                const parentDependency = descriptors[description.inapplicableStates[0].descriptorId];
-                
-                if (dependencyTree[description.inapplicableStates[0].descriptorId] === undefined) {
-                    dependencyTree[description.inapplicableStates[0].descriptorId] = {
-                        id: parentDependency.id,
-                        entry: parentDependency,
-                        topLevel: undefined,
-                        open: true,
-                        children: {}
-                    }
-                }
-                dependencyTree[description.inapplicableStates[0].descriptorId].children[description.id] = newEntry;
-            }
-        }
-        return dependencyTree;
-    }
-
     const defaultData = {
         showLeftMenu: true,
         showImageBox: true,
@@ -82,16 +52,16 @@ function main() {
             selectedItemDescriptorTree() {
                 const itemStatesIds = [];
                 const selectedItemDescriptions = this.items[this.selectedItem].descriptions;
-                const dependencyTree = getDependencyTree(selectedItemDescriptions.map(d => d.descriptor));
+                const dependencyTree = JSON.parse(JSON.stringify(this.descriptions));
                 for (const description of selectedItemDescriptions) {
                     for (const state of description.states) {
                         itemStatesIds.push(state.id);
                     }
                 }
                 for (const descriptor of Object.values(dependencyTree)) {
-                    const descriptorStates = selectedItemDescriptions.find(d => d.descriptor.id === descriptor.entry.id).states;
+                    const descriptorStates = selectedItemDescriptions.find(d => d.descriptor.id === descriptor.id).states;
 
-                    if (descriptor.entry.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
+                    if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                         descriptor.hidden = true;
                     }
 
@@ -99,7 +69,7 @@ function main() {
                         descriptor.warning = true;
                         descriptor.children = {};
                     }
-                    Object.assign(descriptor.children, descriptorStates.map(s => ({ entry: s })));
+                    Object.assign(descriptor.children, descriptorStates);
                 }
                 return dependencyTree;
             },
@@ -110,7 +80,7 @@ function main() {
                 return this.selectedTab == 1 && typeof this.descriptions[this.selectedDescription] !== "undefined";
             },
             descriptorsDependencyTree() {
-                return getDependencyTree(this.descriptions);
+                return this.descriptions;
             }
         },
         methods: {
@@ -121,14 +91,14 @@ function main() {
                 this.showImageBox = !this.showImageBox;
             },
             openAll() {
-                const hierarchy = this.selectedTab == 0 ? this.itemsHierarchy : this.descriptionsHierarchy;
+                const hierarchy = this.selectedTab == 0 ? this.items: this.descriptions;
 
                 for (const entry of Object.values(hierarchy)) {
                     entry.open = true;
                 }
             },
             closeAll() {
-                const hierarchy = this.selectedTab == 0 ? this.itemsHierarchy : this.descriptionsHierarchy;
+                const hierarchy = this.selectedTab == 0 ? this.items : this.descriptions;
 
                 for (const entry of Object.values(hierarchy)) {
                     entry.open = false;
@@ -139,13 +109,13 @@ function main() {
             },
             addItem({ value, parentId }) {
                 const newItemId = "myt-" + Object.keys(this.items).length;
-                
-                Vue.set(this.items, newItemId, { id: newItemId, name: value, photos: [] });
-                const newItem = { entry: this.items[newItemId], topLevel: typeof parentId === "undefined", children: {}, open: false };
+                const newItem = {
+                    hid: "mytn-" + Object.keys(this.items).length, id: newItemId, name: value, photos: [],
+                    topLevel: typeof parentId === "undefined", children: {}, open: false
+                };
+                Vue.set(this.items, newItemId, newItem);
                 if (typeof parentId !== "undefined") {
-                    Vue.set(this.itemsHierarchy[parentId].children, newItemId, newItem);
-                } else {
-                    Vue.set(this.itemsHierarchy, newItemId, newItem);
+                    Vue.set(this.items[parentId].children, newItemId, newItem);
                 }
             },
             addItemPhoto(photo) {
@@ -182,42 +152,32 @@ function main() {
                 selectedDescription.states = [];
             },
             deleteItem({ parentId, id, itemId }) {
-                Vue.delete(this.items, itemId);
-                Vue.delete(this.itemsHierarchy, id);
                 if (typeof parentId !== "undefined") {
-                    Vue.delete(this.itemsHierarchy[parentId].children, itemId);
+                    Vue.delete(this.items[parentId].children, itemId);
                 }
+                Vue.delete(this.items, itemId);
             },
             addDescription({ value, parentId }) {
                 const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
-
-                Vue.set(this.descriptions, newDescriptionId, {
-                    id: newDescriptionId,
-                    name: value,
-                    states: []
-                });
                 const newDescription = {
-                    entry: this.descriptions[newDescriptionId],
-                    topLevel: typeof parentId === "undefined",
-                    children: {},
-                    open: false
+                    hid: "mydn-" + Object.keys(this.descriptions).length, id: newDescriptionId, name: value,states: [],
+                    topLevel: typeof parentId === "undefined", children: {}, open: false
                 };
+                Vue.set(this.descriptions, newDescriptionId, newDescription);
                 if(typeof parentId !== "undefined") {
-                    Vue.set(this.descriptionsHierarchy[parentId].children, newDescriptionId, newDescription);
-                } else {
-                    Vue.set(this.descriptionsHierarchy, newDescriptionId, newDescription);
+                    Vue.set(this.descriptions[parentId].children, newDescriptionId, newDescription);
                 }
             },
             deleteDescription({ parentId, id, itemId }) {
-                Vue.delete(this.descriptions, itemId);
-                Vue.delete(this.descriptionsHierarchy, itemId);
                 if (typeof parentId !== "undefined") {
-                    Vue.delete(this.descriptionsHierarchy[parentId].children, itemId);
+                    Vue.delete(this.descriptions[parentId].children, itemId);
                 }
+                Vue.delete(this.descriptions, itemId);
             },
             addState(description, value) {
                 description.states.push({
                     id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
+                    descriptorId: description.id,
                     name: value
                 });
             },
@@ -227,9 +187,7 @@ function main() {
             resetData() {
                 Vue.set(this.$data, "tabs", defaultData.tabs);
                 Vue.set(this.$data, "items", defaultData.items);
-                Vue.set(this.$data, "itemsHierarchy", defaultData.itemsHierarchy);
                 Vue.set(this.$data, "descriptions", defaultData.descriptions);
-                Vue.set(this.$data, "descriptionsHierarchy", defaultData.descriptionsHierarchy);
             },
             importData() {
                 const dataImport = document.getElementById("import-data");
@@ -241,21 +199,17 @@ function main() {
 
                 (async () => {
                     const {
-                        items, itemsHierarchy,
-                        descriptors, descriptorsHierarchy
+                        items,
+                        descriptors,
                     } = await SDD.load(file);
                     Vue.set(this.$data, "items", items);
-                    Vue.set(this.$data, "itemsHierarchy", itemsHierarchy);
                     Vue.set(this.$data, "descriptions", descriptors);
-                    Vue.set(this.$data, "descriptionsHierarchy", descriptorsHierarchy);
                 })();
             },
             exportData() {
                 const xml = SDD.save({
                     items: this.items,
-                    itemsHierarchy: this.itemsHierarchy,
                     descriptors: this.descriptions,
-                    descriptorsHierarchy: this.descriptionsHierarchy,
                 });
                 download("export.sdd.xml",`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML);
             }

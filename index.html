@@ -34,7 +34,7 @@
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 scroll">
             <nav v-if="showLeftMenu" class="sidebar scroll medium-margin thin-border white-background">
-                <tree-menu editable="true" v-if="selectedTab == 0" :items="itemsHierarchy" name="item" v-model="selectedItem"
+                <tree-menu editable="true" v-if="selectedTab == 0" :items="items" name="item" v-model="selectedItem"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem">
                 </tree-menu>

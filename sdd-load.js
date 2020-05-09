@@ -57,10 +57,10 @@
     }
 
     function getDatasetItems(dataset, descriptors, imagesById, statesById) {
-        const codedDescriptions = dataset.querySelectorAll("CodedDescriptions > CodedDescription");
         const taxons = {};
+        const childrenByHid = new Map();
 
-        for (const codedDescription of codedDescriptions) {
+        for (const codedDescription of dataset.querySelectorAll("CodedDescriptions > CodedDescription")) {
             const scope = codedDescription.querySelector("Scope");
             const taxonName = scope.querySelector("TaxonName");
             const representation = codedDescription.querySelector("Representation");
@@ -86,9 +86,14 @@
             let details = removeFromDescription(detailText, [
                     "NV", "Sense", "N° Herbier", "Herbarium Picture"
                 ])?.replace(floreRe, "");
-            
+            const taxonNode = dataset.querySelector(`TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName[ref=${taxonId}]`);
+            const parentHid = taxonNode.parentNode.querySelector("Parent")?.getAttribute("ref");
+            const hid = taxonNode.parentNode.getAttribute("id");
+
             taxons[taxonId] = {
+                type: "taxon",
                 id: taxonId,
+                hid,
                 name: label.textContent.trim(),
                 vernacularName, meaning, noHerbier, herbariumPicture, fasc, page,
                 detail: extractInterestingText(details ?? ""),
@@ -96,60 +101,25 @@
                 descriptions: Array.from(categoricals).map(categorical => ({
                     descriptor: descriptors[categorical.getAttribute("ref")],
                     states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])
-                }))
+                })),
+                parentId: null,
+                topLevel: !parentHid,
+                open: false,
+                children: {},
             };
-        }
-        return taxons;
-    }
-
-    function getDatasetItemsHierarchy(dataset, items) {
-        const itemsHierarchy = {};
-
-        const taxonHierarchies = dataset.querySelectorAll("TaxonHierarchies > TaxonHierarchy");
-
-        for (const taxonHierarchy of taxonHierarchies) {
-            const nodes = taxonHierarchy.querySelectorAll("Nodes > Node");
-
-            for (const node of nodes) {
-                const parentRef = node.querySelector("Parent")?.getAttribute("ref");
-                const taxonRef = node.querySelector("TaxonName").getAttribute("ref");
-                const alreadyExistingEntry = itemsHierarchy[node.getAttribute("id")];
-
-                if (typeof alreadyExistingEntry !== "undefined") {
-                    // [adj.1] Adjust properties that were unknown at item creation time
-                    alreadyExistingEntry.parentId = parentRef;
-                    alreadyExistingEntry.entry = items[taxonRef];
-                    alreadyExistingEntry.topLevel = !parentRef;
-                }
-
-                const hierarchyItem = alreadyExistingEntry ?? {
-                    id: node.getAttribute("id"),
-                    parentId: parentRef,
-                    entry: items[taxonRef],
-                    topLevel: !parentRef,
-                    children: {},
-                    open: false
-                };
-                itemsHierarchy[node.getAttribute("id")] = hierarchyItem;
-
-                if (!hierarchyItem.topLevel) {
-                    const parentTaxon = itemsHierarchy[parentRef];
-
-                    if (typeof parentTaxon === "undefined") {
-                        itemsHierarchy[parentRef] = {
-                            id: parentRef,
-                            entry: undefined, // We don't know yet (see [adj.1])
-                            topLevel: undefined, // We don't know yet (see [adj.1])
-                            children: {},
-                            open: false
-                        };
-                    }
-                    itemsHierarchy[parentRef].children[taxonRef] = hierarchyItem;
-                }
+            if (!!parentHid) {
+                const children = childrenByHid.get(parentHid) ?? {};
+                children[taxonId] = taxons[taxonId];
+                childrenByHid.set(parentHid, children);
             }
         }
-
-        return itemsHierarchy;
+        for (const taxon of Object.values(taxons)) {
+            taxon.children = childrenByHid.get(taxon.hid) ?? {};
+            for (const child of Object.values(taxon.children)) {
+                child.parentId = taxon.id;
+            }
+        }
+        return taxons;
     }
 
     function getDescriptorFromCharRepresentation(character, representation, imagesById) {
@@ -158,16 +128,21 @@
         const mediaObjects = Array.from(character.getElementsByTagName("MediaObject"));
 
         return {
+            type: "character",
+            parentId: null,
             id: character.getAttribute("id"),
             name: label?.textContent?.trim(),
             detail: detail?.textContent?.trim(),
             states: [],
+            photos: mediaObjects.map(m => imagesById.get(m.getAttribute("ref"))),
             inapplicableStates: [],
-            photos: mediaObjects.map(m => imagesById.get(m.getAttribute("ref")))
+            open: true,
+            topLevel: true,
+            children: {},
         };        
     }
 
-    function getDatasetDescriptors(dataset, imagesById) {
+    function getDatasetDescriptors(dataset, imagesById, concepts) {
         const descriptors = {}, statesById = {};
 
         const characters = dataset.querySelectorAll("Characters > CategoricalCharacter");
@@ -200,68 +175,26 @@
             descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation, imagesById);
         }
 
-        return [descriptors, statesById];
-    }
-
-    function getDatasetDescriptiveConcepts(dataset) {
-        const concepts = {};
-        const descriptiveConcepts = dataset.querySelectorAll("DescriptiveConcepts > DescriptiveConcept");
-
-        for (const descriptiveConcept of descriptiveConcepts) {
-            const representation = descriptiveConcept.querySelector("Representation");
-            const label = representation.querySelector("Label");
-
-            concepts[descriptiveConcept.getAttribute("id")] = {
-                id: descriptiveConcept.getAttribute("id"),
-                name: label.textContent.trim()
-            };
-        }
-        return concepts;
-    }
-
-    function getDatasetDescriptorsHierarchy(dataset, concepts, descriptors, statesById) {
-        const descriptorsHierarchy = {};
-
-        const characterTrees = dataset.querySelectorAll("CharacterTrees > CharacterTree");
+        const characterTrees = dataset.querySelectorAll("CharacterTrees > CharacterTree") ?? [];
 
         for (const characterTree of characterTrees) {
-            for (const node of characterTree.querySelectorAll("Nodes > Node")) {
-                const descriptiveConcept = node.querySelector("DescriptiveConcept");
-                const entry = {
-                    id: node.getAttribute("id"),
-                    entry: concepts[descriptiveConcept.getAttribute("ref")],
-                    type: "concept",
-                    topLevel: true,
-                    children: {},
-                    open: false
-                };
-                descriptorsHierarchy[node.getAttribute("id")] = entry;
-            }
             for (const charNode of characterTree.querySelectorAll("Nodes > CharNode")) {
-                const parent = charNode.querySelector("Parent");
-                const character = charNode.querySelector("Character");
+                const characterRef = charNode.querySelector("Character").getAttribute("ref");
                 const inapplicableStates = charNode.querySelectorAll("DependencyRules > InapplicableIf > State") ?? [];
+                const descriptor = descriptors[characterRef];
                 
                 for (const state of inapplicableStates) {
-                    descriptors[character.getAttribute("ref")].inapplicableStates.push(statesById[state.getAttribute("ref")]);
+                    const stateDescription = statesById[state.getAttribute("ref")];
+                    descriptor.inapplicableStates.push(stateDescription);
+                    descriptor.parentId = stateDescription.descriptorId;
                 }
-
-                const menuItem = {
-                    parentId: parent?.getAttribute("ref"),
-                    entry: descriptors[character?.getAttribute("ref")],
-                    type: "character",
-                    topLevel: parent === null,
-                    children: {},
-                    open: false
-                };
-                descriptorsHierarchy[character.getAttribute("ref")] = menuItem;
-
-                if (!menuItem.topLevel) {
-                    descriptorsHierarchy[parent.getAttribute("ref")].children[character.getAttribute("ref")] = menuItem;
+                descriptor.topLevel = descriptor.inapplicableStates.length === 0;
+                if (!descriptor.topLevel) {
+                    descriptors[descriptor.parentId].children[descriptor.id] = descriptor;
                 }
             }
         }
-        return descriptorsHierarchy;
+        return [descriptors, statesById];
     }
 
     function loadXmlFile(file) {
@@ -284,10 +217,7 @@
         const node = xml.firstElementChild;
         
         const items = {};
-        const itemsHierarchy = {};
         const descriptors = {};
-        const concepts = {};
-        const descriptorsHierarchy = {};
         const statesById = {};
         
         for (const dataset of node.querySelectorAll("Dataset")) {
@@ -296,14 +226,11 @@
             
             Object.assign(descriptors, datasetDescriptors);
             Object.assign(statesById, datasetStatesById);
-            Object.assign(concepts, getDatasetDescriptiveConcepts(dataset));
-            Object.assign(descriptorsHierarchy, getDatasetDescriptorsHierarchy(dataset, concepts, descriptors, statesById));
             Object.assign(items, getDatasetItems(dataset, descriptors, imagesById, statesById));
-            Object.assign(itemsHierarchy, getDatasetItemsHierarchy(dataset, items));
         }
         return {
-            items, itemsHierarchy,
-            descriptors, descriptorsHierarchy
+            items,
+            descriptors,
         };
     }
 
