@@ -300,6 +300,15 @@
         const concepts = {};
         const descriptorsHierarchy = {};
         const statesById = {};
+
+        const taxonE = Array.from(xml.querySelectorAll("TaxonNames > TaxonName")).map(e => e.getAttribute("id"));
+        const nodesE = Array.from(xml.querySelectorAll("TaxonHierarchy > Nodes > Node > TaxonName")).map(e => e.getAttribute("ref"));
+
+        for (const te of taxonE) {
+            if (!nodesE.includes(te)) {
+                console.log("hierarchy missing", te);
+            }
+        }
         
         for (const dataset of node.getElementsByTagName("Dataset")) {
             const imagesById = getDatasetImagesById(dataset);

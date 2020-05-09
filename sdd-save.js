@@ -1,9 +1,4 @@
 (function () { "use strict";
-    function itemSort(it1, it2) {
-        const i1 = parseInt(it1.id.substring(1));
-        const i2 = parseInt(it2.id.substring(1));
-        return i1 - i2;
-    }
     function createRepresentation(xml, labelText, detailText, mediaObjectsRefs = [], role = undefined) {
         const representation = xml.createElement("Representation");
 
@@ -102,6 +97,20 @@
         }
 
         // Taxon Hierarchies
+        
+        // TODO: Data corruption check
+        // Rescue items missing a hierarchy, for whatever reason.
+        const hierarchiesTaxIds = Object.values(itemsHierarchy).map(h => h.entry.id);
+        for (const taxon of Object.values(items)) {
+            if (!hierarchiesTaxIds.includes(taxon.id)) {
+                itemsHierarchy["thx-" + taxon.id] = {
+                    id: "thx-" + taxon.id,
+                    entry: taxon,
+                    topLevel: true,
+                    children: {}
+                };
+            }
+        }
 
         const taxonHierarchies = xml.createElement("TaxonHierarchies");
         const taxonHierarchy = xml.createElement("TaxonHierarchy");
@@ -115,8 +124,14 @@
         taxonHierarchies.appendChild(taxonHierarchy);
         dataset.appendChild(taxonHierarchies);
 
+        const alreadyTreatedTaxons = new Set();
+
         (function addItemHierarchyNode(hierarchies, parentRef) {
-            for (const [id, hierarchy] of Object.entries(hierarchies)) {
+            for (const hierarchy of Object.values(hierarchies)) {
+                if (alreadyTreatedTaxons.has(hierarchy.entry.id)) { // TODO: Data corruption check
+                    continue;
+                }
+                alreadyTreatedTaxons.add(hierarchy.entry.id);
                 const node = xml.createElement("Node");
 
                 if (typeof parentRef !== "undefined") {
@@ -157,7 +172,7 @@
             character.appendChild(createRepresentation(xml, descriptor.name, descriptor.detail, charMedias));
             const states = xml.createElement("States");
 
-            for (const state of Object.values(descriptor.states).sort(itemSort)) {
+            for (const state of Object.values(descriptor.states)) {
                 const stateDefinition = xml.createElement("StateDefinition");
                 const stateMedias = [];
 
@@ -281,7 +296,7 @@
                 ratings.appendChild(rating);
                 categorical.appendChild(ratings);
 
-                for (const state of description.states.sort(itemSort)) {
+                for (const state of description.states) {
                     const stateElement = xml.createElement("State");
                     stateElement.setAttribute("ref", state.id);
                     categorical.appendChild(stateElement);
