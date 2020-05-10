@@ -86,9 +86,9 @@
             let details = removeFromDescription(detailText, [
                     "NV", "Sense", "N° Herbier", "Herbarium Picture"
                 ])?.replace(floreRe, "");
-            const taxonNode = dataset.querySelector(`TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName[ref=${taxonId}]`);
-            const parentHid = taxonNode.parentNode.querySelector("Parent")?.getAttribute("ref");
-            const hid = taxonNode.parentNode.getAttribute("id");
+            const taxonNode = dataset.querySelector(`TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName[ref="${taxonId}"]`);
+            const parentHid = taxonNode?.parentNode.querySelector("Parent")?.getAttribute("ref");
+            const hid = taxonNode?.parentNode.getAttribute("id");
 
             taxons[taxonId] = {
                 type: "taxon",
