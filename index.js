@@ -1,6 +1,6 @@
 window.addEventListener("load", main);
 
-function main() {
+async function main() {
     function download(filename, text) {
         const element = document.createElement("a");
         element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
@@ -13,6 +13,8 @@ function main() {
 
         document.body.removeChild(element);
     }
+
+    const savedDataset = await DB.load();
 
     const defaultData = {
         showLeftMenu: true,
@@ -27,16 +29,13 @@ function main() {
             "Items",
             "Descriptors"
         ],
-        items: {},
-        itemsHierarchy: {},
-        descriptions: {},
-        descriptionsHierarchy: {},
+        items: savedDataset?.taxons ?? {},
+        descriptions: savedDataset?.descriptors ?? {},
     };
-    const savedData = JSON.parse(localStorage.getItem("data")) ?? defaultData;
 
     var app = new Vue({
         el: '#app',
-        data: savedData,
+        data: defaultData,
         computed: {
             selectedItemStates() {
                 const states = [];
@@ -182,7 +181,7 @@ function main() {
                 });
             },
             saveData() {
-                localStorage.setItem("data", JSON.stringify(this.$data));
+                DB.store({ id: 0, taxons: this.items, descriptors: this.descriptions });
             },
             resetData() {
                 Vue.set(this.$data, "tabs", defaultData.tabs);
