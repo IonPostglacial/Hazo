@@ -184,9 +184,8 @@ async function main() {
                 DB.store({ id: 0, taxons: this.items, descriptors: this.descriptions });
             },
             resetData() {
-                Vue.set(this.$data, "tabs", defaultData.tabs);
-                Vue.set(this.$data, "items", defaultData.items);
-                Vue.set(this.$data, "descriptions", defaultData.descriptions);
+                Vue.set(this.$data, "items", {});
+                Vue.set(this.$data, "descriptions", {});
             },
             importData() {
                 const dataImport = document.getElementById("import-data");
