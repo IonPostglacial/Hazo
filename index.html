@@ -90,7 +90,9 @@
                         <textarea id="item-detail " v-model="items[selectedItem].detail"></textarea><br/>
         
                         <label class="item-property">Description</label>
-                        <tree-menu :items="selectedItemDescriptorTree"></tree-menu>
+                        <tree-menu :items="selectedItemDescriptorTree"
+                            v-on:button-click="itemDescriptorsButtonClicked">
+                        </tree-menu>
                     </div>
                     <div class="thin-border medium-margin white-background scroll">
                         <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
@@ -117,37 +119,48 @@
                     </div>
                 </div>
             </section>
-            <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
-                <div class="vertical-flexbox" v-for="photo in descriptions[selectedDescription].photos">
-                    <img style="flex:1;overflow:hidden;object-fit:contain;" :src="photo">
+            <section v-if="showDescriptors" class="vertical-flexbox flex-grow-1">
+                <div v-if="showImageBox" class="horizontal-flexbox thin-border medium-margin white-background">
+                    <div v-for="photo, index in descriptions[selectedDescription].photos" class="vertical-flexbox space-between relative">
+                        <div v-on:click="deleteDescriptionPhoto(index)" class="close absolute-top-right"></div>
+                        <a class="small-margin thin-border" href="#1" v-on:click="openPhoto(photo)">
+                            <img class="medium-max-width" :src="photo">
+                        </a>
+                        <input type="text" v-model="descriptions[selectedDescription].photos[index]" />
+                    </div>
+                    <div class="vertical-flexbox space-between relative">
+                        <div class="small-margin thin-border">
+                            <img class="medium-max-width" :src="newDescriptionPhoto">
+                        </div>
+                        <add-item v-on:add-item="addDescriptionPhoto" v-model="newDescriptionPhoto"></add-item>
+                    </div>
                 </div>
-                <label class="item-property">Name</label>
-                <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
-
-                <label class="item-property">Photo</label>
-                <input type="text" v-model="descriptions[selectedDescription].photos[0]" /><br/>
-
-                <label class="item-property">Detail</label>
-                <textarea v-model="descriptions[selectedDescription].detail"></textarea><br/>
-
-                <div v-if="descriptions[selectedDescription].inapplicableStates.length > 0">
-                    <label>Inapplicable If</label>
+                <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
+                    <label class="item-property">Name</label>
+                    <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
+    
+                    <label class="item-property">Detail</label>
+                    <textarea v-model="descriptions[selectedDescription].detail"></textarea><br/>
+    
+                    <div v-if="descriptions[selectedDescription].inapplicableStates.length > 0">
+                        <label>Inapplicable If</label>
+                        <ul class="indented">
+                            <li class="medium-padding" v-for="state in descriptions[selectedDescription].inapplicableStates">
+                                {{ descriptions[state.descriptorId].name }} IS {{ state.name }}
+                            </li>
+                        </ul>
+                    </div>
+                    <label>States</label>
                     <ul class="indented">
-                        <li class="medium-padding" v-for="state in descriptions[selectedDescription].inapplicableStates">
-                            {{ descriptions[state.descriptorId].name }} IS {{ state.name }}
+                        <li class="medium-padding" v-for="state in descriptions[selectedDescription].states">
+                            <input type="text" v-model="state.name" />
+                        </li>
+                        <li>
+                            <add-item v-on:add-item="addState(descriptions[selectedDescription], $event)"></add-item>
                         </li>
                     </ul>
-                </div>
-                <label>States</label>
-                <ul class="indented">
-                    <li class="medium-padding" v-for="state in descriptions[selectedDescription].states">
-                        <input type="text" v-model="state.name" />
-                    </li>
-                    <li>
-                        <add-item v-on:add-item="addState(descriptions[selectedDescription], $event)"></add-item>
-                    </li>
                 </ul>
-            </ul>
+            </section>
         </div>
         <section class="medium-margin horizontal-flexbox space-between">
             <div>

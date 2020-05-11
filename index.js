@@ -24,6 +24,7 @@ async function main() {
         selectedItemDescriptor: 0,
         itemDescriptorSearch: "",
         newItemPhoto: "",
+        newDescriptionPhoto: "",
         selectedTab: 0,
         tabs: [
             "Items",
@@ -58,7 +59,8 @@ async function main() {
                     }
                 }
                 for (const descriptor of Object.values(dependencyTree)) {
-                    const descriptorStates = selectedItemDescriptions.find(d => d.descriptor.id === descriptor.id).states;
+                    const descriptorStates = selectedItemDescriptions.
+                        find(d => d.descriptor.id === descriptor.id).states.map(s => Object.assign({ type: "state" }, s));
 
                     if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                         descriptor.hidden = true;
@@ -123,6 +125,12 @@ async function main() {
             deleteItemPhoto(index) {
                 this.items[this.selectedItem].photos.splice(index, 1);
             },
+            addDescriptionPhoto(photo) {
+                this.descriptions[this.selectedDescription].photos.push(photo);
+            },
+            deleteDescriptionPhoto(index) {
+                this.descriptions[this.selectedDescription].photos.splice(index, 1);
+            },
             addItemState(e, state) {
                 const selectedItem = this.items[this.selectedItem];
                 const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
@@ -149,6 +157,12 @@ async function main() {
                 const selectedDescription = selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptor);
 
                 selectedDescription.states = [];
+            },
+            itemDescriptorsButtonClicked({ buttonId, parentId, id, itemId }) {
+                if (buttonId === "pushToChildren") {
+                    const item = this.items[itemId];
+                    console.log("push !!!");
+                }
             },
             deleteItem({ parentId, id, itemId }) {
                 if (typeof parentId !== "undefined") {
