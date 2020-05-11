@@ -28,7 +28,7 @@
             
                 const datasets = transaction.objectStore("Datasets");
 
-                datasets.add(dataset); // TODO: Handle success, error
+                datasets.put(dataset); // TODO: Handle success, error
             },
         });
     }
