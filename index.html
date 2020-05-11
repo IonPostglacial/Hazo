@@ -36,17 +36,20 @@
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 scroll">
             <nav v-if="showLeftMenu" class="sidebar scroll medium-margin thin-border white-background">
-                <tree-menu editable="true" v-if="selectedTab == 0" :items="items" name="item" v-model="selectedItem"
+                <tree-menu editable="true" v-if="showItems" :items="items" name="item" v-model="selectedItem"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem">
                 </tree-menu>
-                <tree-menu editable="true" v-if="selectedTab == 1" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
+                <tree-menu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItem">
+                </tree-menu>
+                <tree-menu editable="true" v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
                     v-on:add-item="addDescription"
                     v-on:delete-item="deleteDescription">
                 </tree-menu>
             </nav>
-            <section v-if="showItems" class="vertical-flexbox flex-grow-1">
-                <image-box :photos="items[selectedItem].photos"
+            <section v-if="showItems && typeof items[selectedItem] !== 'undefined'" class="vertical-flexbox flex-grow-1">
+                <image-box v-if="showImageBox"
+                    :photos="items[selectedItem].photos"
                     editable="true"
                     v-on:add-photo="addItemPhoto"
                     v-on:set-photo="setItemPhoto"
@@ -88,32 +91,56 @@
                             v-on:button-click="itemDescriptorsButtonClicked">
                         </tree-menu>
                     </div>
-                    <div class="thin-border medium-margin white-background scroll">
-                        <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
-                            v-on:add-item="addDescription"
-                            v-on:delete-item="deleteDescription">
-                        </tree-menu>
-                    </div>
-                    <div class="thin-border medium-margin medium-padding white-background scroll">
-                        <div class="horizontal-flexbox" v-if="selectedItemDescriptor !== 0">
-                            <button v-on:click="addAllItemStates">Check All</button>
-                            <button v-on:click="removeAllItemStates"> Uncheck All</button>
-                        </div>
-                        <input type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
-                        <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
-                            <li class="horizontal-flexbox" v-for="state, stateIndex in descriptions[selectedItemDescriptor].states" v-if="state.name.startsWith(itemDescriptorSearch)">
-                                <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
-                                    :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s?.id)?.includes(state.id)">
-                                <input class="flex-grow-1" type="text" v-model="state.name" />
-                            </li>
-                            <li class="">
-                                <add-item v-on:add-item="addState(descriptions[selectedItemDescriptor], $event)"></add-item>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
             </section>
-            <section v-if="showDescriptors" class="vertical-flexbox flex-grow-1">
+            <section v-if="showItemDescriptors" class="vertical-flexbox flex-grow-1">
+                <div class="horizontal-flexbox flex-grow-1 scroll">
+                    <section class="vertical-flexbox flex-grow-1">
+                        <image-box v-if="showImageBox" :photos="items[selectedItem]?.photos"></image-box>
+                        <div class="horizontal-flexbox scroll">
+                            <div class="thin-border relative medium-margin medium-padding white-background flex-grow-1 scroll vertical-flexbox stretch-items">
+                                <table class="flex-grow-1">
+                                    <tr><th>Name</th><td>{{ items[selectedItem]?.name }}</td></tr>
+                                    <tr><th>Vernacular Nahe</td><td>{{ items[selectedItem]?.vernacularName }}</td></tr>
+                                    <tr><th>Meaning</th><td>{{ items[selectedItem]?.meaning }}</td></tr>
+                                    <tr><th>N° Hehbier</td><td>{{ items[selectedItem]?.noHerbier }}</td></tr>
+                                    <tr><th>Herbarium Pihture</td><td>{{ items[selectedItem]?.herbariumPicture }}</td></tr>
+                                    <tr><th>Fasc</th><td>{{ items[selectedItem]?.fasc }}</td></tr>
+                                    <tr><th>Page</th><td>{{ items[selectedItem]?.page }}</td></tr>
+                                    <tr><th>Detail</th><td>{{ items[selectedItem]?.detail }}</td></tr>
+                                </table>
+                            </div>
+                            <div class="thin-border medium-margin white-background scroll">
+                                <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
+                                    v-on:add-item="addDescription"
+                                    v-on:delete-item="deleteDescription">
+                                </tree-menu>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="vertical-flexbox flex-grow-1">
+                        <image-box v-if="showImageBox" :photos="descriptions[selectedItemDescriptor]?.photos"></image-box>
+                        <div class="thin-border medium-margin medium-padding white-background scroll">
+                            <div class="horizontal-flexbox" v-if="selectedItemDescriptor !== 0">
+                                <button v-on:click="addAllItemStates">Check All</button>
+                                <button v-on:click="removeAllItemStates"> Uncheck All</button>
+                            </div>
+                            <input type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
+                            <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
+                                <li class="horizontal-flexbox" v-for="state, stateIndex in descriptions[selectedItemDescriptor].states" v-if="state.name.startsWith(itemDescriptorSearch)">
+                                    <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
+                                        :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s?.id)?.includes(state.id)">
+                                    <input class="flex-grow-1" type="text" v-model="state.name" />
+                                </li>
+                                <li class="">
+                                    <add-item v-on:add-item="addState(descriptions[selectedItemDescriptor], $event)"></add-item>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+            </section>
+            <section v-if="showDescriptors && typeof descriptions[selectedDescription] !== 'undefined'" class="vertical-flexbox flex-grow-1">
                 <image-box v-if="showImageBox"
                     :photos="descriptions[selectedDescription].photos"
                     editable="true"

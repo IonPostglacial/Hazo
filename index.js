@@ -27,7 +27,8 @@ async function main() {
         newDescriptionPhoto: "",
         selectedTab: 0,
         tabs: [
-            "Items",
+            "Taxons",
+            "Taxons Descriptors",
             "Descriptors"
         ],
         items: savedDataset?.taxons ?? {},
@@ -75,10 +76,13 @@ async function main() {
                 return dependencyTree;
             },
             showItems() {
-                return this.selectedTab == 0 && typeof this.items[this.selectedItem] !== "undefined";
+                return this.selectedTab == 0;
+            },
+            showItemDescriptors() {
+                return this.selectedTab == 1;
             },
             showDescriptors() {
-                return this.selectedTab == 1 && typeof this.descriptions[this.selectedDescription] !== "undefined";
+                return this.selectedTab == 2;
             },
             descriptorsDependencyTree() {
                 return this.descriptions;
