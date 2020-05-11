@@ -60,7 +60,7 @@ async function main() {
                 }
                 for (const descriptor of Object.values(dependencyTree)) {
                     const descriptorStates = selectedItemDescriptions.
-                        find(d => d.descriptor.id === descriptor.id).states.map(s => Object.assign({ type: "state" }, s));
+                        find(d => d.descriptor.id === descriptor.id).states.map(s => Object.assign({ type: "state", parentId: s.descriptorId }, s));
 
                     if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                         descriptor.hidden = true;
@@ -160,8 +160,16 @@ async function main() {
             },
             itemDescriptorsButtonClicked({ buttonId, parentId, id, itemId }) {
                 if (buttonId === "pushToChildren") {
-                    const item = this.items[itemId];
-                    console.log("push !!!");
+                   const descriptor = this.descriptions[parentId];
+                   const state = descriptor.states.find(s => s.id === id);
+                   const item = this.items[this.selectedItem];
+                   
+                   for (const child of Object.values(item.children)) {
+                       const desc = child.descriptions.find(d => d.descriptor.id === descriptor.id);
+                       if (!desc.states.find(s => s.id === state.id)) {
+                            desc.states.push(Object.assign({}, state));
+                       }
+                   }
                 }
             },
             deleteItem({ parentId, id, itemId }) {

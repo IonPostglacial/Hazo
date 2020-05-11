@@ -24,7 +24,7 @@ Vue.component("tree-menu", {
                         <span :class="item.warning ? 'warning-color' : ''">{{ item.name }}</span>
                         <slot></slot>
                     </label>
-                    <button v-for="button in buttons" v-if="button.for === item.type" v-on:click="buttonClicked(button.id, item.parentId, item.id, item.id)">{{ button.label }}</button>
+                    <button class="background-color-1" v-for="button in buttons" v-if="button.for === item.type" v-on:click="buttonClicked(button.id, item.parentId, item.id, item.id)">{{ button.label }}</button>
                     <div v-if="editable" class="close" v-on:click="deleteItem(item.parentId, item.id, item.id)"></div>
                 </div>
                 <div v-if="Object.keys(item?.children ?? {}).length > 0" class="horizontal-flexbox start-aligned">
