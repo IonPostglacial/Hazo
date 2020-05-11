@@ -105,7 +105,28 @@ async function main() {
                     entry.open = false;
                 }                
             },
-            openPhoto(photo) {
+            addItemPhoto(photo) {
+                this.items[this.selectedItem].photos.push(photo);
+            },
+            setItemPhoto(index, photo) {
+                this.items[this.selectedItem].photos[index] = photo;
+            },
+            deleteItemPhoto(index) {
+                this.items[this.selectedItem].photos.splice(index, 1);
+            },
+            openItemPhoto(photo) {
+                window.open(photo, "_blank");
+            },
+            addDescriptionPhoto(photo) {
+                this.descriptions[this.selectedDescription].photos.push(photo);
+            },
+            setDescriptionPhoto(index, photo) {
+                this.descriptions[this.selectedDescription].photos[index] = photo;
+            },
+            deleteDescriptionPhoto(index) {
+                this.descriptions[this.selectedDescription].photos.splice(index, 1);
+            },
+            openDescriptionPhoto(photo) {
                 window.open(photo, "_blank");
             },
             addItem({ value, parentId }) {
@@ -163,7 +184,7 @@ async function main() {
                    const descriptor = this.descriptions[parentId];
                    const state = descriptor.states.find(s => s.id === id);
                    const item = this.items[this.selectedItem];
-                   
+
                    for (const child of Object.values(item.children)) {
                        const desc = child.descriptions.find(d => d.descriptor.id === descriptor.id);
                        if (!desc.states.find(s => s.id === state.id)) {

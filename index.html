@@ -11,6 +11,7 @@
     <script src="sdd-load.js"></script>
     <script src="sdd-save.js"></script>
     <script src="add-item.js"></script>
+    <script src="image-box.js"></script>
     <script src="tree-menu.js"></script>
     <script src="db-storage.js"></script>
     <script src="index.js"></script>
@@ -45,21 +46,13 @@
                 </tree-menu>
             </nav>
             <section v-if="showItems" class="vertical-flexbox flex-grow-1">
-                <div v-if="showImageBox" class="horizontal-flexbox thin-border medium-margin white-background">
-                    <div v-for="photo, index in items[selectedItem].photos" class="vertical-flexbox space-between relative">
-                        <div v-on:click="deleteItemPhoto(index)" class="close absolute-top-right"></div>
-                        <a class="small-margin thin-border" href="#1" v-on:click="openPhoto(photo)">
-                            <img class="medium-max-width" :src="photo">
-                        </a>
-                        <input type="text" v-model="items[selectedItem].photos[index]" />
-                    </div>
-                    <div class="vertical-flexbox space-between relative">
-                        <div class="small-margin thin-border">
-                            <img class="medium-max-width" :src="newItemPhoto">
-                        </div>
-                        <add-item v-on:add-item="addItemPhoto" v-model="newItemPhoto"></add-item>
-                    </div>
-                </div>
+                <image-box :photos="items[selectedItem].photos"
+                    editable="true"
+                    v-on:add-photo="addItemPhoto"
+                    v-on:set-photo="setItemPhoto"
+                    v-on:delete-photo="deleteItemPhoto"
+                    v-on:open-photo="openItemPhoto">
+                </image-box>
                 <div class="horizontal-flexbox start-align flex-grow-1 scroll">
                     <div class="thin-border medium-margin white-background scroll flex-grow-1">
                         <label class="item-property">Name</label>
@@ -121,21 +114,14 @@
                 </div>
             </section>
             <section v-if="showDescriptors" class="vertical-flexbox flex-grow-1">
-                <div v-if="showImageBox" class="horizontal-flexbox thin-border medium-margin white-background">
-                    <div v-for="photo, index in descriptions[selectedDescription].photos" class="vertical-flexbox space-between relative">
-                        <div v-on:click="deleteDescriptionPhoto(index)" class="close absolute-top-right"></div>
-                        <a class="small-margin thin-border" href="#1" v-on:click="openPhoto(photo)">
-                            <img class="medium-max-width" :src="photo">
-                        </a>
-                        <input type="text" v-model="descriptions[selectedDescription].photos[index]" />
-                    </div>
-                    <div class="vertical-flexbox space-between relative">
-                        <div class="small-margin thin-border">
-                            <img class="medium-max-width" :src="newDescriptionPhoto">
-                        </div>
-                        <add-item v-on:add-item="addDescriptionPhoto" v-model="newDescriptionPhoto"></add-item>
-                    </div>
-                </div>
+                <image-box v-if="showImageBox"
+                    :photos="descriptions[selectedDescription].photos"
+                    editable="true"
+                    v-on:add-photo="addDescriptionPhoto"
+                    v-on:set-photo="setDescriptionPhoto"
+                    v-on:delete-photo="deleteDescriptionPhoto"
+                    v-on:open-photo="openDescriptionPhoto">
+                </image-box>
                 <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
                     <label class="item-property">Name</label>
                     <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
