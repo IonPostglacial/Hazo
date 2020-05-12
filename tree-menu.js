@@ -1,6 +1,10 @@
 Vue.component("tree-menu", {
-    props: ["name", "items", "buttons", "parent", "editable"],
+    props: ["name", "items", "buttons", "parent", "editable", "name-field"],
     methods: {
+        getItemName(item) {
+            console.log(this.nameField ?? "name");
+            return item[this.nameField ?? "name"];
+        },
         addItem(value, parentId) {
             this.$emit("add-item", { value, parentId });
         },
@@ -21,7 +25,7 @@ Vue.component("tree-menu", {
                     </label>
                     <input type="radio" class="invisible" :value="item.id" :id="name + '-' + item.id" :name="name" v-on:input="$emit('input', $event.target.value)" />
                     <label class="blue-hover flex-grow-1 medium-padding" :for="name + '-' + item.id">
-                        <span :class="item.warning ? 'warning-color' : ''">{{ item.name }}</span>
+                        <span :class="item.warning ? 'warning-color' : ''">{{ getItemName(item) }}</span>
                         <slot></slot>
                     </label>
                     <button class="background-color-1" v-for="button in buttons" v-if="button.for === item.type" v-on:click="buttonClicked(button.id, item.parentId, item.id, item.id)">{{ button.label }}</button>
@@ -31,7 +35,7 @@ Vue.component("tree-menu", {
                     <div class="indentation-width"></div>
                     <div class="flex-grow-1">
                         <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.id" />
-                        <tree-menu :editable="editable" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent="hierarchyId">
+                        <tree-menu :editable="editable" :name-field="nameField" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent="hierarchyId">
                         </tree-menu>
                     </div>
                 </div>

@@ -32,6 +32,12 @@
             </div>
             <div class="medium-margin">
                 <button type="button" v-on:click="toggleImageBox">Image Box</button>
+                <div class="selector" v-for="lang, index in langs">
+                    <input v-model="selectedLang" :id="'lang-radio-' + index" class="selector-radio" name="lang-radio" :value="index" type="radio" />
+                    <label class="selector-label" :for="'lang-radio-' + index">
+                        {{ lang }}
+                    </label>
+                </div>
             </div>
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 scroll">
@@ -43,6 +49,7 @@
                 <tree-menu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItem">
                 </tree-menu>
                 <tree-menu editable="true" v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
+                    :name-field="nameField"
                     v-on:add-item="addDescription"
                     v-on:delete-item="deleteDescription">
                 </tree-menu>
@@ -60,7 +67,7 @@
                     <div class="thin-border medium-margin white-background scroll flex-grow-1">
                         <label class="item-property">Name</label>
                         <input type="text" v-model="items[selectedItem].name" /><br/>
-        
+
                         <label class="item-property">Vernacular Name</label>
                         <input type="text" v-model="items[selectedItem].vernacularName" /><br/>
         
@@ -150,8 +157,15 @@
                     v-on:open-photo="openDescriptionPhoto">
                 </image-box>
                 <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
-                    <label class="item-property">Name</label>
-                    <input type="text" v-model="descriptions[selectedDescription].name" /><br/>
+                    <label>Name</label>
+                    <table style="width: 100%;">
+                        <tr><th>FR</th><th>EN</th><th>CN</th></tr>
+                        <tr>
+                            <td><input type="text" v-model="descriptions[selectedDescription].name" /></td>
+                            <td><input type="text" v-model="descriptions[selectedDescription].nameEN" /></td>
+                            <td><input type="text" v-model="descriptions[selectedDescription].nameCN" /></td>
+                        </tr>
+                    </table>
     
                     <label class="item-property">Detail</label>
                     <textarea v-model="descriptions[selectedDescription].detail"></textarea><br/>

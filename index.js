@@ -31,6 +31,8 @@ async function main() {
             "Taxons Descriptors",
             "Descriptors"
         ],
+        langs: ["FR", "EN", "CN"],
+        selectedLang: 0,
         items: savedDataset?.taxons ?? {},
         descriptions: savedDataset?.descriptors ?? {},
     };
@@ -39,6 +41,13 @@ async function main() {
         el: '#app',
         data: defaultData,
         computed: {
+            nameField() {
+                switch(this.selectedLang) {
+                    case 0: return "name";
+                    case 1: return "nameEN";
+                    case 2: return "nameCN";
+                }
+            },
             selectedItemStates() {
                 const states = [];
 
