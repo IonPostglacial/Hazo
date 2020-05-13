@@ -116,6 +116,10 @@
                                     <tr><th>Page</th><td>{{ items[selectedItem]?.page }}</td></tr>
                                     <tr><th>Detail</th><td class="limited-width">{{ items[selectedItem]?.detail }}</td></tr>
                                 </table>
+                                <tree-menu :items="selectedItemDescriptorTree"
+                                    :buttons="[{ id: 'pushToChildren', for: 'state', label: 'Push' }]"
+                                    v-on:button-click="itemDescriptorsButtonClicked">
+                                </tree-menu>
                             </div>
                             <div class="thin-border medium-margin white-background scroll">
                                 <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
