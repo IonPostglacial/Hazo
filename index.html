@@ -103,9 +103,9 @@
             <section v-if="showItemDescriptors" class="vertical-flexbox flex-grow-1">
                 <div class="horizontal-flexbox flex-grow-1 scroll">
                     <section class="vertical-flexbox flex-grow-1">
-                        <image-box v-if="showImageBox" :photos="items[selectedItem]?.photos"></image-box>
                         <div class="horizontal-flexbox scroll">
                             <div class="thin-border relative medium-margin medium-padding white-background flex-grow-1 scroll vertical-flexbox stretch-items">
+                                <image-box v-if="showImageBox" :photos="items[selectedItem]?.photos"></image-box>
                                 <table class="flex-grow-1">
                                     <tr><th>Name</th><td>{{ items[selectedItem]?.name }}</td></tr>
                                     <tr><th>Vernacular Nahe</td><td>{{ items[selectedItem]?.vernacularName }}</td></tr>
@@ -122,6 +122,7 @@
                                 </tree-menu>
                             </div>
                             <div class="thin-border medium-margin white-background scroll">
+                                <image-box v-if="showImageBox" :photos="descriptions[selectedItemDescriptor]?.photos"></image-box>
                                 <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
                                     v-on:add-item="addDescription"
                                     v-on:delete-item="deleteDescription">
@@ -130,7 +131,6 @@
                         </div>
                     </section>
                     <section class="vertical-flexbox flex-grow-1">
-                        <image-box v-if="showImageBox" :photos="descriptions[selectedItemDescriptor]?.photos"></image-box>
                         <div class="thin-border medium-margin medium-padding white-background scroll">
                             <div class="horizontal-flexbox" v-if="selectedItemDescriptor !== 0">
                                 <button v-on:click="addAllItemStates">Check All</button>
