@@ -2,7 +2,6 @@ Vue.component("tree-menu", {
     props: ["name", "items", "buttons", "parent", "editable", "name-field"],
     methods: {
         getItemName(item) {
-            console.log(this.nameField ?? "name");
             return item[this.nameField ?? "name"];
         },
         addItem(value, parentId) {
