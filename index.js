@@ -14,8 +14,6 @@ async function main() {
         document.body.removeChild(element);
     }
 
-    const savedDataset = await DB.load();
-
     const defaultData = {
         showLeftMenu: true,
         showImageBox: true,
@@ -33,9 +31,14 @@ async function main() {
         ],
         langs: ["FR", "EN", "CN"],
         selectedLang: 0,
-        items: savedDataset?.taxons ?? {},
-        descriptions: savedDataset?.descriptors ?? {},
+        items: {},
+        descriptions: {},
     };
+
+    DB.load().then(savedDataset => {
+        defaultData.items = savedDataset?.taxons ?? defaultData.items;
+        defaultData.descriptions = savedDataset?.descriptors ?? defaultData.descriptions;
+    });
 
     var app = new Vue({
         el: '#app',
