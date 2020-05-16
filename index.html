@@ -40,7 +40,11 @@
                 </div>
             </div>
         </nav>
-        <div class="horizontal-flexbox start-align flex-grow-1 scroll">
+        <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text">
+            <img :src="bigImage"><br>
+            <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
+        </div>
+        <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
             <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
                 <tree-menu editable="true" v-if="showItems" :items="items" name="item" v-model="selectedItem"
                     v-on:add-item="addItem"
@@ -61,7 +65,7 @@
                     v-on:add-photo="addItemPhoto"
                     v-on:set-photo="setItemPhoto"
                     v-on:delete-photo="deleteItemPhoto"
-                    v-on:open-photo="openItemPhoto">
+                    v-on:open-photo="maximizeImage">
                 </image-box>
                 <div class="horizontal-flexbox start-align flex-grow-1 scroll">
                     <div class="thin-border medium-margin white-background scroll flex-grow-1">
@@ -100,30 +104,34 @@
                     </div>
                 </div>
             </section>
-            <section v-if="showItemDescriptors" class="vertical-flexbox flex-grow-1">
+            <section v-if="showItemDescriptors && typeof items[selectedItem] !== 'undefined'" class="vertical-flexbox flex-grow-1">
                 <div class="horizontal-flexbox flex-grow-1 scroll">
                     <section class="vertical-flexbox flex-grow-1">
                         <div class="horizontal-flexbox scroll">
-                            <div class="thin-border relative medium-margin medium-padding white-background flex-grow-1 scroll vertical-flexbox stretch-items">
-                                <image-box v-if="showImageBox" :photos="items[selectedItem]?.photos"></image-box>
-                                <table class="flex-grow-1">
+                            <div class="relative scroll vertical-flexbox stretch-items">
+                                <image-box class="scroll min-height-200" v-if="showImageBox"
+                                    v-on:open-photo="maximizeImage"
+                                    :photos="items[selectedItem]?.photos"></image-box>
+                                <table class="flex-grow-1 thin-border medium-margin medium-padding white-background ">
                                     <tr><th>Name</th><td>{{ items[selectedItem]?.name }}</td></tr>
-                                    <tr><th>Vernacular Nahe</td><td>{{ items[selectedItem]?.vernacularName }}</td></tr>
+                                    <tr><th>Vernacular Name</td><td>{{ items[selectedItem]?.vernacularName }}</td></tr>
                                     <tr><th>Meaning</th><td>{{ items[selectedItem]?.meaning }}</td></tr>
-                                    <tr><th>N° Hehbier</td><td>{{ items[selectedItem]?.noHerbier }}</td></tr>
-                                    <tr><th>Herbarium Pihture</td><td>{{ items[selectedItem]?.herbariumPicture }}</td></tr>
+                                    <tr><th>N° Herbier</td><td>{{ items[selectedItem]?.noHerbier }}</td></tr>
+                                    <tr><th>Herbarium Picture</td><td>{{ items[selectedItem]?.herbariumPicture }}</td></tr>
                                     <tr><th>Fasc</th><td>{{ items[selectedItem]?.fasc }}</td></tr>
                                     <tr><th>Page</th><td>{{ items[selectedItem]?.page }}</td></tr>
                                     <tr><th>Detail</th><td class="limited-width">{{ items[selectedItem]?.detail }}</td></tr>
                                 </table>
-                                <tree-menu :items="selectedItemDescriptorTree"
+                                <tree-menu class="thin-border medium-margin medium-padding white-background scroll" :items="selectedItemDescriptorTree"
                                     :buttons="[{ id: 'pushToChildren', for: 'state', label: 'Push' }]"
                                     v-on:button-click="itemDescriptorsButtonClicked">
                                 </tree-menu>
                             </div>
-                            <div class="thin-border medium-margin white-background scroll">
-                                <image-box v-if="showImageBox" :photos="descriptions[selectedItemDescriptor]?.photos"></image-box>
-                                <tree-menu editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
+                            <div class="vertical-flexbox">
+                                <image-box class="scroll min-height-200" v-if="showImageBox"
+                                    v-on:open-photo="maximizeImage"
+                                    :photos="descriptions[selectedItemDescriptor]?.photos"></image-box>
+                                <tree-menu class="thin-border medium-margin white-background scroll" editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
                                     v-on:add-item="addDescription"
                                     v-on:delete-item="deleteDescription">
                                 </tree-menu>
@@ -158,7 +166,7 @@
                     v-on:add-photo="addDescriptionPhoto"
                     v-on:set-photo="setDescriptionPhoto"
                     v-on:delete-photo="deleteDescriptionPhoto"
-                    v-on:open-photo="openDescriptionPhoto">
+                    v-on:open-photo="maximizeImage">
                 </image-box>
                 <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
                     <label>Name</label>

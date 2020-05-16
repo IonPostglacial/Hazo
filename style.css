@@ -3,7 +3,7 @@ html {
 }
 
 *, *:before, *:after {
-    box-sizing: inherit;
+    box-sizing: border-box;
 }
 
 body {
@@ -103,6 +103,10 @@ ul {
 
 .medium-max-width {
     max-width: 300px;
+}
+
+.medium-max-height {
+    max-height: 100px;
 }
 
 .scroll {
@@ -218,6 +222,14 @@ ul {
 .start-aligned {
     justify-content: flex-start;
     align-items: flex-start;
+}
+
+.wrap-flexbox {
+    flex-wrap: wrap;
+}
+
+.min-height-200 {
+    min-height: 200px;
 }
 
 .relative {

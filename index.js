@@ -24,6 +24,8 @@ async function main() {
         newItemPhoto: "",
         newDescriptionPhoto: "",
         selectedTab: 0,
+        bigImage: "",
+        showBigImage: false,
         tabs: [
             "Taxons",
             "Taxons Descriptors",
@@ -130,8 +132,13 @@ async function main() {
             deleteItemPhoto(index) {
                 this.items[this.selectedItem].photos.splice(index, 1);
             },
-            openItemPhoto(photo) {
-                window.open(photo, "_blank");
+            maximizeImage(photo) {
+                this.showBigImage = true;
+                this.bigImage = photo;
+            },
+            minimizeImage() {
+                this.showBigImage = false;
+                this.bigImage = "";
             },
             addDescriptionPhoto(photo) {
                 this.descriptions[this.selectedDescription].photos.push(photo);
@@ -141,9 +148,6 @@ async function main() {
             },
             deleteDescriptionPhoto(index) {
                 this.descriptions[this.selectedDescription].photos.splice(index, 1);
-            },
-            openDescriptionPhoto(photo) {
-                window.open(photo, "_blank");
             },
             addItem({ value, parentId }) {
                 const newItemId = "myt-" + Object.keys(this.items).length;
