@@ -220,11 +220,6 @@ ul {
     align-items: flex-start;
 }
 
-.sidebar > ul,
-.menu > ul {
-    padding: 4px;
-}
-
 .relative {
     position: relative;
 }
