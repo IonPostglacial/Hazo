@@ -40,8 +40,8 @@
                 </div>
             </div>
         </nav>
-        <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text">
-            <img :src="bigImage"><br>
+        <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
+            <img class="max-width-screen max-height-screen" :src="bigImage"><br>
             <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
         </div>
         <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">

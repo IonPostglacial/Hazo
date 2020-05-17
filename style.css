@@ -38,6 +38,14 @@ ul {
     height: 100vh;
 }
 
+.max-width-screen {
+    max-width: 90vw;
+}
+
+.max-height-screen {
+    max-height: 80vh;
+}
+
 .background-color-1 {
     background-color: rgb(37, 113, 212);
     color: white;
