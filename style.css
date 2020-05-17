@@ -46,6 +46,18 @@ ul {
     max-height: 80vh;
 }
 
+.bold {
+    font-weight: bold;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.min-width-s {
+    min-width: 200px;
+}
+
 .background-color-1 {
     background-color: rgb(37, 113, 212);
     color: white;
