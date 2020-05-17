@@ -60,6 +60,7 @@
             </nav>
             <section v-if="showItems && typeof items[selectedItem] !== 'undefined'" class="vertical-flexbox flex-grow-1">
                 <image-box v-if="showImageBox"
+                    class="scroll min-height-300"
                     :photos="items[selectedItem].photos"
                     editable="true"
                     v-on:add-photo="addItemPhoto"
@@ -165,10 +166,12 @@
                     <section class="vertical-flexbox flex-grow-1">
                         <div class="thin-border medium-margin medium-padding white-background scroll">
                             <div class="horizontal-flexbox" v-if="selectedItemDescriptor !== 0">
-                                <button v-on:click="addAllItemStates">Check All</button>
-                                <button v-on:click="removeAllItemStates"> Uncheck All</button>
+                                <button class="background-color-ok" v-on:click="addAllItemStates">Check All</button>
+                                <button class="background-color-ko" v-on:click="removeAllItemStates"> Uncheck All</button>
                             </div>
-                            <input type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
+                            <label class="horizontal-flexbox" v-if="selectedItemDescriptor !== 0"><div>&nbsp;</div>
+                                <input class="flex-grow-1" placeholder="Filter" type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
+                            </label>
                             <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
                                 <li class="horizontal-flexbox" v-for="state, stateIndex in descriptions[selectedItemDescriptor].states" v-if="state.name.startsWith(itemDescriptorSearch)">
                                     <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
@@ -233,8 +236,8 @@
                 <button type="button" v-on:click="exportData">Export</button>
             </div>
             <div>
-                <button type="button" v-on:click="saveData">Save</button>
-                <button type="button" v-on:click="resetData">Reset</button>
+                <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
+                <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
             </div>
             <a href="./merger.html">Merger</a>
         </section>

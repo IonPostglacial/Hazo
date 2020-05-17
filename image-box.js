@@ -21,7 +21,7 @@ Vue.component("image-box", {
         },
     },
     template: `
-        <div class="horizontal-flexbox thin-border medium-margin white-background wrap-flexbox">
+        <div class="centered-text thin-border medium-margin white-background wrap-flexbox">
             <div v-for="photo, index in photos" class="vertical-flexbox space-between relative">
                 <div v-if="editable" v-on:click="deletePhoto(index)" class="close absolute-top-right"></div>
                 <a class="small-margin thin-border" href="#1" v-on:click="openPhoto(photo)">

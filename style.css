@@ -18,10 +18,15 @@ th {
 button {
 	min-height: 28px;
 	padding: 8px;
+    margin: 2px;
 	border: none;
 	background-color: white;
 	border-radius: 5px;
-	box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+    cursor: pointer;
 }
 
 button:active {
@@ -42,10 +47,6 @@ ul {
     max-width: 90vw;
 }
 
-.max-height-screen {
-    max-height: 80vh;
-}
-
 .bold {
     font-weight: bold;
 }
@@ -61,6 +62,16 @@ ul {
 .background-color-1 {
     background-color: rgb(37, 113, 212);
     color: white;
+}
+
+.background-color-ok {
+    background-color: rgb(47, 122, 44);
+    color: white;
+}
+
+.background-color-ko {
+    background-color: rgb(189, 34, 55);
+    color: white;   
 }
 
 .invisible {
@@ -126,7 +137,7 @@ ul {
 }
 
 .medium-max-height {
-    max-height: 100px;
+    max-height: 200px;
 }
 
 .scroll {
@@ -250,6 +261,14 @@ ul {
 
 .min-height-200 {
     min-height: 200px;
+}
+
+.min-height-300 {
+    min-height: 300px;
+}
+
+.max-height-screen {
+    max-height: 80vh;
 }
 
 .relative {
