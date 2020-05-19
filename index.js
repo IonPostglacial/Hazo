@@ -69,13 +69,14 @@ async function main() {
                 const selectedItemDescriptions = this.items[this.selectedItem].descriptions;
                 const dependencyTree = JSON.parse(JSON.stringify(this.descriptions));
                 for (const description of selectedItemDescriptions) {
-                    for (const state of description.states) {
+                    for (const state of description?.states ?? []) {
                         itemStatesIds.push(state.id);
                     }
                 }
                 for (const descriptor of Object.values(dependencyTree)) {
-                    const descriptorStates = selectedItemDescriptions.
-                        find(d => d.descriptor.id === descriptor.id).states.map(s => Object.assign({ type: "state", parentId: s.descriptorId }, s));
+                    const selectedDescription = selectedItemDescriptions.find(d => d.descriptor.id === descriptor.id);
+                    if (typeof selectedDescription === "undefined") continue;
+                    const descriptorStates = selectedDescription.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId }, s));
 
                     if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                         descriptor.hidden = true;
