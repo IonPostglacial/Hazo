@@ -141,8 +141,9 @@
 
                 states.appendChild(stateDefinition);
             }
-
-            character.appendChild(states);
+            if (states.children.length > 0) {
+                character.appendChild(states);
+            }
             characters.appendChild(character);
         }
         
@@ -187,11 +188,9 @@
                     const character = xml.createElement("Character");
                     character.setAttribute("ref", descriptorHierarchy.id);
                     
-                    charNode.appendChild(character);
-
                     const dependencyRules = xml.createElement("DependencyRules");
                     const inapplicableIf = xml.createElement("InapplicableIf");
-        
+                    
                     for (const inapplicableState of descriptorHierarchy.inapplicableStates ?? []) {
                         const state = xml.createElement("State");
                         state.setAttribute("ref", inapplicableState.id);
@@ -201,6 +200,7 @@
                         dependencyRules.appendChild(inapplicableIf);
                         charNode.appendChild(dependencyRules);
                     }
+                    charNode.appendChild(character);
                     nodesElement.appendChild(charNode);
                 }
                 if (typeof parentRef !== "undefined") {

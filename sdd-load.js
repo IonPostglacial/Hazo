@@ -161,7 +161,7 @@
                 statesById[state.getAttribute("id")] = {
                     id: state.getAttribute("id"),
                     descriptorId: character.getAttribute("id"),
-                    name: label.textContent.trim().replace(/[\s\n]/, "")
+                    name: label.textContent.trim()
                 };
                 descriptors[character.getAttribute("id")].states.push(statesById[state.getAttribute("id")]);
             }
