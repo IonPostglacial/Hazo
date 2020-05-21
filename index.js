@@ -32,6 +32,7 @@ async function main() {
             "Descriptors"
         ],
         langs: ["FR", "EN", "CN"],
+        taxonNameType: "scientific",
         selectedLang: 0,
         items: {},
         descriptions: {},
@@ -51,6 +52,13 @@ async function main() {
                     case 0: return "name";
                     case 1: return "nameEN";
                     case 2: return "nameCN";
+                }
+            },
+            taxonNameField() {
+                switch(this.taxonNameType) {
+                    case "scientific": return "name";
+                    case "vernacular": return "vernacularName";
+                    default: return "name"; 
                 }
             },
             selectedItemStates() {

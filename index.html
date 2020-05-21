@@ -32,6 +32,10 @@
             </div>
             <div class="medium-margin">
                 <button type="button" v-on:click="toggleImageBox">Image Box</button>
+                <select v-model="taxonNameType">
+                    <option value="scientific">Scientific</option>
+                    <option value="vernacular">Vernacular</option>
+                </select>
                 <div class="selector" v-for="lang, index in langs">
                     <input v-model="selectedLang" :id="'lang-radio-' + index" class="selector-radio" name="lang-radio" :value="index" type="radio" />
                     <label class="selector-label" :for="'lang-radio-' + index">
@@ -47,10 +51,11 @@
         <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
             <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
                 <tree-menu editable="true" v-if="showItems" :items="items" name="item" v-model="selectedItem"
+                    :name-field="taxonNameField"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem">
                 </tree-menu>
-                <tree-menu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItem">
+                <tree-menu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItem" :name-field="taxonNameField">
                 </tree-menu>
                 <tree-menu editable="true" v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
                     :name-field="nameField"
