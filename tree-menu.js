@@ -18,7 +18,7 @@ Vue.component("tree-menu", {
         <ul :class="'menu ' + (!parent ? 'medium-padding' : '')">
             <li v-for="item, hierarchyId in items" v-if="!item.hidden && (parent !== undefined || item.topLevel)">
                 <div class="horizontal-flexbox start-aligned">
-                    <label class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" v-if="Object.keys(item?.children ?? {}).length > 0" :for="name + '-open-' + item.id">
+                    <label class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" :for="name + '-open-' + item.id">
                         <div v-if="item.open" class="bottom-arrow">&nbsp</div>
                         <div v-if="!item.open" class="left-arrow">&nbsp;</div>
                     </label>
@@ -30,7 +30,7 @@ Vue.component("tree-menu", {
                     <button class="background-color-1" v-for="button in buttons" v-if="button.for === item.type" v-on:click="buttonClicked(button.id, item.parentId, item.id, item.id)">{{ button.label }}</button>
                     <div v-if="editable" class="close" v-on:click="deleteItem(item.parentId, item.id, item.id)"></div>
                 </div>
-                <div v-if="Object.keys(item?.children ?? {}).length > 0" class="horizontal-flexbox start-aligned">
+                <div class="horizontal-flexbox start-aligned">
                     <div class="indentation-width"></div>
                     <div class="flex-grow-1">
                         <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.id" />

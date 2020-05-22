@@ -14,7 +14,18 @@ async function main() {
         document.body.removeChild(element);
     }
 
+    function loadBase(id) {
+        DB.load(id).then(savedDataset => {
+            defaultData.items = savedDataset?.taxons ?? {};
+            defaultData.descriptions = savedDataset?.descriptors ?? {};
+        });
+    }
+
+    const databaseIds = await DB.list();
+
     const defaultData = {
+        databaseIds,
+        selectedBase: 0,
         showLeftMenu: true,
         showImageBox: true,
         selectedItem: 0,
@@ -39,10 +50,7 @@ async function main() {
         descriptions: {},
     };
 
-    DB.load().then(savedDataset => {
-        defaultData.items = savedDataset?.taxons ?? defaultData.items;
-        defaultData.descriptions = savedDataset?.descriptors ?? defaultData.descriptions;
-    });
+    loadBase(0);
 
     var app = new Vue({
         el: '#app',
@@ -113,6 +121,15 @@ async function main() {
             }
         },
         methods: {
+            loadDB(id) {
+                loadBase(id);
+            },
+            createNewDatabase() {
+                const newDatabaseId = this.databaseIds.length;
+                this.databaseIds.push(newDatabaseId)
+                this.selectedBase = newDatabaseId;
+                this.resetData();
+            },
             toggleLeftMenu() {
                 this.showLeftMenu = !this.showLeftMenu;
             },
@@ -254,7 +271,7 @@ async function main() {
                 });
             },
             saveData() {
-                DB.store({ id: 0, taxons: this.items, descriptors: this.descriptions });
+                DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions });
             },
             resetData() {
                 Vue.set(this.$data, "items", {});

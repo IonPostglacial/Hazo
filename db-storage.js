@@ -23,7 +23,7 @@
                 
                 transaction.oncomplete = function () {
                     // TODO: Handle success, error
-                    console.log("write successful");
+                    console.log(`Write to dataset #${dataset.id} successful`);
                 };
             
                 const datasets = transaction.objectStore("Datasets");
@@ -33,7 +33,7 @@
         });
     }
 
-    function dbLoad() {
+    function dbList() {
         return new Promise(function (resolve, reject) {
             const rq = Object.assign(indexedDB.open(DB_NAME, DB_VERSION), {
                 onupgradeneeded() {
@@ -49,12 +49,45 @@
                     
                     transaction.oncomplete = function () {
                         // TODO: Handle success, error
-                        console.log("read successful");
+                        console.log("read dataset successful");
                     };
                 
                     const datasets = transaction.objectStore("Datasets");
     
-                    const read = datasets.get(0); // TODO: Handle success, error
+                    const list = datasets.getAllKeys(); // TODO: Handle success, error
+                    list.onsuccess = function () {
+                        resolve(list.result);
+                    };
+                },
+                onerror() {
+                    reject(rq.result);
+                }
+            });
+        });
+    }
+
+    function dbLoad(id) {
+        return new Promise(function (resolve, reject) {
+            const rq = Object.assign(indexedDB.open(DB_NAME, DB_VERSION), {
+                onupgradeneeded() {
+                    createStore(rq.result);
+                },
+                onerror() {
+                    alert("Impossible to store data on your browser.");
+                },
+                onsuccess() {
+                    const db = rq.result;
+    
+                    const transaction = db.transaction("Datasets", "readonly");
+                    
+                    transaction.oncomplete = function () {
+                        // TODO: Handle success, error
+                        console.log(`Read from dataset #${id} successful`);
+                    };
+                
+                    const datasets = transaction.objectStore("Datasets");
+    
+                    const read = datasets.get(id); // TODO: Handle success, error
                     read.onsuccess = function () {
                         resolve(read.result);
                     };
@@ -68,6 +101,7 @@
 
     window.DB = {
         store: dbStore,
+        list: dbList,
         load: dbLoad,
     }
 }());
