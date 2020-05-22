@@ -26,6 +26,7 @@ async function main() {
         selectedTab: 0,
         bigImage: "",
         showBigImage: false,
+        showMoreActions: false,
         tabs: [
             "Taxons",
             "Taxons Descriptors",
@@ -260,9 +261,34 @@ async function main() {
                 Vue.set(this.$data, "descriptions", {});
             },
             importData() {
-                const dataImport = document.getElementById("import-data");
+                document.getElementById("import-data").click();
+            },
+            completeData() {
+                document.getElementById("complete-data").click();
+            },
+            fileComplete(e) {
+                const file = e.target.files[0];
 
-                dataImport.click();
+                (async () => {
+                    const { items } = await SDD.load(file);
+                    const properties = [
+                        "name", "nameEN", "nameCN", "vernacularName", "meaning",
+                        "noHerbier", "herbariumPicture", "fasc", "page"
+                    ];
+                    for (const taxon of Object.values(items)) {
+                        const existingTaxon = this.items[taxon.id];
+                        if (typeof existingTaxon === "undefined") {
+                            Vue.set(this.items, taxon.id, taxon);
+                            continue;
+                        }
+                        for (const property of properties) {
+                            const newValue = taxon[property];
+                            if (typeof newValue !== "undefined" && newValue !== null && newValue !== "") {
+                                existingTaxon[property] = newValue;
+                            }
+                        }
+                    }
+                })();
             },
             fileUpload(e) {
                 const file = e.target.files[0];

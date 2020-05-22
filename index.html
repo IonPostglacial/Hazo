@@ -239,12 +239,19 @@
                 <button type="button" v-on:click="importData">Import</button>
                 <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
                 <button type="button" v-on:click="exportData">Export</button>
+                <label class="inline-block">
+                    <input v-model="showMoreActions" class="invisible hide-next-unchecked" type="checkbox" name="more-actions" id="more-actions">
+                    <button href="#1" v-on:click="completeData">Merge Taxons Info</button>
+                    <div v-if="!showMoreActions" class="button">More</div>
+                    <div v-if="showMoreActions" class="button">Less</div>
+                </label>
+                <input class="invisible" v-on:change="fileComplete" type="file" accept="application/xml" name="complete-data" id="complete-data">
             </div>
             <div>
                 <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
                 <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
             </div>
-            <a href="./merger.html">Merger</a>
+            <a class="button" href="./merger.html">Merger</a>
         </section>
     </div>
 </body>
