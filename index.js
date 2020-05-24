@@ -16,7 +16,8 @@ async function main() {
     }
 
     function loadBase(id) {
-        DB.load(id).then(savedDataset => {
+        DB.load(id | 0).then(savedDataset => {
+            console.log(savedDataset);
             defaultData.items = savedDataset?.taxons ?? {};
             defaultData.descriptions = savedDataset?.descriptors ?? {};
         });
@@ -124,6 +125,7 @@ async function main() {
         },
         methods: {
             loadDB(id) {
+                this.selectedBase = id;
                 loadBase(id);
             },
             createNewDatabase() {

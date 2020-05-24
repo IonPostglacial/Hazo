@@ -257,8 +257,8 @@
             </div>
             <div>
                 <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
-                <select v-model="selectedBase">
-                    <option v-for="databaseId in databaseIds" :value="databaseId" v-on:click="loadDB(databaseId)">Database #{{ databaseId }}</option>
+                <select v-on:change="loadDB($event.target.value)">
+                    <option v-for="databaseId in databaseIds" :value="databaseId">Database #{{ databaseId }}</option>
                 </select>
                 <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
                 <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
