@@ -85,9 +85,9 @@ async function main() {
             },
             selectedItemDescriptorTree() {
                 const itemStatesIds = [];
-                const selectedItemDescriptions = this.items[this.selectedItem].descriptions;
+                const selectedItemDescriptions = this.items[this.selectedItem].descriptions ?? [];
                 const dependencyTree = JSON.parse(JSON.stringify(this.descriptions));
-                for (const description of selectedItemDescriptions ?? []) {
+                for (const description of selectedItemDescriptions) {
                     for (const state of description?.states ?? []) {
                         itemStatesIds.push(state.id);
                     }
