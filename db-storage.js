@@ -49,15 +49,20 @@
                     
                     transaction.oncomplete = function () {
                         // TODO: Handle success, error
-                        console.log("read dataset successful");
+                        console.log("Listing datasets successful");
                     };
                 
                     const datasets = transaction.objectStore("Datasets");
     
-                    const list = datasets.getAllKeys(); // TODO: Handle success, error
-                    list.onsuccess = function () {
-                        resolve(list.result);
-                    };
+                    const list = Object.assign(datasets.getAllKeys(), {
+                        onsuccess() {
+                            resolve(list.result);
+                        },
+                        onerror() {
+                            console.log("Listing datasets failed.");
+                            reject(rq.result);
+                        }
+                    });
                 },
                 onerror() {
                     reject(rq.result);
@@ -87,10 +92,15 @@
                 
                     const datasets = transaction.objectStore("Datasets");
     
-                    const read = datasets.get(id); // TODO: Handle success, error
-                    read.onsuccess = function () {
-                        resolve(read.result);
-                    };
+                    const read = Object.assign(datasets.get(id), {
+                        onsuccess() {
+                            resolve(read.result);
+                        },
+                        onerror() {
+                            console.log(`Read from dataset #${id} failed`);
+                            reject(read.result);
+                        }
+                    });
                 },
                 onerror() {
                     reject(rq.result);
