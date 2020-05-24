@@ -1,6 +1,18 @@
 Vue.component("tree-menu", {
     props: ["name", "items", "buttons", "parent", "editable", "name-field"],
+    data() {
+        return {
+            menuFilter: ""
+        };
+    },
     methods: {
+        shouldDisplayItem(item) {
+            if (this.menuFilter !== "") {
+                return !item.hidden && this.getItemName(item).startsWith(this.menuFilter);
+            } else {
+                return !item.hidden && (this.parent !== undefined || item.topLevel);
+            }
+        },
         getItemName(item) {
             return item[this.nameField ?? "name"];
         },
@@ -16,7 +28,8 @@ Vue.component("tree-menu", {
     },
     template: `
         <ul :class="'menu ' + (!parent ? 'medium-padding' : '')">
-            <li v-for="item, hierarchyId in items" v-if="!item.hidden && (parent !== undefined || item.topLevel)">
+            <li v-if="!parent"><input type="search" v-model="menuFilter" placeholder="Filter" /></li>
+            <li v-for="item, hierarchyId in items" v-if="shouldDisplayItem(item)">
                 <div class="horizontal-flexbox start-aligned">
                     <label class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" :for="name + '-open-' + item.id">
                         <div v-if="item.open" class="bottom-arrow">&nbsp</div>
