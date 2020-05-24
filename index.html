@@ -178,7 +178,7 @@
                                 <input class="flex-grow-1" placeholder="Filter" type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
                             </label>
                             <ul class="no-list-style" v-if="selectedItemDescriptor !== 0">
-                                <li class="horizontal-flexbox" v-for="state, stateIndex in descriptions[selectedItemDescriptor].states" v-if="state.name.startsWith(itemDescriptorSearch)">
+                                <li class="horizontal-flexbox" v-for="state, stateIndex in descriptions[selectedItemDescriptor].states" v-if="state.name.toUpperCase().startsWith(itemDescriptorSearch.toUpperCase())">
                                     <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
                                         :checked="items[selectedItem]?.descriptions?.find(d => d.descriptor.id === selectedItemDescriptor)?.states?.map(s => s?.id)?.includes(state.id)">
                                     <input class="flex-grow-1" type="text" v-model="state.name" />

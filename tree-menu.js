@@ -8,7 +8,7 @@ Vue.component("tree-menu", {
     methods: {
         shouldDisplayItem(item) {
             if (this.menuFilter !== "") {
-                return !item.hidden && this.getItemName(item).startsWith(this.menuFilter);
+                return !item.hidden && this.getItemName(item).toUpperCase().startsWith(this.menuFilter.toUpperCase());
             } else {
                 return !item.hidden && (this.parent !== undefined || item.topLevel);
             }
