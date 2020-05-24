@@ -1,7 +1,8 @@
 window.addEventListener("load", main);
 
 async function main() {
-    function download(filename, text) {
+    function download(text) {
+        const filename = window.prompt("Choose a file name", "export") + "xml.sdd";
         const element = document.createElement("a");
         element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
         element.setAttribute("download", filename);
@@ -324,7 +325,7 @@ async function main() {
                     items: this.items,
                     descriptors: this.descriptions,
                 });
-                download("export.sdd.xml",`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML);
+                download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML);
             }
         }
     });
