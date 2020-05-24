@@ -182,7 +182,7 @@ async function main() {
                 const newItemId = "myt-" + Object.keys(this.items).length;
                 const newItem = {
                     hid: "mytn-" + Object.keys(this.items).length, id: newItemId, name: value, photos: [],
-                    topLevel: typeof parentId === "undefined", children: {}, open: false
+                    topLevel: typeof parentId === "undefined", children: {}, open: false, descriptions: []
                 };
                 Vue.set(this.items, newItemId, newItem);
                 if (typeof parentId !== "undefined") {
