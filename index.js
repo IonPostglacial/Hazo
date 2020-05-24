@@ -2,7 +2,7 @@ window.addEventListener("load", main);
 
 async function main() {
     function download(text) {
-        const filename = window.prompt("Choose a file name", "export") + "xml.sdd";
+        const filename = window.prompt("Choose a file name", "export") + ".sdd.xml";
         const element = document.createElement("a");
         element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
         element.setAttribute("download", filename);
@@ -68,6 +68,7 @@ async function main() {
                 switch(this.taxonNameType) {
                     case "scientific": return "name";
                     case "vernacular": return "vernacularName";
+                    case "chinese": return "nameCN";
                     default: return "name"; 
                 }
             },

@@ -89,12 +89,15 @@
             const taxonNode = dataset.querySelector(`TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName[ref="${taxonId}"]`);
             const parentHid = taxonNode?.parentNode.querySelector("Parent")?.getAttribute("ref");
             const hid = taxonNode?.parentNode.getAttribute("id");
+            const [name, nameCN] = label.textContent.split(" // ");
+
+            console.log(nameCN);
 
             taxons[taxonId] = {
                 type: "taxon",
                 id: taxonId,
                 hid,
-                name: label.textContent.trim(),
+                name: name.trim(), nameCN: nameCN?.trim(),
                 vernacularName, meaning, noHerbier, herbariumPicture, fasc, page,
                 detail: extractInterestingText(details ?? ""),
                 photos: Array.from(mediaObjects).map(m => imagesById.get(m.getAttribute("ref"))),

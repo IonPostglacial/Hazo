@@ -44,7 +44,8 @@
 
         function createRepresentation(xml, item, role = undefined) {
             const representation = xml.createElement("Representation");
-            const label = Object.assign(xml.createElement("Label"), { textContent: item.name || "_" });
+            const name = item.name + (item.nameCN ? ` // ${item.nameCN}` : "");
+            const label = Object.assign(xml.createElement("Label"), { textContent: name || "_" });
             representation.appendChild(label);
     
             const itemDetail = "" +

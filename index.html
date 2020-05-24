@@ -35,6 +35,7 @@
                 <select v-model="taxonNameType">
                     <option value="scientific">Scientific</option>
                     <option value="vernacular">Vernacular</option>
+                    <option value="chinese">中文名</option>
                 </select>
                 <div class="selector" v-for="lang, index in langs">
                     <input v-model="selectedLang" :id="'lang-radio-' + index" class="selector-radio" name="lang-radio" :value="index" type="radio" />
@@ -77,6 +78,9 @@
                     <div class="thin-border medium-margin white-background scroll flex-grow-1">
                         <label class="item-property">Name</label>
                         <input type="text" v-model="items[selectedItem].name" /><br/>
+
+                        <label class="item-property">中文名</label>
+                        <input type="text" v-model="items[selectedItem].nameCN" /><br/>
 
                         <label class="item-property">Vernacular Name</label>
                         <input type="text" v-model="items[selectedItem].vernacularName" /><br/>
@@ -122,6 +126,10 @@
                                     <div class="horizontal-flexbox">
                                         <label class="min-width-s">Name:</label>
                                         <div>{{ items[selectedItem]?.name }}</div>
+                                    </div>
+                                    <div class="horizontal-flexbox">
+                                        <label class="min-width-s">中文名:</label>
+                                        <div>{{ items[selectedItem]?.nameCN }}</div>
                                     </div>
                                     <div class="horizontal-flexbox">
                                         <label class="min-width-s">Vernacular Name:</label>
