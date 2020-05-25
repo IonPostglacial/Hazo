@@ -14,11 +14,11 @@ Vue.component("tree-menu", {
             }
         },
         getItemName(item) {
-            const primaryNameField = this.nameFields[0] ?? "name";
+            const primaryNameField = !!this.nameFields ? this.nameFields[0] : "name";
             return item[primaryNameField];
         },
         getItemOtherNames(item) {
-            return this.nameFields.slice(1).map(field => item[field]).join(", ");
+            return this.nameFields?.slice(1).map(field => item[field]).join(", ");
         },
         addItem(value, parentId) {
             this.$emit("add-item", { value, parentId });
@@ -43,7 +43,7 @@ Vue.component("tree-menu", {
                     <label class="blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items" :for="name + '-' + item.id">
                         <div :class="'flex-grow-1 ' + (item.warning ? 'warning-color' : '')">{{ getItemName(item) }}</div>
                         <slot></slot>
-                        <div v-if="nameFields.length > 1" class="medium-margin-horizontal">{{ getItemOtherNames(item) }}</div>
+                        <div v-if="nameFields?.length > 1" class="medium-margin-horizontal">{{ getItemOtherNames(item) }}</div>
                     </label>
                     <button class="background-color-1" v-for="button in buttons" v-if="button.for === item.type" v-on:click="buttonClicked(button.id, item.parentId, item.id, item.id)">{{ button.label }}</button>
                     <div v-if="editable" class="close" v-on:click="deleteItem(item.parentId, item.id, item.id)"></div>
