@@ -31,6 +31,7 @@ async function main() {
         showImageBox: true,
         selectedItem: 0,
         selectedDescription: 0,
+        selectedState: 0,
         selectedItemDescriptor: 0,
         itemDescriptorSearch: "",
         newItemPhoto: "",
@@ -82,6 +83,9 @@ async function main() {
                 }
 
                 return states;
+            },
+            selectedDescriptionState() {
+                return this.descriptions[this.selectedDescription].states?.find(s => s.id === this.selectedState);
             },
             selectedItemDescriptorTree() {
                 const itemStatesIds = [];
@@ -179,6 +183,18 @@ async function main() {
             deleteDescriptionPhoto(index) {
                 this.descriptions[this.selectedDescription].photos.splice(index, 1);
             },
+            addStatePhoto(photo) {
+                if (typeof this.selectedDescriptionState.photos === "undefined") {
+                    this.selectedDescriptionState.photos = [];
+                }
+                this.selectedDescriptionState.photos.push(photo);
+            },
+            setStatePhoto(index, photo) {
+                this.selectedDescriptionState.photos[index] = photo;
+            },
+            deleteStatePhoto(index) {
+                this.selectedDescriptionState.photos.splice(index, 1);
+            },
             addItem({ value, parentId }) {
                 let newItemIdNum = Object.keys(this.items).length;
                 do {
@@ -193,18 +209,6 @@ async function main() {
                 if (typeof parentId !== "undefined") {
                     Vue.set(this.items[parentId].children, newItemId, newItem);
                 }
-            },
-            addItemPhoto(photo) {
-                this.items[this.selectedItem].photos.push(photo);
-            },
-            deleteItemPhoto(index) {
-                this.items[this.selectedItem].photos.splice(index, 1);
-            },
-            addDescriptionPhoto(photo) {
-                this.descriptions[this.selectedDescription].photos.push(photo);
-            },
-            deleteDescriptionPhoto(index) {
-                this.descriptions[this.selectedDescription].photos.splice(index, 1);
             },
             addItemState(e, state) {
                 const selectedItem = this.items[this.selectedItem];

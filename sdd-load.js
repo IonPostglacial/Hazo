@@ -124,9 +124,10 @@
     }
 
     function getDescriptorFromCharRepresentation(character, representation, imagesById) {
-        const label = representation.querySelector("Label");
-        const detail = representation.querySelector("Detail");
-        const mediaObjects = Array.from(character.getElementsByTagName("MediaObject"));
+        const children = Array.from(representation.children);
+        const label = children.filter(c => c.tagName === "Label")[0];
+        const detail = children.filter(c => c.tagName === "Detail")[0];
+        const mediaObjects = children.filter(c => c.tagName === "MediaObject");
 
         return {
             type: "character",
@@ -158,11 +159,13 @@
             for (const state of states) {
                 const representation = state.querySelector("Representation");
                 const label = representation.querySelector("Label");
+                const mediaObjects = Array.from(representation.children).filter(c => c.tagName === "MediaObject");
 
                 statesById[state.getAttribute("id")] = {
                     id: state.getAttribute("id"),
                     descriptorId: character.getAttribute("id"),
-                    name: label.textContent.trim()
+                    name: label.textContent.trim(),
+                    photos: mediaObjects.map(m => imagesById.get(m.getAttribute("ref"))),
                 };
                 descriptors[character.getAttribute("id")].states.push(statesById[state.getAttribute("id")]);
             }

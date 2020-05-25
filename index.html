@@ -209,15 +209,9 @@
                     v-on:open-photo="maximizeImage">
                 </image-box>
                 <ul v-if="showDescriptors" class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
-                    <label>Name</label>
-                    <table style="width: 100%;">
-                        <tr><th>FR</th><th>EN</th><th>CN</th></tr>
-                        <tr>
-                            <td><input type="text" v-model="descriptions[selectedDescription].name" /></td>
-                            <td><input type="text" v-model="descriptions[selectedDescription].nameEN" /></td>
-                            <td><input type="text" v-model="descriptions[selectedDescription].nameCN" /></td>
-                        </tr>
-                    </table>
+                    <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="descriptions[selectedDescription].name" /></div>
+                    <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="descriptions[selectedDescription].nameEN" /></div>
+                    <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="descriptions[selectedDescription].nameCN" /></div>
     
                     <label class="item-property">Detail</label>
                     <textarea v-model="descriptions[selectedDescription].detail"></textarea><br/>
@@ -230,16 +224,35 @@
                             </li>
                         </ul>
                     </div>
-                    <label>States</label>
-                    <ul class="indented">
-                        <li class="medium-padding" v-for="state in descriptions[selectedDescription].states">
-                            <input type="text" v-model="state.name" />
-                        </li>
-                        <li>
-                            <add-item v-on:add-item="addState(descriptions[selectedDescription], $event)"></add-item>
-                        </li>
-                    </ul>
                 </ul>
+            </section>
+            <section v-if="showDescriptors && typeof descriptions[selectedDescription] !== 'undefined'" class="scroll">
+                <div class="relative" style="height: 98%">
+                    <div class="scroll thin-border medium-margin medium-padding white-background" style="height: 50%;">
+                        <label>States</label>
+                        <ul class="indented">
+                            <li class="medium-padding" v-for="state in descriptions[selectedDescription].states">
+                                <label class="blue-hover medium-padding">
+                                    <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
+                                    <input type="text" v-model="state.name" />
+                                </label>
+                            </li>
+                            <li>
+                                <add-item v-on:add-item="addState(descriptions[selectedDescription], $event)"></add-item>
+                            </li>
+                        </ul>
+                    </div>
+                    <image-box v-if="showImageBox"
+                        style="height: 50%;"
+                        class="scroll"
+                        :photos="selectedDescriptionState?.photos"
+                        editable="true"
+                        v-on:add-photo="addStatePhoto"
+                        v-on:set-photo="setStatePhoto"
+                        v-on:delete-photo="deleteStatePhoto"
+                        v-on:open-photo="maximizeImage">
+                    </image-box>
+                </div>
             </section>
         </div>
         <section class="medium-margin horizontal-flexbox space-between">
