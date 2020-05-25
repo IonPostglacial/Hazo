@@ -181,10 +181,14 @@ async function main() {
                 this.descriptions[this.selectedDescription].photos.splice(index, 1);
             },
             addItem({ value, parentId }) {
-                const newItemId = "myt-" + Object.keys(this.items).length;
+                let newItemIdNum = Object.keys(this.items).length;
+                do {
+                    newItemIdNum++
+                } while(typeof this.items["myt-" + newItemIdNum] !== "undefined");
+                const newItemId = "myt-" + newItemIdNum;
                 console.log("add taxon", value, parentId, newItemId);
                 const newItem = {
-                    hid: "mytn-" + Object.keys(this.items).length, id: newItemId, name: value, photos: [],
+                    hid: "mytn-" + newItemId, id: newItemId, name: value, photos: [],
                     topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: []
                 };
                 Vue.set(this.items, newItemId, newItem);
