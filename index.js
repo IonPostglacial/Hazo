@@ -275,7 +275,7 @@ async function main() {
                 });
             },
             saveData() {
-                DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions });
+                DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions });
             },
             resetData() {
                 Vue.set(this.$data, "items", {});
