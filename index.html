@@ -169,7 +169,7 @@
                                 <image-box class="scroll min-height-200" v-if="showImageBox"
                                     v-on:open-photo="maximizeImage"
                                     :photos="descriptions[selectedItemDescriptor]?.photos"></image-box>
-                                <tree-menu class="thin-border medium-margin white-background scroll" editable="true" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
+                                <tree-menu class="thin-border medium-margin white-background scroll" v-model="selectedItemDescriptor" :items="descriptorsDependencyTree" name="description"
                                     v-on:add-item="addDescription"
                                     v-on:delete-item="deleteDescription">
                                 </tree-menu>
