@@ -52,14 +52,14 @@
         <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
             <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
                 <tree-menu editable="true" v-if="showItems" :items="items" name="item" v-model="selectedItem"
-                    :name-field="taxonNameField"
+                    :name-fields="['name', 'vernacularName']"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem">
                 </tree-menu>
-                <tree-menu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItem" :name-field="taxonNameField">
+                <tree-menu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItem" :name-fields="[taxonNameField]">
                 </tree-menu>
                 <tree-menu editable="true" v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
-                    :name-field="nameField"
+                    :name-fields="[nameField]"
                     v-on:add-item="addDescription"
                     v-on:delete-item="deleteDescription">
                 </tree-menu>

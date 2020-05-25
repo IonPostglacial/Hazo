@@ -1,5 +1,5 @@
 Vue.component("tree-menu", {
-    props: ["name", "items", "buttons", "parent", "editable", "name-field"],
+    props: ["name", "items", "buttons", "parent", "editable", "name-fields"],
     data() {
         return {
             menuFilter: ""
@@ -14,7 +14,8 @@ Vue.component("tree-menu", {
             }
         },
         getItemName(item) {
-            return item[this.nameField ?? "name"];
+            const nameFields = this.nameFields ?? ["name"];
+            return nameFields.map(field => item[field]).filter(n => n !== "").join(", ");
         },
         addItem(value, parentId) {
             this.$emit("add-item", { value, parentId });
@@ -47,7 +48,7 @@ Vue.component("tree-menu", {
                     <div class="indentation-width"></div>
                     <div class="flex-grow-1">
                         <input type="checkbox" class="invisible hide-next-unchecked" v-model="item.open" :id="name + '-open-' + item.id" />
-                        <tree-menu :editable="editable" :name-field="nameField" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent="hierarchyId">
+                        <tree-menu :editable="editable" :name-fields="nameFields" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent="hierarchyId">
                         </tree-menu>
                     </div>
                 </div>
