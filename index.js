@@ -182,9 +182,10 @@ async function main() {
             },
             addItem({ value, parentId }) {
                 const newItemId = "myt-" + Object.keys(this.items).length;
+                console.log("add taxon", value, parentId, newItemId);
                 const newItem = {
                     hid: "mytn-" + Object.keys(this.items).length, id: newItemId, name: value, photos: [],
-                    topLevel: typeof parentId === "undefined", children: {}, open: false, descriptions: []
+                    topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: []
                 };
                 Vue.set(this.items, newItemId, newItem);
                 if (typeof parentId !== "undefined") {
