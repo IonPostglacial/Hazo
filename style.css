@@ -128,6 +128,11 @@ ul {
     margin-bottom: 4px;
 }
 
+.medium-margin-horizontal {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 .thin-margin {
     margin: 4px;
 }
@@ -258,6 +263,10 @@ ul {
     align-items: stretch;
 }
 
+.center-items {
+    align-items: center;
+}
+
 .space-between {
     justify-content: space-between;
 }
@@ -265,7 +274,6 @@ ul {
 .horizontal-flexbox {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
     align-content: stretch;
 }
 
