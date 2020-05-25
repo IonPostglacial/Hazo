@@ -91,8 +91,6 @@
             const hid = taxonNode?.parentNode.getAttribute("id");
             const [name, nameCN] = label.textContent.split(" // ");
 
-            console.log(nameCN);
-
             taxons[taxonId] = {
                 type: "taxon",
                 id: taxonId,

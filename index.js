@@ -17,7 +17,6 @@ async function main() {
 
     function loadBase(id) {
         DB.load(id | 0).then(savedDataset => {
-            console.log(savedDataset);
             defaultData.items = savedDataset?.taxons ?? {};
             defaultData.descriptions = savedDataset?.descriptors ?? {};
         });
@@ -186,7 +185,6 @@ async function main() {
                     newItemIdNum++
                 } while(typeof this.items["myt-" + newItemIdNum] !== "undefined");
                 const newItemId = "myt-" + newItemIdNum;
-                console.log("add taxon", value, parentId, newItemId);
                 const newItem = {
                     hid: "mytn-" + newItemId, id: newItemId, name: value, photos: [],
                     topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: []
