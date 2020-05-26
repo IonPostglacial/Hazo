@@ -105,7 +105,6 @@
                 })),
                 parentId: null,
                 topLevel: !parentHid,
-                open: false,
                 children: {},
             };
             if (!!parentHid) {
@@ -138,7 +137,6 @@
             states: [],
             photos: mediaObjects.map(m => imagesById.get(m.getAttribute("ref"))),
             inapplicableStates: [],
-            open: true,
             topLevel: true,
             children: {},
         };        
