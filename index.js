@@ -144,14 +144,14 @@ async function main() {
                 this.showImageBox = !this.showImageBox;
             },
             openAll() {
-                const hierarchy = this.selectedTab == 0 ? this.items: this.descriptions;
+                const hierarchy = this.selectedTab == 0 || this.selectedTab == 1 ? this.items: this.descriptions;
 
                 for (const entry of Object.values(hierarchy)) {
-                    entry.open = true;
+                    entry.open = Object.keys(entry.children).length > 0;
                 }
             },
             closeAll() {
-                const hierarchy = this.selectedTab == 0 ? this.items : this.descriptions;
+                const hierarchy = this.selectedTab == 0 || this.selectedTab == 1 ? this.items : this.descriptions;
 
                 for (const entry of Object.values(hierarchy)) {
                     entry.open = false;

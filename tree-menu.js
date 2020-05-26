@@ -35,7 +35,7 @@ Vue.component("tree-menu", {
             <li v-if="!parent"><input type="search" v-model="menuFilter" placeholder="Filter" /></li>
             <li v-for="item, hierarchyId in items" v-if="shouldDisplayItem(item)">
                 <div class="horizontal-flexbox center-items">
-                    <label class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" :for="name + '-open-' + item.id">
+                    <label v-if="Object.keys(item.children ?? {}).length > 0 || editable" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" :for="name + '-open-' + item.id">
                         <div v-if="item.open" class="bottom-arrow">&nbsp</div>
                         <div v-if="!item.open" class="left-arrow">&nbsp;</div>
                     </label>
