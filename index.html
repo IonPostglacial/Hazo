@@ -19,8 +19,7 @@
         <nav class="horizontal-flexbox space-between">
             <div class="medium-margin">
                 <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
-                <button type="button" v-on:click="openAll">Open All</button>
-                <button type="button" v-on:click="closeAll">Close All</button>
+                <button type="button" v-on:click="toggleImageBox">Image Box</button>
             </div>
             <div class="medium-margin">
                 <div class="selector" v-for="tab, index in tabs">
@@ -31,7 +30,6 @@
                 </div>
             </div>
             <div class="medium-margin">
-                <button type="button" v-on:click="toggleImageBox">Image Box</button>
                 <select v-model="taxonNameType">
                     <option value="scientific">Scientific</option>
                     <option value="vernacular">Vernacular</option>

@@ -143,20 +143,6 @@ async function main() {
             toggleImageBox() {
                 this.showImageBox = !this.showImageBox;
             },
-            openAll() {
-                const hierarchy = this.selectedTab == 0 || this.selectedTab == 1 ? this.items: this.descriptions;
-
-                for (const entry of Object.values(hierarchy)) {
-                    entry.open = Object.keys(entry.children).length > 0;
-                }
-            },
-            closeAll() {
-                const hierarchy = this.selectedTab == 0 || this.selectedTab == 1 ? this.items : this.descriptions;
-
-                for (const entry of Object.values(hierarchy)) {
-                    entry.open = false;
-                }                
-            },
             addItemPhoto(photo) {
                 this.items[this.selectedItem].photos.push(photo);
             },
