@@ -253,6 +253,7 @@
                 categorical.appendChild(ratings);
 
                 for (const state of description.states) {
+                    if (typeof state === "undefined") { continue; }
                     const stateElement = xml.createElement("State");
                     stateElement.setAttribute("ref", state.id);
                     categorical.appendChild(stateElement);
