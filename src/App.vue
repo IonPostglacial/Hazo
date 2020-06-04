@@ -143,15 +143,17 @@
                                 </div>
                             </div>
                             <TreeMenu class="thin-border medium-margin medium-padding white-background scroll" :items="selectedItemDescriptorTree"
-                                :buttons="[{ id: 'pushToChildren', for: 'state', label: 'Push' }]"
+                                :buttons="[{ id: 'pushToChildren', for: 'state', label: 'Push' }]" name="item-desc-tree"
                                 v-on:button-click="itemDescriptorsButtonClicked">
                             </TreeMenu>
                         </div>
-                        <div class="vertical-flexbox" v-if="selectedItemDescriptorId">
-                            <ImageBox class="scroll min-height-200" v-if="showImageBox"
+                        <div class="vertical-flexbox">
+                            <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
                                 v-on:open-photo="maximizeImage"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
-                            <TreeMenu class="thin-border medium-margin white-background scroll" v-model="selectedItemDescriptorId" :items="descriptorsDependencyTree" name="description"
+                                itdesc
+                            <TreeMenu class="thin-border medium-margin white-background scroll" v-model="selectedItemDescriptorId"      
+                                :items="descriptorsDependencyTree" name="item-description"
                                 v-on:AddItem="addDescription"
                                 v-on:delete-item="deleteDescription">
                             </TreeMenu>
