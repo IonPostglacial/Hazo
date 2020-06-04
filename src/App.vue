@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="app" class="vertical-flexbox lightgrey-background">
     <nav class="horizontal-flexbox space-between">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
