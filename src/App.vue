@@ -147,7 +147,7 @@
                                 v-on:button-click="itemDescriptorsButtonClicked">
                             </TreeMenu>
                         </div>
-                        <div class="vertical-flexbox">
+                        <div v-if="selectedItemId !== 0" class="vertical-flexbox">
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
                                 v-on:open-photo="maximizeImage"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
@@ -159,7 +159,7 @@
                         </div>
                     </div>
                 </section>
-                <section class="vertical-flexbox flex-grow-1">
+                <section v-if="selectedItemId != 0" class="vertical-flexbox flex-grow-1">
                     <div class="thin-border medium-margin medium-padding white-background scroll">
                         <div class="horizontal-flexbox space-between" v-if="selectedItemDescriptorId !== 0">
                             <button class="background-color-ok" v-on:click="addAllItemStates">Check All</button>

@@ -23,8 +23,7 @@
             <div class="horizontal-flexbox start-aligned">
                 <div class="indentation-width"></div>
                 <div class="flex-grow-1">
-                    <TreeMenu v-if="openingByItemId[item.id]" :editable="editable" :name-fields="nameFields" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent="item.id"
-                    :parent-opening-by-item-id="openingByItemId">
+                    <TreeMenu v-if="openingByItemId[item.id]" :editable="editable" :name-fields="nameFields" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent="item.id">
                     </TreeMenu>
                 </div>
             </div>
@@ -41,12 +40,18 @@ import AddItem from "./AddItem.vue";
 
 export default {
     name: "TreeMenu",
-    props: ["name", "items", "buttons", "parent", "editable", "name-fields", "parent-opening-by-item-id"],
+    props: ["name", "items", "buttons", "parent", "editable", "name-fields"],
     components:  { AddItem },
     data() {
+        const openingByItemId = {};
+        for (const [id, item] of Object.entries(this.items)) {
+            if (typeof this.parent === "undefined" ? item.topLevel : !item.topLevel) {
+                Vue.set(openingByItemId, id, false);
+            }
+        }
         return {
             menuFilter: "",
-            openingByItemId: this.parentOpeningByItemId ?? {},
+            openingByItemId,
         };
     },
     computed: {
