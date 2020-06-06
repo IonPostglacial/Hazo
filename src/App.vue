@@ -151,7 +151,6 @@
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
                                 v-on:open-photo="maximizeImage"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
-                                itdesc
                             <TreeMenu class="thin-border medium-margin white-background scroll" v-model="selectedItemDescriptorId"      
                                 :items="descriptorsDependencyTree" name="item-description"
                                 v-on:AddItem="addDescription"
