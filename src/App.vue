@@ -46,30 +46,17 @@
                 v-on:delete-item="deleteDescription">
             </TreeMenu>
         </nav>
-        <section v-if="showItems && typeof selectedItem !== 'undefined'" class="vertical-flexbox flex-grow-1">
-            <ImageBox v-if="showImageBox"
-                class="scroll min-height-300"
-                :photos="selectedItem.photos"
-                editable
-                v-on:add-photo="addItemPhoto"
-                v-on:set-photo="setItemPhoto"
-                v-on:delete-photo="deleteItemPhoto"
-                v-on:open-photo="maximizeImage">
-            </ImageBox>
-            <TaxonsPanel editable :item="selectedItem" :descriptions="descriptions">
-            </TaxonsPanel>
-        </section>
+        <TaxonsPanel v-if="showItems" editable
+            :show-image-box="showImageBox"
+            :item="selectedItem" :descriptions="descriptions"
+            v-on:open-photo="maximizeImage">
+        </TaxonsPanel>
         <section v-if="showItemDescriptors && typeof selectedItem !== 'undefined'" class="vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox flex-grow-1 scroll">
                 <section class="vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox scroll">
-                        <div class="relative scroll vertical-flexbox stretch-items">
-                            <ImageBox class="scroll min-height-200" v-if="showImageBox"
-                                v-on:open-photo="maximizeImage"
-                                :photos="selectedItem.photos"></ImageBox>
-                            <TaxonsPanel :item="selectedItem" :descriptions="descriptions">
-                            </TaxonsPanel>
-                        </div>
+                        <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="maximizeImage" :show-image-box="showImageBox">
+                        </TaxonsPanel>
                         <div v-if="selectedItemId !== 0" class="vertical-flexbox">
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
                                 v-on:open-photo="maximizeImage"
@@ -358,15 +345,6 @@ export default {
         },
         toggleImageBox() {
             this.showImageBox = !this.showImageBox;
-        },
-        addItemPhoto(photo) {
-            this.selectedItem.photos.push(photo);
-        },
-        setItemPhoto(index, photo) {
-            this.selectedItem.photos[index] = photo;
-        },
-        deleteItemPhoto(index) {
-            this.selectedItem.photos.splice(index, 1);
         },
         maximizeImage(photo) {
             this.showBigImage = true;
