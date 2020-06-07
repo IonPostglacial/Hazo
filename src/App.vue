@@ -33,14 +33,14 @@
     </div>
     <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu editable="true" v-if="showItems" :items="items" name="item" v-model="selectedItemId"
+            <TreeMenu editable v-if="showItems" :items="items" name="item" v-model="selectedItemId"
                 :name-fields="['name', 'vernacularName']"
                 v-on:AddItem="addItem"
                 v-on:delete-item="deleteItem">
             </TreeMenu>
             <TreeMenu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItemId" :name-fields="[taxonNameField]">
             </TreeMenu>
-            <TreeMenu editable="true" v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
+            <TreeMenu editable v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
                 :name-fields="[nameField]"
                 v-on:AddItem="addDescription"
                 v-on:delete-item="deleteDescription">
@@ -50,7 +50,7 @@
             <ImageBox v-if="showImageBox"
                 class="scroll min-height-300"
                 :photos="selectedItem.photos"
-                editable="true"
+                editable
                 v-on:add-photo="addItemPhoto"
                 v-on:set-photo="setItemPhoto"
                 v-on:delete-photo="deleteItemPhoto"
@@ -185,7 +185,7 @@
         <section v-if="showDescriptors && typeof descriptions[selectedDescription] !== 'undefined'" class="vertical-flexbox flex-grow-1">
             <ImageBox v-if="showImageBox"
                 :photos="descriptions[selectedDescription].photos"
-                editable="true"
+                editable
                 v-on:add-photo="addDescriptionPhoto"
                 v-on:set-photo="setDescriptionPhoto"
                 v-on:delete-photo="deleteDescriptionPhoto"
@@ -229,7 +229,7 @@
                     style="height: 50%;"
                     class="scroll"
                     :photos="selectedDescriptionState.photos"
-                    editable="true"
+                    editable
                     v-on:add-photo="addStatePhoto"
                     v-on:set-photo="setStatePhoto"
                     v-on:delete-photo="deleteStatePhoto"

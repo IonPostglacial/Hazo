@@ -1,16 +1,17 @@
 <template>
-    <ul :class="'menu ' + (!parent ? 'medium-padding' : '')">
-        <li v-if="!parent">
+    <ul :class="'menu ' + (!parentId ? 'medium-padding' : '')">
+        <li v-if="!parentId">
             <input type="search" v-model="menuFilter" placeholder="Filter" />
             <button type="button" v-on:click="openAll">Open All</button>
             <button type="button" v-on:click="closeAll">Close All</button>
         </li>
         <li v-for="item in itemsToDisplay" :key="item.id">
             <div class="horizontal-flexbox center-items">
-                <div v-if="hasArrows(item)" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered" v-on:click="toggleItemOpening(item)">
+                <label v-if="hasArrows(item)" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered">
+                    <input type="checkbox" class="invisible" v-model="openingByItemId[item.id]">
                     <div v-if="openingByItemId[item.id]" class="bottom-arrow">&nbsp;</div>
                     <div v-if="!openingByItemId[item.id]" class="left-arrow">&nbsp;</div>
-                </div>
+                </label>
                 <input type="radio" class="invisible" :value="item.id" :id="name + '-' + item.id" :name="name" v-on:input="$emit('input', $event.target.value)" />
                 <label class="blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items" :for="name + '-' + item.id">
                     <div :class="'flex-grow-1 ' + (item.warning ? 'warning-color' : '')">{{ getItemName(item) }}</div>
@@ -23,13 +24,13 @@
             <div class="horizontal-flexbox start-aligned">
                 <div class="indentation-width"></div>
                 <div class="flex-grow-1">
-                    <TreeMenu v-if="openingByItemId[item.id]" :editable="editable" :name-fields="nameFields" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent="item.id">
+                    <TreeMenu v-if="openingByItemId[item.id]" :editable="editable" :name-fields="nameFields" :name="name" :items="item.children" :buttons="buttons" v-on="$listeners" :parent-id="item.id">
                     </TreeMenu>
                 </div>
             </div>
         </li>
         <li v-if="editable">
-            <AddItem v-on:add-item="addItem($event, parent)"></AddItem>
+            <AddItem v-on:add-item="addItem($event, parentId)"></AddItem>
         </li>
     </ul>    
 </template>
@@ -40,18 +41,19 @@ import AddItem from "./AddItem.vue";
 
 export default {
     name: "TreeMenu",
-    props: ["name", "items", "buttons", "parent", "editable", "name-fields"],
+    props: {
+        name: String,
+        items: Object,
+        buttons: Array,
+        parentId: String,
+        editable: Boolean,
+        nameFields: Array    
+    },
     components:  { AddItem },
     data() {
-        const openingByItemId = {};
-        for (const [id, item] of Object.entries(this.items)) {
-            if (typeof this.parent === "undefined" ? item.topLevel : !item.topLevel) {
-                Vue.set(openingByItemId, id, false);
-            }
-        }
         return {
             menuFilter: "",
-            openingByItemId,
+            openingByItemId: {},
         };
     },
     computed: {
@@ -61,7 +63,7 @@ export default {
                 if (this.menuFilter !== "") {
                     return !item.hidden && this.getItemName(item).toUpperCase().startsWith(this.menuFilter.toUpperCase());
                 } else {
-                    return !item.hidden && (this.parent !== undefined || item.topLevel);
+                    return !item.hidden && (this.parentId !== undefined || item.topLevel);
                 }
             });
         },
@@ -75,9 +77,6 @@ export default {
         },
         hasArrows(item) {
             return Object.keys(item.children ?? {}).length > 0 || this.editable;
-        },
-        toggleItemOpening(item) {
-            Vue.set(this.openingByItemId, item.id, !this.openingByItemId[item.id]);
         },
         openAll() {
             for (const item of Object.values(this.items)) {
