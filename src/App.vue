@@ -56,45 +56,8 @@
                 v-on:delete-photo="deleteItemPhoto"
                 v-on:open-photo="maximizeImage">
             </ImageBox>
-            <div class="horizontal-flexbox start-align flex-grow-1 scroll">
-                <div class="thin-border medium-margin white-background scroll flex-grow-1">
-                    <label class="item-property">Name</label>
-                    <input type="text" v-model="selectedItem.name" /><br/>
-
-                    <label class="item-property">中文名</label>
-                    <input type="text" v-model="selectedItem.nameCN" /><br/>
-
-                    <label class="item-property">Vernacular Name</label>
-                    <input type="text" v-model="selectedItem.vernacularName" /><br/>
-
-                    <label class="item-property">Meaning</label>
-                    <textarea v-model="selectedItem.meaning"></textarea><br/>
-
-                    <label class="item-property">N° Herbier</label>
-                    <input type="text" v-model="selectedItem.noHerbier" /><br/>
-
-                    <label class="item-property">Herbarium Picture</label>
-                    <input type="text" v-model="selectedItem.herbariumPicture" /><br/>
-
-                    <fieldset>
-                        <legend>Flore de Madagascar et Comores</legend>
-                        <label class="item-property">Fasc</label>
-                        <input type="text" v-model="selectedItem.fasc" /><br/>
-
-                        <label class="item-property">Page</label>
-                        <input type="text" v-model="selectedItem.page" /><br/>
-                    </fieldset>
-
-                    <label class="item-property">Detail</label>
-                    <textarea id="item-detail " v-model="selectedItem.detail"></textarea><br/>
-
-                    <label class="item-property">Description</label>
-                    <TreeMenu :items="selectedItemDescriptorTree"
-                        :buttons="[{ id: 'pushToChildren', for: 'state', label: 'Push' }]"
-                        v-on:button-click="itemDescriptorsButtonClicked">
-                    </TreeMenu>
-                </div>
-            </div>
+            <TaxonsPanel editable :item="selectedItem" :descriptions="descriptions">
+            </TaxonsPanel>
         </section>
         <section v-if="showItemDescriptors && typeof selectedItem !== 'undefined'" class="vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox flex-grow-1 scroll">
@@ -104,48 +67,8 @@
                             <ImageBox class="scroll min-height-200" v-if="showImageBox"
                                 v-on:open-photo="maximizeImage"
                                 :photos="selectedItem.photos"></ImageBox>
-                            <div class="vertical-flexbox flex-grow-1 thin-border medium-margin medium-padding white-background ">
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">Name:</label>
-                                    <div>{{ selectedItem.name }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">中文名:</label>
-                                    <div>{{ selectedItem.nameCN }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">Vernacular Name:</label>
-                                    <div>{{ selectedItem.vernacularName }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">Meaning:</label>
-                                    <div>{{ selectedItem.meaning }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">N° Herbier:</label>
-                                    <div>{{ selectedItem.noHerbier }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">Herbarium Picture:</label>
-                                    <div>{{ selectedItem.herbariumPicture }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">Fasc:</label>
-                                    <div>{{ selectedItem.fasc }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">Page:</label>
-                                    <div>{{ selectedItem.page }}</div>
-                                </div>
-                                <div class="horizontal-flexbox">
-                                    <label class="min-width-s">Detail:</label>
-                                    <textarea readonly class="limited-width" v-model="selectedItem.detail"></textarea>
-                                </div>
-                            </div>
-                            <TreeMenu class="thin-border medium-margin medium-padding white-background scroll" :items="selectedItemDescriptorTree"
-                                :buttons="[{ id: 'pushToChildren', for: 'state', label: 'Push' }]" name="item-desc-tree"
-                                v-on:button-click="itemDescriptorsButtonClicked">
-                            </TreeMenu>
+                            <TaxonsPanel :item="selectedItem" :descriptions="descriptions">
+                            </TaxonsPanel>
                         </div>
                         <div v-if="selectedItemId !== 0" class="vertical-flexbox">
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
@@ -268,6 +191,7 @@
 import AddItem from "./components/AddItem.vue";
 import TreeMenu from "./components/TreeMenu.vue";
 import ImageBox from "./components/ImageBox.vue";
+import TaxonsPanel from "./components/TaxonsPanel.vue";
 import DB from "./db-storage.js";
 import Vue from "../node_modules/vue/dist/vue.esm.browser.js";
 import loadSDD from "./sdd-load";
@@ -290,7 +214,7 @@ function download(text) {
 export default {
     name: "App",
     components: {
-        AddItem, TreeMenu, ImageBox
+        AddItem, TreeMenu, ImageBox, TaxonsPanel
     },
     data() {
         function loadBase(id) {
@@ -511,19 +435,6 @@ export default {
             const selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
 
             selectedDescription.states = [];
-        },
-        itemDescriptorsButtonClicked({ buttonId, parentId, id }) {
-            if (buttonId === "pushToChildren") {
-                const descriptor = this.descriptions[parentId];
-                const state = descriptor.states.find(s => s.id === id);
-
-                for (const child of Object.values(this.selectedItem.children)) {
-                    const desc = child.descriptions.find(d => d.descriptor.id === descriptor.id);
-                    if (!desc.states.find(s => s.id === state.id)) {
-                        desc.states.push(Object.assign({}, state));
-                    }
-                }
-            }
         },
         deleteItem({ parentId, itemId }) {
             if (typeof parentId !== "undefined") {
