@@ -21,7 +21,7 @@ import AddItem from "./AddItem.vue";
 
 export default {
     name: "ImageBox",
-    props: ["photos", "editable"],
+    props: { photos: Array, editable: Boolean },
     data() {
         return {
             newPhotoUrl: ""
