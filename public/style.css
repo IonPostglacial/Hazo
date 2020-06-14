@@ -67,6 +67,10 @@ ul {
     height: 100vh;
 }
 
+.ck.ck-editor {
+    max-width: 800px;
+}
+
 .max-width-screen {
     max-width: 90vw;
 }
