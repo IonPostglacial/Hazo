@@ -39,7 +39,8 @@
                 </fieldset>
 
                 <label class="item-property">Detail</label>
-                <textarea :readonly="!editable"  id="item-detail " v-model="item.detail"></textarea><br/>
+                <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
+                <div v-if="!editable" id="item-detail " v-html="item.detail"></div><br/>
 
                 <label class="item-property">Description</label>
                 <TreeMenu :items="itemDescriptorTree"
@@ -54,11 +55,20 @@
 <script>
 import TreeMenu from "./TreeMenu.vue";
 import ImageBox from "./ImageBox.vue";
+import CKEditor from '@ckeditor/ckeditor5-vue';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 export default {
     name: "TaxonsPanel",
-    components: { TreeMenu, ImageBox },
+    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component },
     props: { item: Object, descriptions: Object, editable: Boolean, showImageBox: Boolean },
+    data() {
+        return {
+            editor: ClassicEditor,
+            editorData: this.item.detail ?? "",
+            editorConfig: {}
+        }
+    },
     computed: {
         itemDescriptorTree() {
             const itemStatesIds = [];
