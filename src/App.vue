@@ -35,14 +35,14 @@
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
             <TreeMenu editable v-if="showItems" :items="items" name="item" v-model="selectedItemId"
                 :name-fields="['name', 'vernacularName']"
-                v-on:AddItem="addItem"
+                v-on:add-item="addItem"
                 v-on:delete-item="deleteItem">
             </TreeMenu>
             <TreeMenu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItemId" :name-fields="[taxonNameField]">
             </TreeMenu>
             <TreeMenu editable v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
                 :name-fields="[nameField]"
-                v-on:AddItem="addDescription"
+                v-on:add-item="addDescription"
                 v-on:delete-item="deleteDescription">
             </TreeMenu>
         </nav>
@@ -63,7 +63,7 @@
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
                             <TreeMenu class="thin-border medium-margin white-background scroll" v-model="selectedItemDescriptorId"      
                                 :items="descriptorsDependencyTree" name="item-description"
-                                v-on:AddItem="addDescription"
+                                v-on:add-item="addDescription"
                                 v-on:delete-item="deleteDescription">
                             </TreeMenu>
                         </div>
@@ -85,7 +85,7 @@
                                 <input class="flex-grow-1" type="text" v-model="state.name" />
                             </li>
                             <li class="">
-                                <AddItem v-on:AddItem="addState(descriptions[selectedItemDescriptorId], $event)"></AddItem>
+                                <AddItem v-on:add-item="addState(descriptions[selectedItemDescriptorId], $event)"></AddItem>
                             </li>
                         </ul>
                     </div>
@@ -131,7 +131,7 @@
                             </label>
                         </li>
                         <li>
-                            <AddItem v-on:AddItem="addState(descriptions[selectedDescription], $event)"></AddItem>
+                            <AddItem v-on:add-item="addState(descriptions[selectedDescription], $event)"></AddItem>
                         </li>
                     </ul>
                 </div>
@@ -385,9 +385,9 @@ export default {
                 hid: "mytn-" + newItemId, id: newItemId, name: value, photos: [],
                 topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: []
             };
-            Vue.set(this.items, newItemId, newItem);
+            this.items = { ...this.items, [newItemId]: newItem };
             if (typeof parentId !== "undefined") {
-                Vue.set(this.items[parentId].children, newItemId, newItem);
+                this.items[parentId].children = { ...this.items[parentId].children, [newItemId]: newItem };
             }
         },
         addItemState(e, state) {
@@ -426,9 +426,9 @@ export default {
                 hid: "mydn-" + Object.keys(this.descriptions).length, id: newDescriptionId, name: value,states: [],
                 topLevel: typeof parentId === "undefined", children: {}, open: false
             };
-            Vue.set(this.descriptions, newDescriptionId, newDescription);
+            this.descriptions = { ...this.descriptions, [newDescriptionId]: newDescription };
             if(typeof parentId !== "undefined") {
-                Vue.set(this.descriptions[parentId].children, newDescriptionId, newDescription);
+                this.descriptions[parentId].children = { ...this.descriptions[parentId].children, [newDescriptionId]: newDescription };
             }
         },
         deleteDescription({ parentId, itemId }) {
