@@ -75,6 +75,12 @@ ul {
     max-width: 90vw;
 }
 
+.stick-to-top {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
 .bold {
     font-weight: bold;
 }
@@ -313,7 +319,6 @@ ul {
 
 .menu li {
     list-style: none;
-    position: relative;
 }
 
 .menu li > div {
