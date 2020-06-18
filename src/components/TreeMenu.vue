@@ -1,6 +1,6 @@
 <template>
     <ul :class="'menu ' + (!parentId ? 'medium-padding' : '')">
-        <li v-if="!parentId">
+        <li v-if="!parentId" class="white-background stick-to-top">
             <input type="search" v-model="menuFilter" placeholder="Filter" />
             <button type="button" v-on:click="openAll">Open All</button>
             <button type="button" v-on:click="closeAll">Close All</button>
@@ -61,7 +61,7 @@ export default {
             if (!this.items) return [];
             return Object.values(this.items).filter((item) => {
                 if (this.menuFilter !== "") {
-                    return !item.hidden && this.getItemName(item).toUpperCase().startsWith(this.menuFilter.toUpperCase());
+                    return !item.hidden && (this.getItemName(item)?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
                 } else {
                     return !item.hidden && (this.parentId !== undefined || item.topLevel);
                 }
