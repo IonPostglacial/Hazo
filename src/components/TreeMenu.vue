@@ -61,7 +61,9 @@ export default {
             if (!this.items) return [];
             return Object.values(this.items).filter((item) => {
                 if (this.menuFilter !== "") {
-                    return !item.hidden && (this.getItemName(item)?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
+                    return !item.hidden && this.nameFields.
+                        map(field => item[field]).
+                        some(name => name?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
                 } else {
                     return !item.hidden && (this.parentId !== undefined || item.topLevel);
                 }
