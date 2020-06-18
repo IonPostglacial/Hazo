@@ -1,53 +1,56 @@
 <template>
-    <section v-if="typeof item !== 'undefined'" class="vertical-flexbox flex-grow-1">
-        <ImageBox v-if="showImageBox"
-            class="scroll min-height-300"
-            :photos="item.photos"
-            :editable="editable"
-            v-on:add-photo="addItemPhoto"
-            v-on:set-photo="setItemPhoto"
-            v-on:delete-photo="deleteItemPhoto"
-            v-on:open-photo="openPhoto">
-        </ImageBox>
-        <div class="horizontal-flexbox start-align flex-grow-1 scroll">
-            <div class="thin-border medium-margin white-background scroll flex-grow-1">
-                <label class="item-property">Name</label>
-                <input :readonly="!editable" type="text" v-model="item.name" /><br/>
+    <section v-if="typeof item !== 'undefined'" :class="editable ? 'horizontal-flexbox' : 'vertical-flexbox scroll'">
+        <div :class="'vertical-flexbox' + (editable ? ' scroll' : '')">
+            <ImageBox v-if="showImageBox"
+                class="scroll min-height-300"
+                :photos="item.photos"
+                :editable="editable"
+                v-on:add-photo="addItemPhoto"
+                v-on:set-photo="setItemPhoto"
+                v-on:delete-photo="deleteItemPhoto"
+                v-on:open-photo="openPhoto">
+            </ImageBox>
+            <div :class="'horizontal-flexbox start-align flex-grow-1' + (editable ? '' : 'scroll')">
+                <div class="thin-border medium-margin white-background scroll flex-grow-1">
+                    <label class="item-property">Name</label>
+                    <input :readonly="!editable" type="text" v-model="item.name" /><br/>
 
-                <label class="item-property">中文名</label>
-                <input :readonly="!editable"  type="text" v-model="item.nameCN" /><br/>
+                    <label class="item-property">中文名</label>
+                    <input :readonly="!editable"  type="text" v-model="item.nameCN" /><br/>
 
-                <label class="item-property">Vernacular Name</label>
-                <input :readonly="!editable"  type="text" v-model="item.vernacularName" /><br/>
+                    <label class="item-property">Vernacular Name</label>
+                    <input :readonly="!editable"  type="text" v-model="item.vernacularName" /><br/>
 
-                <label class="item-property">Meaning</label>
-                <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
+                    <label class="item-property">Meaning</label>
+                    <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
 
-                <label class="item-property">N° Herbier</label>
-                <input :readonly="!editable"  type="text" v-model="item.noHerbier" /><br/>
+                    <label class="item-property">N° Herbier</label>
+                    <input :readonly="!editable"  type="text" v-model="item.noHerbier" /><br/>
 
-                <label class="item-property">Herbarium Picture</label>
-                <input :readonly="!editable"  type="text" v-model="item.herbariumPicture" /><br/>
+                    <label class="item-property">Herbarium Picture</label>
+                    <input :readonly="!editable"  type="text" v-model="item.herbariumPicture" /><br/>
 
-                <fieldset>
-                    <legend>Flore de Madagascar et Comores</legend>
-                    <label class="item-property">Fasc</label>
-                    <input :readonly="!editable"  type="text" v-model="item.fasc" /><br/>
+                    <fieldset>
+                        <legend>Flore de Madagascar et Comores</legend>
+                        <label class="item-property">Fasc</label>
+                        <input :readonly="!editable"  type="text" v-model="item.fasc" /><br/>
 
-                    <label class="item-property">Page</label>
-                    <input :readonly="!editable"  type="text" v-model="item.page" /><br/>
-                </fieldset>
-
-                <label class="item-property">Detail</label>
-                <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
-                <div v-if="!editable" id="item-detail " v-html="item.detail"></div><br/>
-
-                <label class="item-property">Description</label>
-                <TreeMenu :items="itemDescriptorTree"
-                    :buttons="editable ? [{ id: 'pushToChildren', for: 'state', label: 'Push' }] : []"
-                    v-on:button-click="itemDescriptorsButtonClicked">
-                </TreeMenu>
+                        <label class="item-property">Page</label>
+                        <input :readonly="!editable"  type="text" v-model="item.page" /><br/>
+                    </fieldset>
+                </div>
             </div>
+        </div>
+        <div :class="'thin-border medium-margin white-background flex-grow-1 vertical-flexbox ' + (editable ? 'scroll' : '')">
+            <label class="item-property">Detail</label>
+            <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
+            <div v-if="!editable" id="item-detail " class="limited-width"  v-html="item.detail"></div><br/>
+
+            <label class="item-property">Description</label>
+            <TreeMenu :items="itemDescriptorTree"
+                :buttons="editable ? [{ id: 'pushToChildren', for: 'state', label: 'Push' }] : []"
+                v-on:button-click="itemDescriptorsButtonClicked">
+            </TreeMenu>     
         </div>
     </section>
 </template>
