@@ -21,6 +21,10 @@
                     <label class="item-property">Vernacular Name</label>
                     <input :readonly="!editable"  type="text" v-model="item.vernacularName" /><br/>
 
+                    <label class="item-property">Website</label>
+                    <input v-if="editable" type="text" v-model="item.website" />
+                    <a v-if="!editable" target="_blank" :href="item.website">{{ item.website }}</a><br/>
+
                     <label class="item-property">Meaning</label>
                     <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
 
