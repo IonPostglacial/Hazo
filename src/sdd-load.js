@@ -1,9 +1,16 @@
+const mapDOM = (e, f) => Array.prototype.map.call(e, f);
+const childrenWithTag = (e, tagName) => {
+    if (typeof e.children === "undefined") return [];
+    return Array.prototype.filter.call(e.children, child => child.tagName === tagName);
+}
+
 function getDatasetImagesById(dataset) {
     const imagesById = new Map();
-    const mediaObjects = dataset.querySelectorAll("MediaObjects > MediaObject");
+    const mediaObjectsRoot = childrenWithTag(dataset, "MediaObjects")[0];
+    const mediaObjects = childrenWithTag(mediaObjectsRoot, "MediaObject");
 
     for (const mediaObject of mediaObjects) {
-        imagesById.set(mediaObject.id, mediaObject.querySelector("Source")?.getAttribute("href"));
+        imagesById.set(mediaObject.id, childrenWithTag(mediaObject, "Source")[0]?.getAttribute("href"));
     }
     return imagesById;
 }
@@ -60,12 +67,12 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
     const childrenByHid = new Map();
 
     for (const codedDescription of dataset.querySelectorAll("CodedDescriptions > CodedDescription")) {
-        const scope = codedDescription.querySelector("Scope");
-        const taxonName = scope.querySelector("TaxonName");
-        const representation = codedDescription.querySelector("Representation");
+        const scope = childrenWithTag(codedDescription, "Scope")[0];
+        const taxonName = childrenWithTag(scope, "TaxonName")[0];
+        const representation = childrenWithTag(codedDescription, "Representation")[0];
         const categoricals = codedDescription.querySelectorAll("SummaryData > Categorical");
-        const label = representation.querySelector("Label");
-        const detail = representation.querySelector("Detail");
+        const label = childrenWithTag(representation, "Label")[0];
+        const detail = childrenWithTag(representation, "Detail")[0];
         const taxonId = taxonName.getAttribute("ref");
         const codedMediaObjects = representation.getElementsByTagName("MediaObject");
         const mediaObjects = codedMediaObjects.length > 0 ?
@@ -78,15 +85,16 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
         const meaning = findInDescription(detailText, "Sense");
         const noHerbier = findInDescription(detailText, "N° Herbier");
         const herbariumPicture = findInDescription(detailText, "Herbarium Picture");
+        const website = findInDescription(detailText, "Website");
         
         const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
         const m = detailText?.match(floreRe);
         const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
         let details = removeFromDescription(detailText, [
-                "NV", "Sense", "N° Herbier", "Herbarium Picture"
+                "NV", "Sense", "N° Herbier", "Herbarium Picture", "Website"
             ])?.replace(floreRe, "");
         const taxonNode = dataset.querySelector(`TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName[ref="${taxonId}"]`);
-        const parentHid = taxonNode?.parentNode.querySelector("Parent")?.getAttribute("ref");
+        const parentHid = childrenWithTag(taxonNode?.parentNode, "Parent")[0]?.getAttribute("ref");
         const hid = taxonNode?.parentNode.getAttribute("id");
         const [name, nameCN] = label.textContent.split(" // ");
 
@@ -94,13 +102,14 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
             type: "taxon",
             id: taxonId,
             hid,
+            website,
             name: name.trim(), nameCN: nameCN?.trim(),
             vernacularName, meaning, noHerbier, herbariumPicture, fasc, page,
             detail: extractInterestingText(details ?? ""),
-            photos: Array.from(mediaObjects).map(m => imagesById.get(m.getAttribute("ref"))),
-            descriptions: Array.from(categoricals).map(categorical => ({
+            photos: mapDOM(mediaObjects, m => imagesById.get(m.getAttribute("ref"))),
+            descriptions: mapDOM(categoricals, categorical => ({
                 descriptor: descriptors[categorical.getAttribute("ref")],
-                states: Array.from(categorical.getElementsByTagName("State")).map(e => statesById[e.getAttribute("ref")])
+                states: mapDOM(categorical.getElementsByTagName("State"), e => statesById[e.getAttribute("ref")])
             })),
             parentId: null,
             topLevel: !parentHid,
@@ -122,10 +131,9 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
 }
 
 function getDescriptorFromCharRepresentation(character, representation, imagesById) {
-    const children = Array.from(representation.children);
-    const label = children.filter(c => c.tagName === "Label")[0];
-    const detail = children.filter(c => c.tagName === "Detail")[0];
-    const mediaObjects = children.filter(c => c.tagName === "MediaObject");
+    const label = childrenWithTag(representation, "Label")[0];
+    const detail = childrenWithTag(representation, "Detail")[0];
+    const mediaObjects = childrenWithTag(representation, "MediaObject");
 
     return {
         type: "character",
@@ -147,16 +155,16 @@ function getDatasetDescriptors(dataset, imagesById) {
     const characters = dataset.querySelectorAll("Characters > CategoricalCharacter");
 
     for (const character of characters) {
-        const representation = character.querySelector("Representation");
+        const representation = childrenWithTag(character, "Representation")[0];
 
         descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation, imagesById);
 
         const states = character.querySelectorAll("States > StateDefinition");
 
         for (const state of states) {
-            const representation = state.querySelector("Representation");
-            const label = representation.querySelector("Label");
-            const mediaObjects = Array.from(representation.children).filter(c => c.tagName === "MediaObject");
+            const representation = childrenWithTag(state, "Representation")[0];
+            const label = childrenWithTag(representation, "Label")[0];
+            const mediaObjects = childrenWithTag(representation, "MediaObject");
 
             statesById[state.getAttribute("id")] = {
                 id: state.getAttribute("id"),
@@ -171,7 +179,7 @@ function getDatasetDescriptors(dataset, imagesById) {
     const qCharacters = dataset.querySelectorAll("Characters > QuantitativeCharacter");
 
     for (const character of qCharacters) {
-        const representation = character.querySelector("Representation");
+        const representation = childrenWithTag(character, "Representation")[0];
 
         descriptors[character.getAttribute("id")] = getDescriptorFromCharRepresentation(character, representation, imagesById);
     }
@@ -180,7 +188,7 @@ function getDatasetDescriptors(dataset, imagesById) {
 
     for (const characterTree of characterTrees) {
         for (const charNode of characterTree.querySelectorAll("Nodes > CharNode")) {
-            const characterRef = charNode.querySelector("Character").getAttribute("ref");
+            const characterRef = childrenWithTag(charNode, "Character")[0]?.getAttribute("ref");
             const inapplicableStates = charNode.querySelectorAll("DependencyRules > InapplicableIf > State") ?? [];
             const descriptor = descriptors[characterRef];
             

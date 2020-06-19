@@ -53,6 +53,7 @@ function saveSDD({ items, descriptors }) {
             (item.noHerbier        ? `N° Herbier: ${item.noHerbier}<br><br>` : "") +
             (item.herbariumPicture ? `Herbarium Picture: ${item.herbariumPicture}<br><br>` : "") +
             (item.fasc             ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
+            (item.website          ? `Website: ${item.website}<br><br>` : "") +
             (item.detail ?? "");
         if (itemDetail) {
             const detail = Object.assign(xml.createElement("Detail"), { textContent: itemDetail });
