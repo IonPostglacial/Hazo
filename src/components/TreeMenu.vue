@@ -1,21 +1,24 @@
 <template>
-    <ul class="menu medium-padding">
-        <li class="white-background stick-to-top">
+    <div class="vertical-flexbox">
+        <div class="white-background stick-to-top">
             <input type="search" v-model="menuFilter" placeholder="Filter" />
             <button type="button" v-on:click="openAll">Open All</button>
             <button type="button" v-on:click="closeAll">Close All</button>
-        </li>
-        <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item" :name="name" :editable="editable" :buttons="buttons"
-            :name-fields="nameFields"
-            v-on:input="$emit('input', $event)"
-            v-on:add-item="addItem"
-            v-on:delete-item="deleteItem" 
-            v-on:button-clicked="buttonClicked">
-        </TreeMenuItem>
-        <li v-if="editable">
-            <AddItem v-on:add-item="addItem({ value: $event })"></AddItem>
-        </li>
-    </ul>    
+        </div>
+        <div class="horizontal-flexbox">
+            <ul v-for="(nameField, fieldNum) in nameFields" :key="nameField"
+                :class="'menu medium-padding ' + (fieldNum === 0 ? 'thin-border-right' : '')">
+                <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item" :name="name" :editable="editable && fieldNum === 0" :buttons="buttons"
+                    :name-fields="[nameField]"
+                    v-on:input="$emit('input', $event)"
+                    v-on:add-item="addItem"
+                    v-on:delete-item="deleteItem" 
+                    v-on:button-clicked="buttonClicked">
+                </TreeMenuItem>
+            </ul>
+        </div>
+         <AddItem v-if="editable" v-on:add-item="addItem({ value: $event })"></AddItem>
+    </div> 
 </template>
 
 <script>

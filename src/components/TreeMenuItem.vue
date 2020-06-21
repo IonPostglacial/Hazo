@@ -1,8 +1,7 @@
 <template>
     <li>
         <div class="horizontal-flexbox center-items">
-            <label v-if="hasArrows" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered">
-                <input type="checkbox" class="invisible" v-model="open">
+            <label v-if="hasArrows" v-on:click="toggleOpen" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered">
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
@@ -10,7 +9,6 @@
             <label class="blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items" :for="name + '-' + item.id">
                 <div :class="'flex-grow-1 ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
                 <slot></slot>
-                <div v-if="hasCompositeNames" class="medium-margin-horizontal">{{ itemOtherNames }}</div>
             </label>
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
             <div v-if="editable" class="close" v-on:click="deleteItem"></div>
@@ -51,6 +49,7 @@ export default {
     mounted() {
         this.itemBus.$on("openAll", () => this.open = Object.keys(this.item.children).length > 0);
         this.itemBus.$on("closeAll", () => this.open = false);
+        this.itemBus.$on("toggle", id =>  { if (id === this.item.id) { this.open = !this.open } });
     }, 
     computed: {
         itemButtons() {
@@ -61,13 +60,18 @@ export default {
         },
         itemName() {
             const primaryNameField = this.nameFields ? this.nameFields[0] : "name";
-            return this.item[primaryNameField];
-        },
-        itemOtherNames() {
-            return this.nameFields?.slice(1).map(field => this.item[field]).join(", ");
+            const name = this.item[primaryNameField];
+            if (typeof name === "undefined" || name === null || name === "") {
+                return "_";
+            } else {
+                return this.item[primaryNameField];
+            }
         },
     },
     methods: {
+        toggleOpen() {
+            this.itemBus.$emit("toggle", this.item.id);
+        },
         addItem(value) {
             this.$emit("add-item", { value, parentId: this.item.id });
         },
@@ -76,9 +80,6 @@ export default {
         },
         buttonClicked(buttonId) {
             this.$emit("button-click", { buttonId, parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
-        },
-        hasCompositeNames() {
-            return this.nameFields?.length > 1;
         },
     }
 }
