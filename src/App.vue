@@ -34,7 +34,7 @@
     <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
             <TreeMenu editable v-if="showItems" :items="items" name="item" v-model="selectedItemId"
-                :name-fields="['name', 'vernacularName']"
+                :name-fields="['name', 'vernacularName', 'nameCN']"
                 v-on:add-item="addItem"
                 v-on:delete-item="deleteItem">
             </TreeMenu>

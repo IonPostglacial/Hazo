@@ -1,15 +1,17 @@
 <template>
     <div class="vertical-flexbox">
-        <div class="white-background stick-to-top">
-            <input type="search" v-model="menuFilter" placeholder="Filter" />
-            <button type="button" v-on:click="openAll">Open All</button>
-            <button type="button" v-on:click="closeAll">Close All</button>
+        <div class="thin-margin horizontal-flexbox space-between white-background stick-to-top">
+            <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
+            <div>
+                <button type="button" v-on:click="openAll">Open All</button>
+                <button type="button" v-on:click="closeAll">Close All</button>
+            </div>
         </div>
         <div class="horizontal-flexbox">
-            <ul v-for="(nameField, fieldNum) in nameFields" :key="nameField"
-                :class="'menu medium-padding ' + (fieldNum === 0 ? 'thin-border-right' : '')">
+            <ul v-for="(nameField, fieldNum) in (nameFields || ['name'])" :key="nameField"
+                :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item" :name="name" :editable="editable && fieldNum === 0" :buttons="buttons"
-                    :name-fields="[nameField]"
+                    :name-field="nameField"
                     v-on:input="$emit('input', $event)"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem" 

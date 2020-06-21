@@ -192,8 +192,8 @@ ul {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.thin-border-right {
-    border-right: 1px solid #ccc;
+.thin-border-left {
+    border-left: 1px solid #ccc;
 }
 
 .flex-grow-1 {

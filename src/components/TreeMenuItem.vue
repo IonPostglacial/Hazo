@@ -16,7 +16,7 @@
         <div class="horizontal-flexbox start-aligned">
             <div class="indentation-width"></div>
             <div v-if="open" class="flex-grow-1">
-                <TreeMenuItem v-for="child in item.children" :item-bus="itemBus" :key="child.id" :editable="editable" :name-fields="nameFields" :name="name" :item="child" :buttons="buttons" 
+                <TreeMenuItem v-for="child in item.children" :item-bus="itemBus" :key="child.id" :editable="editable" :name-field="nameField" :name="name" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
                 <li v-if="editable">
@@ -38,7 +38,7 @@ export default {
         item: Object,
         name: String,
         buttons: Array,
-        nameFields: Array,
+        nameField: String,
         editable: Boolean,
     },
     data() {
@@ -59,12 +59,11 @@ export default {
             return Object.keys(this.item.children ?? {}).length > 0 || this.editable;
         },
         itemName() {
-            const primaryNameField = this.nameFields ? this.nameFields[0] : "name";
-            const name = this.item[primaryNameField];
+            const name = this.item[this.nameField ?? "name"];
             if (typeof name === "undefined" || name === null || name === "") {
                 return "_";
             } else {
-                return this.item[primaryNameField];
+                return name;
             }
         },
     },
