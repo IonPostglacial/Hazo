@@ -291,6 +291,10 @@ ul {
     align-content: stretch;
 }
 
+.font-size-28 {
+    font-size: 28px;
+}
+
 .cented-aligned {
     justify-content: center;
     align-items: center;    

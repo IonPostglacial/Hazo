@@ -28,12 +28,12 @@
         </div>
     </nav>
     <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
-        <img class="max-width-screen max-height-screen" :src="bigImages[bigImageIndex]"><br>
         <div class="horizontal-flexbox cented-aligned">
-            <button v-if="bigImageIndex > 0" v-on:click="bigImageIndex--">Previous</button>
-            <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
-            <button v-if="bigImageIndex < bigImages.length - 1" v-on:click="bigImageIndex++">Next</button>
+            <button v-if="bigImageIndex > 0" class="background-color-1 font-size-28" v-on:click="bigImageIndex--">🡄</button>
+            <img class="max-width-screen max-height-screen" :src="bigImages[bigImageIndex]">    
+            <button v-if="bigImageIndex < bigImages.length - 1" class="background-color-1 font-size-28" v-on:click="bigImageIndex++">🡆</button>
         </div>
+        <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
     </div>
     <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
