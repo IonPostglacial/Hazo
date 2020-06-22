@@ -2,7 +2,7 @@
     <div class="centered-text thin-border medium-margin white-background wrap-flexbox">
         <div v-for="(photo, index) in photos" :key="index" class="vertical-flexbox space-between relative">
             <div v-if="editable" v-on:click="deletePhoto(index)" class="close absolute-top-right"></div>
-            <a class="small-margin thin-border" href="#1" v-on:click="openPhoto(photo)">
+            <a class="small-margin thin-border" href="#1" v-on:click="openPhoto(index)">
                 <img class="medium-max-width medium-max-height" :src="photo">
             </a>
             <input v-if="editable" type="text" :value="photo" v-on:change="setPhoto(index, e.target.value)" />
@@ -34,8 +34,8 @@ export default {
         deletePhoto(index) {
             this.$emit("delete-photo", index);
         },
-        openPhoto(photoUrl) {
-            this.$emit("open-photo", photoUrl);
+        openPhoto(index) {
+            this.$emit("open-photo", { photos: this.photos, index });
         },
         setPhoto(index, photoUrl) {
             this.$emit("set-photo", { index, url: photoUrl });

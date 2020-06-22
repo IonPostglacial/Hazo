@@ -28,8 +28,12 @@
         </div>
     </nav>
     <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
-        <img class="max-width-screen max-height-screen" :src="bigImage"><br>
-        <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
+        <img class="max-width-screen max-height-screen" :src="bigImages[bigImageIndex]"><br>
+        <div class="horizontal-flexbox cented-aligned">
+            <button v-if="bigImageIndex > 0" v-on:click="bigImageIndex--">Previous</button>
+            <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
+            <button v-if="bigImageIndex < bigImages.length - 1" v-on:click="bigImageIndex++">Next</button>
+        </div>
     </div>
     <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
@@ -228,7 +232,8 @@ export default {
             newItemPhoto: "",
             newDescriptionPhoto: "",
             selectedTab: 0,
-            bigImage: "",
+            bigImages: [""],
+            bigImageIndex: 0,
             showBigImage: false,
             showMoreActions: false,
             tabs: [
@@ -346,13 +351,15 @@ export default {
         toggleImageBox() {
             this.showImageBox = !this.showImageBox;
         },
-        maximizeImage(photo) {
+        maximizeImage({ photos, index }) {
             this.showBigImage = true;
-            this.bigImage = photo;
+            this.bigImages = photos;
+            this.bigImagIndexe = index;
         },
         minimizeImage() {
             this.showBigImage = false;
-            this.bigImage = "";
+            this.bigImages = [];
+            this.bigImageIndex = 0;
         },
         addDescriptionPhoto(photo) {
             this.descriptions[this.selectedDescription].photos.push(photo);
