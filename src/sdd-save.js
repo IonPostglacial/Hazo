@@ -48,7 +48,9 @@ function saveSDD({ items, descriptors }) {
         representation.appendChild(label);
 
         const itemDetail = "" +
+            (item.name2            ? `Syn: ${item.name2}<br><br>` : "") +
             (item.vernacularName   ? `NV: ${item.vernacularName}<br><br>` : "") +
+            (item.vernacularName2   ? `NV2: ${item.vernacularName2}<br><br>` : "") +
             (item.meaning          ? `Sense: ${item.meaning}<br><br>` : "") +
             (item.noHerbier        ? `N° Herbier: ${item.noHerbier}<br><br>` : "") +
             (item.herbariumPicture ? `Herbarium Picture: ${item.herbariumPicture}<br><br>` : "") +

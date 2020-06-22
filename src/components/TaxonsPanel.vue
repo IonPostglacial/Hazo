@@ -15,11 +15,17 @@
                     <label class="item-property">Name</label>
                     <input :readonly="!editable" type="text" v-model="item.name" /><br/>
 
+                    <label class="item-property">Synonymous</label>
+                    <input :readonly="!editable" type="text" v-model="item.name2" /><br/>
+
                     <label class="item-property">中文名</label>
                     <input :readonly="!editable"  type="text" v-model="item.nameCN" /><br/>
 
                     <label class="item-property">Vernacular Name</label>
                     <input :readonly="!editable"  type="text" v-model="item.vernacularName" /><br/>
+
+                    <label class="item-property">Vernacular Name 2</label>
+                    <input :readonly="!editable"  type="text" v-model="item.vernacularName2" /><br/>
 
                     <label class="item-property">Website</label>
                     <input v-if="editable" type="text" v-model="item.website" />

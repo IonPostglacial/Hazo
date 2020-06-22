@@ -81,7 +81,9 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
         const detailText = (!detail?.textContent || detail.textContent === "undefined" || detail.textContent === "_" ) ?
             dataset.querySelector(`TaxonNames > TaxonName[id="${taxonId}"] > Representation > Detail`)?.textContent
             : detail.textContent;
+        const synonymous = findInDescription(detailText, "Syn");
         const vernacularName = findInDescription(detailText, "NV");
+        const vernacularName2 = findInDescription(detailText, "NV2");
         const meaning = findInDescription(detailText, "Sense");
         const noHerbier = findInDescription(detailText, "N° Herbier");
         const herbariumPicture = findInDescription(detailText, "Herbarium Picture");
@@ -91,7 +93,7 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
         const m = detailText?.match(floreRe);
         const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
         let details = removeFromDescription(detailText, [
-                "NV", "Sense", "N° Herbier", "Herbarium Picture", "Website"
+                "Syn", "NV", "NV2", "Sense", "N° Herbier", "Herbarium Picture", "Website"
             ])?.replace(floreRe, "");
         const taxonNode = dataset.querySelector(`TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName[ref="${taxonId}"]`);
         const parentHid = childrenWithTag(taxonNode?.parentNode, "Parent")[0]?.getAttribute("ref");
@@ -104,7 +106,8 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
             hid,
             website,
             name: name.trim(), nameCN: nameCN?.trim(),
-            vernacularName, meaning, noHerbier, herbariumPicture, fasc, page,
+            name2: synonymous,
+            vernacularName, vernacularName2, meaning, noHerbier, herbariumPicture, fasc, page,
             detail: extractInterestingText(details ?? ""),
             photos: mapDOM(mediaObjects, m => imagesById.get(m.getAttribute("ref"))),
             descriptions: mapDOM(categoricals, categorical => ({
