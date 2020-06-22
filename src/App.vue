@@ -354,7 +354,7 @@ export default {
         maximizeImage({ photos, index }) {
             this.showBigImage = true;
             this.bigImages = photos;
-            this.bigImagIndexe = index;
+            this.bigImageIndex = index;
         },
         minimizeImage() {
             this.showBigImage = false;
