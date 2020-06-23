@@ -295,6 +295,14 @@ ul {
     font-size: 28px;
 }
 
+.margin-right-medium {
+    margin-right: 8px;
+}
+
+.min-width-small {
+    min-width: 32px;
+}
+
 .cented-aligned {
     justify-content: center;
     align-items: center;    
