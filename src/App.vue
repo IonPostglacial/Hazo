@@ -431,7 +431,7 @@ export default {
             const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
             const newDescription = {
                 hid: "mydn-" + Object.keys(this.descriptions).length, id: newDescriptionId, name: value,states: [],
-                topLevel: typeof parentId === "undefined", children: {}, open: false
+                topLevel: typeof parentId === "undefined", children: {}, open: false, inapplicableStates: []
             };
             this.descriptions = { ...this.descriptions, [newDescriptionId]: newDescription };
             if(typeof parentId !== "undefined") {
