@@ -85,7 +85,7 @@
                         <ul class="no-list-style" v-if="selectedItemDescriptorId !== 0">
                             <li class="horizontal-flexbox" v-for="(state, stateIndex) in selectedItemDescriptorFilteredStates" :key="state.id">
                                 <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
-                                    :checked="selectedItem.descriptions.find(d => d.descriptor.id === selectedItemDescriptorId).states.map(s => s.id).includes(state.id)">
+                                    :checked="selectedItemDescriptorStates.map(s => s.id).includes(state.id)">
                                 <input class="flex-grow-1" type="text" v-model="state.name" />
                             </li>
                             <li class="">
@@ -128,7 +128,7 @@
                 <div class="scroll thin-border medium-margin medium-padding white-background" style="height: 50%;">
                     <label>States</label>
                     <ul class="indented">
-                        <li class="medium-padding" v-for="state in descriptions[selectedDescription].states" :key="state.id">
+                        <li class="medium-padding" v-for="state in descriptions[selectedDescription].states || []" :key="state.id">
                             <label class="blue-hover medium-padding">
                                 <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
                                 <input type="text" v-model="state.name" />
@@ -269,25 +269,17 @@ export default {
                 default: return "name"; 
             }
         },
-        selectedItemIdStates() {
-            const states = [];
-
-            for (const description of this.selectedItem.descriptions) {
-                for (const state of description.states) {
-                    states.push(state);
-                }
-            }
-
-            return states;
-        },
         selectedItem() {
             return this.items[this.selectedItemId] ?? {};
         },
         selectedDescriptionState() {
-            return this.descriptions[this.selectedDescription].states?.find(s => s.id === this.selectedState) ?? {};
+            return this.descriptions[this.selectedDescription]?.states?.find(s => s.id === this.selectedState) ?? {};
+        },
+        selectedItemDescriptorStates() {
+            return this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
         },
         selectedItemDescriptorFilteredStates() {
-            return this.descriptions[this.selectedItemDescriptorId].states.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
+            return this.descriptions[this.selectedItemDescriptorId]?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
         },
         selectedItemDescriptorTree() {
             const itemStatesIds = [];
@@ -399,6 +391,7 @@ export default {
         },
         addItemState(e, state) {
             const selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
+            if (typeof selectedDescription === "undefined") throw "Cannot add a state when no description has been selected";
             const stateIndex = selectedDescription.states.findIndex(s => s.id === state.id);
 
             if (e.target.checked) {
@@ -413,7 +406,7 @@ export default {
         },
         addAllItemStates() {
             const selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
-
+            if (typeof selectedDescription === "undefined") throw "Cannot add states if no description has been selected";
             selectedDescription.states = [...this.descriptions[selectedDescription.descriptor.id].states];
         },
         removeAllItemStates() {
@@ -445,6 +438,7 @@ export default {
             Vue.delete(this.descriptions, itemId);
         },
         addState(description, value) {
+            if (typeof description === "undefined") throw "addState failed: description is undefined.";
             description.states.push({
                 id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
                 descriptorId: description.id,
