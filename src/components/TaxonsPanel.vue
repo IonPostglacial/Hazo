@@ -15,6 +15,9 @@
                     <label class="item-property">Name</label>
                     <input :readonly="!editable" type="text" v-model="item.name" /><br/>
 
+                    <label class="item-property">Author</label>
+                    <input :readonly="!editable" type="text" v-model="item.author" /><br/>
+
                     <label class="item-property">Synonymous</label>
                     <input :readonly="!editable" type="text" v-model="item.name2" /><br/>
 

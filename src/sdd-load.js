@@ -1,6 +1,6 @@
 const mapDOM = (e, f) => Array.prototype.map.call(e, f);
 const childrenWithTag = (e, tagName) => {
-    if (typeof e.children === "undefined") return [];
+    if (typeof e === "undefined" || typeof e.children === "undefined") return [];
     return Array.prototype.filter.call(e.children, child => child.tagName === tagName);
 }
 
@@ -81,6 +81,7 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
         const detailText = (!detail?.textContent || detail.textContent === "undefined" || detail.textContent === "_" ) ?
             dataset.querySelector(`TaxonNames > TaxonName[id="${taxonId}"] > Representation > Detail`)?.textContent
             : detail.textContent;
+        const author = findInDescription(detailText, "Author");
         const synonymous = findInDescription(detailText, "Syn");
         const vernacularName = findInDescription(detailText, "NV");
         const vernacularName2 = findInDescription(detailText, "NV2");
@@ -93,7 +94,7 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
         const m = detailText?.match(floreRe);
         const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
         let details = removeFromDescription(detailText, [
-                "Syn", "NV", "NV2", "Sense", "N° Herbier", "Herbarium Picture", "Website"
+                "Syn", "NV", "NV2", "Sense", "N° Herbier", "Herbarium Picture", "Website", "Author"
             ])?.replace(floreRe, "");
         const taxonNode = dataset.querySelector(`TaxonHierarchies > TaxonHierarchy > Nodes > Node > TaxonName[ref="${taxonId}"]`);
         const parentHid = childrenWithTag(taxonNode?.parentNode, "Parent")[0]?.getAttribute("ref");
@@ -106,6 +107,7 @@ function getDatasetItems(dataset, descriptors, imagesById, statesById) {
             hid,
             website,
             name: name.trim(), nameCN: nameCN?.trim(),
+            author,
             name2: synonymous,
             vernacularName, vernacularName2, meaning, noHerbier, herbariumPicture, fasc, page,
             detail: extractInterestingText(details ?? ""),

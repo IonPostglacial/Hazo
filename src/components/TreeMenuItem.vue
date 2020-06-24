@@ -7,7 +7,7 @@
             </label>
             <input type="radio" class="invisible" :value="item.id" :id="name + '-' + item.id" :name="name" v-on:input="$emit('input', $event.target.value)" />
             <label class="blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items" :for="name + '-' + item.id">
-                <div v-if="showIds" class="min-width-small margin-right-medium">{{ item.id }}</div>
+                <div v-if="showIds" class="min-width-small margin-right-medium">{{ prettyId }}</div>
                 <div :class="'flex-grow-1 ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
                 <slot></slot>
             </label>
@@ -33,6 +33,8 @@
 <script>
 import AddItem from "./AddItem.vue";
 
+const knownPrefixes = ["t", "myt-", "c", "d"];
+
 export default {
     name: "TreeMenuItem",
     components:  { AddItem },
@@ -56,6 +58,14 @@ export default {
         this.itemBus.$on("toggle", id =>  { if (id === this.item.id) { this.open = !this.open } });
     }, 
     computed: {
+        prettyId() {
+            for (const prefix of knownPrefixes) {
+                if (this.item.id.startsWith(prefix)) {
+                    return this.item.id.substring(prefix.length);
+                }
+            }
+            return this.item.id;
+        },
         itemButtons() {
             return this.buttons?.filter((button) => button.for === this.item.type);
         },

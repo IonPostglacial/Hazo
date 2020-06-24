@@ -35,7 +35,7 @@
         </div>
         <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
     </div>
-    <div v-if="!showBigImage" class="horizontal-flexbox start-align flex-grow-1 scroll">
+    <div :class="'horizontal-flexbox start-align flex-grow-1 scroll ' + (showBigImage ? 'invisible' : '')">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
             <TreeMenu editable v-if="showItems" :items="items" name="item" v-model="selectedItemId"
                 :name-fields="['name', 'vernacularName', 'nameCN']"
