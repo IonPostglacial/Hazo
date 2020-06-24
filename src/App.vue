@@ -157,13 +157,7 @@
             <button type="button" v-on:click="importData">Import</button>
             <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
             <button type="button" v-on:click="exportData">Export</button>
-            <label class="inline-block">
-                <input v-model="showMoreActions" class="invisible hide-next-unchecked" type="checkbox" name="more-actions" id="more-actions">
-                <button href="#1" v-on:click="completeData">Merge Taxons Info</button>
-                <div v-if="!showMoreActions" class="button">More</div>
-                <div v-if="showMoreActions" class="button">Less</div>
-            </label>
-            <input class="invisible" v-on:change="fileComplete" type="file" accept="application/xml" name="complete-data" id="complete-data">
+            <button type="button" v-on:click="exportStats">Stats</button>
         </div>
         <div>
             <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
@@ -188,8 +182,8 @@ import Vue from "../node_modules/vue/dist/vue.esm.browser.js";
 import loadSDD from "./sdd-load";
 import saveSDD from "./sdd-save";
 
-function download(text) {
-    const filename = window.prompt("Choose a file name", "export") + ".sdd.xml";
+function download(text, extension) {
+    const filename = window.prompt("Choose a file name", "export") + `.${extension}`;
     const element = document.createElement("a");
     element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
     element.setAttribute("download", filename);
@@ -458,30 +452,6 @@ export default {
         completeData() {
             document.getElementById("complete-data").click();
         },
-        fileComplete(e) {
-            const file = e.target.files[0];
-
-            (async () => {
-                const { items } = await loadSDD(file);
-                const properties = [
-                    "name", "nameEN", "nameCN", "vernacularName", "meaning",
-                    "noHerbier", "herbariumPicture", "fasc", "page"
-                ];
-                for (const taxon of Object.values(items)) {
-                    const existingTaxon = this.items[taxon.id];
-                    if (typeof existingTaxon === "undefined") {
-                        Vue.set(this.items, taxon.id, taxon);
-                        continue;
-                    }
-                    for (const property of properties) {
-                        const newValue = taxon[property];
-                        if (typeof newValue !== "undefined" && newValue !== null && newValue !== "") {
-                            existingTaxon[property] = newValue;
-                        }
-                    }
-                }
-            })();
-        },
         fileUpload(e) {
             const file = e.target.files[0];
 
@@ -494,12 +464,31 @@ export default {
                 Vue.set(this.$data, "descriptions", descriptors);
             })();
         },
+        exportStats() {
+            const stats = {};
+            for (const item of Object.values(this.items)) {
+                const words = item.detail.split(/[\s,;."'-]/);
+                for (const word of words) {
+                    stats[word] = (stats[word] ?? 0) + 1;
+                }
+            }
+            let csv = "word,count\n";
+            for (const [word, count] of Object.entries(stats)) {
+                let escapedWord = word;
+                if (escapedWord.includes(",") || escapedWord.includes("\n")) {
+                    escapedWord = escapedWord.replace('"', '""');
+                    escapedWord = `"${escapedWord}"`;
+                }
+                csv += escapedWord + "," + count + "\n";
+            }
+            download(csv, "csv");
+        },
         exportData() {
             const xml = saveSDD({
                 items: this.items,
                 descriptors: this.descriptions,
             });
-            download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML);
+            download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }
 }
