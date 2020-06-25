@@ -467,7 +467,7 @@ export default {
         exportStats() {
             const stats = {};
             for (const item of Object.values(this.items)) {
-                const words = item.detail.split(/[\s,;."'-]/);
+                const words = item.detail?.split(/[\s,;."'-]/) ?? [];
                 for (const word of words) {
                     stats[word] = (stats[word] ?? 0) + 1;
                 }
