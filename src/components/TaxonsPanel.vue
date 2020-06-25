@@ -43,6 +43,11 @@
                     <label class="item-property">Herbarium Picture</label>
                     <input :readonly="!editable"  type="text" v-model="item.herbariumPicture" /><br/>
 
+                    <div v-for="extraField in extraFields" :key="extraField.id">
+                        <label class="item-property">{{ extraField.label }}</label>
+                        <input :readonly="!editable" type="text" v-model="item['extra-' + extraField.id]" />
+                    </div>
+
                     <fieldset>
                         <legend>Flore de Madagascar et Comores</legend>
                         <label class="item-property">Fasc</label>
@@ -77,7 +82,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 export default {
     name: "TaxonsPanel",
     components: { TreeMenu, ImageBox, ckeditor: CKEditor.component },
-    props: { item: Object, descriptions: Object, editable: Boolean, showImageBox: Boolean },
+    props: { item: Object, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array },
     data() {
         return {
             editor: ClassicEditor,

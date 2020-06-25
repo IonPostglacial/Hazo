@@ -52,6 +52,7 @@
         </nav>
         <TaxonsPanel v-if="showItems" editable
             :show-image-box="showImageBox"
+            :extra-fields="extraFields"
             :item="selectedItem" :descriptions="descriptions"
             v-on:open-photo="maximizeImage">
         </TaxonsPanel>
@@ -167,7 +168,10 @@
             <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
         </div>
-        <a class="button" href="./merger.html">Merger</a>
+        <div>
+            <button type="button" class="background-color-1" v-on:click="editExtraFields">Fields</button>
+            <a class="button" href="./merger.html">Merger</a>
+        </div>
     </section>
   </div>
 </template>
@@ -206,6 +210,7 @@ export default {
             DB.load(id | 0).then(savedDataset => {
                 defaultData.items = savedDataset?.taxons ?? {};
                 defaultData.descriptions = savedDataset?.descriptors ?? {};
+                defaultData.extraFields = savedDataset?.extraFields ?? [];
             });
         }
 
@@ -237,6 +242,7 @@ export default {
             ],
             langs: ["FR", "EN", "CN"],
             taxonNameType: "scientific",
+            extraFields: [],
             selectedLang: 0,
             items: {},
             descriptions: {},
@@ -319,11 +325,26 @@ export default {
             DB.load(id | 0).then(savedDataset => {
                 this.items = savedDataset?.taxons ?? {};
                 this.descriptions = savedDataset?.descriptors ?? {};
+                this.extraFields = savedDataset?.extraFields ?? [];
             });
         },
         loadDB(id) {
             this.selectedBase = id;
             this.loadBase(id);
+        },
+        editExtraFields() {
+            const extraFieldsText = window.prompt("Extra Fields", this.extraFields.map(({ id, label }) => `${id}:${label}`).join(","));
+            if (typeof extraFieldsText === "undefined" || extraFieldsText === null) return;
+            const extraFields = [];
+            for (const fieldText of extraFieldsText.split(",")) {
+                const parts = fieldText.split(":");
+                if (parts.length !== 2) {
+                    console.log("bad format for Extra Fields");
+                    return;
+                }
+                extraFields.push({ id: parts[0].trim(), label: parts[1].trim() });
+            }
+            this.extraFields = extraFields;
         },
         createNewDatabase() {
             const newDatabaseId = this.databaseIds.length;
@@ -440,7 +461,8 @@ export default {
             });
         },
         saveData() {
-            DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions });
+            console.log(this.extraFields);
+            DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields });
         },
         resetData() {
             Vue.set(this.$data, "items", {});
