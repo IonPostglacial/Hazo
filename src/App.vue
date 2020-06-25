@@ -461,7 +461,6 @@ export default {
             });
         },
         saveData() {
-            console.log(this.extraFields);
             DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields });
         },
         resetData() {
@@ -481,7 +480,7 @@ export default {
                 const {
                     items,
                     descriptors,
-                } = await loadSDD(file);
+                } = await loadSDD(file, this.extraFields);
                 Vue.set(this.$data, "items", items);
                 Vue.set(this.$data, "descriptions", descriptors);
             })();
@@ -509,6 +508,7 @@ export default {
             const xml = saveSDD({
                 items: this.items,
                 descriptors: this.descriptions,
+                extraFields: this.extraFields,
             });
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }

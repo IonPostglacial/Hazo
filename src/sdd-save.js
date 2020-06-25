@@ -1,4 +1,6 @@
-function saveSDD({ items, descriptors }) {
+import StandardFields from "./standard-fields.js";
+
+function saveSDD({ items, descriptors, extraFields }) {
     const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");
     const datasets = xml.documentElement;
     
@@ -46,17 +48,14 @@ function saveSDD({ items, descriptors }) {
         const name = item.name + (item.nameCN ? ` // ${item.nameCN}` : "");
         const label = Object.assign(xml.createElement("Label"), { textContent: name || "_" });
         representation.appendChild(label);
-
+        const fields = [...StandardFields, ...(extraFields ?? [])];
         const itemDetail = "" +
-            (item.author           ? `Author: ${item.author}<br><br>` : "") +
-            (item.name2            ? `Syn: ${item.name2}<br><br>` : "") +
-            (item.vernacularName   ? `NV: ${item.vernacularName}<br><br>` : "") +
-            (item.vernacularName2   ? `NV2: ${item.vernacularName2}<br><br>` : "") +
-            (item.meaning          ? `Sense: ${item.meaning}<br><br>` : "") +
-            (item.noHerbier        ? `N° Herbier: ${item.noHerbier}<br><br>` : "") +
-            (item.herbariumPicture ? `Herbarium Picture: ${item.herbariumPicture}<br><br>` : "") +
+            fields.map(({ id, label, std }) => {
+                const value = item[std ? id : `extra-${id}`];
+                if (typeof value === "undefined" || value === null) return "";
+                return `${label}: ${value}<br><br>`;
+            }).join("") +
             (item.fasc             ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
-            (item.website          ? `Website: ${item.website}<br><br>` : "") +
             (item.detail ?? "");
         if (itemDetail) {
             const detail = Object.assign(xml.createElement("Detail"), { textContent: itemDetail });
