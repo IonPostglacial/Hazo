@@ -50,16 +50,6 @@ Lambda.array = function(it) {
 	}
 	return a;
 };
-Lambda.find = function(it,f) {
-	var v = $getIterator(it);
-	while(v.hasNext()) {
-		var v1 = v.next();
-		if(f(v1)) {
-			return v1;
-		}
-	}
-	return null;
-};
 Math.__name__ = "Math";
 var Std = function() { };
 Std.__name__ = "Std";
@@ -1066,9 +1056,9 @@ js_Boot.__nativeClassName = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
-var sdd_Representation = function(name,detail,mediaObjects) {
+var sdd_Representation = function(label,detail,mediaObjects) {
 	this.mediaObjects = [];
-	this.name = name;
+	this.label = label;
 	this.detail = detail;
 	if(mediaObjects != null) {
 		this.mediaObjects = mediaObjects;
@@ -1078,14 +1068,14 @@ sdd_Representation.__name__ = "sdd.Representation";
 sdd_Representation.prototype = {
 	__class__: sdd_Representation
 };
-var sdd_Character = function(id,representation,states) {
+var sdd_Character = function(id,representation,statesIds) {
 	this.children = [];
-	this.inapplicableStates = [];
+	this.inapplicableStatesIds = [];
 	sdd_Representation.call(this);
 	if(representation != null) {
-		var s = representation.name;
+		var s = representation.label;
 		if(!(s == null || s == "")) {
-			this.name = representation.name;
+			this.label = representation.label;
 		}
 		var s = representation.detail;
 		if(!(s == null || s == "")) {
@@ -1096,16 +1086,17 @@ var sdd_Character = function(id,representation,states) {
 		}
 	}
 	this.id = id;
-	this.states = states;
+	this.statesIds = statesIds;
 };
 sdd_Character.__name__ = "sdd.Character";
 sdd_Character.__super__ = sdd_Representation;
 sdd_Character.prototype = $extend(sdd_Representation.prototype,{
 	__class__: sdd_Character
 });
-var sdd_Dataset = function(taxons,characters) {
+var sdd_Dataset = function(taxons,characters,states) {
 	this.taxons = taxons;
 	this.characters = characters;
+	this.states = states;
 };
 sdd_Dataset.__name__ = "sdd.Dataset";
 sdd_Dataset.prototype = {
@@ -1119,6 +1110,14 @@ sdd_TaxonHierarchy.__name__ = "sdd.TaxonHierarchy";
 sdd_TaxonHierarchy.prototype = {
 	__class__: sdd_TaxonHierarchy
 };
+var sdd_CharactersAndStatesById = function(charactersById,statesById) {
+	this.charactersById = charactersById;
+	this.statesById = statesById;
+};
+sdd_CharactersAndStatesById.__name__ = "sdd.CharactersAndStatesById";
+sdd_CharactersAndStatesById.prototype = {
+	__class__: sdd_CharactersAndStatesById
+};
 var sdd_Loader = $hx_exports["sdd"]["Loader"] = function() {
 };
 sdd_Loader.__name__ = "sdd.Loader";
@@ -1131,8 +1130,8 @@ sdd_Loader.assertNotNull = function(value,exception) {
 sdd_Loader.prototype = {
 	loadDataset: function(datasetElement) {
 		var mediaObjectsById = this.loadMediaObjects(datasetElement);
-		var charactersById = this.loadDatasetCharacters(datasetElement,mediaObjectsById);
-		return new sdd_Dataset(Lambda.array(this.loadDatasetTaxons(datasetElement,mediaObjectsById,charactersById)),Lambda.array(charactersById));
+		var charsAndStatesById = this.loadDatasetCharacters(datasetElement,mediaObjectsById);
+		return new sdd_Dataset(Lambda.array(this.loadDatasetTaxons(datasetElement,mediaObjectsById,charsAndStatesById.charactersById)),Lambda.array(charsAndStatesById.charactersById),Lambda.array(charsAndStatesById.statesById));
 	}
 	,loadMediaObjects: function(datasetElement) {
 		var mediaObjectsElement = sdd_XmlExtensions.firstElementNamed(datasetElement,"MediaObjects");
@@ -1224,9 +1223,9 @@ sdd_Loader.prototype = {
 				}
 				var taxonToAugment = value3;
 				if(representation != null) {
-					var s = representation.name;
+					var s = representation.label;
 					if(!(s == null || s == "")) {
-						taxonToAugment.name = representation.name;
+						taxonToAugment.label = representation.label;
 					}
 					var s1 = representation.detail;
 					if(!(s1 == null || s1 == "")) {
@@ -1242,38 +1241,16 @@ sdd_Loader.prototype = {
 					var categoricalElement = categoricalElements;
 					while(categoricalElement.hasNext()) {
 						var categoricalElement1 = categoricalElement.next();
-						var value4 = categoricalElement1.get("ref");
-						var exception4 = new sdd_SddException("A Categorical is missing its 'ref' attribute.");
-						if(value4 == null) {
-							throw haxe_Exception.thrown(exception4);
-						}
-						var characterId = value4;
-						var value5 = charactersById.h[characterId];
-						var exception5 = new sdd_SddRefException("Categorical","Character",characterId);
-						if(value5 == null) {
-							throw haxe_Exception.thrown(exception5);
-						}
-						var referencedCharacter = value5;
 						var stateElement = categoricalElement1.elementsNamed("State");
 						while(stateElement.hasNext()) {
 							var stateElement1 = stateElement.next();
-							var value6 = stateElement1.get("ref");
-							var exception6 = new sdd_SddException("A State is missing its 'ref'.");
-							if(value6 == null) {
-								throw haxe_Exception.thrown(exception6);
+							var value4 = stateElement1.get("ref");
+							var exception4 = new sdd_SddException("A State is missing its 'ref'.");
+							if(value4 == null) {
+								throw haxe_Exception.thrown(exception4);
 							}
-							var stateId = [value6];
-							var value7 = Lambda.find(referencedCharacter.states,(function(stateId) {
-								return function(s) {
-									return s.id == stateId[0];
-								};
-							})(stateId));
-							var exception7 = new sdd_SddRefException("Categorical > State","State",stateId[0]);
-							if(value7 == null) {
-								throw haxe_Exception.thrown(exception7);
-							}
-							var referencedState = value7;
-							taxonToAugment.selectedStates.push(referencedState.copy());
+							var stateId = value4;
+							taxonToAugment.selectedStatesIds.push(stateId);
 						}
 					}
 				}
@@ -1355,9 +1332,9 @@ sdd_Loader.prototype = {
 	,loadDatasetCharacters: function(datasetElement,mediaObjectsById) {
 		var charactersById = new haxe_ds_StringMap();
 		var charactersElements = sdd_XmlExtensions.firstElementNamed(datasetElement,"Characters");
-		var statesById_h = Object.create(null);
+		var statesById = new haxe_ds_StringMap();
 		if(charactersElements == null) {
-			return charactersById;
+			return new sdd_CharactersAndStatesById(charactersById,statesById);
 		}
 		var characterElement = charactersElements.elements();
 		while(characterElement.hasNext()) {
@@ -1384,7 +1361,7 @@ sdd_Loader.prototype = {
 			}
 			var characterId = value;
 			var statesElement = sdd_XmlExtensions.firstElementNamed(characterElement1,"States");
-			var states = [];
+			var statesIds = [];
 			if(statesElement != null) {
 				var stateElement = statesElement.elementsNamed("StateDefinition");
 				while(stateElement.hasNext()) {
@@ -1396,11 +1373,11 @@ sdd_Loader.prototype = {
 					}
 					var stateId = value1;
 					var state = new sdd_State(stateId,characterId,this.loadRepresentation(sdd_XmlExtensions.firstElementNamed(stateElement1,"Representation"),mediaObjectsById));
-					statesById_h[stateId] = state;
-					states.push(state);
+					statesById.h[stateId] = state;
+					statesIds.push(stateId);
 				}
 			}
-			var value2 = new sdd_Character(characterId,this.loadRepresentation(sdd_XmlExtensions.firstElementNamed(characterElement1,"Representation"),mediaObjectsById),states);
+			var value2 = new sdd_Character(characterId,this.loadRepresentation(sdd_XmlExtensions.firstElementNamed(characterElement1,"Representation"),mediaObjectsById),statesIds);
 			charactersById.h[characterId] = value2;
 		}
 		var characterTreesElement = sdd_XmlExtensions.firstElementNamed(datasetElement,"CharacterTrees");
@@ -1444,25 +1421,25 @@ sdd_Loader.prototype = {
 										throw haxe_Exception.thrown(exception3);
 									}
 									var stateRef = value3;
-									var value4 = statesById_h[stateRef];
+									var value4 = statesById.h[stateRef];
 									var exception4 = new sdd_SddRefException("InapplicableIf > State","State",stateRef);
 									if(value4 == null) {
 										throw haxe_Exception.thrown(exception4);
 									}
 									var state = value4;
-									augmentedCharacter.inapplicableStates.push(state);
+									augmentedCharacter.inapplicableStatesIds.push(state.id);
 									augmentedCharacter.parentId = state.characterId;
 								}
 							}
 						}
-						if(augmentedCharacter.inapplicableStates.length > 0) {
+						if(augmentedCharacter.inapplicableStatesIds.length > 0) {
 							charactersById.h[augmentedCharacter.parentId].children.push(augmentedCharacter);
 						}
 					}
 				}
 			}
 		}
-		return charactersById;
+		return new sdd_CharactersAndStatesById(charactersById,statesById);
 	}
 	,load: function(text) {
 		var xml = Xml.parse(text);
@@ -1510,9 +1487,9 @@ var sdd_State = function(id,characterId,representation) {
 	this.id = id;
 	this.characterId = characterId;
 	if(representation != null) {
-		var s = representation.name;
+		var s = representation.label;
 		if(!(s == null || s == "")) {
-			this.name = representation.name;
+			this.label = representation.label;
 		}
 		var s = representation.detail;
 		if(!(s == null || s == "")) {
@@ -1526,20 +1503,17 @@ var sdd_State = function(id,characterId,representation) {
 sdd_State.__name__ = "sdd.State";
 sdd_State.__super__ = sdd_Representation;
 sdd_State.prototype = $extend(sdd_Representation.prototype,{
-	copy: function() {
-		return new sdd_State(this.id,this.characterId,new sdd_Representation(this.name,this.detail,this.mediaObjects));
-	}
-	,__class__: sdd_State
+	__class__: sdd_State
 });
 var sdd_Taxon = function(id,representation) {
 	this.children = [];
-	this.selectedStates = [];
+	this.selectedStatesIds = [];
 	sdd_Representation.call(this);
 	this.id = id;
 	if(representation != null) {
-		var s = representation.name;
+		var s = representation.label;
 		if(!(s == null || s == "")) {
-			this.name = representation.name;
+			this.label = representation.label;
 		}
 		var s = representation.detail;
 		if(!(s == null || s == "")) {
