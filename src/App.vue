@@ -493,7 +493,7 @@ export default {
                     stats[word] = (stats[word] ?? 0) + 1;
                 }
             }
-            let csv = "word,count\n";
+            let csv = "\uFEFFword,count\n";
             for (const [word, count] of Object.entries(stats)) {
                 let escapedWord = word;
                 if (escapedWord.includes(",") || escapedWord.includes("\n")) {
