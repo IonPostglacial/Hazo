@@ -486,21 +486,25 @@ export default {
             })();
         },
         exportStats() {
-            const stats = {};
+            const references = [];
+            const div = document.createElement("div");
             for (const item of Object.values(this.items)) {
-                const words = item.detail?.split(/[\s,;."'-]/) ?? [];
+                div.innerHTML = item.detail;
+                const words = div.innerText.split(/[\s\t,;:=/."'-()]/) ?? [];
                 for (const word of words) {
-                    stats[word] = (stats[word] ?? 0) + 1;
+                    if (word !== "") {
+                        references.push({ word, origin: item.id });
+                    }
                 }
             }
-            let csv = "\uFEFFword,count\n";
-            for (const [word, count] of Object.entries(stats)) {
+            let csv = "\uFEFFword,origin\n";
+            for (const { word, origin } of references) {
                 let escapedWord = word;
                 if (escapedWord.includes(",") || escapedWord.includes("\n")) {
                     escapedWord = escapedWord.replace('"', '""');
                     escapedWord = `"${escapedWord}"`;
                 }
-                csv += escapedWord + "," + count + "\n";
+                csv += escapedWord + "," + origin + "\n";
             }
             download(csv, "csv");
         },
