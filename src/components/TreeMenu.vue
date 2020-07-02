@@ -12,6 +12,7 @@
                 :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item" :name="name"      
                     :show-ids="fieldNum === 0"
+                    :space-for-add="editable && fieldNum > 0"
                     :editable="editable && fieldNum === 0" :buttons="buttons"
                     :name-field="nameField"
                     v-on:input="$emit('input', $event)"

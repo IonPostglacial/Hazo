@@ -8,7 +8,7 @@
             <input type="radio" class="invisible" :value="item.id" :id="name + '-' + item.id" :name="name" v-on:input="$emit('input', $event.target.value)" />
             <label class="blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items" :for="name + '-' + item.id">
                 <div v-if="showIds" class="min-width-small margin-right-medium">{{ prettyId }}</div>
-                <div :class="'flex-grow-1 ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
+                <div :class="'flex-grow-1 nowrap ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
                 <slot></slot>
             </label>
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
@@ -22,7 +22,7 @@
                     :name-field="nameField" :name="name" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
-                <li v-if="editable">
+                <li v-if="editable || spaceForAdd" :class="spaceForAdd ? 'visibility-hidden' : ''">
                     <AddItem v-on:add-item="addItem"></AddItem>
                 </li>
             </div>
@@ -45,6 +45,7 @@ export default {
         buttons: Array,
         nameField: String,
         editable: Boolean,
+        spaceForAdd: Boolean,
         showIds: Boolean
     },
     data() {

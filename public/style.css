@@ -113,6 +113,14 @@ div.invisible {
     display: none;
 }
 
+.visibility-hidden {
+    visibility: hidden;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
 .centered {
     margin-left: auto;
     margin-right: auto;
