@@ -488,12 +488,14 @@ export default {
         exportStats() {
             const references = [];
             const div = document.createElement("div");
+            const startsWithLetter = /^[^\W\d_]+.*/;
             for (const item of Object.values(this.items)) {
                 div.innerHTML = item.detail;
                 const words = div.innerText.split(/[\s\t,;:=/."'-()]/) ?? [];
                 for (const word of words) {
-                    if (word !== "") {
-                        references.push({ word, origin: item.id });
+                    const trimmedWord = word.trim();
+                    if (startsWithLetter.test(trimmedWord)) {
+                        references.push({ word: trimmedWord, origin: item.id });
                     }
                 }
             }
