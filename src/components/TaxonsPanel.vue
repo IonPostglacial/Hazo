@@ -13,7 +13,7 @@
             <div :class="'horizontal-flexbox start-align flex-grow-1' + (editable ? '' : 'scroll')">
                 <div class="thin-border medium-margin white-background scroll flex-grow-1">
                     <label class="item-property">Name</label>
-                    <input :readonly="!editable" type="text" v-model="item.name" /><br/>
+                    <input :readonly="!editable" type="text" lang="lat" spellcheck="false" v-model="item.name" /><br/>
 
                     <label class="item-property">Author</label>
                     <input :readonly="!editable" type="text" v-model="item.author" /><br/>
