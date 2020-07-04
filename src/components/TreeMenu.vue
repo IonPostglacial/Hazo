@@ -7,8 +7,13 @@
                 <button type="button" v-on:click="closeAll">Close All</button>
             </div>
         </div>
+        <ul class="thin-margin horizontal-flexbox space-between white-background stick-to-top">
+            <li class="no-list-style" v-for="(nameField, fieldNum) in (nameFields || ['name'])" :key="nameField">
+                <label><input type="checkbox" v-model="visibleColumns[fieldNum]">show col {{ fieldNum }}</label>
+            </li>
+        </ul>
         <div class="horizontal-flexbox">
-            <ul v-for="(nameField, fieldNum) in (nameFields || ['name'])" :key="nameField"
+            <ul v-for="(nameField, fieldNum) in (nameFields || ['name']).filter((e, i) => visibleColumns[i])" :key="nameField"
                 :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item" :name="name"      
                     :show-ids="fieldNum === 0"
@@ -45,6 +50,7 @@ export default {
         return {
             menuFilter: "",
             itemsBus: new Vue(),
+            visibleColumns: this.nameFields.map(() => true),
         };
     },
     computed: {
