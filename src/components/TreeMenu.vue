@@ -50,7 +50,7 @@ export default {
         return {
             menuFilter: "",
             itemsBus: new Vue(),
-            visibleColumns: this.nameFields.map(() => true),
+            visibleColumns: (this.nameFields ?? ["name"]).map(() => true),
         };
     },
     computed: {

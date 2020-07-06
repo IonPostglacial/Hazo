@@ -36,7 +36,7 @@
         <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
     </div>
     <div :class="'horizontal-flexbox start-align flex-grow-1 scroll ' + (showBigImage ? 'invisible' : '')">
-        <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
+        <nav v-if="showLeftMenu && selectedTab < 3" class="scroll medium-margin thin-border white-background">
             <TreeMenu editable v-if="showItems" :items="items" name="item" v-model="selectedItemId"
                 :name-fields="['name', 'vernacularName', 'nameCN']"
                 v-on:add-item="addItem"
@@ -50,6 +50,7 @@
                 v-on:delete-item="deleteDescription">
             </TreeMenu>
         </nav>
+        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
         <TaxonsPanel v-if="showItems" editable
             :show-image-box="showImageBox"
             :extra-fields="extraFields"
@@ -177,6 +178,7 @@
 </template>
 
 <script>
+import WordsDictionary from "./components/WordsDictionary.vue";
 import AddItem from "./components/AddItem.vue";
 import TreeMenu from "./components/TreeMenu.vue";
 import ImageBox from "./components/ImageBox.vue";
@@ -185,25 +187,12 @@ import DB from "./db-storage.js";
 import Vue from "../node_modules/vue/dist/vue.esm.browser.js";
 import loadSDD from "./sdd-load";
 import saveSDD from "./sdd-save";
-
-function download(text, extension) {
-    const filename = window.prompt("Choose a file name", "export") + `.${extension}`;
-    const element = document.createElement("a");
-    element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text));
-    element.setAttribute("download", filename);
-
-    element.style.display = "none";
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-}
+import download from "./download.js";
 
 export default {
     name: "App",
     components: {
-        AddItem, TreeMenu, ImageBox, TaxonsPanel
+        AddItem, TreeMenu, ImageBox, TaxonsPanel, WordsDictionary
     },
     data() {
         function loadBase(id) {
@@ -211,6 +200,7 @@ export default {
                 defaultData.items = savedDataset?.taxons ?? {};
                 defaultData.descriptions = savedDataset?.descriptors ?? {};
                 defaultData.extraFields = savedDataset?.extraFields ?? [];
+                defaultData.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
             });
         }
 
@@ -238,7 +228,8 @@ export default {
             tabs: [
                 "Taxons",
                 "Taxons Descriptors",
-                "Descriptors"
+                "Descriptors",
+                "Dictionary"
             ],
             langs: ["FR", "EN", "CN"],
             taxonNameType: "scientific",
@@ -246,6 +237,7 @@ export default {
             selectedLang: 0,
             items: {},
             descriptions: {},
+            dictionaryEntries: {},
         };
 
         loadBase(0);
@@ -326,6 +318,8 @@ export default {
                 this.items = savedDataset?.taxons ?? {};
                 this.descriptions = savedDataset?.descriptors ?? {};
                 this.extraFields = savedDataset?.extraFields ?? [];
+                this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
+                console.log(savedDataset?.dictionaryEntries);
             });
         },
         loadDB(id) {
@@ -461,7 +455,7 @@ export default {
             });
         },
         saveData() {
-            DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields });
+            DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries });
         },
         resetData() {
             Vue.set(this.$data, "items", {});
