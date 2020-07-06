@@ -19,6 +19,7 @@
             <div v-if="open" class="flex-grow-1">
                 <TreeMenuItem v-for="child in item.children" :item-bus="itemBus" :key="child.id" :editable="editable"       
                     :show-ids="showIds"
+                    :space-for-add="spaceForAdd"
                     :name-field="nameField" :name="name" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
@@ -33,7 +34,7 @@
 <script>
 import AddItem from "./AddItem.vue";
 
-const knownPrefixes = ["t", "myt-", "c", "d"];
+const knownPrefixes = ["t", "myt-", "c", "d", "myd-"];
 
 export default {
     name: "TreeMenuItem",
