@@ -51,7 +51,7 @@ function extractItem(taxon, descriptors, extraFields, statesById) {
         photos: taxon.mediaObjects.map(m => m.source),
         parentId: taxon.parentId,
         topLevel: !taxon.parentId,
-        children: Object.fromEntries(taxon.children.map(child => [child.id, extractItem(child, descriptors, extraFields, statesById)])),
+        children: taxon.childrenIds,
     };
     const descriptions = {};
 
@@ -94,7 +94,7 @@ function extractDescriptor(character, statesById) {
         photos: character.mediaObjects.map(m => m.source),
         inapplicableStates: character.inapplicableStatesIds.map(id => statesById[id]),
         topLevel: !character.parentId,
-        children: Object.fromEntries(character.children.map(child => [child.id, extractDescriptor(child, statesById)])),
+        children: character.childrenIds,
     };
 }
 
@@ -124,11 +124,17 @@ async function loadSDD(file, extraFields=[]) {
     if (typeof extraFields === "undefined") { extraFields = [] }
 
     const datasets = await loadSddFile(file);
+    const dataset = datasets[0];
+    const statesById = extractStatesById(dataset);
     
-    const statesById = extractStatesById(datasets[0]);
-    console.log(statesById);
-    const descriptors = extractDescriptorsById(datasets[0], statesById);
-    const items = extractItemsById(datasets[0], descriptors, extraFields, statesById);
+    const descriptors = extractDescriptorsById(dataset, statesById);
+    Object.values(descriptors).forEach(descriptor => descriptor.children = Object.fromEntries(descriptor.children.map(id => [id, descriptors[id]])));
+    
+    const items = extractItemsById(dataset, descriptors, extraFields, statesById);
+    Object.values(items).forEach(item => item.children = Object.fromEntries(item.children.map(id => [id, items[id]])));
+
+    console.log(descriptors);
+    console.log(items);
 
     return { items, descriptors };
 }

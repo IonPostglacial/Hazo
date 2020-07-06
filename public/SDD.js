@@ -1069,7 +1069,7 @@ sdd_Representation.prototype = {
 	__class__: sdd_Representation
 };
 var sdd_Character = function(id,representation,statesIds) {
-	this.children = [];
+	this.childrenIds = [];
 	this.inapplicableStatesIds = [];
 	sdd_Representation.call(this);
 	if(representation != null) {
@@ -1323,7 +1323,7 @@ sdd_Loader.prototype = {
 					++_g;
 					var child = hierarchiesById_h[hid].taxon;
 					child.parentId = augmentedTaxon.id;
-					augmentedTaxon.children.push(child);
+					augmentedTaxon.childrenIds.push(child.id);
 				}
 			}
 		}
@@ -1433,7 +1433,7 @@ sdd_Loader.prototype = {
 							}
 						}
 						if(augmentedCharacter.inapplicableStatesIds.length > 0) {
-							charactersById.h[augmentedCharacter.parentId].children.push(augmentedCharacter);
+							charactersById.h[augmentedCharacter.parentId].childrenIds.push(augmentedCharacter.id);
 						}
 					}
 				}
@@ -1506,7 +1506,7 @@ sdd_State.prototype = $extend(sdd_Representation.prototype,{
 	__class__: sdd_State
 });
 var sdd_Taxon = function(id,representation) {
-	this.children = [];
+	this.childrenIds = [];
 	this.selectedStatesIds = [];
 	sdd_Representation.call(this);
 	this.id = id;
