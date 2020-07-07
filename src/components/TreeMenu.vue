@@ -2,13 +2,13 @@
     <div class="vertical-flexbox">
         <div class="thin-margin horizontal-flexbox space-between white-background stick-to-top">
             <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-            <div>
+            <div class="horizontal-flexbox">
                 <button type="button" v-on:click="openAll">Open All</button>
                 <button type="button" v-on:click="closeAll">Close All</button>
             </div>
         </div>
-        <ul class="thin-margin horizontal-flexbox space-between white-background stick-to-top">
-            <li class="no-list-style" v-for="(nameField, fieldNum) in (nameFields || ['name'])" :key="nameField">
+        <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between white-background stick-to-top">
+            <li class="no-list-style" v-for="(nameField, fieldNum) in nameFields" :key="nameField">
                 <label><input type="checkbox" v-model="visibleColumns[fieldNum]">show col {{ fieldNum }}</label>
             </li>
         </ul>

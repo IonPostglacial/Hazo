@@ -1,5 +1,5 @@
 <template>
-    <section v-if="typeof item !== 'undefined'" :class="editable ? 'horizontal-flexbox' : 'vertical-flexbox scroll'">
+    <section v-if="typeof item !== 'undefined'" :class="'flex-grow-1 ' + (editable ? 'horizontal-flexbox' : 'vertical-flexbox scroll')">
         <div :class="'vertical-flexbox' + (editable ? ' scroll' : '')">
             <ImageBox v-if="showImageBox"
                 class="scroll min-height-300"
