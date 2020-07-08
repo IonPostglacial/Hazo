@@ -61,11 +61,11 @@ export default {
         AddItem,
     },
     props: {
-        selectedEntryId: Number,
         initEntries: Object,
     },
     data() {
         return {
+            selectedEntryId: Number,
             entries: this.initEntries ?? {},
             editor: ClassicEditor,
             editorConfig: {},
