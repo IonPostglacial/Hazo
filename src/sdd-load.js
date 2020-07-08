@@ -84,11 +84,12 @@ function extractItem(taxon, descriptors, extraFields, statesById) {
 }
 
 function extractDescriptor(character, statesById) {
+    const [name, nameCN] = character.label.split(" // ");
     return {
         type: "character",
         parentId: character.parentId,
         id: character.id,
-        name: character.label,
+        name, nameCN,
         detail: character.detail,
         states: character.statesIds.map(id => statesById[id]),
         photos: character.mediaObjects.map(m => m.source),
