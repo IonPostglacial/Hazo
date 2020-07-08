@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="vertical-flexbox lightgrey-background">
-    <nav class="horizontal-flexbox space-between">
+    <nav class="horizontal-flexbox space-between thin-border">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
             <button type="button" v-on:click="toggleImageBox">Image Box</button>
@@ -282,9 +282,13 @@ export default {
             this.selectedDescriptionState.photos.splice(index, 1);
         },
         addDescription({ value, parentId }) {
-            const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
+            let nextId = Object.keys(this.descriptions).length;
+            while (typeof this.descriptions["myd-" + nextId] !== "undefined") {
+                nextId++;
+            }
+            const newDescriptionId = "myd-" + nextId;
             const newDescription = {
-                hid: "mydn-" + Object.keys(this.descriptions).length, id: newDescriptionId, name: value,states: [],
+                hid: "mydn-" + nextId, id: newDescriptionId, name: value,states: [],
                 topLevel: typeof parentId === "undefined", children: {}, open: false, inapplicableStates: []
             };
             this.descriptions = { ...this.descriptions, [newDescriptionId]: newDescription };
