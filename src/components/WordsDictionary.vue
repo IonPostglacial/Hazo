@@ -17,7 +17,7 @@
                         <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.nameFR }}</label></td>
                     </tr>
                 </table>
-                <AddItem class="stick-to-bottom" v-on:add-item="addEntry"></AddItem>
+                <AddItem v-on:add-item="addEntry"></AddItem>
             </div>
             <div v-if="typeof selectedEntry !== 'undefined'" class="white-background medium-padding scroll height-full">
                 <div class="horizontal-flexbox">
@@ -109,7 +109,7 @@ export default {
             download(csv, "csv");
         },
         addEntry(nameCN) {
-            const id = Object.keys(this.entries).length;
+            const id = Date.now();
             Vue.set(this.entries, id, { id, nameCN, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
         },
         uploadCSV(e) {
