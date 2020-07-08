@@ -134,9 +134,6 @@ async function loadSDD(file, extraFields=[]) {
     const items = extractItemsById(dataset, descriptors, extraFields, statesById);
     Object.values(items).forEach(item => item.children = Object.fromEntries(item.children.map(id => [id, items[id]])));
 
-    console.log(descriptors);
-    console.log(items);
-
     return { items, descriptors };
 }
 
