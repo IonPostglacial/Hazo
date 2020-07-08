@@ -86,7 +86,7 @@ export default {
     data() {
         return {
             editor: ClassicEditor,
-            editorData: this.item.detail ?? "",
+            editorData: this.item?.detail ?? "",
             editorConfig: {}
         }
     },

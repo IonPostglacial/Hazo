@@ -19,12 +19,6 @@
                 <option value="vernacular">Vernacular</option>
                 <option value="chinese">中文名</option>
             </select>
-            <div class="selector" v-for="(lang, index) in langs" :key="index">
-                <input v-model="selectedLang" :id="'lang-radio-' + index" class="selector-radio" name="lang-radio" :value="index" type="radio" />
-                <label class="selector-label" :for="'lang-radio-' + index">
-                    {{ lang }}
-                </label>
-            </div>
         </div>
     </nav>
     <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
@@ -37,67 +31,26 @@
     </div>
     <div :class="'horizontal-flexbox start-align flex-grow-1 scroll ' + (showBigImage ? 'invisible' : '')">
         <nav v-if="showLeftMenu && selectedTab < 3" class="scroll medium-margin thin-border white-background">
-            <TreeMenu editable v-if="showItems" :items="items" name="item" v-model="selectedItemId"
-                :name-fields="['name', 'vernacularName', 'nameCN']"
-                v-on:add-item="addItem"
-                v-on:delete-item="deleteItem">
-            </TreeMenu>
-            <TreeMenu v-if="showItemDescriptors" :items="items" name="item" v-model="selectedItemId" :name-fields="[taxonNameField]">
-            </TreeMenu>
             <TreeMenu editable v-if="showDescriptors" v-model="selectedDescription" :items="descriptorsDependencyTree" name="description" 
-                :name-fields="[nameField]"
+                :name-fields="['name', 'nameCN']"
                 v-on:add-item="addDescription"
                 v-on:delete-item="deleteDescription">
             </TreeMenu>
         </nav>
-        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
-        <TaxonsPanel v-if="showItems" editable
-            :show-image-box="showImageBox"
+        <TaxonsTab v-if="selectedTab === 0"
+            :init-items="items" :descriptions="descriptions"
+            :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
             :extra-fields="extraFields"
-            :item="selectedItem" :descriptions="descriptions"
             v-on:open-photo="maximizeImage">
-        </TaxonsPanel>
-        <section v-if="showItemDescriptors && typeof selectedItem !== 'undefined'" class="vertical-flexbox flex-grow-1">
-            <div class="horizontal-flexbox flex-grow-1 scroll">
-                <section class="vertical-flexbox flex-grow-1">
-                    <div class="horizontal-flexbox scroll">
-                        <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="maximizeImage" :show-image-box="showImageBox">
-                        </TaxonsPanel>
-                        <div v-if="selectedItemId !== 0" class="vertical-flexbox">
-                            <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
-                                v-on:open-photo="maximizeImage"
-                                :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
-                            <TreeMenu class="thin-border medium-margin white-background scroll" v-model="selectedItemDescriptorId"      
-                                :items="descriptorsDependencyTree" name="item-description"
-                                v-on:add-item="addDescription"
-                                v-on:delete-item="deleteDescription">
-                            </TreeMenu>
-                        </div>
-                    </div>
-                </section>
-                <section v-if="selectedItemId != 0" class="vertical-flexbox flex-grow-1">
-                    <div class="thin-border medium-margin medium-padding white-background scroll">
-                        <div class="horizontal-flexbox space-between" v-if="selectedItemDescriptorId !== 0">
-                            <button class="background-color-ok" v-on:click="addAllItemStates">Check All</button>
-                            <button class="background-color-ko" v-on:click="removeAllItemStates"> Uncheck All</button>
-                        </div>
-                        <label class="horizontal-flexbox" v-if="selectedItemDescriptorId !== 0"><div>&nbsp;</div>
-                            <input class="flex-grow-1" placeholder="Filter" type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
-                        </label>
-                        <ul class="no-list-style" v-if="selectedItemDescriptorId !== 0">
-                            <li class="horizontal-flexbox" v-for="(state, stateIndex) in selectedItemDescriptorFilteredStates" :key="state.id">
-                                <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
-                                    :checked="selectedItemDescriptorStates.map(s => s.id).includes(state.id)">
-                                <input class="flex-grow-1" type="text" v-model="state.name" />
-                            </li>
-                            <li class="">
-                                <AddItem v-on:add-item="addState(descriptions[selectedItemDescriptorId], $event)"></AddItem>
-                            </li>
-                        </ul>
-                    </div>
-                </section>
-            </div>
-        </section>
+        </TaxonsTab>
+        <TaxonsDescriptorsTab v-if="selectedTab === 1"
+            :init-items="items" :descriptions="descriptions" :taxon-name-field="taxonNameField"
+            :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
+            :extra-fields="extraFields"
+            v-on:open-photo="maximizeImage">
+        </TaxonsDescriptorsTab>
+        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
+
         <section v-if="showDescriptors && typeof descriptions[selectedDescription] !== 'undefined'" class="vertical-flexbox flex-grow-1">
             <ImageBox v-if="showImageBox"
                 :photos="descriptions[selectedDescription].photos"
@@ -182,7 +135,8 @@ import WordsDictionary from "./components/WordsDictionary.vue";
 import AddItem from "./components/AddItem.vue";
 import TreeMenu from "./components/TreeMenu.vue";
 import ImageBox from "./components/ImageBox.vue";
-import TaxonsPanel from "./components/TaxonsPanel.vue";
+import TaxonsTab from "./components/TaxonsTab.vue";
+import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import DB from "./db-storage.js";
 import Vue from "../node_modules/vue/dist/vue.esm.browser.js";
 import loadSDD from "./sdd-load";
@@ -192,23 +146,13 @@ import download from "./download.js";
 export default {
     name: "App",
     components: {
-        AddItem, TreeMenu, ImageBox, TaxonsPanel, WordsDictionary
+        AddItem, TreeMenu, ImageBox, TaxonsTab, TaxonsDescriptorsTab, WordsDictionary
     },
     data() {
-        function loadBase(id) {
-            DB.load(id | 0).then(savedDataset => {
-                defaultData.items = savedDataset?.taxons ?? {};
-                defaultData.descriptions = savedDataset?.descriptors ?? {};
-                defaultData.extraFields = savedDataset?.extraFields ?? [];
-                defaultData.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
-            });
-        }
-
         let databaseIds = [];
-
         DB.list().then(dbIds => databaseIds = dbIds);
 
-        const defaultData = {
+        return {
             databaseIds,
             selectedBase: 0,
             showLeftMenu: true,
@@ -216,8 +160,6 @@ export default {
             selectedItemId: 0,
             selectedDescription: 0,
             selectedState: 0,
-            selectedItemDescriptorId: 0,
-            itemDescriptorSearch: "",
             newItemPhoto: "",
             newDescriptionPhoto: "",
             selectedTab: 0,
@@ -234,25 +176,15 @@ export default {
             langs: ["FR", "EN", "CN"],
             taxonNameType: "scientific",
             extraFields: [],
-            selectedLang: 0,
             items: {},
             descriptions: {},
             dictionaryEntries: {},
         };
-
-        loadBase(0);
-
-        return defaultData;
+    },
+    mounted() {
+        this.loadBase();
     },
     computed: {
-        nameField() {
-            switch(this.selectedLang) {
-                case 0: return "name";
-                case 1: return "nameEN";
-                case 2: return "nameCN";
-                default: return "name";
-            }
-        },
         taxonNameField() {
             switch(this.taxonNameType) {
                 case "scientific": return "name";
@@ -261,43 +193,8 @@ export default {
                 default: return "name"; 
             }
         },
-        selectedItem() {
-            return this.items[this.selectedItemId] ?? {};
-        },
         selectedDescriptionState() {
             return this.descriptions[this.selectedDescription]?.states?.find(s => s.id === this.selectedState) ?? {};
-        },
-        selectedItemDescriptorStates() {
-            return this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
-        },
-        selectedItemDescriptorFilteredStates() {
-            return this.descriptions[this.selectedItemDescriptorId]?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
-        },
-        selectedItemDescriptorTree() {
-            const itemStatesIds = [];
-            const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
-            const dependencyTree = JSON.parse(JSON.stringify(this.descriptions));
-            for (const description of selectedItemIdDescriptions) {
-                for (const state of description?.states ?? []) {
-                    itemStatesIds.push(state.id);
-                }
-            }
-            for (const descriptor of Object.values(dependencyTree)) {
-                const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor.id === descriptor.id);
-                if (typeof selectedDescription === "undefined") continue;
-                const descriptorStates = selectedDescription.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId }, s));
-
-                if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
-                    descriptor.hidden = true;
-                }
-
-                if (descriptorStates.length === 0) {
-                    descriptor.warning = true;
-                    descriptor.children = {};
-                }
-                Object.assign(descriptor.children, descriptorStates);
-            }
-            return dependencyTree;
         },
         showItems() {
             return this.selectedTab == 0;
@@ -315,11 +212,12 @@ export default {
     methods: {
         loadBase(id) {
             DB.load(id | 0).then(savedDataset => {
-                this.items = savedDataset?.taxons ?? {};
+                for (const [id, taxon] of Object.entries(savedDataset?.taxons ?? {})) {
+                    Vue.set(this.items, id, taxon);
+                }
                 this.descriptions = savedDataset?.descriptors ?? {};
                 this.extraFields = savedDataset?.extraFields ?? [];
                 this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
-                console.log(savedDataset?.dictionaryEntries);
             });
         },
         loadDB(id) {
@@ -382,52 +280,6 @@ export default {
         },
         deleteStatePhoto(index) {
             this.selectedDescriptionState.photos.splice(index, 1);
-        },
-        addItem({ value, parentId }) {
-            let newItemIdNum = Object.keys(this.items).length;
-            do {
-                newItemIdNum++
-            } while(typeof this.items["myt-" + newItemIdNum] !== "undefined");
-            const newItemId = "myt-" + newItemIdNum;
-            const newItem = {
-                hid: "mytn-" + newItemId, id: newItemId, name: value, photos: [],
-                topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: []
-            };
-            this.items = { ...this.items, [newItemId]: newItem };
-            if (typeof parentId !== "undefined") {
-                this.items[parentId].children = { ...this.items[parentId].children, [newItemId]: newItem };
-            }
-        },
-        addItemState(e, state) {
-            const selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
-            if (typeof selectedDescription === "undefined") throw "Cannot add a state when no description has been selected";
-            const stateIndex = selectedDescription.states.findIndex(s => s.id === state.id);
-
-            if (e.target.checked) {
-                if (stateIndex < 0) {
-                    selectedDescription.states.push(state);
-                }
-            } else {
-                if (stateIndex >= 0) {
-                    selectedDescription.states.splice(stateIndex, 1);
-                }
-            }
-        },
-        addAllItemStates() {
-            const selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
-            if (typeof selectedDescription === "undefined") throw "Cannot add states if no description has been selected";
-            selectedDescription.states = [...this.descriptions[selectedDescription.descriptor.id].states];
-        },
-        removeAllItemStates() {
-            const selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
-
-            selectedDescription.states = [];
-        },
-        deleteItem({ parentId, itemId }) {
-            if (typeof parentId !== "undefined") {
-                Vue.delete(this.items[parentId].children, itemId);
-            }
-            Vue.delete(this.items, itemId);
         },
         addDescription({ value, parentId }) {
             const newDescriptionId = "myd-" + Object.keys(this.descriptions).length;
