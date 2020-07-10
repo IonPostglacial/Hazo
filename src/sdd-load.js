@@ -1,7 +1,11 @@
 import StandardFields from "./standard-fields.js";
 
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  }
+
 function findInDescription(description, section) {
-    const re = new RegExp(`${section}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
+    const re = new RegExp(`${escapeRegExp(section)}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
     const match = description?.match(re) ?? null;
     return match !== null ? match[1].trim() : "";
 }
@@ -10,7 +14,7 @@ function removeFromDescription(description, sections) {
     let desc = description;
 
     for (const section of sections) {
-        const re = new RegExp(`${section}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
+        const re = new RegExp(`${escapeRegExp(section)}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
         desc = desc?.replace(re, "");
     }
     return desc;
