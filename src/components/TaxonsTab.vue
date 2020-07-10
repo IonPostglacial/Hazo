@@ -1,5 +1,5 @@
 <template>
-    <div class="horizontal-flexbox start-align flex-grow-1">
+    <div class="horizontal-flexbox start-align flex-grow-1 height-full">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
             <TreeMenu editable :items="items" name="item" v-model="selectedItemId"
                 :name-fields="['name', 'vernacularName', 'nameCN']"

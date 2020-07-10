@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="vertical-flexbox lightgrey-background">
+  <div id="app" class="vertical-flexbox lightgrey-background height-full">
     <nav class="horizontal-flexbox space-between thin-border">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
@@ -29,7 +29,7 @@
         </div>
         <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
     </div>
-    <div :class="'horizontal-flexbox start-align flex-grow-1 scroll ' + (showBigImage ? 'invisible' : '')">
+    <div :class="'horizontal-flexbox start-align flex-grow-1 height-main-panel ' + (showBigImage ? 'invisible' : '')">
         <TaxonsTab v-if="selectedTab === 0"
             :init-items="items" :descriptions="descriptions"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"

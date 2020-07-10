@@ -81,10 +81,26 @@ ul {
 #app {
     font-family: Arial, Helvetica, sans-serif;
     height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+input[type="text"]:read-only {
+    border: none;
+    font-size: 1em;
+    padding: 8px;
+}
+
+.italic {
+    font-style: italic;
 }
 
 .height-full {
     height: 100%;
+}
+
+.height-main-panel {
+    height: calc(100% - 84px);
 }
 
 .ck.ck-editor {

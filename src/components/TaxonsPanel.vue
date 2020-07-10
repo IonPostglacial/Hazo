@@ -12,10 +12,10 @@
             </ImageBox>
             <div :class="'horizontal-flexbox start-align flex-grow-1' + (editable ? '' : 'scroll')">
                 <div class="thin-border medium-margin white-background scroll flex-grow-1">
-                    <label class="item-property">Name</label>
-                    <input :readonly="!editable" type="text" lang="lat" spellcheck="false" v-model="item.name" /><br/>
+                    <label class="item-property">NS</label>
+                    <input class="italic" :readonly="!editable" type="text" lang="lat" spellcheck="false" v-model="item.name" /><br v-if="editable"/>
 
-                    <label class="item-property">Author</label>
+                    <label v-if="editable" class="item-property">Author</label>
                     <input :readonly="!editable" type="text" v-model="item.author" /><br/>
 
                     <label class="item-property">Synonymous</label>
@@ -24,10 +24,10 @@
                     <label class="item-property">中文名</label>
                     <input :readonly="!editable"  type="text" v-model="item.nameCN" /><br/>
 
-                    <label class="item-property">Vernacular Name</label>
+                    <label class="item-property">NV</label>
                     <input :readonly="!editable"  type="text" v-model="item.vernacularName" /><br/>
 
-                    <label class="item-property">Vernacular Name 2</label>
+                    <label class="item-property">NV 2</label>
                     <input :readonly="!editable"  type="text" v-model="item.vernacularName2" /><br/>
 
                     <label class="item-property">Website</label>
