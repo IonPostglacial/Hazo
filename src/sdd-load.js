@@ -24,7 +24,7 @@ function loadSddFile(file) {
     return new Promise(function (resolve, reject) {
         const fileReader = Object.assign(new FileReader(), {
             onload() {
-                const xml = new window.sdd.Loader().load(fileReader.result);
+                const xml = new window.sdd.Loader(false).load(fileReader.result);
                 resolve(xml);
             },
             onerror() {
@@ -95,7 +95,7 @@ function extractDescriptor(character, statesById) {
         id: character.id,
         name, nameCN,
         detail: character.detail,
-        states: character.statesIds.map(id => statesById[id]),
+        states: character.states.map(s => statesById[s.id]),
         photos: character.mediaObjects.map(m => m.source),
         inapplicableStates: character.inapplicableStatesIds.map(id => statesById[id]),
         topLevel: !character.parentId,
