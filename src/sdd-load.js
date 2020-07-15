@@ -2,7 +2,7 @@ import StandardFields from "./standard-fields.js";
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-  }
+}
 
 function findInDescription(description, section) {
     const re = new RegExp(`${escapeRegExp(section)}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
@@ -35,16 +35,16 @@ function loadSddFile(file) {
     });
 }
 
-function extractState(state) {
+function extractState(state, photosByRef) {
     return {
         id: state.id,
         descriptorId: state.characterId,
         name: state.label,
-        photos: state.mediaObjects.map(m => m.source),
+        photos: state.mediaObjectsRefs.map(m => photosByRef[m.ref]),
     };
 }
 
-function extractItem(taxon, descriptors, extraFields, statesById) {
+function extractItem(taxon, descriptors, extraFields, statesById, photosByRef) {
     const [name, nameCN] = taxon.label.split(" // ");
     const item = {
         type: "taxon",
@@ -52,23 +52,18 @@ function extractItem(taxon, descriptors, extraFields, statesById) {
         hid: taxon.id,
         name: name.trim(),
         nameCN: nameCN?.trim(),
-        photos: taxon.mediaObjects.map(m => m.source),
+        photos: taxon.mediaObjectsRefs.map(m => photosByRef[m.ref]),
         parentId: taxon.parentId,
         topLevel: !taxon.parentId,
         children: taxon.childrenIds,
     };
     const descriptions = {};
 
-    for (const selectedStateId of taxon.selectedStatesIds) {
-        const selectedState = statesById[selectedStateId];
-
-        if (typeof descriptions[selectedState.descriptorId] === "undefined") {
-            descriptions[selectedState.descriptorId] = {
-                descriptor: descriptors[selectedState.descriptorId],
-                states: []
-            };
-        }
-        descriptions[selectedState.descriptorId].states.push(selectedState);
+    for (const categorical of taxon.categoricals) {
+        descriptions[categorical.ref] = {
+            descriptor: descriptors[categorical.ref],
+            states: categorical.stateRefs.map(s => statesById[s.ref])
+        };
     }
     item.descriptions = Object.values(descriptions);
 
@@ -87,7 +82,7 @@ function extractItem(taxon, descriptors, extraFields, statesById) {
     return item;
 }
 
-function extractDescriptor(character, statesById) {
+function extractDescriptor(character, statesById, photosByRef) {
     const [name, nameCN] = character.label.split(" // ");
     return {
         type: "character",
@@ -96,33 +91,37 @@ function extractDescriptor(character, statesById) {
         name, nameCN,
         detail: character.detail,
         states: character.states.map(s => statesById[s.id]),
-        photos: character.mediaObjects.map(m => m.source),
-        inapplicableStates: character.inapplicableStatesIds.map(id => statesById[id]),
+        photos: character.mediaObjectsRefs.map(m => photosByRef[m.ref]),
+        inapplicableStates: character.inapplicableStatesRefs.map(s => statesById[s.ref]),
         topLevel: !character.parentId,
         children: character.childrenIds,
     };
 }
 
-function extractStatesById(sddContent) {
-    return Object.fromEntries(sddContent.states.map(s => [s.id, extractState(s)]));
+function extractStatesById(sddContent, photosByRef) {
+    return Object.fromEntries(sddContent.states.map(s => [s.id, extractState(s, photosByRef)]));
 }
 
-function extractItemsById(sddContent, descriptors, extraFields, statesById) {
+function extractItemsById(sddContent, descriptors, extraFields, statesById, photosByRef) {
     const itemsById = {};
     
     for (const taxon of sddContent.taxons) {
-        itemsById[taxon.id] = extractItem(taxon, descriptors, extraFields, statesById);
+        itemsById[taxon.id] = extractItem(taxon, descriptors, extraFields, statesById, photosByRef);
     }
     return itemsById;
 }
 
-function extractDescriptorsById(sddContent, statesById) {
+function extractDescriptorsById(sddContent, statesById, photosByRef) {
     const descriptorsById = {};
     
     for (const character of sddContent.characters) {
-        descriptorsById[character.id] = extractDescriptor(character, statesById);
+        descriptorsById[character.id] = extractDescriptor(character, statesById, photosByRef);
     }
     return descriptorsById;
+}
+
+function extractPhotosByRef(sddContent) {
+    return Object.fromEntries(sddContent.mediaObjects.map(m => [m.id, m.source]));
 }
 
 async function loadSDD(file, extraFields=[]) {
@@ -130,12 +129,13 @@ async function loadSDD(file, extraFields=[]) {
 
     const datasets = await loadSddFile(file);
     const dataset = datasets[0];
-    const statesById = extractStatesById(dataset);
+    const photosByRef = extractPhotosByRef(dataset);
+    const statesById = extractStatesById(dataset, photosByRef);
     
-    const descriptors = extractDescriptorsById(dataset, statesById);
+    const descriptors = extractDescriptorsById(dataset, statesById, photosByRef);
     Object.values(descriptors).forEach(descriptor => descriptor.children = Object.fromEntries(descriptor.children.map(id => [id, descriptors[id]])));
     
-    const items = extractItemsById(dataset, descriptors, extraFields, statesById);
+    const items = extractItemsById(dataset, descriptors, extraFields, statesById, photosByRef);
     Object.values(items).forEach(item => item.children = Object.fromEntries(item.children.map(id => [id, items[id]])));
 
     return { items, descriptors };
