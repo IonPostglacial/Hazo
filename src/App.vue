@@ -63,6 +63,7 @@
             </select>
             <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
+            <button type="button" v-on:click="globalReplace">Text Replace</button>
         </div>
         <div>
             <button type="button" class="background-color-1" v-on:click="editExtraFields">Fields</button>
@@ -193,6 +194,20 @@ export default {
         },
         completeData() {
             document.getElementById("complete-data").click();
+        },
+        globalReplace() {
+            const pattern = window.prompt("Text pattern to replace");
+            const replacement = window.prompt("Replacement");
+            const re = new RegExp(pattern, "gi");
+
+            for (const [key, item] of Object.entries(this.items)) {
+                const newDetail = item.detail.replaceAll(re, replacement);
+                this.items[key] = { ...item, detail: newDetail };
+            }
+            for (const [key, description] of Object.entries(this.descriptions)) {
+                const newDetail = description.detail.replaceAll(re);
+                this.descriptions[key] = { ...description, detail: newDetail };
+            }
         },
         fileUpload(e) {
             const file = e.target.files[0];
