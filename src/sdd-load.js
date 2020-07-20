@@ -14,7 +14,7 @@ function removeFromDescription(description, sections) {
     let desc = description;
 
     for (const section of sections) {
-        const re = new RegExp(`${escapeRegExp(section)}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
+        const re = new RegExp(`${escapeRegExp(section)}\\s*:\\s*(.*?)(?=<br>\n*<br>)`, "i");
         desc = desc?.replace(re, "");
     }
     return desc;
@@ -78,7 +78,7 @@ function extractItem(taxon, descriptors, extraFields, statesById, photosByRef) {
     }
     item.fasc = fasc;
     item.page = page;
-    item.detail = detail;
+    item.detail = detail.replaceAll(/<br>[\s\t\n]*<br>[\s\t\n]*(<br>)+/g, "<br><br>");
     return item;
 }
 
