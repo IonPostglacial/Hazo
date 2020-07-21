@@ -1,25 +1,3 @@
-import StandardFields from "./standard-fields.js";
-
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
-function findInDescription(description, section) {
-    const re = new RegExp(`${escapeRegExp(section)}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
-    const match = description?.match(re) ?? null;
-    return match !== null ? match[1].trim() : "";
-}
-
-function removeFromDescription(description, sections) {
-    let desc = description;
-
-    for (const section of sections) {
-        const re = new RegExp(`${escapeRegExp(section)}\\s*:\\s*(.*?)(?=<br><br>)`, "i");
-        desc = desc?.replace(re, "");
-    }
-    return desc;
-}
-
 function loadSddFile(file) {
     return new Promise(function (resolve, reject) {
         const fileReader = Object.assign(new FileReader(), {
@@ -45,18 +23,15 @@ function extractState(state, photosByRef) {
 }
 
 function extractItem(taxon, descriptors, extraFields, statesById, photosByRef) {
-    const [name, nameCN] = taxon.label.split(" // ");
-    const item = {
-        type: "taxon",
-        id: taxon.id,
-        hid: taxon.id,
-        name: name.trim(),
-        nameCN: nameCN?.trim(),
+    const item = Object.assign({
+        type: "taxon", 
+        id: taxon.id, 
+        hid: taxon.id, 
         photos: taxon.mediaObjectsRefs.map(m => photosByRef[m.ref]),
         parentId: taxon.parentId,
         topLevel: !taxon.parentId,
         children: taxon.childrenIds,
-    };
+    }, window.sdd.DetailData.fromRepresentation(taxon, extraFields));
     const descriptions = {};
 
     for (const categorical of taxon.categoricals) {
@@ -66,19 +41,10 @@ function extractItem(taxon, descriptors, extraFields, statesById, photosByRef) {
         };
     }
     item.descriptions = Object.values(descriptions);
-
-    const fields = [...StandardFields, ...extraFields];
-    const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s*(\d*)\s*<br>\s*page\s*(\d*)/i;
-    const m = taxon.detail.match(floreRe);
-    const [, fasc, page] = typeof m !== "undefined" && m !== null ? m : [];
-    let detail = removeFromDescription(taxon.detail, fields.map(field => field.label))?.replace(floreRe, "");
  
-    for (const field of fields) {
-        item[field.std ? field.id : `extra-${field.id}`] = findInDescription(taxon.detail, field.label);
+    for (const [name, value] of Object.entries(item.extra)) {
+        item["extra-" + name] = value;
     }
-    item.fasc = fasc;
-    item.page = page;
-    item.detail = detail;
     return item;
 }
 

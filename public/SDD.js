@@ -1962,22 +1962,12 @@ sdd_Representation.prototype = {
 var sdd_Character = function(id,representation,states) {
 	this.childrenIds = [];
 	this.inapplicableStatesRefs = [];
-	sdd_Representation.call(this);
-	if(representation != null) {
-		var s = representation.label;
-		if(!(s == null || s == "")) {
-			this.label = representation.label;
-		}
-		var s = representation.detail;
-		if(!(s == null || s == "")) {
-			this.detail = representation.detail;
-		}
-		if(representation.mediaObjectsRefs != null && representation.mediaObjectsRefs.length > 0) {
-			this.mediaObjectsRefs = representation.mediaObjectsRefs;
-		}
-	}
+	this.states = [];
+	sdd_Representation.call(this,representation.label,representation.detail,representation.mediaObjectsRefs);
 	this.id = id;
-	this.states = states;
+	if(states != null) {
+		this.states = states;
+	}
 };
 sdd_Character.__name__ = "sdd.Character";
 sdd_Character.__super__ = sdd_Representation;
@@ -1993,6 +1983,80 @@ var sdd_Dataset = function(taxons,characters,states,mediaObjects) {
 sdd_Dataset.__name__ = "sdd.Dataset";
 sdd_Dataset.prototype = {
 	__class__: sdd_Dataset
+};
+var sdd_DetailData = $hx_exports["sdd"]["DetailData"] = function(name,nameCN,fasc,page,detail) {
+	this.name = name;
+	this.nameCN = nameCN;
+	this.fasc = fasc;
+	this.page = page;
+	this.detail = detail;
+	this.extra = { };
+};
+sdd_DetailData.__name__ = "sdd.DetailData";
+sdd_DetailData.escapeRegExp = function(string) {
+	var _this_r = new RegExp("[.*+?^${}()|[\\]\\\\]","g".split("u").join(""));
+	return string.replace(_this_r,"\\$&");
+};
+sdd_DetailData.findInDescription = function(description,section) {
+	var re = new EReg("" + sdd_DetailData.escapeRegExp(section) + "\\s*:\\s*(.*?)(?=<br><br>)","i");
+	if(re.match(description)) {
+		return StringTools.trim(re.matched(1));
+	} else {
+		return "";
+	}
+};
+sdd_DetailData.removeFromDescription = function(description,sections) {
+	var desc = description;
+	var _g = 0;
+	while(_g < sections.length) {
+		var section = sections[_g];
+		++_g;
+		var re_r = new RegExp("" + sdd_DetailData.escapeRegExp(section) + "\\s*:\\s*(.*?)(?=<br><br>)","i".split("u").join(""));
+		desc = desc.replace(re_r,"");
+	}
+	return desc;
+};
+sdd_DetailData.fromRepresentation = function(representation,extraFields) {
+	var names = representation.label.split(" // ");
+	var name = names[0];
+	var nameCN = names[1];
+	var fields = sdd_Field.standard.concat(extraFields);
+	var floreRe = new EReg("Flore Madagascar et Comores\\s*<br>\\s*fasc\\s*(\\d*)\\s*<br>\\s*page\\s*(\\d*)","i");
+	var fasc = null;
+	var page = null;
+	if(floreRe.match(representation.detail)) {
+		fasc = Std.parseInt(floreRe.matched(1));
+		page = Std.parseInt(floreRe.matched(2));
+	}
+	var representation1 = representation.detail;
+	var result = new Array(fields.length);
+	var _g = 0;
+	var _g1 = fields.length;
+	while(_g < _g1) {
+		var i = _g++;
+		result[i] = fields[i].label;
+	}
+	var detail = sdd_DetailData.removeFromDescription(representation1,result).replace(floreRe.r,"");
+	var data = new sdd_DetailData(name,nameCN,fasc,page,detail);
+	var _g = 0;
+	while(_g < fields.length) {
+		var field = fields[_g];
+		++_g;
+		(field.std ? data : data.extra)[field.id] = sdd_DetailData.findInDescription(representation.detail,field.label);
+	}
+	return data;
+};
+sdd_DetailData.prototype = {
+	__class__: sdd_DetailData
+};
+var sdd_Field = function(std,id,label) {
+	this.std = std;
+	this.id = id;
+	this.label = label;
+};
+sdd_Field.__name__ = "sdd.Field";
+sdd_Field.prototype = {
+	__class__: sdd_Field
 };
 var sdd_TaxonHierarchy = function(taxon,childrenHierarchyIds) {
 	this.taxon = taxon;
@@ -2469,22 +2533,9 @@ sdd_SddRefException.prototype = $extend(sdd_SddException.prototype,{
 	__class__: sdd_SddRefException
 });
 var sdd_State = function(id,characterId,representation) {
-	sdd_Representation.call(this);
+	sdd_Representation.call(this,representation.label,representation.detail,representation.mediaObjectsRefs);
 	this.id = id;
 	this.characterId = characterId;
-	if(representation != null) {
-		var s = representation.label;
-		if(!(s == null || s == "")) {
-			this.label = representation.label;
-		}
-		var s = representation.detail;
-		if(!(s == null || s == "")) {
-			this.detail = representation.detail;
-		}
-		if(representation.mediaObjectsRefs != null && representation.mediaObjectsRefs.length > 0) {
-			this.mediaObjectsRefs = representation.mediaObjectsRefs;
-		}
-	}
 };
 sdd_State.__name__ = "sdd.State";
 sdd_State.__super__ = sdd_Representation;
@@ -2498,23 +2549,16 @@ sdd_StateRef.__name__ = "sdd.StateRef";
 sdd_StateRef.prototype = {
 	__class__: sdd_StateRef
 };
-var sdd_Taxon = function(id,representation) {
+var sdd_Taxon = function(id,representation,childrenIds,categoricals) {
 	this.childrenIds = [];
 	this.categoricals = [];
-	sdd_Representation.call(this);
+	sdd_Representation.call(this,representation.label,representation.detail,representation.mediaObjectsRefs);
 	this.id = id;
-	if(representation != null) {
-		var s = representation.label;
-		if(!(s == null || s == "")) {
-			this.label = representation.label;
-		}
-		var s = representation.detail;
-		if(!(s == null || s == "")) {
-			this.detail = representation.detail;
-		}
-		if(representation.mediaObjectsRefs != null && representation.mediaObjectsRefs.length > 0) {
-			this.mediaObjectsRefs = representation.mediaObjectsRefs;
-		}
+	if(childrenIds != null) {
+		this.childrenIds = childrenIds;
+	}
+	if(categoricals != null) {
+		this.categoricals = categoricals;
 	}
 };
 sdd_Taxon.__name__ = "sdd.Taxon";
@@ -2587,6 +2631,7 @@ haxe_xml_Parser.escapes = (function($this) {
 	$r = h;
 	return $r;
 }(this));
+sdd_Field.standard = [new sdd_Field(true,"author","Author"),new sdd_Field(true,"name2","Syn"),new sdd_Field(true,"vernacularName","NV"),new sdd_Field(true,"vernacularName2","NV2"),new sdd_Field(true,"meaning","Sense"),new sdd_Field(true,"noHerbier","N° Herbier"),new sdd_Field(true,"herbariumPicture","Herbarium Picture"),new sdd_Field(true,"website","Website")];
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 
 //# sourceMappingURL=SDD.js.map
