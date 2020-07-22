@@ -187,8 +187,12 @@ export default {
             DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries });
         },
         resetData() {
-            Vue.set(this.$data, "items", {});
-            Vue.set(this.$data, "descriptions", {});
+            for (const key of Object.keys(this.items)) {
+                Vue.delete(this.items, key);
+            }
+            for (const key of Object.keys(this.descriptions)) {
+                Vue.delete(this.descriptions, key);
+            }
         },
         importData() {
             document.getElementById("import-data").click();
@@ -218,8 +222,12 @@ export default {
                     items,
                     descriptors,
                 } = await loadSDD(file, this.extraFields);
-                Vue.set(this.$data, "items", items);
-                Vue.set(this.$data, "descriptions", descriptors);
+                for (const [key, value] of Object.entries(items)) {
+                    Vue.set(this.items, key, value);
+                }
+                for (const [key, value] of Object.entries(descriptors)) {
+                    Vue.set(this.descriptions, key, value);
+                }
             })();
         },
         exportStats() {
