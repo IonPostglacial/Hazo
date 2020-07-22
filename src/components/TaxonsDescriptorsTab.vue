@@ -1,7 +1,7 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu :items="items" name="item" v-model="selectedItemId" :name-fields="[taxonNameField]">
+            <TreeMenu :items="items" name="item" v-model="selectedItemId" :name-fields="['name', 'vernacularName', 'nameCN']">
             </TreeMenu>
         </nav>
         <section v-if="typeof selectedItem !== 'undefined'" class="vertical-flexbox flex-grow-1">

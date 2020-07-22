@@ -3,7 +3,6 @@
     <nav class="horizontal-flexbox space-between thin-border">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
-            <button type="button" v-on:click="toggleImageBox">Image Box</button>
         </div>
         <div class="medium-margin">
             <div class="selector" v-for="(tab, index) in tabs" :key="index">
@@ -14,11 +13,7 @@
             </div>
         </div>
         <div class="medium-margin">
-            <select v-model="taxonNameType">
-                <option value="scientific">Scientific</option>
-                <option value="vernacular">Vernacular</option>
-                <option value="chinese">中文名</option>
-            </select>
+            <button type="button" v-on:click="toggleImageBox">Image Box</button>
         </div>
     </nav>
     <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
@@ -37,7 +32,7 @@
             v-on:open-photo="maximizeImage">
         </TaxonsTab>
         <TaxonsDescriptorsTab v-if="selectedTab === 1"
-            :init-items="items" :descriptions="descriptions" :taxon-name-field="taxonNameField"
+            :init-items="items" :descriptions="descriptions"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
             :extra-fields="extraFields"
             v-on:open-photo="maximizeImage">
@@ -49,7 +44,7 @@
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
     </div>
-    <section class="medium-margin horizontal-flexbox space-between">
+    <section class="medium-margin horizontal-flexbox space-between thin-border">
         <div>
             <button type="button" v-on:click="importData">Import</button>
             <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
@@ -110,7 +105,6 @@ export default {
                 "Dictionary"
             ],
             langs: ["FR", "EN", "CN"],
-            taxonNameType: "scientific",
             extraFields: [],
             items: {},
             descriptions: {},
@@ -119,16 +113,6 @@ export default {
     },
     mounted() {
         this.loadBase();
-    },
-    computed: {
-        taxonNameField() {
-            switch(this.taxonNameType) {
-                case "scientific": return "name";
-                case "vernacular": return "vernacularName";
-                case "chinese": return "nameCN";
-                default: return "name"; 
-            }
-        },
     },
     methods: {
         loadBase(id) {
