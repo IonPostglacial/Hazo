@@ -64,6 +64,7 @@
             <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
             <button type="button" v-on:click="globalReplace">Text Replace</button>
+            <button type="button" v-on:click="emptyZip">Export Folder Hierarchy</button>
         </div>
         <div>
             <button type="button" class="background-color-1" v-on:click="editExtraFields">Fields</button>
@@ -245,6 +246,10 @@ export default {
                 csv += escapedWord + "," + origin + "\n";
             }
             download(csv, "csv");
+        },
+        emptyZip() {
+            const zipTxt = window.sdd.Hierarchy.toZip(this.items);
+            download(zipTxt, "zip", true);
         },
         exportData() {
             const xml = saveSDD({

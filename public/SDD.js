@@ -115,6 +115,18 @@ Reflect.getProperty = function(o,field) {
 		}
 	}
 };
+Reflect.fields = function(o) {
+	var a = [];
+	if(o != null) {
+		var hasOwnProperty = Object.prototype.hasOwnProperty;
+		for( var f in o ) {
+		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) {
+			a.push(f);
+		}
+		}
+	}
+	return a;
+};
 var Std = function() { };
 Std.__name__ = "Std";
 Std.string = function(s) {
@@ -225,6 +237,9 @@ StringTools.rtrim = function(s) {
 };
 StringTools.trim = function(s) {
 	return StringTools.ltrim(StringTools.rtrim(s));
+};
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
 };
 var XmlType = {};
 XmlType.toString = function(this1) {
@@ -1113,6 +1128,24 @@ var haxe_io_Encoding = $hxEnums["haxe.io.Encoding"] = { __ename__ : true, __cons
 };
 var haxe_crypto_Base64 = function() { };
 haxe_crypto_Base64.__name__ = "haxe.crypto.Base64";
+haxe_crypto_Base64.encode = function(bytes,complement) {
+	if(complement == null) {
+		complement = true;
+	}
+	var str = new haxe_crypto_BaseCode(haxe_crypto_Base64.BYTES).encodeBytes(bytes).toString();
+	if(complement) {
+		switch(bytes.length % 3) {
+		case 1:
+			str += "==";
+			break;
+		case 2:
+			str += "=";
+			break;
+		default:
+		}
+	}
+	return str;
+};
 haxe_crypto_Base64.decode = function(str,complement) {
 	if(complement == null) {
 		complement = true;
@@ -1134,7 +1167,31 @@ var haxe_crypto_BaseCode = function(base) {
 };
 haxe_crypto_BaseCode.__name__ = "haxe.crypto.BaseCode";
 haxe_crypto_BaseCode.prototype = {
-	initTable: function() {
+	encodeBytes: function(b) {
+		var nbits = this.nbits;
+		var base = this.base;
+		var size = b.length * 8 / nbits | 0;
+		var out = new haxe_io_Bytes(new ArrayBuffer(size + (b.length * 8 % nbits == 0 ? 0 : 1)));
+		var buf = 0;
+		var curbits = 0;
+		var mask = (1 << nbits) - 1;
+		var pin = 0;
+		var pout = 0;
+		while(pout < size) {
+			while(curbits < nbits) {
+				curbits += 8;
+				buf <<= 8;
+				buf |= b.b[pin++];
+			}
+			curbits -= nbits;
+			out.b[pout++] = base.b[buf >> curbits & mask];
+		}
+		if(curbits > 0) {
+			out.b[pout++] = base.b[buf << nbits - curbits & mask];
+		}
+		return out;
+	}
+	,initTable: function() {
 		var tbl = [];
 		var _g = 0;
 		while(_g < 256) {
@@ -1178,6 +1235,28 @@ haxe_crypto_BaseCode.prototype = {
 		return out;
 	}
 	,__class__: haxe_crypto_BaseCode
+};
+var haxe_crypto_Crc32 = function() { };
+haxe_crypto_Crc32.__name__ = "haxe.crypto.Crc32";
+haxe_crypto_Crc32.make = function(data) {
+	var c_crc = -1;
+	var b = data.b.bufferValue;
+	var _g = 0;
+	var _g1 = data.length;
+	while(_g < _g1) {
+		var i = _g++;
+		var tmp = (c_crc ^ b.bytes[i]) & 255;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		tmp = tmp >>> 1 ^ -(tmp & 1) & -306674912;
+		c_crc = c_crc >>> 8 ^ tmp;
+	}
+	return c_crc ^ -1;
 };
 var haxe_ds_List = function() {
 	this.length = 0;
@@ -1283,6 +1362,143 @@ haxe_ds_StringMap.prototype = {
 	}
 	,__class__: haxe_ds_StringMap
 };
+var haxe_io_BytesBuffer = function() {
+	this.pos = 0;
+	this.size = 0;
+};
+haxe_io_BytesBuffer.__name__ = "haxe.io.BytesBuffer";
+haxe_io_BytesBuffer.prototype = {
+	addByte: function(byte) {
+		if(this.pos == this.size) {
+			this.grow(1);
+		}
+		this.view.setUint8(this.pos++,byte);
+	}
+	,addBytes: function(src,pos,len) {
+		if(pos < 0 || len < 0 || pos + len > src.length) {
+			throw haxe_Exception.thrown(haxe_io_Error.OutsideBounds);
+		}
+		if(this.pos + len > this.size) {
+			this.grow(len);
+		}
+		if(this.size == 0) {
+			return;
+		}
+		var sub = new Uint8Array(src.b.buffer,src.b.byteOffset + pos,len);
+		this.u8.set(sub,this.pos);
+		this.pos += len;
+	}
+	,grow: function(delta) {
+		var req = this.pos + delta;
+		var nsize = this.size == 0 ? 16 : this.size;
+		while(nsize < req) nsize = nsize * 3 >> 1;
+		var nbuf = new ArrayBuffer(nsize);
+		var nu8 = new Uint8Array(nbuf);
+		if(this.size > 0) {
+			nu8.set(this.u8);
+		}
+		this.size = nsize;
+		this.buffer = nbuf;
+		this.u8 = nu8;
+		this.view = new DataView(this.buffer);
+	}
+	,getBytes: function() {
+		if(this.size == 0) {
+			return new haxe_io_Bytes(new ArrayBuffer(0));
+		}
+		var b = new haxe_io_Bytes(this.buffer);
+		b.length = this.pos;
+		return b;
+	}
+	,__class__: haxe_io_BytesBuffer
+};
+var haxe_io_Output = function() { };
+haxe_io_Output.__name__ = "haxe.io.Output";
+haxe_io_Output.prototype = {
+	writeByte: function(c) {
+		throw haxe_Exception.thrown("Not implemented");
+	}
+	,writeBytes: function(s,pos,len) {
+		if(pos < 0 || len < 0 || pos + len > s.length) {
+			throw haxe_Exception.thrown(haxe_io_Error.OutsideBounds);
+		}
+		var b = s.b;
+		var k = len;
+		while(k > 0) {
+			this.writeByte(b[pos]);
+			++pos;
+			--k;
+		}
+		return len;
+	}
+	,write: function(s) {
+		var l = s.length;
+		var p = 0;
+		while(l > 0) {
+			var k = this.writeBytes(s,p,l);
+			if(k == 0) {
+				throw haxe_Exception.thrown(haxe_io_Error.Blocked);
+			}
+			p += k;
+			l -= k;
+		}
+	}
+	,writeFullBytes: function(s,pos,len) {
+		while(len > 0) {
+			var k = this.writeBytes(s,pos,len);
+			pos += k;
+			len -= k;
+		}
+	}
+	,writeUInt16: function(x) {
+		if(x < 0 || x >= 65536) {
+			throw haxe_Exception.thrown(haxe_io_Error.Overflow);
+		}
+		if(this.bigEndian) {
+			this.writeByte(x >> 8);
+			this.writeByte(x & 255);
+		} else {
+			this.writeByte(x & 255);
+			this.writeByte(x >> 8);
+		}
+	}
+	,writeInt32: function(x) {
+		if(this.bigEndian) {
+			this.writeByte(x >>> 24);
+			this.writeByte(x >> 16 & 255);
+			this.writeByte(x >> 8 & 255);
+			this.writeByte(x & 255);
+		} else {
+			this.writeByte(x & 255);
+			this.writeByte(x >> 8 & 255);
+			this.writeByte(x >> 16 & 255);
+			this.writeByte(x >>> 24);
+		}
+	}
+	,writeString: function(s,encoding) {
+		var b = haxe_io_Bytes.ofString(s,encoding);
+		this.writeFullBytes(b,0,b.length);
+	}
+	,__class__: haxe_io_Output
+};
+var haxe_io_BytesOutput = function() {
+	this.b = new haxe_io_BytesBuffer();
+};
+haxe_io_BytesOutput.__name__ = "haxe.io.BytesOutput";
+haxe_io_BytesOutput.__super__ = haxe_io_Output;
+haxe_io_BytesOutput.prototype = $extend(haxe_io_Output.prototype,{
+	writeByte: function(c) {
+		this.b.addByte(c);
+	}
+	,writeBytes: function(buf,pos,len) {
+		this.b.addBytes(buf,pos,len);
+		return len;
+	}
+	,getBytes: function() {
+		return this.b.getBytes();
+	}
+	,__class__: haxe_io_BytesOutput
+});
 var haxe_io_Error = $hxEnums["haxe.io.Error"] = { __ename__ : true, __constructs__ : ["Blocked","Overflow","OutsideBounds","Custom"]
 	,Blocked: {_hx_index:0,__enum__:"haxe.io.Error",toString:$estr}
 	,Overflow: {_hx_index:1,__enum__:"haxe.io.Error",toString:$estr}
@@ -1818,6 +2034,157 @@ haxe_xml_Printer.prototype = {
 	}
 	,__class__: haxe_xml_Printer
 };
+var haxe_zip_ExtraField = $hxEnums["haxe.zip.ExtraField"] = { __ename__ : true, __constructs__ : ["FUnknown","FInfoZipUnicodePath","FUtf8"]
+	,FUnknown: ($_=function(tag,bytes) { return {_hx_index:0,tag:tag,bytes:bytes,__enum__:"haxe.zip.ExtraField",toString:$estr}; },$_.__params__ = ["tag","bytes"],$_)
+	,FInfoZipUnicodePath: ($_=function(name,crc) { return {_hx_index:1,name:name,crc:crc,__enum__:"haxe.zip.ExtraField",toString:$estr}; },$_.__params__ = ["name","crc"],$_)
+	,FUtf8: {_hx_index:2,__enum__:"haxe.zip.ExtraField",toString:$estr}
+};
+var haxe_zip_Writer = function(o) {
+	this.o = o;
+	this.files = new haxe_ds_List();
+};
+haxe_zip_Writer.__name__ = "haxe.zip.Writer";
+haxe_zip_Writer.prototype = {
+	writeZipDate: function(date) {
+		var hour = date.getHours();
+		var min = date.getMinutes();
+		var sec = date.getSeconds() >> 1;
+		this.o.writeUInt16(hour << 11 | min << 5 | sec);
+		var year = date.getFullYear() - 1980;
+		var month = date.getMonth() + 1;
+		var day = date.getDate();
+		this.o.writeUInt16(year << 9 | month << 5 | day);
+	}
+	,writeEntryHeader: function(f) {
+		var o = this.o;
+		var flags = 0;
+		if(f.extraFields != null) {
+			var _g_head = f.extraFields.h;
+			while(_g_head != null) {
+				var val = _g_head.item;
+				_g_head = _g_head.next;
+				var e = val;
+				if(e._hx_index == 2) {
+					flags |= 2048;
+				}
+			}
+		}
+		o.writeInt32(67324752);
+		o.writeUInt16(20);
+		o.writeUInt16(flags);
+		if(f.data == null) {
+			f.fileSize = 0;
+			f.dataSize = 0;
+			f.crc32 = 0;
+			f.compressed = false;
+			f.data = new haxe_io_Bytes(new ArrayBuffer(0));
+		} else {
+			if(f.crc32 == null) {
+				if(f.compressed) {
+					throw haxe_Exception.thrown("CRC32 must be processed before compression");
+				}
+				f.crc32 = haxe_crypto_Crc32.make(f.data);
+			}
+			if(!f.compressed) {
+				f.fileSize = f.data.length;
+			}
+			f.dataSize = f.data.length;
+		}
+		o.writeUInt16(f.compressed ? 8 : 0);
+		this.writeZipDate(f.fileTime);
+		o.writeInt32(f.crc32);
+		o.writeInt32(f.dataSize);
+		o.writeInt32(f.fileSize);
+		o.writeUInt16(f.fileName.length);
+		var e = new haxe_io_BytesOutput();
+		if(f.extraFields != null) {
+			var _g_head = f.extraFields.h;
+			while(_g_head != null) {
+				var val = _g_head.item;
+				_g_head = _g_head.next;
+				var f1 = val;
+				switch(f1._hx_index) {
+				case 0:
+					var bytes = f1.bytes;
+					var tag = f1.tag;
+					e.writeUInt16(tag);
+					e.writeUInt16(bytes.length);
+					e.write(bytes);
+					break;
+				case 1:
+					var crc = f1.crc;
+					var name = f1.name;
+					var namebytes = haxe_io_Bytes.ofString(name);
+					e.writeUInt16(28789);
+					e.writeUInt16(namebytes.length + 5);
+					e.writeByte(1);
+					e.writeInt32(crc);
+					e.write(namebytes);
+					break;
+				case 2:
+					break;
+				}
+			}
+		}
+		var ebytes = e.getBytes();
+		o.writeUInt16(ebytes.length);
+		o.writeString(f.fileName);
+		o.write(ebytes);
+		this.files.add({ name : f.fileName, compressed : f.compressed, clen : f.data.length, size : f.fileSize, crc : f.crc32, date : f.fileTime, fields : ebytes});
+	}
+	,write: function(files) {
+		var _g_head = files.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var f = val;
+			this.writeEntryHeader(f);
+			this.o.writeFullBytes(f.data,0,f.data.length);
+		}
+		this.writeCDR();
+	}
+	,writeCDR: function() {
+		var cdr_size = 0;
+		var cdr_offset = 0;
+		var _g_head = this.files.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var f = val;
+			var namelen = f.name.length;
+			var extraFieldsLength = f.fields.length;
+			this.o.writeInt32(33639248);
+			this.o.writeUInt16(20);
+			this.o.writeUInt16(20);
+			this.o.writeUInt16(0);
+			this.o.writeUInt16(f.compressed ? 8 : 0);
+			this.writeZipDate(f.date);
+			this.o.writeInt32(f.crc);
+			this.o.writeInt32(f.clen);
+			this.o.writeInt32(f.size);
+			this.o.writeUInt16(namelen);
+			this.o.writeUInt16(extraFieldsLength);
+			this.o.writeUInt16(0);
+			this.o.writeUInt16(0);
+			this.o.writeUInt16(0);
+			this.o.writeInt32(0);
+			this.o.writeInt32(cdr_offset);
+			this.o.writeString(f.name);
+			this.o.write(f.fields);
+			cdr_size += 46 + namelen + extraFieldsLength;
+			cdr_offset += 30 + namelen + extraFieldsLength + f.clen;
+		}
+		this.o.writeInt32(101010256);
+		this.o.writeUInt16(0);
+		this.o.writeUInt16(0);
+		this.o.writeUInt16(this.files.length);
+		this.o.writeUInt16(this.files.length);
+		this.o.writeInt32(cdr_size);
+		this.o.writeInt32(cdr_offset);
+		this.o.writeUInt16(0);
+	}
+	,__class__: haxe_zip_Writer
+};
 var js_Boot = function() { };
 js_Boot.__name__ = "js.Boot";
 js_Boot.getClass = function(o) {
@@ -1962,22 +2329,12 @@ sdd_Representation.prototype = {
 var sdd_Character = function(id,representation,states) {
 	this.childrenIds = [];
 	this.inapplicableStatesRefs = [];
-	sdd_Representation.call(this);
-	if(representation != null) {
-		var s = representation.label;
-		if(!(s == null || s == "")) {
-			this.label = representation.label;
-		}
-		var s = representation.detail;
-		if(!(s == null || s == "")) {
-			this.detail = representation.detail;
-		}
-		if(representation.mediaObjectsRefs != null && representation.mediaObjectsRefs.length > 0) {
-			this.mediaObjectsRefs = representation.mediaObjectsRefs;
-		}
-	}
+	this.states = [];
+	sdd_Representation.call(this,representation.label,representation.detail,representation.mediaObjectsRefs);
 	this.id = id;
-	this.states = states;
+	if(states != null) {
+		this.states = states;
+	}
 };
 sdd_Character.__name__ = "sdd.Character";
 sdd_Character.__super__ = sdd_Representation;
@@ -1993,6 +2350,122 @@ var sdd_Dataset = function(taxons,characters,states,mediaObjects) {
 sdd_Dataset.__name__ = "sdd.Dataset";
 sdd_Dataset.prototype = {
 	__class__: sdd_Dataset
+};
+var sdd_DetailData = $hx_exports["sdd"]["DetailData"] = function(name,nameCN,fasc,page,detail) {
+	this.name = name;
+	this.nameCN = nameCN;
+	this.fasc = fasc;
+	this.page = page;
+	this.detail = detail;
+	this.extra = { };
+};
+sdd_DetailData.__name__ = "sdd.DetailData";
+sdd_DetailData.escapeRegExp = function(string) {
+	var _this_r = new RegExp("[.*+?^${}()|[\\]\\\\]","g".split("u").join(""));
+	return string.replace(_this_r,"\\$&");
+};
+sdd_DetailData.findInDescription = function(description,section) {
+	var re = new EReg("" + sdd_DetailData.escapeRegExp(section) + "\\s*:\\s*(.*?)(?=<br><br>)","i");
+	if(re.match(description)) {
+		return StringTools.trim(re.matched(1));
+	} else {
+		return "";
+	}
+};
+sdd_DetailData.removeFromDescription = function(description,sections) {
+	var desc = description;
+	var _g = 0;
+	while(_g < sections.length) {
+		var section = sections[_g];
+		++_g;
+		var re_r = new RegExp("" + sdd_DetailData.escapeRegExp(section) + "\\s*:\\s*(.*?)(?=<br><br>)","i".split("u").join(""));
+		desc = desc.replace(re_r,"");
+	}
+	return desc;
+};
+sdd_DetailData.fromRepresentation = function(representation,extraFields) {
+	var names = representation.label.split(" // ");
+	var name = names[0];
+	var nameCN = names[1];
+	var fields = sdd_Field.standard.concat(extraFields);
+	var floreRe = new EReg("Flore Madagascar et Comores\\s*<br>\\s*fasc\\s*(\\d*)\\s*<br>\\s*page\\s*(\\d*)","i");
+	var fasc = null;
+	var page = null;
+	if(floreRe.match(representation.detail)) {
+		fasc = Std.parseInt(floreRe.matched(1));
+		page = Std.parseInt(floreRe.matched(2));
+	}
+	var representation1 = representation.detail;
+	var result = new Array(fields.length);
+	var _g = 0;
+	var _g1 = fields.length;
+	while(_g < _g1) {
+		var i = _g++;
+		result[i] = fields[i].label;
+	}
+	var detail = sdd_DetailData.removeFromDescription(representation1,result).replace(floreRe.r,"");
+	var data = new sdd_DetailData(name,nameCN,fasc,page,detail);
+	var _g = 0;
+	while(_g < fields.length) {
+		var field = fields[_g];
+		++_g;
+		(field.std ? data : data.extra)[field.id] = sdd_DetailData.findInDescription(representation.detail,field.label);
+	}
+	return data;
+};
+sdd_DetailData.prototype = {
+	__class__: sdd_DetailData
+};
+var sdd_Field = function(std,id,label) {
+	this.std = std;
+	this.id = id;
+	this.label = label;
+};
+sdd_Field.__name__ = "sdd.Field";
+sdd_Field.prototype = {
+	__class__: sdd_Field
+};
+var sdd_Hierarchy = $hx_exports["sdd"]["Hierarchy"] = function() { };
+sdd_Hierarchy.__name__ = "sdd.Hierarchy";
+sdd_Hierarchy.getEntries = function(hierarchy,entries,path) {
+	if(path == null) {
+		path = "";
+	}
+	if(hierarchy == null) {
+		return new haxe_ds_List();
+	}
+	if(entries == null) {
+		entries = new haxe_ds_List();
+	}
+	var content = haxe_io_Bytes.ofString("");
+	var access = hierarchy;
+	var _g_access = access;
+	var _g_keys = Reflect.fields(access);
+	var _g_index = 0;
+	while(_g_index < _g_keys.length) {
+		var entry = _g_access[_g_keys[_g_index++]];
+		if(entry.topLevel || path != "") {
+			var entryName = entry.name;
+			var _g = 0;
+			var _g1 = sdd_Hierarchy.forbiddenChars;
+			while(_g < _g1.length) {
+				var char = _g1[_g];
+				++_g;
+				entryName = StringTools.replace(entryName,char,"_");
+			}
+			var currentPath = path + encodeURIComponent(entryName) + "/";
+			entries.push({ fileName : currentPath, fileSize : content.length, fileTime : new Date(), compressed : false, dataSize : 0, data : content, crc32 : haxe_crypto_Crc32.make(content)});
+			sdd_Hierarchy.getEntries(entry.children,entries,currentPath);
+		}
+	}
+	return entries;
+};
+sdd_Hierarchy.toZip = function(hierarchy) {
+	var entries = sdd_Hierarchy.getEntries(hierarchy);
+	var bytes = new haxe_io_BytesOutput();
+	var writer = new haxe_zip_Writer(bytes);
+	writer.write(entries);
+	return haxe_crypto_Base64.encode(bytes.getBytes());
 };
 var sdd_TaxonHierarchy = function(taxon,childrenHierarchyIds) {
 	this.taxon = taxon;
@@ -2469,22 +2942,9 @@ sdd_SddRefException.prototype = $extend(sdd_SddException.prototype,{
 	__class__: sdd_SddRefException
 });
 var sdd_State = function(id,characterId,representation) {
-	sdd_Representation.call(this);
+	sdd_Representation.call(this,representation.label,representation.detail,representation.mediaObjectsRefs);
 	this.id = id;
 	this.characterId = characterId;
-	if(representation != null) {
-		var s = representation.label;
-		if(!(s == null || s == "")) {
-			this.label = representation.label;
-		}
-		var s = representation.detail;
-		if(!(s == null || s == "")) {
-			this.detail = representation.detail;
-		}
-		if(representation.mediaObjectsRefs != null && representation.mediaObjectsRefs.length > 0) {
-			this.mediaObjectsRefs = representation.mediaObjectsRefs;
-		}
-	}
 };
 sdd_State.__name__ = "sdd.State";
 sdd_State.__super__ = sdd_Representation;
@@ -2498,23 +2958,16 @@ sdd_StateRef.__name__ = "sdd.StateRef";
 sdd_StateRef.prototype = {
 	__class__: sdd_StateRef
 };
-var sdd_Taxon = function(id,representation) {
+var sdd_Taxon = function(id,representation,childrenIds,categoricals) {
 	this.childrenIds = [];
 	this.categoricals = [];
-	sdd_Representation.call(this);
+	sdd_Representation.call(this,representation.label,representation.detail,representation.mediaObjectsRefs);
 	this.id = id;
-	if(representation != null) {
-		var s = representation.label;
-		if(!(s == null || s == "")) {
-			this.label = representation.label;
-		}
-		var s = representation.detail;
-		if(!(s == null || s == "")) {
-			this.detail = representation.detail;
-		}
-		if(representation.mediaObjectsRefs != null && representation.mediaObjectsRefs.length > 0) {
-			this.mediaObjectsRefs = representation.mediaObjectsRefs;
-		}
+	if(childrenIds != null) {
+		this.childrenIds = childrenIds;
+	}
+	if(categoricals != null) {
+		this.categoricals = categoricals;
 	}
 };
 sdd_Taxon.__name__ = "sdd.Taxon";
@@ -2558,7 +3011,9 @@ if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c
 String.prototype.__class__ = String;
 String.__name__ = "String";
 Array.__name__ = "Array";
-haxe_Resource.content = [{ name : "sdd_template", data : "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPERhdGFzZXRzIHhtbG5zPSJodHRwOi8vcnMudGR3Zy5vcmcvVUJJRi8yMDA2LyIgeG1sbnM6eHNpPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYS1pbnN0YW5jZSIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vcnMudGR3Zy5vcmcvVUJJRi8yMDA2LyBodHRwOi8vcnMudGR3Zy5vcmcvVUJJRi8yMDA2L1NjaGVtYS8xLjEvU0RELnhzZCI+Cgk8VGVjaG5pY2FsTWV0YWRhdGEgY3JlYXRlZD0iMjAyMC0wNC0yNFQxMjoxMToxNSI+CgkJPEdlbmVyYXRvciBuYW1lPSJYcGVyMyIgbm90ZXM9IlRoaXMgc29mdHdhcmUgaXMgZGV2ZWxvcGVkIGJ5IExJUyAtIExhYm9yYXRvcnkgb2YgSW5mb3JtYXRpY3MgYW5kIFN5c3RlbWF0aWNzIChVbml2ZXJzaXTDg8KpIFBpZXJyZSBldCBNYXJpZSBDdXJpZSwgVU1SIDcyMDUsIEZyYW5jZSkgLSB3d3cuaW5mb3N5c2xhYi5mciIgdmVyc2lvbj0iMS41LjEiIC8+Cgk8L1RlY2huaWNhbE1ldGFkYXRhPgogICAgOjpmb3JlYWNoIGRhdGFzZXRzOjoKICAgIDxEYXRhc2V0IHhtbG5zPSIiIHhtbDpsYW5nPSJmciI+CiAgICAgICAgPFJlcHJlc2VudGF0aW9uPgogICAgICAgICAgICA8TGFiZWw+U2FtcGxlPC9MYWJlbD4KICAgICAgICA8L1JlcHJlc2VudGF0aW9uPgogICAgICAgIDxUYXhvbk5hbWVzPgogICAgICAgICAgICA6OmZvcmVhY2ggdGF4b25zOjoKICAgICAgICAgICAgPFRheG9uTmFtZSBpZD0iOjppZDo6Ij4KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4KICAgICAgICAgICAgICAgICAgICA8TGFiZWw+OjpsYWJlbDo6PC9MYWJlbD4KICAgICAgICAgICAgICAgICAgICA8RGV0YWlsPjo6ZGV0YWlsOjo8L0RldGFpbD4KICAgICAgICAgICAgICAgICAgICA6OmZvcmVhY2ggbWVkaWFPYmplY3RzUmVmczo6CiAgICAgICAgICAgICAgICAgICAgPE1lZGlhT2JqZWN0IHJlZj0iOjpyZWY6OiIgLz4KICAgICAgICAgICAgICAgICAgICA6OmVuZDo6CiAgICAgICAgICAgICAgICA8L1JlcHJlc2VudGF0aW9uPgogICAgICAgICAgICA8L1RheG9uTmFtZT4KICAgICAgICAgICAgOjplbmQ6OgogICAgICAgIDwvVGF4b25OYW1lcz4KICAgICAgICA8VGF4b25IaWVyYXJjaGllcz4KICAgICAgICAgICAgPFRheG9uSGllcmFyY2h5IGlkPSJ0aDEiPgogICAgICAgICAgICAgICAgPFJlcHJlc2VudGF0aW9uPgogICAgICAgICAgICAgICAgICAgIDxMYWJlbD5EZWZhdWx0IEVudGl0eSBUcmVlPC9MYWJlbD4KICAgICAgICAgICAgICAgIDwvUmVwcmVzZW50YXRpb24+CiAgICAgICAgICAgICAgICA8VGF4b25IaWVyYXJjaHlUeXBlPlVuc3BlY2lmaWVkVGF4b25vbXk8L1RheG9uSGllcmFyY2h5VHlwZT4KICAgICAgICAgICAgICAgIDxOb2Rlcz4KICAgICAgICAgICAgICAgIDo6Zm9yZWFjaCB0YXhvbnM6OgogICAgICAgICAgICAgICAgICAgIDxOb2RlIGlkPSI6OmhpZDo6Ij4KICAgICAgICAgICAgICAgICAgICAgICAgPFBhcmVudCByZWY9IiQkdGF4b25QYXJlbnRIaWQoOjpwYXJlbnRJZDo6KSIgLz4KICAgICAgICAgICAgICAgICAgICAgICAgPFRheG9uTmFtZSByZWY9Ijo6aWQ6OiIgLz4KICAgICAgICAgICAgICAgICAgICA8L05vZGU+CiAgICAgICAgICAgICAgICA6OmVuZDo6CiAgICAgICAgICAgICAgICA8L05vZGVzPgogICAgICAgICAgICA8L1RheG9uSGllcmFyY2h5PgogICAgICAgIDwvVGF4b25IaWVyYXJjaGllcz4KICAgICAgICA8Q2hhcmFjdGVycz4KICAgICAgICA6OmZvcmVhY2ggY2hhcmFjdGVyczo6CiAgICAgICAgICAgIDxDYXRlZ29yaWNhbENoYXJhY3RlciBpZD0iOjppZDo6Ij4KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4KICAgICAgICAgICAgICAgICAgICA8TGFiZWw+OjpsYWJlbDo6PC9MYWJlbD4KICAgICAgICAgICAgICAgICAgICA8RGV0YWlsPjo6ZGV0YWlsOjo8L0RldGFpbD4KICAgICAgICAgICAgICAgICAgICA6OmZvcmVhY2ggbWVkaWFPYmplY3RzUmVmczo6CiAgICAgICAgICAgICAgICAgICAgPE1lZGlhT2JqZWN0IHJlZj0iOjpyZWY6OiIgLz4KICAgICAgICAgICAgICAgICAgICA6OmVuZDo6CiAgICAgICAgICAgICAgICA8L1JlcHJlc2VudGF0aW9uPgogICAgICAgICAgICAgICAgOjppZihzdGF0ZXMubGVuZ3RoID4gMCk6OgogICAgICAgICAgICAgICAgICAgIDxTdGF0ZXM+CiAgICAgICAgICAgICAgICAgICAgOjpmb3JlYWNoIHN0YXRlczo6CiAgICAgICAgICAgICAgICAgICAgICAgIDxTdGF0ZURlZmluaXRpb24gaWQ9Ijo6aWQ6OiI+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8UmVwcmVzZW50YXRpb24+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExhYmVsPjo6bGFiZWw6OjwvTGFiZWw+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPERldGFpbD46OmRldGFpbDo6PC9EZXRhaWw+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgOjpmb3JlYWNoIG1lZGlhT2JqZWN0c1JlZnM6OgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxNZWRpYU9iamVjdCByZWY9Ijo6cmVmOjoiIC8+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgOjplbmQ6OgogICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9SZXByZXNlbnRhdGlvbj4KICAgICAgICAgICAgICAgICAgICAgICAgPC9TdGF0ZURlZmluaXRpb24+CiAgICAgICAgICAgICAgICAgICAgOjplbmQ6OgogICAgICAgICAgICAgICAgICAgIDwvU3RhdGVzPgogICAgICAgICAgICAgICAgOjplbmQ6OgogICAgICAgICAgICA8L0NhdGVnb3JpY2FsQ2hhcmFjdGVyPgogICAgICAgIDo6ZW5kOjoKICAgICAgICA8L0NoYXJhY3RlcnM+CiAgICAgICAgPENoYXJhY3RlclRyZWVzPgogICAgICAgICAgICA8Q2hhcmFjdGVyVHJlZSBpZD0iY3QxIj4KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4KICAgICAgICAgICAgICAgICAgICA8TGFiZWw+T3JkcmUgZXQgZGVwZW5kYW5jZSBlbnRyZSBjYXJhY3RlcmVzPC9MYWJlbD4KICAgICAgICAgICAgICAgIDwvUmVwcmVzZW50YXRpb24+CiAgICAgICAgICAgICAgICA8U2hvdWxkQ29udGFpbkFsbENoYXJhY3RlcnM+dHJ1ZTwvU2hvdWxkQ29udGFpbkFsbENoYXJhY3RlcnM+CiAgICAgICAgICAgICAgICA8Tm9kZXM+CiAgICAgICAgICAgICAgICA6OmZvcmVhY2ggY2hhcmFjdGVyczo6CiAgICAgICAgICAgICAgICAgICAgPENoYXJOb2RlPgogICAgICAgICAgICAgICAgICAgICAgICA6OmlmIChpbmFwcGxpY2FibGVTdGF0ZXNJZHMubGVuZ3RoID4gMCk6OgogICAgICAgICAgICAgICAgICAgICAgICA8RGVwZW5kZW5jeVJ1bGVzPgoJCQkJCQkJPEluYXBwbGljYWJsZUlmPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgOjpmb3JlYWNoIGluYXBwbGljYWJsZVN0YXRlc0lkczo6CgkJCQkJCQkJPFN0YXRlIHJlZj0iOjpyZWY6OiIgLz4KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDo6ZW5kOjoKCQkJCQkJCTwvSW5hcHBsaWNhYmxlSWY+CgkJCQkJCTwvRGVwZW5kZW5jeVJ1bGVzPgogICAgICAgICAgICAgICAgICAgICAgICA6OmVuZDo6CiAgICAgICAgICAgICAgICAgICAgICAgIDxDaGFyYWN0ZXIgcmVmPSI6OmlkOjoiIC8+CiAgICAgICAgICAgICAgICAgICAgPC9DaGFyTm9kZT4KICAgICAgICAgICAgICAgIDo6ZW5kOjoKICAgICAgICAgICAgICAgIDwvTm9kZXM+CiAgICAgICAgICAgIDwvQ2hhcmFjdGVyVHJlZT4KICAgICAgICA8L0NoYXJhY3RlclRyZWVzPgogICAgICAgIDxDb2RlZERlc2NyaXB0aW9ucz4KICAgICAgICA6OmZvcmVhY2ggdGF4b25zOjoKICAgICAgICAgICAgPENvZGVkRGVzY3JpcHRpb24gaWQ9IkQxIj4KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4KICAgICAgICAgICAgICAgICAgICA8TGFiZWw+OjpsYWJlbDo6PC9MYWJlbD4KICAgICAgICAgICAgICAgICAgICA8RGV0YWlsPjo6ZGV0YWlsOjo8L0RldGFpbD4KICAgICAgICAgICAgICAgICAgICA6OmZvcmVhY2ggbWVkaWFPYmplY3RzUmVmczo6CiAgICAgICAgICAgICAgICAgICAgPE1lZGlhT2JqZWN0IHJlZj0iOjpyZWY6OiIgLz4KICAgICAgICAgICAgICAgICAgICA6OmVuZDo6CiAgICAgICAgICAgICAgICA8L1JlcHJlc2VudGF0aW9uPgogICAgICAgICAgICAgICAgPFNjb3BlPgogICAgICAgICAgICAgICAgICAgIDxUYXhvbk5hbWUgcmVmPSI6OmlkOjoiIC8+CiAgICAgICAgICAgICAgICA8L1Njb3BlPgogICAgICAgICAgICAgICAgOjppZiAoY2F0ZWdvcmljYWxzLmxlbmd0aCA+IDApOjoKICAgICAgICAgICAgICAgIDxTdW1tYXJ5RGF0YT4KICAgICAgICAgICAgICAgIDo6Zm9yZWFjaCBjYXRlZ29yaWNhbHM6OgogICAgICAgICAgICAgICAgICAgIDxDYXRlZ29yaWNhbCByZWY9Ijo6cmVmOjoiPgogICAgICAgICAgICAgICAgICAgIDo6Zm9yZWFjaCBzdGF0ZVJlZnM6OgogICAgICAgICAgICAgICAgICAgICAgICA8U3RhdGUgcmVmPSI6OnJlZjo6IiAvPgogICAgICAgICAgICAgICAgICAgIDo6ZW5kOjoKICAgICAgICAgICAgICAgICAgICA8L0NhdGVnb3JpY2FsPgogICAgICAgICAgICAgICAgOjplbmQ6OgogICAgICAgICAgICAgICAgPC9TdW1tYXJ5RGF0YT4KICAgICAgICAgICAgICAgIDo6ZW5kOjoKICAgICAgICAgICAgPC9Db2RlZERlc2NyaXB0aW9uPgogICAgICAgIDo6ZW5kOjoKICAgICAgICA8L0NvZGVkRGVzY3JpcHRpb25zPgogICAgICAgIDxNZWRpYU9iamVjdHM+CiAgICAgICAgOjpmb3JlYWNoIG1lZGlhT2JqZWN0czo6CiAgICAgICAgICAgIDxNZWRpYU9iamVjdCBpZD0iOjppZDo6Ij4KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4KICAgICAgICAgICAgICAgICAgICA8TGFiZWw+OjpsYWJlbDo6PC9MYWJlbD4KICAgICAgICAgICAgICAgICAgICA8RGV0YWlsIHJvbGU9IkNhcHRpb24iPjo6ZGV0YWlsOjo8L0RldGFpbD4KICAgICAgICAgICAgICAgIDwvUmVwcmVzZW50YXRpb24+CiAgICAgICAgICAgICAgICA8VHlwZT5JbWFnZTwvVHlwZT4KICAgICAgICAgICAgICAgIDxTb3VyY2UgaHJlZj0iOjpzb3VyY2U6OiIgLz4KICAgICAgICAgICAgPC9NZWRpYU9iamVjdD4KICAgICAgICA6OmVuZDo6CiAgICAgICAgPC9NZWRpYU9iamVjdHM+CiAgICA8L0RhdGFzZXQ+CiAgICA6OmVuZDo6CjwvRGF0YXNldHM+"}];
+Date.prototype.__class__ = Date;
+Date.__name__ = "Date";
+haxe_Resource.content = [{ name : "sdd_template", data : "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxEYXRhc2V0cyB4bWxucz0iaHR0cDovL3JzLnRkd2cub3JnL1VCSUYvMjAwNi8iIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhzaTpzY2hlbWFMb2NhdGlvbj0iaHR0cDovL3JzLnRkd2cub3JnL1VCSUYvMjAwNi8gaHR0cDovL3JzLnRkd2cub3JnL1VCSUYvMjAwNi9TY2hlbWEvMS4xL1NERC54c2QiPg0KCTxUZWNobmljYWxNZXRhZGF0YSBjcmVhdGVkPSIyMDIwLTA0LTI0VDEyOjExOjE1Ij4NCgkJPEdlbmVyYXRvciBuYW1lPSJYcGVyMyIgbm90ZXM9IlRoaXMgc29mdHdhcmUgaXMgZGV2ZWxvcGVkIGJ5IExJUyAtIExhYm9yYXRvcnkgb2YgSW5mb3JtYXRpY3MgYW5kIFN5c3RlbWF0aWNzIChVbml2ZXJzaXTDg8KpIFBpZXJyZSBldCBNYXJpZSBDdXJpZSwgVU1SIDcyMDUsIEZyYW5jZSkgLSB3d3cuaW5mb3N5c2xhYi5mciIgdmVyc2lvbj0iMS41LjEiIC8+DQoJPC9UZWNobmljYWxNZXRhZGF0YT4NCiAgICA6OmZvcmVhY2ggZGF0YXNldHM6Og0KICAgIDxEYXRhc2V0IHhtbG5zPSIiIHhtbDpsYW5nPSJmciI+DQogICAgICAgIDxSZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgIDxMYWJlbD5TYW1wbGU8L0xhYmVsPg0KICAgICAgICA8L1JlcHJlc2VudGF0aW9uPg0KICAgICAgICA8VGF4b25OYW1lcz4NCiAgICAgICAgICAgIDo6Zm9yZWFjaCB0YXhvbnM6Og0KICAgICAgICAgICAgPFRheG9uTmFtZSBpZD0iOjppZDo6Ij4NCiAgICAgICAgICAgICAgICA8UmVwcmVzZW50YXRpb24+DQogICAgICAgICAgICAgICAgICAgIDxMYWJlbD46OmxhYmVsOjo8L0xhYmVsPg0KICAgICAgICAgICAgICAgICAgICA8RGV0YWlsPjo6ZGV0YWlsOjo8L0RldGFpbD4NCiAgICAgICAgICAgICAgICAgICAgOjpmb3JlYWNoIG1lZGlhT2JqZWN0c1JlZnM6Og0KICAgICAgICAgICAgICAgICAgICA8TWVkaWFPYmplY3QgcmVmPSI6OnJlZjo6IiAvPg0KICAgICAgICAgICAgICAgICAgICA6OmVuZDo6DQogICAgICAgICAgICAgICAgPC9SZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgIDwvVGF4b25OYW1lPg0KICAgICAgICAgICAgOjplbmQ6Og0KICAgICAgICA8L1RheG9uTmFtZXM+DQogICAgICAgIDxUYXhvbkhpZXJhcmNoaWVzPg0KICAgICAgICAgICAgPFRheG9uSGllcmFyY2h5IGlkPSJ0aDEiPg0KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgICAgICAgICAgPExhYmVsPkRlZmF1bHQgRW50aXR5IFRyZWU8L0xhYmVsPg0KICAgICAgICAgICAgICAgIDwvUmVwcmVzZW50YXRpb24+DQogICAgICAgICAgICAgICAgPFRheG9uSGllcmFyY2h5VHlwZT5VbnNwZWNpZmllZFRheG9ub215PC9UYXhvbkhpZXJhcmNoeVR5cGU+DQogICAgICAgICAgICAgICAgPE5vZGVzPg0KICAgICAgICAgICAgICAgIDo6Zm9yZWFjaCB0YXhvbnM6Og0KICAgICAgICAgICAgICAgICAgICA8Tm9kZSBpZD0iOjpoaWQ6OiI+DQogICAgICAgICAgICAgICAgICAgICAgICA8UGFyZW50IHJlZj0iJCR0YXhvblBhcmVudEhpZCg6OnBhcmVudElkOjopIiAvPg0KICAgICAgICAgICAgICAgICAgICAgICAgPFRheG9uTmFtZSByZWY9Ijo6aWQ6OiIgLz4NCiAgICAgICAgICAgICAgICAgICAgPC9Ob2RlPg0KICAgICAgICAgICAgICAgIDo6ZW5kOjoNCiAgICAgICAgICAgICAgICA8L05vZGVzPg0KICAgICAgICAgICAgPC9UYXhvbkhpZXJhcmNoeT4NCiAgICAgICAgPC9UYXhvbkhpZXJhcmNoaWVzPg0KICAgICAgICA8Q2hhcmFjdGVycz4NCiAgICAgICAgOjpmb3JlYWNoIGNoYXJhY3RlcnM6Og0KICAgICAgICAgICAgPENhdGVnb3JpY2FsQ2hhcmFjdGVyIGlkPSI6OmlkOjoiPg0KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgICAgICAgICAgPExhYmVsPjo6bGFiZWw6OjwvTGFiZWw+DQogICAgICAgICAgICAgICAgICAgIDxEZXRhaWw+OjpkZXRhaWw6OjwvRGV0YWlsPg0KICAgICAgICAgICAgICAgICAgICA6OmZvcmVhY2ggbWVkaWFPYmplY3RzUmVmczo6DQogICAgICAgICAgICAgICAgICAgIDxNZWRpYU9iamVjdCByZWY9Ijo6cmVmOjoiIC8+DQogICAgICAgICAgICAgICAgICAgIDo6ZW5kOjoNCiAgICAgICAgICAgICAgICA8L1JlcHJlc2VudGF0aW9uPg0KICAgICAgICAgICAgICAgIDo6aWYoc3RhdGVzLmxlbmd0aCA+IDApOjoNCiAgICAgICAgICAgICAgICAgICAgPFN0YXRlcz4NCiAgICAgICAgICAgICAgICAgICAgOjpmb3JlYWNoIHN0YXRlczo6DQogICAgICAgICAgICAgICAgICAgICAgICA8U3RhdGVEZWZpbml0aW9uIGlkPSI6OmlkOjoiPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPExhYmVsPjo6bGFiZWw6OjwvTGFiZWw+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxEZXRhaWw+OjpkZXRhaWw6OjwvRGV0YWlsPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA6OmZvcmVhY2ggbWVkaWFPYmplY3RzUmVmczo6DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxNZWRpYU9iamVjdCByZWY9Ijo6cmVmOjoiIC8+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDo6ZW5kOjoNCiAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1JlcHJlc2VudGF0aW9uPg0KICAgICAgICAgICAgICAgICAgICAgICAgPC9TdGF0ZURlZmluaXRpb24+DQogICAgICAgICAgICAgICAgICAgIDo6ZW5kOjoNCiAgICAgICAgICAgICAgICAgICAgPC9TdGF0ZXM+DQogICAgICAgICAgICAgICAgOjplbmQ6Og0KICAgICAgICAgICAgPC9DYXRlZ29yaWNhbENoYXJhY3Rlcj4NCiAgICAgICAgOjplbmQ6Og0KICAgICAgICA8L0NoYXJhY3RlcnM+DQogICAgICAgIDxDaGFyYWN0ZXJUcmVlcz4NCiAgICAgICAgICAgIDxDaGFyYWN0ZXJUcmVlIGlkPSJjdDEiPg0KICAgICAgICAgICAgICAgIDxSZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgICAgICAgICAgPExhYmVsPk9yZHJlIGV0IGRlcGVuZGFuY2UgZW50cmUgY2FyYWN0ZXJlczwvTGFiZWw+DQogICAgICAgICAgICAgICAgPC9SZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgICAgICA8U2hvdWxkQ29udGFpbkFsbENoYXJhY3RlcnM+dHJ1ZTwvU2hvdWxkQ29udGFpbkFsbENoYXJhY3RlcnM+DQogICAgICAgICAgICAgICAgPE5vZGVzPg0KICAgICAgICAgICAgICAgIDo6Zm9yZWFjaCBjaGFyYWN0ZXJzOjoNCiAgICAgICAgICAgICAgICAgICAgPENoYXJOb2RlPg0KICAgICAgICAgICAgICAgICAgICAgICAgOjppZiAoaW5hcHBsaWNhYmxlU3RhdGVzSWRzLmxlbmd0aCA+IDApOjoNCiAgICAgICAgICAgICAgICAgICAgICAgIDxEZXBlbmRlbmN5UnVsZXM+DQoJCQkJCQkJPEluYXBwbGljYWJsZUlmPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDo6Zm9yZWFjaCBpbmFwcGxpY2FibGVTdGF0ZXNJZHM6Og0KCQkJCQkJCQk8U3RhdGUgcmVmPSI6OnJlZjo6IiAvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgIDo6ZW5kOjoNCgkJCQkJCQk8L0luYXBwbGljYWJsZUlmPg0KCQkJCQkJPC9EZXBlbmRlbmN5UnVsZXM+DQogICAgICAgICAgICAgICAgICAgICAgICA6OmVuZDo6DQogICAgICAgICAgICAgICAgICAgICAgICA8Q2hhcmFjdGVyIHJlZj0iOjppZDo6IiAvPg0KICAgICAgICAgICAgICAgICAgICA8L0NoYXJOb2RlPg0KICAgICAgICAgICAgICAgIDo6ZW5kOjoNCiAgICAgICAgICAgICAgICA8L05vZGVzPg0KICAgICAgICAgICAgPC9DaGFyYWN0ZXJUcmVlPg0KICAgICAgICA8L0NoYXJhY3RlclRyZWVzPg0KICAgICAgICA8Q29kZWREZXNjcmlwdGlvbnM+DQogICAgICAgIDo6Zm9yZWFjaCB0YXhvbnM6Og0KICAgICAgICAgICAgPENvZGVkRGVzY3JpcHRpb24gaWQ9IkQxIj4NCiAgICAgICAgICAgICAgICA8UmVwcmVzZW50YXRpb24+DQogICAgICAgICAgICAgICAgICAgIDxMYWJlbD46OmxhYmVsOjo8L0xhYmVsPg0KICAgICAgICAgICAgICAgICAgICA8RGV0YWlsPjo6ZGV0YWlsOjo8L0RldGFpbD4NCiAgICAgICAgICAgICAgICAgICAgOjpmb3JlYWNoIG1lZGlhT2JqZWN0c1JlZnM6Og0KICAgICAgICAgICAgICAgICAgICA8TWVkaWFPYmplY3QgcmVmPSI6OnJlZjo6IiAvPg0KICAgICAgICAgICAgICAgICAgICA6OmVuZDo6DQogICAgICAgICAgICAgICAgPC9SZXByZXNlbnRhdGlvbj4NCiAgICAgICAgICAgICAgICA8U2NvcGU+DQogICAgICAgICAgICAgICAgICAgIDxUYXhvbk5hbWUgcmVmPSI6OmlkOjoiIC8+DQogICAgICAgICAgICAgICAgPC9TY29wZT4NCiAgICAgICAgICAgICAgICA6OmlmIChjYXRlZ29yaWNhbHMubGVuZ3RoID4gMCk6Og0KICAgICAgICAgICAgICAgIDxTdW1tYXJ5RGF0YT4NCiAgICAgICAgICAgICAgICA6OmZvcmVhY2ggY2F0ZWdvcmljYWxzOjoNCiAgICAgICAgICAgICAgICAgICAgPENhdGVnb3JpY2FsIHJlZj0iOjpyZWY6OiI+DQogICAgICAgICAgICAgICAgICAgIDo6Zm9yZWFjaCBzdGF0ZVJlZnM6Og0KICAgICAgICAgICAgICAgICAgICAgICAgPFN0YXRlIHJlZj0iOjpyZWY6OiIgLz4NCiAgICAgICAgICAgICAgICAgICAgOjplbmQ6Og0KICAgICAgICAgICAgICAgICAgICA8L0NhdGVnb3JpY2FsPg0KICAgICAgICAgICAgICAgIDo6ZW5kOjoNCiAgICAgICAgICAgICAgICA8L1N1bW1hcnlEYXRhPg0KICAgICAgICAgICAgICAgIDo6ZW5kOjoNCiAgICAgICAgICAgIDwvQ29kZWREZXNjcmlwdGlvbj4NCiAgICAgICAgOjplbmQ6Og0KICAgICAgICA8L0NvZGVkRGVzY3JpcHRpb25zPg0KICAgICAgICA8TWVkaWFPYmplY3RzPg0KICAgICAgICA6OmZvcmVhY2ggbWVkaWFPYmplY3RzOjoNCiAgICAgICAgICAgIDxNZWRpYU9iamVjdCBpZD0iOjppZDo6Ij4NCiAgICAgICAgICAgICAgICA8UmVwcmVzZW50YXRpb24+DQogICAgICAgICAgICAgICAgICAgIDxMYWJlbD46OmxhYmVsOjo8L0xhYmVsPg0KICAgICAgICAgICAgICAgICAgICA8RGV0YWlsIHJvbGU9IkNhcHRpb24iPjo6ZGV0YWlsOjo8L0RldGFpbD4NCiAgICAgICAgICAgICAgICA8L1JlcHJlc2VudGF0aW9uPg0KICAgICAgICAgICAgICAgIDxUeXBlPkltYWdlPC9UeXBlPg0KICAgICAgICAgICAgICAgIDxTb3VyY2UgaHJlZj0iOjpzb3VyY2U6OiIgLz4NCiAgICAgICAgICAgIDwvTWVkaWFPYmplY3Q+DQogICAgICAgIDo6ZW5kOjoNCiAgICAgICAgPC9NZWRpYU9iamVjdHM+DQogICAgPC9EYXRhc2V0Pg0KICAgIDo6ZW5kOjoNCjwvRGF0YXNldHM+"}];
 js_Boot.__toStr = ({ }).toString;
 Xml.Element = 0;
 Xml.PCData = 1;
@@ -2587,6 +3042,8 @@ haxe_xml_Parser.escapes = (function($this) {
 	$r = h;
 	return $r;
 }(this));
+sdd_Field.standard = [new sdd_Field(true,"author","Author"),new sdd_Field(true,"name2","Syn"),new sdd_Field(true,"vernacularName","NV"),new sdd_Field(true,"vernacularName2","NV2"),new sdd_Field(true,"meaning","Sense"),new sdd_Field(true,"noHerbier","N° Herbier"),new sdd_Field(true,"herbariumPicture","Herbarium Picture"),new sdd_Field(true,"website","Website")];
+sdd_Hierarchy.forbiddenChars = [" ","*",".","\"","/","\\","[","]",":",";","|",","];
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 
 //# sourceMappingURL=SDD.js.map
