@@ -13,10 +13,13 @@
             <div :class="'horizontal-flexbox start-align flex-grow-1' + (editable ? '' : 'scroll')">
                 <div class="thin-border medium-margin white-background scroll flex-grow-1">
                     <label class="item-property">NS</label>
-                    <input class="italic" :readonly="!editable" type="text" lang="lat" spellcheck="false" v-model="item.name" /><br v-if="editable"/>
+                    <div class="inline-block medium-padding medium-margin" v-if="!editable"><i>{{ item.name }}</i> {{ item.author }}</div><br/>
+                    <div v-if="editable">
+                        <input class="italic" type="text" lang="lat" spellcheck="false" v-model="item.name" /><br>
+                        <label class="item-property">Author</label>
+                        <input type="text" v-model="item.author" />
+                    </div>
 
-                    <label v-if="editable" class="item-property">Author</label>
-                    <input :readonly="!editable" type="text" v-model="item.author" /><br/>
 
                     <label class="item-property">Synonymous</label>
                     <input :readonly="!editable" type="text" v-model="item.name2" /><br/>
