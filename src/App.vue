@@ -189,11 +189,11 @@ export default {
             const re = new RegExp(pattern, "gi");
 
             for (const [key, item] of Object.entries(this.items)) {
-                const newDetail = item.detail.replaceAll(re, replacement);
+                const newDetail = item.detail.replace(re, replacement);
                 this.items[key] = { ...item, detail: newDetail };
             }
             for (const [key, description] of Object.entries(this.descriptions)) {
-                const newDetail = description.detail.replaceAll(re);
+                const newDetail = description.detail.replace(re);
                 this.descriptions[key] = { ...description, detail: newDetail };
             }
         },
