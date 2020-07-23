@@ -60,6 +60,7 @@
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
             <button type="button" v-on:click="globalReplace">Text Replace</button>
             <button type="button" v-on:click="emptyZip">Export Folder Hierarchy</button>
+            <button type="button" v-on:click="texExport">Export to Latex</button>
         </div>
         <div>
             <button type="button" class="background-color-1" v-on:click="editExtraFields">Fields</button>
@@ -241,6 +242,10 @@ export default {
         emptyZip() {
             const zipTxt = window.sdd.Hierarchy.toZip(this.items);
             download(zipTxt, "zip", true);
+        },
+        texExport() {
+            const tex = window.sdd.DetailDataToTex.export(Object.values(this.items));
+            download(tex, "tex");
         },
         exportData() {
             const xml = saveSDD({
