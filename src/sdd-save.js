@@ -49,13 +49,14 @@ function saveSDD({ items, descriptors, extraFields }) {
         const label = Object.assign(xml.createElement("Label"), { textContent: name || "_" });
         representation.appendChild(label);
         const fields = [...StandardFields, ...(extraFields ?? [])];
-        const itemDetail = "" +
-            fields.map(({ id, label, std }) => {
-                const value = item[std ? id : `extra-${id}`];
-                if (typeof value === "undefined" || value === null) return "";
-                return `${label}: ${value}<br><br>`;
-            }).join("") +
-            (item.fasc             ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
+        let itemDetail = "";
+        for (const { id, label, std } in fields) {
+            const value = item[std ? id : `extra-${id}`];
+            if (typeof value === "undefined" || value === null) continue;
+            itemDetail += `${label}: ${value}<br><br>`;
+        }
+        itemDetail +=
+            (item.fasc ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
             (item.detail ?? "");
         if (itemDetail) {
             const detail = Object.assign(xml.createElement("Detail"), { textContent: itemDetail });
