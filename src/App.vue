@@ -53,7 +53,7 @@
         </div>
         <div>
             <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
-            <select v-on:change="loadDB($event.target.value)">
+            <select v-model="selectedBase">
                 <option v-for="databaseId in databaseIds" :key="databaseId" :value="databaseId">Database #{{ databaseId }}</option>
             </select>
             <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
@@ -86,11 +86,8 @@ export default {
         TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
     },
     data() {
-        let databaseIds = [];
-        DB.list().then(dbIds => databaseIds = dbIds);
-
         return {
-            databaseIds,
+            databaseIds: [0],
             selectedBase: 0,
             showLeftMenu: true,
             showImageBox: true,
@@ -112,11 +109,18 @@ export default {
         };
     },
     mounted() {
+        DB.list().then(dbIds => this.databaseIds = dbIds);
         this.loadBase();
+    },
+    watch: {
+        selectedBase(val) {
+            this.loadBase(val);
+        }
     },
     methods: {
         loadBase(id) {
             DB.load(id | 0).then(savedDataset => {
+                this.resetData();
                 for (const [id, taxon] of Object.entries(savedDataset?.taxons ?? {})) {
                     Vue.set(this.items, id, taxon);
                 }
@@ -126,10 +130,6 @@ export default {
                 this.extraFields = savedDataset?.extraFields ?? [];
                 this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
             });
-        },
-        loadDB(id) {
-            this.selectedBase = id;
-            this.loadBase(id);
         },
         editExtraFields() {
             const extraFieldsText = window.prompt("Extra Fields", this.extraFields.map(({ id, label }) => `${id}:${label}`).join(","));
@@ -147,9 +147,8 @@ export default {
         },
         createNewDatabase() {
             const newDatabaseId = this.databaseIds.length;
-            this.databaseIds.push(newDatabaseId)
+            this.databaseIds.push(newDatabaseId);
             this.selectedBase = newDatabaseId;
-            this.resetData();
         },
         toggleLeftMenu() {
             this.showLeftMenu = !this.showLeftMenu;
