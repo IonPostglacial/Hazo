@@ -56,7 +56,7 @@ function saveSDD({ items, descriptors, extraFields }) {
             itemDetail += `${label}: ${value}<br><br>`;
         }
         itemDetail +=
-            (item.fasc ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page}<br><br>` : "") +
+            (item.fasc ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page ?? ""}<br><br>` : "") +
             (item.detail ?? "");
         if (itemDetail) {
             const detail = Object.assign(xml.createElement("Detail"), { textContent: itemDetail });
