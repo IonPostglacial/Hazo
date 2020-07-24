@@ -46,10 +46,12 @@
     </div>
     <section class="medium-margin horizontal-flexbox space-between thin-border">
         <div>
-            <button type="button" v-on:click="importData">Import</button>
+            <button type="button" v-on:click="jsonImport">Import</button>
+            <input class="invisible" v-on:change="jsonUpload" type="file" accept="text/json" name="import-json" id="import-json">
+            <button type="button" v-on:click="jsonExport">Export</button>
+            <button type="button" v-on:click="importSDD">Import SDD</button>
             <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
-            <button type="button" v-on:click="exportData">Export</button>
-            <button type="button" v-on:click="exportStats">Stats</button>
+            <button type="button" v-on:click="exportSDD">Export SDD</button>
         </div>
         <div>
             <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
@@ -59,12 +61,12 @@
             <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
             <button type="button" v-on:click="globalReplace">Text Replace</button>
-            <button type="button" v-on:click="emptyZip">Export Folder Hierarchy</button>
-            <button type="button" v-on:click="texExport">Export to Latex</button>
         </div>
         <div>
+            <button type="button" v-on:click="exportStats">Stats</button>
+            <button type="button" v-on:click="emptyZip">Folder Hierarchy</button>
+            <button type="button" v-on:click="texExport">Latex</button>
             <button type="button" class="background-color-1" v-on:click="editExtraFields">Fields</button>
-            <a class="button" href="./merger.html">Merger</a>
         </div>
     </section>
   </div>
@@ -178,11 +180,11 @@ export default {
                 Vue.delete(this.descriptions, key);
             }
         },
-        importData() {
+        importSDD() {
             document.getElementById("import-data").click();
         },
-        completeData() {
-            document.getElementById("complete-data").click();
+        jsonImport() {
+            document.getElementById("import-json").click();
         },
         globalReplace() {
             const pattern = window.prompt("Text pattern to replace");
@@ -247,7 +249,84 @@ export default {
             const tex = window.sdd.DetailDataToTex.export(Object.values(this.items));
             download(tex, "tex");
         },
-        exportData() {
+        compressItem(item) {
+            return { ...item,
+                children: Object.keys(item.children),
+                descriptions: item.descriptions.map(({descriptor, states}) => ({
+                    descriptorId: descriptor.id, 
+                    statesIds: states.map(s => s.id),
+                })),
+            };
+        },
+        unCompressItem(item, items, descriptions, states) {
+            return { ...item,
+                children: item.children.map(id => items[id]),
+                descriptions: item.descriptions.map(({descriptorId, statesIds}) => ({
+                    descriptor: descriptions[descriptorId],
+                    states: statesIds.map(id => states[id]),
+                })),
+            };
+        },
+        compressDescription(description) {
+            return { ...description,
+                children: Object.keys(description.children),
+                states: description.states.map(s => s.id) 
+            };
+        },
+        uncompressDescription(description, descriptions, states) {
+            return { ...description,
+                children: description.children.map(id => descriptions[id]),
+                states: description.states.map(id => states[id]),
+            };
+        },
+        getAllStates() {
+            let states = [];
+            for (const description of Object.values(this.descriptions)) {
+                states = states.concat(description.states);
+            }
+            return states;
+        },
+        jsonExport() {
+            const json = JSON.stringify({
+                id: this.selectedBase | 0,
+                taxons: Object.values(this.items).map(this.compressItem),
+                descriptors: Object.values(this.descriptions).map(this.compressDescription),
+                states: this.getAllStates(),
+                extraFields: this.extraFields,
+                dictionaryEntries: this.dictionaryEntries
+            });
+            download(json, "bunga.json");
+        },
+        jsonUpload(e) {
+            const file = e.target.files[0];
+            const fileReader = new FileReader();
+            fileReader.onload = () => {
+                const db = JSON.parse(fileReader.result);
+                const states = Object.fromEntries(db.states.map(s => [s.id, s]));
+                const descriptions = Object.fromEntries(db.descriptors.map(d => [d.id, {}]));
+                for (const description of db.descriptors) {
+                    Object.assign(descriptions[description.id], this.uncompressDescription(description, descriptions, states));
+                }
+                const items = Object.fromEntries(db.taxons.map(t => [t.id, {}]));
+                for (const taxon of db.taxons) {
+                    Object.assign(items[taxon.id], this.unCompressItem(taxon, items, descriptions, states));
+                }
+
+                this.extraFields = db.extraFields;
+
+                for (const description of Object.values(descriptions)) {
+                    Vue.set(this.descriptions, description.id, description);
+                }
+                for (const item of Object.values(items)) {
+                    Vue.set(this.items, item.id, item);
+                }
+                for (const entry of Object.values(db.dictionaryEntries)) {
+                    Vue.set(this.dictionaryEntries, entry.id, entry);
+                }
+            };
+            fileReader.readAsText(file);
+        },
+        exportSDD() {
             const xml = saveSDD({
                 items: this.items,
                 descriptors: this.descriptions,
