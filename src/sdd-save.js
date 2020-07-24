@@ -45,7 +45,9 @@ function saveSDD({ items, descriptors, extraFields }) {
 
     function createRepresentation(xml, item, role = undefined) {
         const representation = xml.createElement("Representation");
-        const name = item.name + (item.nameCN ? ` // ${item.nameCN}` : "");
+        const name = item.name +
+            (item.author ? ` / ${item.author}` : "") +
+            (item.nameCN ? ` / ${item.nameCN}` : "");
         const label = Object.assign(xml.createElement("Label"), { textContent: name || "_" });
         representation.appendChild(label);
         const fields = [...StandardFields, ...(extraFields ?? [])];

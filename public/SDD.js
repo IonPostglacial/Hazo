@@ -2361,9 +2361,10 @@ sdd_Dataset.__name__ = "sdd.Dataset";
 sdd_Dataset.prototype = {
 	__class__: sdd_Dataset
 };
-var sdd_DetailData = $hx_exports["sdd"]["DetailData"] = function(name,nameCN,fasc,page,detail,fields) {
-	this.name = name;
-	this.nameCN = nameCN;
+var sdd_DetailData = $hx_exports["sdd"]["DetailData"] = function(name,author,nameCN,fasc,page,detail,fields) {
+	this.name = name != null ? StringTools.trim(name) : "";
+	this.author = author != null ? StringTools.trim(author) : "";
+	this.nameCN = nameCN != null ? StringTools.trim(nameCN) : "";
 	this.fasc = fasc;
 	this.page = page;
 	this.detail = detail;
@@ -2395,9 +2396,10 @@ sdd_DetailData.removeFromDescription = function(description,sections) {
 	return desc;
 };
 sdd_DetailData.fromRepresentation = function(representation,extraFields) {
-	var names = representation.label.split(" // ");
+	var names = representation.label.split("/");
 	var name = names[0];
-	var nameCN = names[1];
+	var author = names[1];
+	var nameCN = names[2];
 	var fields = sdd_Field.standard.concat(extraFields);
 	var floreRe = new EReg("Flore Madagascar et Comores\\s*<br>\\s*fasc\\s+(\\d*)\\s*<br>\\s*page\\s+(null|\\d*)","i");
 	var fasc = null;
@@ -2419,7 +2421,7 @@ sdd_DetailData.fromRepresentation = function(representation,extraFields) {
 	if(emptyParagraphRe.match(detail)) {
 		detail = detail.replace(emptyParagraphRe.r,"");
 	}
-	var data = new sdd_DetailData(name,nameCN,fasc,page,detail,extraFields);
+	var data = new sdd_DetailData(name,author,nameCN,fasc,page,detail,extraFields);
 	var _g = 0;
 	while(_g < fields.length) {
 		var field = fields[_g];
@@ -2431,7 +2433,7 @@ sdd_DetailData.fromRepresentation = function(representation,extraFields) {
 sdd_DetailData.prototype = {
 	toRepresentation: function() {
 		var _gthis = this;
-		var _g = this.name + (this.nameCN != null ? " // " + this.nameCN : "");
+		var _g = this.name + (this.author != null ? " / " + this.author : "" + (this.nameCN != null ? " / " + this.nameCN : ""));
 		var _this = this.fields;
 		var result = new Array(_this.length);
 		var _g1 = 0;
@@ -3089,7 +3091,7 @@ haxe_xml_Parser.escapes = (function($this) {
 	$r = h;
 	return $r;
 }(this));
-sdd_Field.standard = [new sdd_Field(true,"author","Author"),new sdd_Field(true,"name2","Syn"),new sdd_Field(true,"vernacularName","NV"),new sdd_Field(true,"vernacularName2","NV2"),new sdd_Field(true,"meaning","Sense"),new sdd_Field(true,"noHerbier","N° Herbier"),new sdd_Field(true,"herbariumPicture","Herbarium Picture"),new sdd_Field(true,"website","Website")];
+sdd_Field.standard = [new sdd_Field(true,"name2","Syn"),new sdd_Field(true,"vernacularName","NV"),new sdd_Field(true,"vernacularName2","NV2"),new sdd_Field(true,"meaning","Sense"),new sdd_Field(true,"noHerbier","N° Herbier"),new sdd_Field(true,"herbariumPicture","Herbarium Picture"),new sdd_Field(true,"website","Website")];
 sdd_Hierarchy.forbiddenChars = [" ","*",".","\"","/","\\","[","]",":",";","|",","];
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 

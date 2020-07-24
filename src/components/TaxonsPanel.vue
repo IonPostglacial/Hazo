@@ -20,7 +20,6 @@
                         <input type="text" v-model="item.author" />
                     </div>
 
-
                     <label class="item-property">Synonymous</label>
                     <input :readonly="!editable" type="text" v-model="item.name2" /><br/>
 
