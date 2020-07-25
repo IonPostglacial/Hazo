@@ -246,8 +246,11 @@ export default {
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const tex = window.bunga.TaxonToTex.export(Object.values(this.items));
-            download(tex, "tex");
+            window.bunga.TaxonToTex.export(Object.values(this.items)).then(tex => {
+                const blob = new Blob([tex], {type: "application/zip"});
+                const objectUrl = URL.createObjectURL(blob);
+                window.open(objectUrl);
+            });
         },
         compressItem(item) {
             return { ...item,
