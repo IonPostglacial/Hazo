@@ -242,11 +242,11 @@ export default {
             download(csv, "csv");
         },
         emptyZip() {
-            const zipTxt = window.sdd.Hierarchy.toZip(this.items);
+            const zipTxt = window.bunga.Hierarchy.toZip(this.items);
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const tex = window.sdd.DetailDataToTex.export(Object.values(this.items));
+            const tex = window.bunga.TaxonToTex.export(Object.values(this.items));
             download(tex, "tex");
         },
         compressItem(item) {

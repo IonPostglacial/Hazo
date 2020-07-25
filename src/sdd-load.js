@@ -23,24 +23,7 @@ function extractState(state, photosByRef) {
 }
 
 function extractItem(taxon, descriptors, extraFields, statesById, photosByRef) {
-    const item = Object.assign({
-        type: "taxon", 
-        id: taxon.id, 
-        hid: taxon.id, 
-        photos: taxon.mediaObjectsRefs.map(m => photosByRef[m.ref]),
-        parentId: taxon.parentId,
-        topLevel: !taxon.parentId,
-        children: taxon.childrenIds,
-    }, window.sdd.DetailData.fromRepresentation(taxon, extraFields));
-    const descriptions = {};
-
-    for (const categorical of taxon.categoricals) {
-        descriptions[categorical.ref] = {
-            descriptor: descriptors[categorical.ref],
-            states: categorical.stateRefs.map(s => statesById[s.ref])
-        };
-    }
-    item.descriptions = Object.values(descriptions);
+    const item = window.bunga.Taxon.fromSdd(taxon, extraFields, photosByRef, descriptors, statesById);
  
     for (const [name, value] of Object.entries(item.extra)) {
         item["extra-" + name] = value;
