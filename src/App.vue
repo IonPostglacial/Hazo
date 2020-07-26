@@ -65,7 +65,7 @@
         <div>
             <button type="button" v-on:click="exportStats">Stats</button>
             <button type="button" v-on:click="emptyZip">Folder Hierarchy</button>
-            <button type="button" v-on:click="texExport">Latex</button>
+            <button type="button" v-on:click="texExport">Latex{{latexProgressText}}</button>
             <button type="button" class="background-color-1" v-on:click="editExtraFields">Fields</button>
         </div>
     </section>
@@ -109,6 +109,7 @@ export default {
             items: {},
             descriptions: {},
             dictionaryEntries: {},
+            latexProgressText: "",
         };
     },
     mounted() {
@@ -242,14 +243,16 @@ export default {
             download(csv, "csv");
         },
         emptyZip() {
-            const zipTxt = window.bunga.Hierarchy.toZip(this.items);
+            const zipTxt = new Blob([window.bunga.Hierarchy.toZip(this.items)], {type: "application/zip"});
             download(zipTxt, "zip", true);
         },
         texExport() {
-            window.bunga.TaxonToTex.export(Object.values(this.items)).then(tex => {
+            const taxonToTex = new window.bunga.TaxonToTex(Object.values(this.items));
+            taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
+            taxonToTex.export(Object.values(this.items)).then(tex => {
+                this.latexProgressText = "";
                 const blob = new Blob([tex], {type: "application/zip"});
-                const objectUrl = URL.createObjectURL(blob);
-                window.open(objectUrl);
+                download(blob, "zip", true);
             });
         },
         compressItem(item) {

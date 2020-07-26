@@ -657,7 +657,7 @@ bunga_Hierarchy.toZip = function(hierarchy) {
 	var bytes = new haxe_io_BytesOutput();
 	var writer = new haxe_zip_Writer(bytes);
 	writer.write(entries);
-	return haxe_crypto_Base64.encode(bytes.getBytes());
+	return bytes.getBytes().b.bufferValue;
 };
 var bunga_ImageCache = $hx_exports["bunga"]["ImageCache"] = function() {
 	this.cache = new haxe_ds_StringMap();
@@ -867,59 +867,82 @@ bunga_TTMacro.prototype = {
 	}
 	,__class__: bunga_TTMacro
 };
-var bunga_TaxonToTex = $hx_exports["bunga"]["TaxonToTex"] = function() { };
-bunga_TaxonToTex.__name__ = "bunga.TaxonToTex";
-bunga_TaxonToTex.export = function(taxons) {
-	var texTemplate = haxe_Resource.getString("tex_template");
-	var template = new haxe_Template(texTemplate);
-	var entries = new haxe_ds_List();
-	var pictureNameByUrl = new haxe_ds_StringMap();
-	var photos = [];
+var bunga_TaxonToTex = $hx_exports["bunga"]["TaxonToTex"] = function(taxons) {
+	this.progressListeners = [];
+	this.pictureNameByUrl = new haxe_ds_StringMap();
+	this.photos = [];
 	var _g = 0;
 	while(_g < taxons.length) {
 		var taxon = taxons[_g];
 		++_g;
 		if(taxon.photos.length > 0) {
 			var photo = taxon.photos[0];
+			var this1 = this.pictureNameByUrl;
 			var value = bunga_FileNameGenerator.generate(taxon.name) + ".jpg";
-			pictureNameByUrl.h[photo] = value;
-			photos.push(photo);
+			this1.h[photo] = value;
+			this.photos.push(photo);
 		}
 	}
-	var texFileContent = haxe_io_Bytes.ofString(template.execute({ taxons : taxons},new bunga_TTMacro(pictureNameByUrl)));
-	entries.push({ fileName : "latex/export.tex", fileSize : texFileContent.length, fileTime : new Date(), compressed : false, dataSize : 0, data : texFileContent, crc32 : haxe_crypto_Crc32.make(texFileContent)});
-	return new Promise(function(resolve,reject) {
-		var semaphore = photos.length;
-		var semDec = function() {
-			console.log("src/bunga/TaxonToTex.hx:60:","dec: " + semaphore);
-			semaphore -= 1;
-			if(semaphore == 0) {
-				var bytes = new haxe_io_BytesOutput();
-				var writer = new haxe_zip_Writer(bytes);
-				writer.write(entries);
-				resolve(bytes.getBytes().b.bufferValue);
-			}
-		};
+};
+bunga_TaxonToTex.__name__ = "bunga.TaxonToTex";
+bunga_TaxonToTex.prototype = {
+	picture: function(resolve,urls) {
+		return this.pictureNameByUrl.h[urls[0]];
+	}
+	,onProgress: function(listener) {
+		this.progressListeners.push(listener);
+	}
+	,progressed: function(progress,progresMax) {
 		var _g = 0;
-		while(_g < photos.length) {
-			var photo = [photos[_g]];
+		var _g1 = this.progressListeners;
+		while(_g < _g1.length) {
+			var listener = _g1[_g];
 			++_g;
-			var rq = new haxe_http_HttpJs(photo[0]);
-			rq.onBytes = (function(photo) {
-				return function(bytes) {
-					entries.push({ fileName : "latex/" + pictureNameByUrl.h[photo[0]], fileSize : bytes.length, fileTime : new Date(), compressed : false, dataSize : 0, data : bytes, crc32 : haxe_crypto_Crc32.make(bytes)});
-					semDec();
-				};
-			})(photo);
-			rq.onError = (function() {
-				return function(msg) {
-					console.log("src/bunga/TaxonToTex.hx:85:","error: " + msg);
-					semDec();
-				};
-			})();
-			rq.request(false);
+			listener(progress,progresMax);
 		}
-	});
+	}
+	,'export': function(taxons) {
+		var _gthis = this;
+		var texTemplate = haxe_Resource.getString("tex_template");
+		var template = new haxe_Template(texTemplate);
+		var entries = new haxe_ds_List();
+		var texFileContent = haxe_io_Bytes.ofString(template.execute({ taxons : taxons},this));
+		entries.push({ fileName : "latex/export.tex", fileSize : texFileContent.length, fileTime : new Date(), compressed : false, dataSize : 0, data : texFileContent, crc32 : haxe_crypto_Crc32.make(texFileContent)});
+		return new Promise(function(resolve,reject) {
+			var semaphore = _gthis.photos.length;
+			var semDec = function() {
+				semaphore -= 1;
+				_gthis.progressed(_gthis.photos.length - semaphore,_gthis.photos.length);
+				if(semaphore == 0) {
+					var bytes = new haxe_io_BytesOutput();
+					var writer = new haxe_zip_Writer(bytes);
+					writer.write(entries);
+					resolve(bytes.getBytes().b.bufferValue);
+				}
+			};
+			var _g = 0;
+			var _g1 = _gthis.photos;
+			while(_g < _g1.length) {
+				var photo = [_g1[_g]];
+				++_g;
+				var rq = new haxe_http_HttpJs(photo[0]);
+				rq.onBytes = (function(photo) {
+					return function(bytes) {
+						entries.push({ fileName : "latex/" + _gthis.pictureNameByUrl.h[photo[0]], fileSize : bytes.length, fileTime : new Date(), compressed : false, dataSize : 0, data : bytes, crc32 : haxe_crypto_Crc32.make(bytes)});
+						semDec();
+					};
+				})(photo);
+				rq.onError = (function() {
+					return function(msg) {
+						console.log("src/bunga/TaxonToTex.hx:104:","error: " + msg);
+						semDec();
+					};
+				})();
+				rq.request(false);
+			}
+		});
+	}
+	,__class__: bunga_TaxonToTex
 };
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
@@ -1628,24 +1651,6 @@ var haxe_io_Encoding = $hxEnums["haxe.io.Encoding"] = { __ename__ : true, __cons
 };
 var haxe_crypto_Base64 = function() { };
 haxe_crypto_Base64.__name__ = "haxe.crypto.Base64";
-haxe_crypto_Base64.encode = function(bytes,complement) {
-	if(complement == null) {
-		complement = true;
-	}
-	var str = new haxe_crypto_BaseCode(haxe_crypto_Base64.BYTES).encodeBytes(bytes).toString();
-	if(complement) {
-		switch(bytes.length % 3) {
-		case 1:
-			str += "==";
-			break;
-		case 2:
-			str += "=";
-			break;
-		default:
-		}
-	}
-	return str;
-};
 haxe_crypto_Base64.decode = function(str,complement) {
 	if(complement == null) {
 		complement = true;
@@ -1667,31 +1672,7 @@ var haxe_crypto_BaseCode = function(base) {
 };
 haxe_crypto_BaseCode.__name__ = "haxe.crypto.BaseCode";
 haxe_crypto_BaseCode.prototype = {
-	encodeBytes: function(b) {
-		var nbits = this.nbits;
-		var base = this.base;
-		var size = b.length * 8 / nbits | 0;
-		var out = new haxe_io_Bytes(new ArrayBuffer(size + (b.length * 8 % nbits == 0 ? 0 : 1)));
-		var buf = 0;
-		var curbits = 0;
-		var mask = (1 << nbits) - 1;
-		var pin = 0;
-		var pout = 0;
-		while(pout < size) {
-			while(curbits < nbits) {
-				curbits += 8;
-				buf <<= 8;
-				buf |= b.b[pin++];
-			}
-			curbits -= nbits;
-			out.b[pout++] = base.b[buf >> curbits & mask];
-		}
-		if(curbits > 0) {
-			out.b[pout++] = base.b[buf << nbits - curbits & mask];
-		}
-		return out;
-	}
-	,initTable: function() {
+	initTable: function() {
 		var tbl = [];
 		var _g = 0;
 		while(_g < 256) {
