@@ -13,15 +13,6 @@ function loadSddFile(file) {
     });
 }
 
-function extractState(state, photosByRef) {
-    return {
-        id: state.id,
-        descriptorId: state.characterId,
-        name: state.label,
-        photos: state.mediaObjectsRefs.map(m => photosByRef[m.ref]),
-    };
-}
-
 function extractItem(taxon, descriptors, extraFields, statesById, photosByRef) {
     const item = window.bunga.Taxon.fromSdd(taxon, extraFields, photosByRef, descriptors, statesById);
  
@@ -31,24 +22,8 @@ function extractItem(taxon, descriptors, extraFields, statesById, photosByRef) {
     return item;
 }
 
-function extractDescriptor(character, statesById, photosByRef) {
-    const [name,, nameCN] = character.label.split("/");
-    return {
-        type: "character",
-        parentId: character.parentId,
-        id: character.id,
-        name: name?.trim() ?? "", nameCN: nameCN?.trim() ?? "",
-        detail: character.detail,
-        states: character.states.map(s => statesById[s.id]),
-        photos: character.mediaObjectsRefs.map(m => photosByRef[m.ref]),
-        inapplicableStates: character.inapplicableStatesRefs.map(s => statesById[s.ref]),
-        topLevel: !character.parentId,
-        children: character.childrenIds,
-    };
-}
-
 function extractStatesById(sddContent, photosByRef) {
-    return Object.fromEntries(sddContent.states.map(s => [s.id, extractState(s, photosByRef)]));
+    return Object.fromEntries(sddContent.states.map(s => [s.id, window.bunga.State.fromSdd(s, photosByRef)]));
 }
 
 function extractItemsById(sddContent, descriptors, extraFields, statesById, photosByRef) {
@@ -64,7 +39,7 @@ function extractDescriptorsById(sddContent, statesById, photosByRef) {
     const descriptorsById = {};
     
     for (const character of sddContent.characters) {
-        descriptorsById[character.id] = extractDescriptor(character, statesById, photosByRef);
+        descriptorsById[character.id] = window.bunga.Character.fromSdd(character, photosByRef, statesById);
     }
     return descriptorsById;
 }
