@@ -481,9 +481,9 @@ var bunga_DetailData = $hx_exports["bunga"]["DetailData"] = function(name,author
 	this.website = website;
 	this.fasc = fasc;
 	this.page = page;
-	this.detail = detail;
-	this.fields = fields;
-	this.photos = photos;
+	this.detail = detail != null ? detail : "";
+	this.fields = fields != null ? fields : [];
+	this.photos = photos != null ? photos : [];
 	this.extra = { };
 };
 bunga_DetailData.__name__ = "bunga.DetailData";
@@ -572,22 +572,37 @@ bunga_DetailData.prototype = {
 	}
 	,__class__: bunga_DetailData
 };
-var bunga_HierarchicalItem = function(type,id,hid,parentId,topLevel,children,data) {
+var bunga_HierarchicalItem = function(type,id,hid,parentId,topLevel,childrenIds,data) {
 	bunga_DetailData.call(this,data.name,data.author,data.nameCN,data.fasc,data.page,data.detail,data.photos,data.fields,data.name2,data.vernacularName,data.vernacularName2,data.meaning,data.noHerbier,data.website,data.herbariumPicture,data.extra);
 	this.type = type;
 	this.id = id;
 	this.hid = hid;
 	this.parentId = parentId;
 	this.topLevel = topLevel;
-	this.children = children;
+	this.children = { };
+	var _g = 0;
+	while(_g < childrenIds.length) {
+		var id = childrenIds[_g];
+		++_g;
+		this.children[id] = null;
+	}
 };
 bunga_HierarchicalItem.__name__ = "bunga.HierarchicalItem";
 bunga_HierarchicalItem.__super__ = bunga_DetailData;
 bunga_HierarchicalItem.prototype = $extend(bunga_DetailData.prototype,{
-	__class__: bunga_HierarchicalItem
+	hydrateChildren: function(hierarchyById) {
+		var _g = 0;
+		var _g1 = Reflect.fields(this.children);
+		while(_g < _g1.length) {
+			var id = _g1[_g];
+			++_g;
+			this.children[id] = hierarchyById[id];
+		}
+	}
+	,__class__: bunga_HierarchicalItem
 });
-var bunga_Character = $hx_exports["bunga"]["Character"] = function(id,hid,parentId,topLevel,children,data,states,inapplicableStates) {
-	bunga_HierarchicalItem.call(this,"character",id,hid,parentId,topLevel,children,data);
+var bunga_Character = function(id,hid,parentId,topLevel,childrenIds,data,states,inapplicableStates) {
+	bunga_HierarchicalItem.call(this,"character",id,hid,parentId,topLevel,childrenIds,data);
 	this.states = states;
 	this.inapplicableStates = inapplicableStates;
 };
@@ -664,6 +679,83 @@ bunga_Character.fromSdd = function(character,photosByRef,statesById) {
 bunga_Character.__super__ = bunga_HierarchicalItem;
 bunga_Character.prototype = $extend(bunga_HierarchicalItem.prototype,{
 	__class__: bunga_Character
+});
+var bunga_Dataset = $hx_exports["bunga"]["Dataset"] = function(items,descriptors) {
+	bunga_DetailData.call(this);
+	this.items = items;
+	this.descriptors = descriptors;
+};
+bunga_Dataset.__name__ = "bunga.Dataset";
+bunga_Dataset.extractStatesById = function(sddContent,photosByRef) {
+	var statesById = { };
+	var _g = 0;
+	var _g1 = sddContent.states;
+	while(_g < _g1.length) {
+		var state = _g1[_g];
+		++_g;
+		statesById[state.id] = bunga_State.fromSdd(state,photosByRef);
+	}
+	return statesById;
+};
+bunga_Dataset.extractItemsById = function(sddContent,descriptors,extraFields,statesById,photosByRef) {
+	var itemsById = { };
+	var _g = 0;
+	var _g1 = sddContent.taxons;
+	while(_g < _g1.length) {
+		var taxon = _g1[_g];
+		++_g;
+		itemsById[taxon.id] = bunga_Taxon.fromSdd(taxon,extraFields,photosByRef,descriptors,statesById);
+	}
+	return itemsById;
+};
+bunga_Dataset.extractDescriptorsById = function(sddContent,statesById,photosByRef) {
+	var descriptorsById = { };
+	var _g = 0;
+	var _g1 = sddContent.characters;
+	while(_g < _g1.length) {
+		var character = _g1[_g];
+		++_g;
+		descriptorsById[character.id] = bunga_Character.fromSdd(character,photosByRef,statesById);
+	}
+	return descriptorsById;
+};
+bunga_Dataset.extractPhotosByRef = function(sddContent) {
+	var photosByRef = { };
+	var _g = 0;
+	var _g1 = sddContent.mediaObjects;
+	while(_g < _g1.length) {
+		var mediaObject = _g1[_g];
+		++_g;
+		photosByRef[mediaObject.id] = mediaObject.source;
+	}
+	return photosByRef;
+};
+bunga_Dataset.fromSdd = function(dataset,extraFields) {
+	var photosByRef = bunga_Dataset.extractPhotosByRef(dataset);
+	var statesById = bunga_Dataset.extractStatesById(dataset,photosByRef);
+	var descriptors = bunga_Dataset.extractDescriptorsById(dataset,statesById,photosByRef);
+	var access = descriptors;
+	var _g_access = access;
+	var _g_keys = Reflect.fields(access);
+	var _g_index = 0;
+	while(_g_index < _g_keys.length) {
+		var descriptor = _g_access[_g_keys[_g_index++]];
+		descriptor.hydrateChildren(descriptors);
+	}
+	var items = bunga_Dataset.extractItemsById(dataset,descriptors,extraFields,statesById,photosByRef);
+	var access = items;
+	var _g1_access = access;
+	var _g1_keys = Reflect.fields(access);
+	var _g1_index = 0;
+	while(_g1_index < _g1_keys.length) {
+		var item = _g1_access[_g1_keys[_g1_index++]];
+		item.hydrateChildren(items);
+	}
+	return new bunga_Dataset(items,descriptors);
+};
+bunga_Dataset.__super__ = bunga_DetailData;
+bunga_Dataset.prototype = $extend(bunga_DetailData.prototype,{
+	__class__: bunga_Dataset
 });
 var bunga_Description = function(descriptor,states) {
 	this.descriptor = descriptor;
@@ -842,7 +934,7 @@ bunga_ImageCache.prototype = {
 	}
 	,__class__: bunga_ImageCache
 };
-var bunga_State = $hx_exports["bunga"]["State"] = function(id,descriptorId,name,photos) {
+var bunga_State = function(id,descriptorId,name,photos) {
 	this.id = id;
 	this.descriptorId = descriptorId;
 	this.name = name;
@@ -866,8 +958,8 @@ bunga_State.fromSdd = function(state,photosByRef) {
 bunga_State.prototype = {
 	__class__: bunga_State
 };
-var bunga_Taxon = $hx_exports["bunga"]["Taxon"] = function(id,hid,parentId,topLevel,children,descriptions,data) {
-	bunga_HierarchicalItem.call(this,"taxon",id,hid,parentId,topLevel,children,data);
+var bunga_Taxon = function(id,hid,parentId,topLevel,childrenIds,descriptions,data) {
+	bunga_HierarchicalItem.call(this,"taxon",id,hid,parentId,topLevel,childrenIds,data);
 	this.descriptions = descriptions;
 };
 bunga_Taxon.__name__ = "bunga.Taxon";
