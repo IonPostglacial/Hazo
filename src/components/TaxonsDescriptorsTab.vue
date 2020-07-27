@@ -1,7 +1,7 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu :items="items" name="item" v-model="selectedItemId" :name-fields="['name', 'vernacularName', 'nameCN']">
+            <TreeMenu :items="items" name="item" v-on:select-item="selectTaxon" :selected-item="selectedTaxon" :name-fields="['name', 'vernacularName', 'nameCN']">
             </TreeMenu>
         </nav>
         <section v-if="typeof selectedItem !== 'undefined'" class="vertical-flexbox flex-grow-1">
@@ -10,7 +10,7 @@
                     <div class="horizontal-flexbox scroll">
                         <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="openPhoto" :show-image-box="showImageBox">
                         </TaxonsPanel>
-                        <div v-if="selectedItemId !== 0" class="vertical-flexbox">
+                        <div v-if="selectedTaxon !== ''" class="vertical-flexbox">
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
                                 v-on:open-photo="openPhoto"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
@@ -21,7 +21,7 @@
                         </div>
                     </div>
                 </section>
-                <section v-if="selectedItemId != 0" class="vertical-flexbox flex-grow-1">
+                <section v-if="selectedTaxon != ''" class="vertical-flexbox flex-grow-1">
                     <div class="thin-border medium-margin medium-padding white-background scroll">
                         <div class="horizontal-flexbox space-between" v-if="selectedItemDescriptorId !== 0">
                             <button class="background-color-ok" v-on:click="addAllItemStates">Check All</button>
@@ -63,18 +63,18 @@ export default {
         initItems: Object,
         extraFields: Array,
         taxonNameField: String,
+        selectedTaxon: String,
     },
     data() {
         return {
             items: this.initItems ?? {},
-            selectedItemId: "",
             selectedItemDescriptorId: 0,
             itemDescriptorSearch: "",
         };
     },
     computed: {
         selectedItem() {
-            return this.items[this.selectedItemId];
+            return this.items[this.selectedTaxon];
         },
         selectedItemDescriptorStates() {
             return this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
@@ -110,6 +110,9 @@ export default {
         },
     },
     methods: {
+        selectTaxon(id) {
+            this.$emit("taxon-selected", id);
+        },
         openPhoto(e) {
             this.$emit("open-photo", e);
         },

@@ -26,13 +26,13 @@
     </div>
     <div :class="'horizontal-flexbox start-align flex-grow-1 height-main-panel ' + (showBigImage ? 'invisible' : '')">
         <TaxonsTab v-if="selectedTab === 0"
-            :init-items="items" :descriptions="descriptions"
+            :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
             :extra-fields="extraFields"
             v-on:open-photo="maximizeImage">
         </TaxonsTab>
         <TaxonsDescriptorsTab v-if="selectedTab === 1"
-            :init-items="items" :descriptions="descriptions"
+            :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
             :extra-fields="extraFields"
             v-on:open-photo="maximizeImage">
@@ -95,6 +95,7 @@ export default {
             showLeftMenu: true,
             showImageBox: true,
             selectedTab: 0,
+            selectedTaxon: "",
             bigImages: [""],
             bigImageIndex: 0,
             showBigImage: false,
@@ -104,7 +105,6 @@ export default {
                 "Descriptors",
                 "Dictionary"
             ],
-            langs: ["FR", "EN", "CN"],
             extraFields: [],
             items: {},
             descriptions: {},
@@ -134,6 +134,10 @@ export default {
                 this.extraFields = savedDataset?.extraFields ?? [];
                 this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
             });
+        },
+        selectTaxon(id) {
+            console.log("poupoupidou", id);
+            this.selectedTaxon = id;
         },
         editExtraFields() {
             const extraFieldsText = window.prompt("Extra Fields", this.extraFields.map(({ id, label }) => `${id}:${label}`).join(","));

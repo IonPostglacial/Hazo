@@ -5,8 +5,7 @@
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
-            <input type="radio" class="invisible" :value="item.id" :id="name + '-' + item.id" :name="name" v-on:input="$emit('input', $event.target.value)" />
-            <label class="blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items" :for="name + '-' + item.id">
+            <label :class="'medium-line-height blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items' + (selected ? ' background-color-1': '')" v-on:click="select">
                 <div v-if="showIds" class="min-width-small margin-right-medium">{{ prettyId }}</div>
                 <div :class="'flex-grow-1 nowrap ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
                 <slot></slot>
@@ -20,6 +19,7 @@
                 <TreeMenuItem v-for="child in item.children" :item-bus="itemBus" :key="child.id" :editable="editable"       
                     :show-ids="showIds"
                     :space-for-add="spaceForAdd"
+                    :selected-item="selectedItem"
                     :name-field="nameField" :name="name" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
@@ -47,7 +47,8 @@ export default {
         nameField: String,
         editable: Boolean,
         spaceForAdd: Boolean,
-        showIds: Boolean
+        showIds: Boolean,
+        selectedItem: String,
     },
     data() {
         return {
@@ -60,6 +61,9 @@ export default {
         this.itemBus.$on("toggle", id =>  { if (id === this.item.id) { this.open = !this.open } });
     }, 
     computed: {
+        selected() {
+            return this.selectedItem === this.item.id;
+        },
         prettyId() {
             for (const prefix of knownPrefixes) {
                 if (this.item.id.startsWith(prefix)) {
@@ -84,6 +88,9 @@ export default {
         },
     },
     methods: {
+        select() {
+            this.$emit("selected", this.item.id);
+        },
         toggleOpen() {
             this.itemBus.$emit("toggle", this.item.id);
         },

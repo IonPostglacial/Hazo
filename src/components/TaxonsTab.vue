@@ -1,7 +1,7 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 height-full">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu editable :items="items" name="item" v-model="selectedItemId"
+            <TreeMenu editable :items="items" name="item" v-on:select-item="selectTaxon" :selected-item="selectedTaxon"
                 :name-fields="['name', 'vernacularName', 'nameCN']"
                 v-on:add-item="addItem"
                 v-on:delete-item="deleteItem">
@@ -31,19 +31,22 @@ export default {
         descriptions: Object,
         initItems: Object,
         extraFields: Array,
+        selectedTaxon: String,
     },
     data() {
         return {
             items: this.initItems ?? {},
-            selectedItemId: "",
         };
     },
     computed: {
         selectedItem() {
-            return this.items[this.selectedItemId];
+            return this.items[this.selectedTaxon];
         }
     },
     methods: {
+        selectTaxon(id) {
+            this.$emit("taxon-selected", id);
+        },
         addItem({ value, parentId }) {
             let newItemIdNum = Object.keys(this.items).length;
             do {

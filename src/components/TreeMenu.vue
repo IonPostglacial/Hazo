@@ -22,7 +22,8 @@
                     :space-for-add="editable && fieldNum > 0"
                     :editable="editable && fieldNum === 0" :buttons="buttons"
                     :name-field="nameField"
-                    v-on:input="$emit('input', $event)"
+                    :selected-item="selectedItem"
+                    v-on:selected="selectItem"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem" 
                     v-on:button-clicked="buttonClicked">
@@ -45,7 +46,8 @@ export default {
         items: Object,
         buttons: Array,
         editable: Boolean,
-        nameFields: Array    
+        nameFields: Array,
+        selectedItem: String,
     },
     components:  { AddItem, TreeMenuItem },
     data() {
@@ -70,6 +72,9 @@ export default {
         },
     },
     methods: {
+        selectItem(id) {
+            this.$emit("select-item", id);
+        },
         openAll() {
             this.itemsBus.$emit("openAll");
         },
