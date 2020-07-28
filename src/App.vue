@@ -136,7 +136,6 @@ export default {
             });
         },
         selectTaxon(id) {
-            console.log("poupoupidou", id);
             this.selectedTaxon = id;
         },
         editExtraFields() {
