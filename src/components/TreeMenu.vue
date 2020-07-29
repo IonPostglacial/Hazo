@@ -53,10 +53,10 @@ export default {
     components:  { AddItem, TreeMenuItem },
     data() {
         const initOpenItems = [];
-        let item = this.items[this.selectedItem];
-        while (typeof item !== "undefined") {
-            initOpenItems.push(item.id);
-            item = this.items[item.parentId];
+        let itemId = this.items[this.selectedItem]?.parentId;
+        while (typeof itemId !== "undefined") {
+            initOpenItems.push(itemId);
+            itemId = this.items[itemId]?.parentId;
         }
         return {
             menuFilter: "",
