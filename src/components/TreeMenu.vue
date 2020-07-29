@@ -23,6 +23,7 @@
                     :editable="editable && fieldNum === 0" :buttons="buttons"
                     :name-field="nameField"
                     :selected-item="selectedItem"
+                    :init-open-items="initOpenItems"
                     v-on:selected="selectItem"
                     v-on:add-item="addItem"
                     v-on:delete-item="deleteItem" 
@@ -51,10 +52,17 @@ export default {
     },
     components:  { AddItem, TreeMenuItem },
     data() {
+        const initOpenItems = [];
+        let item = this.items[this.selectedItem];
+        while (typeof item !== "undefined") {
+            initOpenItems.push(item.id);
+            item = this.items[item.parentId];
+        }
         return {
             menuFilter: "",
             itemsBus: new Vue(),
             visibleColumns: (this.nameFields ?? ["name"]).map(() => true),
+            initOpenItems: initOpenItems,
         };
     },
     computed: {
