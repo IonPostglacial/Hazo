@@ -8,7 +8,8 @@
             <div class="horizontal-flexbox flex-grow-1 scroll">
                 <section class="vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox scroll">
-                        <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="openPhoto" :show-image-box="showImageBox">
+                        <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="openPhoto" 
+                            :show-image-box="showImageBox" :extra-fields="extraFields">
                         </TaxonsPanel>
                         <div v-if="selectedTaxon !== ''" class="vertical-flexbox">
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
