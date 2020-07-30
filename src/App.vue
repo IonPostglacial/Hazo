@@ -46,11 +46,9 @@
     </div>
     <section class="medium-margin horizontal-flexbox space-between thin-border">
         <div>
-            <button type="button" v-on:click="jsonImport">Import</button>
-            <input class="invisible" v-on:change="jsonUpload" type="file" accept="text/json" name="import-json" id="import-json">
+            <button type="button" v-on:click="importFile">Import</button>
             <button type="button" v-on:click="jsonExport">Export</button>
-            <button type="button" v-on:click="importSDD">Import SDD</button>
-            <input class="invisible" v-on:change="fileUpload" type="file" accept="application/xml" name="import-data" id="import-data">
+            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="import-data" id="import-data">
             <button type="button" v-on:click="exportSDD">Export SDD</button>
         </div>
         <div>
@@ -184,11 +182,8 @@ export default {
                 Vue.delete(this.descriptions, key);
             }
         },
-        importSDD() {
+        importFile() {
             document.getElementById("import-data").click();
-        },
-        jsonImport() {
-            document.getElementById("import-json").click();
         },
         globalReplace() {
             const pattern = window.prompt("Text pattern to replace");
@@ -206,19 +201,50 @@ export default {
         },
         fileUpload(e) {
             const file = e.target.files[0];
+            if (file.name.endsWith(".xml")) {
+                (async () => {
+                    const {
+                        items,
+                        descriptors,
+                    } = await loadSDD(file, this.extraFields);
+                    for (const [key, value] of Object.entries(items)) {
+                        Vue.set(this.items, key, value);
+                    }
+                    for (const [key, value] of Object.entries(descriptors)) {
+                        Vue.set(this.descriptions, key, value);
+                    }
+                })();
+            } else if (file.name.endsWith(".bunga.json")) {
+                this.jsonUpload(file);
+            }
+        },
+        jsonUpload(file) {
+            const fileReader = new FileReader();
+            fileReader.onload = () => {
+                const db = JSON.parse(fileReader.result);
+                const states = Object.fromEntries(db.states.map(s => [s.id, s]));
+                const descriptions = Object.fromEntries(db.descriptors.map(d => [d.id, {}]));
+                for (const description of db.descriptors) {
+                    Object.assign(descriptions[description.id], this.uncompressDescription(description, descriptions, states));
+                }
+                const items = Object.fromEntries(db.taxons.map(t => [t.id, {}]));
+                for (const taxon of db.taxons) {
+                    Object.assign(items[taxon.id], this.unCompressItem(taxon, items, descriptions, states));
+                }
 
-            (async () => {
-                const {
-                    items,
-                    descriptors,
-                } = await loadSDD(file, this.extraFields);
-                for (const [key, value] of Object.entries(items)) {
-                    Vue.set(this.items, key, value);
+                this.extraFields = db.extraFields;
+
+                for (const description of Object.values(descriptions)) {
+                    Vue.set(this.descriptions, description.id, description);
                 }
-                for (const [key, value] of Object.entries(descriptors)) {
-                    Vue.set(this.descriptions, key, value);
+                for (const item of Object.values(items)) {
+                    Vue.set(this.items, item.id, item);
                 }
-            })();
+                for (const entry of Object.values(db.dictionaryEntries)) {
+                    Vue.set(this.dictionaryEntries, entry.id, entry);
+                }
+            };
+            fileReader.readAsText(file);
         },
         exportStats() {
             const references = [];
@@ -305,35 +331,6 @@ export default {
                 dictionaryEntries: this.dictionaryEntries
             });
             download(json, "bunga.json");
-        },
-        jsonUpload(e) {
-            const file = e.target.files[0];
-            const fileReader = new FileReader();
-            fileReader.onload = () => {
-                const db = JSON.parse(fileReader.result);
-                const states = Object.fromEntries(db.states.map(s => [s.id, s]));
-                const descriptions = Object.fromEntries(db.descriptors.map(d => [d.id, {}]));
-                for (const description of db.descriptors) {
-                    Object.assign(descriptions[description.id], this.uncompressDescription(description, descriptions, states));
-                }
-                const items = Object.fromEntries(db.taxons.map(t => [t.id, {}]));
-                for (const taxon of db.taxons) {
-                    Object.assign(items[taxon.id], this.unCompressItem(taxon, items, descriptions, states));
-                }
-
-                this.extraFields = db.extraFields;
-
-                for (const description of Object.values(descriptions)) {
-                    Vue.set(this.descriptions, description.id, description);
-                }
-                for (const item of Object.values(items)) {
-                    Vue.set(this.items, item.id, item);
-                }
-                for (const entry of Object.values(db.dictionaryEntries)) {
-                    Vue.set(this.dictionaryEntries, entry.id, entry);
-                }
-            };
-            fileReader.readAsText(file);
         },
         exportSDD() {
             const xml = saveSDD({
