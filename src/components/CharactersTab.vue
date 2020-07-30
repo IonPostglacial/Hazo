@@ -1,8 +1,9 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu editable v-model="selectedDescription" :items="descriptions" name="description" 
+            <TreeMenu editable :items="descriptions" name="description"
                 :name-fields="['name', 'nameCN']"
+                v-on:select-item="selectDescription" :selected-item="selectedDescription"
                 v-on:add-item="addDescription"
                 v-on:delete-item="deleteDescription">
             </TreeMenu>
@@ -91,6 +92,9 @@ export default {
         initDescriptions: Object,
     },
     methods: {
+        selectDescription(id) {
+            this.selectedDescription = id;
+        },
         addDescriptionPhoto(photo) {
             this.descriptions[this.selectedDescription].photos.push(photo);
         },

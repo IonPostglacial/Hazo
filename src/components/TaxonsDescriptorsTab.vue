@@ -12,7 +12,7 @@
                             :show-image-box="showImageBox" :extra-fields="extraFields">
                         </TaxonsPanel>
                         <div v-if="selectedTaxon !== ''" class="vertical-flexbox">
-                            <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
+                            <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== ''"
                                 v-on:open-photo="openPhoto"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
                             <TreeMenu class="thin-border medium-margin white-background scroll"
@@ -69,7 +69,7 @@ export default {
     data() {
         return {
             items: this.initItems ?? {},
-            selectedItemDescriptorId: 0,
+            selectedItemDescriptorId: "",
             itemDescriptorSearch: "",
         };
     },
