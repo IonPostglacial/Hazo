@@ -20,6 +20,7 @@
                     :show-ids="showIds"
                     :space-for-add="spaceForAdd"
                     :selected-item="selectedItem"
+                    :init-open-items="initOpenItems"
                     :name-field="nameField" :name="name" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
@@ -49,10 +50,11 @@ export default {
         spaceForAdd: Boolean,
         showIds: Boolean,
         selectedItem: String,
+        initOpenItems: Array,
     },
     data() {
         return {
-            open: false,
+            open: this.initOpenItems.includes(this.item.id),
         };
     },
     mounted() {

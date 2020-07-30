@@ -20,17 +20,10 @@
                         <input type="text" v-model="item.author" />
                     </div>
 
-                    <label class="item-property">Synonymous</label>
-                    <input :readonly="!editable" type="text" v-model="item.name2" /><br/>
-
-                    <label class="item-property">中文名</label>
-                    <input :readonly="!editable"  type="text" v-model="item.nameCN" /><br/>
-
-                    <label class="item-property">NV</label>
-                    <input :readonly="!editable"  type="text" v-model="item.vernacularName" /><br/>
-
-                    <label class="item-property">NV 2</label>
-                    <input :readonly="!editable"  type="text" v-model="item.vernacularName2" /><br/>
+                    <TaxonPropertyField :editable="editable" :item="item" property="name2">Synonymous</TaxonPropertyField>
+                    <TaxonPropertyField :editable="editable" :item="item" property="nameCN">中文名</TaxonPropertyField>
+                    <TaxonPropertyField :editable="editable" :item="item" property="vernacularName">NV</TaxonPropertyField>
+                    <TaxonPropertyField :editable="editable" :item="item" property="vernacularName2">NV 2</TaxonPropertyField>
 
                     <label class="item-property">Website</label>
                     <input v-if="editable" type="text" v-model="item.website" />
@@ -39,24 +32,17 @@
                     <label class="item-property">Meaning</label>
                     <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
 
-                    <label class="item-property">N° Herbier</label>
-                    <input :readonly="!editable"  type="text" v-model="item.noHerbier" /><br/>
-
-                    <label class="item-property">Herbarium Picture</label>
-                    <input :readonly="!editable"  type="text" v-model="item.herbariumPicture" /><br/>
+                    <TaxonPropertyField :editable="editable" :item="item" property="noHerbier">N° Herbier</TaxonPropertyField>
+                    <TaxonPropertyField :editable="editable" :item="item" property="herbariumPicture">Herbarium Picture</TaxonPropertyField>
 
                     <div v-for="extraField in extraFields" :key="extraField.id">
-                        <label class="item-property">{{ extraField.label }}</label>
-                        <input :readonly="!editable" type="text" v-model="item['extra-' + extraField.id]" />
+                        <TaxonPropertyField :editable="editable" :item="item" :property="'extra-' + extraField.id">{{ extraField.label }}</TaxonPropertyField>
                     </div>
 
                     <fieldset>
                         <legend>Flore de Madagascar et Comores</legend>
-                        <label class="item-property">Fasc</label>
-                        <input :readonly="!editable"  type="text" v-model="item.fasc" /><br/>
-
-                        <label class="item-property">Page</label>
-                        <input :readonly="!editable"  type="text" v-model="item.page" /><br/>
+                        <TaxonPropertyField :editable="editable" :item="item" property="fasc">Fasc</TaxonPropertyField>
+                        <TaxonPropertyField :editable="editable" :item="item" property="page">Page</TaxonPropertyField>
                     </fieldset>
                 </div>
             </div>
@@ -78,12 +64,13 @@
 <script>
 import TreeMenu from "./TreeMenu.vue";
 import ImageBox from "./ImageBox.vue";
+import TaxonPropertyField from "./TaxonPropertyField";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 export default {
     name: "TaxonsPanel",
-    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component },
+    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
     props: { item: Object, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array },
     data() {
         return {
