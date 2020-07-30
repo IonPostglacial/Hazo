@@ -48,8 +48,10 @@
         <div>
             <button type="button" v-on:click="importFile">Import</button>
             <button type="button" v-on:click="jsonExport">Export</button>
-            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="import-data" id="import-data">
             <button type="button" v-on:click="exportSDD">Export SDD</button>
+            <button type="button" v-on:click="mergeFile">Merge</button>
+            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="import-data" id="import-data">
+            <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="merge-data" id="merge-data">
         </div>
         <div>
             <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
@@ -185,6 +187,9 @@ export default {
         importFile() {
             document.getElementById("import-data").click();
         },
+        mergeFile() {
+            document.getElementById("merge-data").click();
+        },
         globalReplace() {
             const pattern = window.prompt("Text pattern to replace");
             const replacement = window.prompt("Replacement");
@@ -199,52 +204,77 @@ export default {
                 this.descriptions[key] = { ...description, detail: newDetail };
             }
         },
-        fileUpload(e) {
-            const file = e.target.files[0];
+        async fileRead(file) {
+            let result = {};
             if (file.name.endsWith(".xml")) {
-                (async () => {
-                    const {
-                        items,
-                        descriptors,
-                    } = await loadSDD(file, this.extraFields);
-                    for (const [key, value] of Object.entries(items)) {
-                        Vue.set(this.items, key, value);
-                    }
-                    for (const [key, value] of Object.entries(descriptors)) {
-                        Vue.set(this.descriptions, key, value);
-                    }
-                })();
+                result = await loadSDD(file, this.extraFields);
             } else if (file.name.endsWith(".bunga.json")) {
-                this.jsonUpload(file);
+                result = await this.jsonUpload(file);
+            }
+            return result;
+        },
+        async fileMerge(e) {
+            const result = await this.fileRead(e.target.files[0]);
+            const propertiesToMerge = window.prompt("Properties to merge ?").split(",");
+            const resultsByName = {};
+            for (const item of Object.values(result.items)) {
+                resultsByName[item.name] = item;
+            }
+            for (const item of Object.values(this.items)) {
+                const newInfo = resultsByName[item.name];
+                if (typeof newInfo !== "undefined") {
+                    for (const prop of propertiesToMerge) {
+                        const value = newInfo[prop];
+                        const oldValue = item[prop];
+                        if (typeof oldValue === "undefined" || oldValue === null || oldValue === "" && typeof value !== "undefined" && value !== null) {
+                            item[prop] = value;
+                        }
+                    }
+                }
+            }
+        },
+        async fileUpload(e) {
+            const result = await this.fileRead(e.target.files[0]);
+            if (typeof result.extraFields !== "undefined") {
+                this.extraFields = result.extraFields;
+            }
+            if (typeof result.descriptions !== "undefined") {
+                for (const description of Object.values(result.descriptions)) {
+                    Vue.set(this.descriptions, description.id, description);
+                }
+            }
+            if (typeof result.items !== "undefined") {
+                for (const item of Object.values(result.items)) {
+                    Vue.set(this.items, item.id, item);
+                }
+            }
+            if (typeof result.dictionaryEntries !== "undefined") {
+                for (const entry of Object.values(result.dictionaryEntries)) {
+                    Vue.set(this.dictionaryEntries, entry.id, entry);
+                }
             }
         },
         jsonUpload(file) {
-            const fileReader = new FileReader();
-            fileReader.onload = () => {
-                const db = JSON.parse(fileReader.result);
-                const states = Object.fromEntries(db.states.map(s => [s.id, s]));
-                const descriptions = Object.fromEntries(db.descriptors.map(d => [d.id, {}]));
-                for (const description of db.descriptors) {
-                    Object.assign(descriptions[description.id], this.uncompressDescription(description, descriptions, states));
+            return new Promise((resolve, reject) => {
+                const fileReader = new FileReader();
+                fileReader.onload = () => {
+                    const db = JSON.parse(fileReader.result);
+                    const states = Object.fromEntries(db.states.map(s => [s.id, s]));
+                    const descriptions = Object.fromEntries(db.descriptors.map(d => [d.id, {}]));
+                    for (const description of db.descriptors) {
+                        Object.assign(descriptions[description.id], this.uncompressDescription(description, descriptions, states));
+                    }
+                    const items = Object.fromEntries(db.taxons.map(t => [t.id, {}]));
+                    for (const taxon of db.taxons) {
+                        Object.assign(items[taxon.id], this.unCompressItem(taxon, items, descriptions, states));
+                    }
+                    resolve({ descriptions, items, dictionaryEntries: db.dictionaryEntries, extraFields: db.extraFields });
+                };
+                fileReader.onerror = function () {
+                    reject(fileReader.error);
                 }
-                const items = Object.fromEntries(db.taxons.map(t => [t.id, {}]));
-                for (const taxon of db.taxons) {
-                    Object.assign(items[taxon.id], this.unCompressItem(taxon, items, descriptions, states));
-                }
-
-                this.extraFields = db.extraFields;
-
-                for (const description of Object.values(descriptions)) {
-                    Vue.set(this.descriptions, description.id, description);
-                }
-                for (const item of Object.values(items)) {
-                    Vue.set(this.items, item.id, item);
-                }
-                for (const entry of Object.values(db.dictionaryEntries)) {
-                    Vue.set(this.dictionaryEntries, entry.id, entry);
-                }
-            };
-            fileReader.readAsText(file);
+                fileReader.readAsText(file);
+            });
         },
         exportStats() {
             const references = [];
