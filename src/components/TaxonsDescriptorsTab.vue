@@ -14,8 +14,8 @@
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== 0"
                                 v-on:open-photo="openPhoto"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
-                            <TreeMenu class="thin-border medium-margin white-background scroll"                                     
-                                v-model="selectedItemDescriptorId"      
+                            <TreeMenu class="thin-border medium-margin white-background scroll"
+                                v-on:select-item="selectItemDescriptorId" :selected-item="selectedItemDescriptorId"   
                                 :items="descriptions" name="item-description">
                             </TreeMenu>
                         </div>
@@ -112,6 +112,9 @@ export default {
     methods: {
         selectTaxon(id) {
             this.$emit("taxon-selected", id);
+        },
+        selectItemDescriptorId(id) {
+            this.selectedItemDescriptorId = id;
         },
         openPhoto(e) {
             this.$emit("open-photo", e);
