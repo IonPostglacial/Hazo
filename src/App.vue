@@ -50,8 +50,8 @@
             <button type="button" v-on:click="jsonExport">Export</button>
             <button type="button" v-on:click="exportSDD">Export SDD</button>
             <button type="button" v-on:click="mergeFile">Merge</button>
-            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="import-data" id="import-data">
-            <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="merge-data" id="merge-data">
+            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.json,application/xml" name="import-data" id="import-data">
+            <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
         </div>
         <div>
             <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
@@ -208,7 +208,7 @@ export default {
             let result = {};
             if (file.name.endsWith(".xml")) {
                 result = await loadSDD(file, this.extraFields);
-            } else if (file.name.endsWith(".bunga.json")) {
+            } else if (file.name.endsWith(".json")) {
                 result = await this.jsonUpload(file);
             }
             return result;
@@ -259,16 +259,8 @@ export default {
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     const db = JSON.parse(fileReader.result);
-                    const states = Object.fromEntries(db.states.map(s => [s.id, s]));
-                    const descriptions = Object.fromEntries(db.descriptors.map(d => [d.id, {}]));
-                    for (const description of db.descriptors) {
-                        Object.assign(descriptions[description.id], this.uncompressDescription(description, descriptions, states));
-                    }
-                    const items = Object.fromEntries(db.taxons.map(t => [t.id, {}]));
-                    for (const taxon of db.taxons) {
-                        Object.assign(items[taxon.id], this.unCompressItem(taxon, items, descriptions, states));
-                    }
-                    resolve({ descriptions, items, dictionaryEntries: db.dictionaryEntries, extraFields: db.extraFields });
+                    const { items, descriptors } = window.bunga.Codec.decodeDataset(db);
+                    resolve({ items: items, descriptions: descriptors, dictionaryEntries: db.dictionaryEntries, extraFields: db.extraFields });
                 };
                 fileReader.onerror = function () {
                     reject(fileReader.error);
@@ -314,49 +306,10 @@ export default {
                 download(blob, "zip", true);
             });
         },
-        compressItem(item) {
-            return { ...item,
-                children: Object.keys(item.children),
-                descriptions: item.descriptions.map(({descriptor, states}) => ({
-                    descriptorId: descriptor.id, 
-                    statesIds: states.map(s => s.id),
-                })),
-            };
-        },
-        unCompressItem(item, items, descriptions, states) {
-            return { ...item,
-                children: item.children.map(id => items[id]),
-                descriptions: item.descriptions.map(({descriptorId, statesIds}) => ({
-                    descriptor: descriptions[descriptorId],
-                    states: statesIds.map(id => states[id]),
-                })),
-            };
-        },
-        compressDescription(description) {
-            return { ...description,
-                children: Object.keys(description.children),
-                states: description.states.map(s => s.id) 
-            };
-        },
-        uncompressDescription(description, descriptions, states) {
-            return { ...description,
-                children: description.children.map(id => descriptions[id]),
-                states: description.states.map(id => states[id]),
-            };
-        },
-        getAllStates() {
-            let states = [];
-            for (const description of Object.values(this.descriptions)) {
-                states = states.concat(description.states);
-            }
-            return states;
-        },
         jsonExport() {
             const json = JSON.stringify({
                 id: this.selectedBase | 0,
-                taxons: Object.values(this.items).map(this.compressItem),
-                descriptors: Object.values(this.descriptions).map(this.compressDescription),
-                states: this.getAllStates(),
+                ...window.bunga.Codec.encodeDataset({ items: this.items, descriptors: this.descriptions }),
                 extraFields: this.extraFields,
                 dictionaryEntries: this.dictionaryEntries
             });
