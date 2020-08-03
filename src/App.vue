@@ -50,7 +50,7 @@
             <button type="button" v-on:click="jsonExport">Export</button>
             <button type="button" v-on:click="exportSDD">Export SDD</button>
             <button type="button" v-on:click="mergeFile">Merge</button>
-            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="import-data" id="import-data">
+            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.bunga.json,.bunga.bold.csv,application/xml" name="import-data" id="import-data">
             <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.bunga.json,application/xml" name="merge-data" id="merge-data">
         </div>
         <div>
@@ -193,7 +193,7 @@ export default {
         globalReplace() {
             const pattern = window.prompt("Text pattern to replace");
             const replacement = window.prompt("Replacement");
-            const re = new RegExp(pattern, "gi");
+            const re = new RegExp(pattern, "g");
 
             for (const [key, item] of Object.entries(this.items)) {
                 const newDetail = item.detail.replace(re, replacement);
@@ -210,6 +210,8 @@ export default {
                 result = await loadSDD(file, this.extraFields);
             } else if (file.name.endsWith(".bunga.json")) {
                 result = await this.jsonUpload(file);
+            } else if (file.name.endsWith(".bunga.bold.csv")) {
+                result = await this.boldUpload(file);
             }
             return result;
         },
@@ -253,6 +255,20 @@ export default {
                     Vue.set(this.dictionaryEntries, entry.id, entry);
                 }
             }
+        },
+        boldUpload(file) {
+            return new Promise((resolve, reject) => {
+                const fileReader = new FileReader();
+                fileReader.onload = () => {
+                    const hightlighter = new window.bunga.DetailHighlighter();
+                    hightlighter.loadWordText(fileReader.result);
+                    hightlighter.highlightTaxons(this.items);
+                };
+                fileReader.onerror = function () {
+                    reject(fileReader.error);
+                }
+                fileReader.readAsText(file);
+            });
         },
         jsonUpload(file) {
             return new Promise((resolve, reject) => {
