@@ -482,7 +482,6 @@ var bunga_DetailData = $hx_exports["bunga"]["DetailData"] = function(name,author
 	this.fasc = fasc;
 	this.page = page;
 	this.detail = detail != null ? detail : "";
-	this.fields = fields != null ? fields : [];
 	this.photos = photos != null ? photos : [];
 	this.extra = { };
 };
@@ -551,16 +550,15 @@ bunga_DetailData.fromRepresentation = function(representation,extraFields,photos
 	return data;
 };
 bunga_DetailData.prototype = {
-	toRepresentation: function() {
+	toRepresentation: function(extraFields) {
 		var _gthis = this;
 		var _g = this.name + (this.author != null ? " / " + this.author : "" + (this.nameCN != null ? " / " + this.nameCN : ""));
-		var _this = this.fields;
-		var result = new Array(_this.length);
+		var result = new Array(extraFields.length);
 		var _g1 = 0;
-		var _g2 = _this.length;
+		var _g2 = extraFields.length;
 		while(_g1 < _g2) {
 			var i = _g1++;
-			var field = _this[i];
+			var field = extraFields[i];
 			var value = Reflect.field(field.std ? _gthis : _gthis.extra,field.id);
 			result[i] = value == null || value == "" ? "" : "" + field.label + ": " + value + "<br><br>";
 		}
@@ -568,10 +566,18 @@ bunga_DetailData.prototype = {
 	}
 	,__class__: bunga_DetailData
 };
-var bunga_HierarchicalItem = function(type,id,hid,parentId,topLevel,childrenIds,data) {
-	bunga_DetailData.call(this,data.name,data.author,data.nameCN,data.fasc,data.page,data.detail,data.photos,data.fields,data.name2,data.vernacularName,data.vernacularName2,data.meaning,data.noHerbier,data.website,data.herbariumPicture,data.extra);
-	this.type = type;
+var bunga_Item = function(id,data) {
+	bunga_DetailData.call(this,data.name,data.author,data.nameCN,data.fasc,data.page,data.detail,data.photos,null,data.name2,data.vernacularName,data.vernacularName2,data.meaning,data.noHerbier,data.website,data.herbariumPicture,data.extra);
 	this.id = id;
+};
+bunga_Item.__name__ = "bunga.Item";
+bunga_Item.__super__ = bunga_DetailData;
+bunga_Item.prototype = $extend(bunga_DetailData.prototype,{
+	__class__: bunga_Item
+});
+var bunga_HierarchicalItem = function(type,id,hid,parentId,topLevel,childrenIds,data) {
+	bunga_Item.call(this,id,data);
+	this.type = type;
 	this.hid = hid;
 	this.parentId = parentId;
 	this.topLevel = topLevel;
@@ -584,8 +590,8 @@ var bunga_HierarchicalItem = function(type,id,hid,parentId,topLevel,childrenIds,
 	}
 };
 bunga_HierarchicalItem.__name__ = "bunga.HierarchicalItem";
-bunga_HierarchicalItem.__super__ = bunga_DetailData;
-bunga_HierarchicalItem.prototype = $extend(bunga_DetailData.prototype,{
+bunga_HierarchicalItem.__super__ = bunga_Item;
+bunga_HierarchicalItem.prototype = $extend(bunga_Item.prototype,{
 	hydrateChildren: function(hierarchyById) {
 		var _g = 0;
 		var _g1 = Reflect.fields(this.children);
@@ -677,17 +683,24 @@ bunga_Character.prototype = $extend(bunga_HierarchicalItem.prototype,{
 	__class__: bunga_Character
 });
 var bunga_CodedHierarchicalItem = function(item) {
-	bunga_DetailData.call(this,item.name,item.author,item.nameCN,item.fasc,item.page,item.detail,item.photos,item.fields,item.name2,item.vernacularName,item.vernacularName2,item.meaning,item.noHerbier,item.website,item.herbariumPicture,item.extra);
+	this.children = [];
+	bunga_Item.call(this,item.id,new bunga_DetailData(item.name,item.author,item.nameCN,item.fasc,item.page,item.detail,item.photos,null,item.name2,item.vernacularName,item.vernacularName2,item.meaning,item.noHerbier,item.website,item.herbariumPicture,item.extra));
 	this.type = item.type;
-	this.id = item.id;
 	this.hid = item.hid;
 	this.parentId = item.parentId;
 	this.topLevel = item.topLevel;
-	this.children = Reflect.fields(item.children);
+	var access = item.children;
+	var _g_access = access;
+	var _g_keys = Reflect.fields(access);
+	var _g_index = 0;
+	while(_g_index < _g_keys.length) {
+		var child = _g_access[_g_keys[_g_index++]];
+		this.children.push(child.id);
+	}
 };
 bunga_CodedHierarchicalItem.__name__ = "bunga.CodedHierarchicalItem";
-bunga_CodedHierarchicalItem.__super__ = bunga_DetailData;
-bunga_CodedHierarchicalItem.prototype = $extend(bunga_DetailData.prototype,{
+bunga_CodedHierarchicalItem.__super__ = bunga_Item;
+bunga_CodedHierarchicalItem.prototype = $extend(bunga_Item.prototype,{
 	__class__: bunga_CodedHierarchicalItem
 });
 var bunga_CodedDescription = function(descriptorId,statesIds) {
