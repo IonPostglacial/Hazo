@@ -3,6 +3,7 @@
     <nav class="horizontal-flexbox space-between thin-border">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
+            <button type="button" v-on:click="toggleImageBox">Image Box</button>
         </div>
         <div class="medium-margin">
             <div class="selector" v-for="(tab, index) in tabs" :key="index">
@@ -13,7 +14,7 @@
             </div>
         </div>
         <div class="medium-margin">
-            <button type="button" v-on:click="toggleImageBox">Image Box</button>
+            <button type="button" v-on:click="editExtraFields">Extra Fields</button>
         </div>
     </nav>
     <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
@@ -43,6 +44,22 @@
             v-on:open-photo="maximizeImage">
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
+        <div v-if="showFields" class="height-full medium-margin thin-border white-background medium-padding horizontal-flexbox">
+            <ul class="vertical-flexbox scroll">
+                <li v-for="field in extraFields" :key="field.id" class="horizontal-flexbox">
+                    <label class="nowrap">
+                        Id:&nbsp;
+                        <input type="text" v-model="field.id">
+                    </label>
+                    <label class="nowrap">
+                        Label:&nbsp;
+                    <input type="text" v-model="field.label">
+                    </label>
+                    <div class="close" style="width: 42px;" v-on:click="deleteExtraField(field.id)">&nbsp;</div>
+                </li>
+                <AddItem v-on:add-item="addExtraField"></AddItem>
+            </ul>
+        </div>
     </div>
     <section class="medium-margin horizontal-flexbox space-between thin-border">
         <div>
@@ -50,7 +67,7 @@
             <button type="button" v-on:click="jsonExport">Export</button>
             <button type="button" v-on:click="exportSDD">Export SDD</button>
             <button type="button" v-on:click="mergeFile">Merge</button>
-            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.json,application/xml" name="import-data" id="import-data">
+            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
             <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
         </div>
         <div>
@@ -60,13 +77,12 @@
             </select>
             <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
-            <button type="button" v-on:click="globalReplace">Text Replace</button>
         </div>
         <div>
+            <button type="button" v-on:click="globalReplace">Text Replace</button>
             <button type="button" v-on:click="exportStats">Stats</button>
             <button type="button" v-on:click="emptyZip">Folder Hierarchy</button>
             <button type="button" v-on:click="texExport">Latex{{latexProgressText}}</button>
-            <button type="button" class="background-color-1" v-on:click="editExtraFields">Fields</button>
         </div>
     </section>
   </div>
@@ -77,6 +93,7 @@ import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
+import AddItem from "./components/AddItem.vue";
 import DB from "./db-storage.js";
 import Vue from "../node_modules/vue/dist/vue.esm.browser.js";
 import loadSDD from "./sdd-load";
@@ -86,7 +103,7 @@ import download from "./download.js";
 export default {
     name: "App",
     components: {
-        TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
+        AddItem, TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
     },
     data() {
         return {
@@ -94,6 +111,7 @@ export default {
             selectedBase: 0,
             showLeftMenu: true,
             showImageBox: true,
+            showFields: false,
             selectedTab: 0,
             selectedTaxon: "",
             bigImages: [""],
@@ -139,18 +157,16 @@ export default {
             this.selectedTaxon = id;
         },
         editExtraFields() {
-            const extraFieldsText = window.prompt("Extra Fields", this.extraFields.map(({ id, label }) => `${id}:${label}`).join(","));
-            if (typeof extraFieldsText === "undefined" || extraFieldsText === null) return;
-            const extraFields = [];
-            for (const fieldText of extraFieldsText.split(",")) {
-                const parts = fieldText.split(":");
-                if (parts.length !== 2) {
-                    console.log("bad format for Extra Fields");
-                    return;
-                }
-                extraFields.push({ id: parts[0].trim(), label: parts[1].trim() });
+            this.showFields = !this.showFields;
+        },
+        addExtraField(name) {
+            this.extraFields.push({ id: name, label: name });
+        },
+        deleteExtraField(id) {
+            const i = this.extraFields.findIndex(f => f.id === id);
+            if (i >= 0) {
+                this.extraFields.splice(i, 1);
             }
-            this.extraFields = extraFields;
         },
         createNewDatabase() {
             const newDatabaseId = this.databaseIds.length;

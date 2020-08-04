@@ -1014,7 +1014,7 @@ bunga_DetailHighlighter.prototype = {
 			result[i] = bunga_ERegTools.escape(_this[i]);
 		}
 		var reTxt = result.join("|");
-		var re_r = new RegExp("([^\\w])(" + reTxt + ")([^\\w])","g".split("u").join(""));
+		var re_r = new RegExp("([^\\w<>]|^|<p>)(" + reTxt + ")([^\\w<>]|$|</p>)","g".split("u").join(""));
 		var access = taxons;
 		var _g_access = access;
 		var _g_keys = Reflect.fields(access);
