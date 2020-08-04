@@ -469,6 +469,16 @@ Xml.prototype = {
 	}
 	,__class__: Xml
 };
+var bunga_Book = function(id,label) {
+	this.id = id;
+	this.label = label;
+};
+bunga_Book.__name__ = "bunga.Book";
+bunga_Book.prototype = {
+	__class__: bunga_Book
+};
+var bunga_BookInfo = function() { };
+bunga_BookInfo.__name__ = "bunga.BookInfo";
 var bunga_DetailData = $hx_exports["bunga"]["DetailData"] = function(name,author,nameCN,fasc,page,detail,photos,fields,name2,vernacularName,vernacularName2,meaning,noHerbier,website,herbariumPicture,extra) {
 	this.name = name != null ? StringTools.trim(name) : "";
 	this.author = author != null ? StringTools.trim(author) : "";
@@ -712,7 +722,9 @@ bunga_CodedDescription.prototype = {
 	__class__: bunga_CodedDescription
 };
 var bunga_CodedTaxon = function(taxon) {
+	this.bookInfoByIds = new haxe_ds_StringMap();
 	bunga_CodedHierarchicalItem.call(this,taxon);
+	this.bookInfoByIds = taxon.bookInfoByIds;
 	var _this = taxon.descriptions;
 	var result = new Array(_this.length);
 	var _g = 0;
@@ -809,27 +821,28 @@ bunga_Codec.decodeHierarchicalItem = function(item) {
 	var item1 = new bunga_HierarchicalItem(item.type,item.id,item.hid,item.parentId,item.topLevel,item.children,item);
 	return item1;
 };
-bunga_Codec.decodeTaxon = function(taxon,descriptions,states) {
+bunga_Codec.decodeTaxon = function(taxon,descriptions,states,books) {
 	var _g = bunga_Codec.decodeHierarchicalItem(taxon);
+	var _g1 = taxon.bookInfoByIds;
 	var _this = taxon.descriptions;
 	var result = new Array(_this.length);
-	var _g1 = 0;
-	var _g2 = _this.length;
-	while(_g1 < _g2) {
-		var i = _g1++;
+	var _g2 = 0;
+	var _g3 = _this.length;
+	while(_g2 < _g3) {
+		var i = _g2++;
 		var d = _this[i];
-		var _g3 = descriptions[d.descriptorId];
+		var _g4 = descriptions[d.descriptorId];
 		var _this1 = d.statesIds;
 		var result1 = new Array(_this1.length);
-		var _g4 = 0;
-		var _g5 = _this1.length;
-		while(_g4 < _g5) {
-			var i1 = _g4++;
+		var _g5 = 0;
+		var _g6 = _this1.length;
+		while(_g5 < _g6) {
+			var i1 = _g5++;
 			result1[i1] = states[_this1[i1]];
 		}
-		result[i] = new bunga_Description(_g3,result1);
+		result[i] = new bunga_Description(_g4,result1);
 	}
-	return new bunga_Taxon(_g,result);
+	return new bunga_Taxon(_g,result,_g1);
 };
 bunga_Codec.decodeCharacter = function(character,states) {
 	var _g = bunga_Codec.decodeHierarchicalItem(character);
@@ -873,6 +886,15 @@ bunga_Codec.decodeDataset = function(dataset) {
 	var states = { };
 	var descriptors = { };
 	var items = { };
+	var _g = [];
+	var _g1 = 0;
+	var _g2 = bunga_Book.standard;
+	while(_g1 < _g2.length) {
+		var book = _g2[_g1];
+		++_g1;
+		_g.push(book);
+	}
+	var books = _g;
 	var _g = 0;
 	var _g1 = dataset.states;
 	while(_g < _g1.length) {
@@ -892,30 +914,45 @@ bunga_Codec.decodeDataset = function(dataset) {
 	while(_g < _g1.length) {
 		var taxon = _g1[_g];
 		++_g;
-		items[taxon.id] = bunga_Codec.decodeTaxon(taxon,descriptors,states);
+		items[taxon.id] = bunga_Codec.decodeTaxon(taxon,descriptors,states,books);
 	}
 	var access = descriptors;
-	var _g6_access = access;
-	var _g6_keys = Reflect.fields(access);
-	var _g6_index = 0;
-	while(_g6_index < _g6_keys.length) {
-		var descriptor = _g6_access[_g6_keys[_g6_index++]];
+	var _g9_access = access;
+	var _g9_keys = Reflect.fields(access);
+	var _g9_index = 0;
+	while(_g9_index < _g9_keys.length) {
+		var descriptor = _g9_access[_g9_keys[_g9_index++]];
 		descriptor.hydrateChildren(descriptors);
 	}
 	var access = items;
-	var _g7_access = access;
-	var _g7_keys = Reflect.fields(access);
-	var _g7_index = 0;
-	while(_g7_index < _g7_keys.length) {
-		var item = _g7_access[_g7_keys[_g7_index++]];
+	var _g10_access = access;
+	var _g10_keys = Reflect.fields(access);
+	var _g10_index = 0;
+	while(_g10_index < _g10_keys.length) {
+		var item = _g10_access[_g10_keys[_g10_index++]];
 		item.hydrateChildren(items);
 	}
-	return new bunga_Dataset(items,descriptors);
+	return new bunga_Dataset(items,descriptors,books);
 };
-var bunga_Dataset = $hx_exports["bunga"]["Dataset"] = function(items,descriptors) {
+var bunga_Dataset = $hx_exports["bunga"]["Dataset"] = function(items,descriptors,books) {
 	bunga_DetailData.call(this);
 	this.items = items;
 	this.descriptors = descriptors;
+	var tmp;
+	if(books != null) {
+		tmp = books;
+	} else {
+		var _g = [];
+		var _g1 = 0;
+		var _g2 = bunga_Book.standard;
+		while(_g1 < _g2.length) {
+			var book = _g2[_g1];
+			++_g1;
+			_g.push(book);
+		}
+		tmp = _g;
+	}
+	this.books = tmp;
 };
 bunga_Dataset.__name__ = "bunga.Dataset";
 bunga_Dataset.extractStatesById = function(sddContent,photosByRef) {
@@ -983,7 +1020,7 @@ bunga_Dataset.fromSdd = function(dataset,extraFields) {
 		var item = _g1_access[_g1_keys[_g1_index++]];
 		item.hydrateChildren(items);
 	}
-	return new bunga_Dataset(items,descriptors);
+	return new bunga_Dataset(items,descriptors,null);
 };
 bunga_Dataset.__super__ = bunga_DetailData;
 bunga_Dataset.prototype = $extend(bunga_DetailData.prototype,{
@@ -1238,9 +1275,13 @@ bunga_State.fromSdd = function(state,photosByRef) {
 bunga_State.prototype = {
 	__class__: bunga_State
 };
-var bunga_Taxon = function(item,descriptions) {
+var bunga_Taxon = function(item,descriptions,bookInfoByIds) {
+	this.bookInfoByIds = new haxe_ds_StringMap();
 	bunga_HierarchicalItem.call(this,"taxon",item.id,item.hid,item.parentId,item.topLevel,Reflect.fields(item.children),item);
 	this.descriptions = descriptions;
+	if(bookInfoByIds != null) {
+		this.bookInfoByIds = bookInfoByIds;
+	}
 };
 bunga_Taxon.__name__ = "bunga.Taxon";
 bunga_Taxon.fromSdd = function(taxon,extraFields,photosByRef,descriptors,statesById) {
@@ -1318,7 +1359,7 @@ bunga_Taxon.fromSdd = function(taxon,extraFields,photosByRef,descriptors,statesB
 		var value = _g2.value;
 		_g.push(value);
 	}
-	return new bunga_Taxon(_g5,_g);
+	return new bunga_Taxon(_g5,_g,null);
 };
 bunga_Taxon.__super__ = bunga_HierarchicalItem;
 bunga_Taxon.prototype = $extend(bunga_HierarchicalItem.prototype,{
@@ -4054,6 +4095,7 @@ Xml.Comment = 3;
 Xml.DocType = 4;
 Xml.ProcessingInstruction = 5;
 Xml.Document = 6;
+bunga_Book.standard = [new bunga_Book("fmc","Flore de Madagascar et Comores"),new bunga_Book("mbf","Manuel de Botanique Forestière")];
 bunga_Field.standard = [new bunga_Field(true,"name2","Syn"),new bunga_Field(true,"vernacularName","NV"),new bunga_Field(true,"vernacularName2","NV2"),new bunga_Field(true,"meaning","Sense"),new bunga_Field(true,"noHerbier","N° Herbier"),new bunga_Field(true,"herbariumPicture","Herbarium Picture"),new bunga_Field(true,"website","Website")];
 bunga_FileNameGenerator.forbiddenChars = [" ","*",".","\"","/","\\","[","]",":",";","|",","];
 bunga_ImageCache.DB_NAME = "ImageCache";
