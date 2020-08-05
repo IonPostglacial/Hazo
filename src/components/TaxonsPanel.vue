@@ -36,19 +36,27 @@
                     <TaxonPropertyField :editable="editable" :item="item" property="herbariumPicture">Herbarium Picture</TaxonPropertyField>
 
                     <div v-for="extraField in extraFields" :key="extraField.id">
-                        <TaxonPropertyField :editable="editable" :item="item" :property="'extra-' + extraField.id">{{ extraField.label }}</TaxonPropertyField>
+                        <TaxonPropertyField :editable="editable" :item="item.extra" :property="extraField.id">{{ extraField.label }}</TaxonPropertyField>
                     </div>
-
-                    <fieldset>
-                        <legend>Flore de Madagascar et Comores</legend>
-                        <TaxonPropertyField :editable="editable" :item="item" property="fasc">Fasc</TaxonPropertyField>
-                        <TaxonPropertyField :editable="editable" :item="item" property="page">Page</TaxonPropertyField>
-                    </fieldset>
                 </div>
             </div>
         </div>
         <div :class="'thin-border medium-margin white-background flex-grow-1 vertical-flexbox ' + (editable ? 'scroll' : '')">
-            <label class="item-property">Detail</label>
+            <fieldset v-for="book in books" :key="book.id">
+                <legend>{{ book.label }}</legend>
+                <div v-if="item.bookInfoByIds">
+                    <div v-if="editable && item.bookInfoByIds[book.id]">
+                        <label class="medium-margin">
+                            book:&nbsp;<input type="text" v-model="item.bookInfoByIds[book.id].fasc" />
+                        </label>
+                        <label class="medium-margin">
+                            page:&nbsp;<input type="text" v-model="item.bookInfoByIds[book.id].page" />
+                        </label>
+                    </div>
+                    <label class="item-property">Detail</label>
+                    <ckeditor v-if="editable" :editor="editor" v-model="item.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
+                </div>
+            </fieldset>
             <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
             <div v-if="!editable" id="item-detail " class="limited-width"  v-html="item.detail"></div><br/>
 
@@ -71,11 +79,10 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 export default {
     name: "TaxonsPanel",
     components: { TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
-    props: { item: Object, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array },
+    props: { item: Object, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array, books:Array },
     data() {
         return {
             editor: ClassicEditor,
-            editorData: this.item?.detail ?? "",
             editorConfig: {}
         }
     },

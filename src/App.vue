@@ -27,15 +27,16 @@
     </div>
     <div :class="'horizontal-flexbox start-align flex-grow-1 height-main-panel ' + (showBigImage ? 'invisible' : '')">
         <TaxonsTab v-if="selectedTab === 0"
-            :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
+            :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" 
+            :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
-            :extra-fields="extraFields"
+            :extra-fields="extraFields" :books="books" 
             v-on:open-photo="maximizeImage">
         </TaxonsTab>
         <TaxonsDescriptorsTab v-if="selectedTab === 1"
             :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
-            :extra-fields="extraFields"
+            :extra-fields="extraFields" :books="books" 
             v-on:open-photo="maximizeImage">
         </TaxonsDescriptorsTab>
         <CharactersTab v-if="selectedTab === 2"
@@ -106,7 +107,7 @@ export default {
         AddItem, TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
     },
     data() {
-        return {
+        return window._BUNGA = {
             databaseIds: [0],
             selectedBase: 0,
             showLeftMenu: true,
@@ -124,6 +125,7 @@ export default {
                 "Dictionary"
             ],
             extraFields: [],
+            books: window.bunga.Book.standard,
             items: {},
             descriptions: {},
             dictionaryEntries: {},
@@ -226,6 +228,7 @@ export default {
                 result = await loadSDD(file, this.extraFields);
             } else if (file.name.endsWith(".json")) {
                 result = await this.jsonUpload(file);
+                console.log(result);
             } else if (file.name.endsWith(".bunga.bold.csv")) {
                 result = await this.boldUpload(file);
             }

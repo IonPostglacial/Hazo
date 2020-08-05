@@ -10,7 +10,7 @@
         <TaxonsPanel editable
             :v-if="typeof selectedItem !== 'undefined'"
             :show-image-box="showImageBox"
-            :extra-fields="extraFields"
+            :extra-fields="extraFields" :books="books"
             :item="selectedItem" :descriptions="descriptions"
             v-on:open-photo="openPhoto">
         </TaxonsPanel>
@@ -32,6 +32,7 @@ export default {
         initItems: Object,
         extraFields: Array,
         selectedTaxon: String,
+        books:Array,
     },
     data() {
         return {
@@ -55,7 +56,8 @@ export default {
             const newItemId = "myt-" + newItemIdNum;
             const newItem = {
                 hid: "mytn-" + newItemId, id: newItemId, name: value, photos: [],
-                topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: []
+                bookInfoByIds: Object.fromEntries(this.books.map(book => [book.id, { fasc: "", page: null, detail: "" }])),
+                topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: [], extra: {}
             };
             this.items = { ...this.items, [newItemId]: newItem };
             if (typeof parentId !== "undefined") {

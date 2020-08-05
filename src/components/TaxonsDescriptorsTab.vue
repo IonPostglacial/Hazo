@@ -9,7 +9,7 @@
                 <section class="vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox scroll">
                         <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="openPhoto" 
-                            :show-image-box="showImageBox" :extra-fields="extraFields">
+                            :show-image-box="showImageBox" :extra-fields="extraFields" :books="books">
                         </TaxonsPanel>
                         <div v-if="selectedTaxon !== ''" class="vertical-flexbox">
                             <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== ''"
@@ -65,6 +65,7 @@ export default {
         extraFields: Array,
         taxonNameField: String,
         selectedTaxon: String,
+        books:Array,
     },
     data() {
         return {

@@ -469,7 +469,7 @@ Xml.prototype = {
 	}
 	,__class__: Xml
 };
-var bunga_Book = function(id,label) {
+var bunga_Book = $hx_exports["bunga"]["Book"] = function(id,label) {
 	this.id = id;
 	this.label = label;
 };
@@ -477,8 +477,15 @@ bunga_Book.__name__ = "bunga.Book";
 bunga_Book.prototype = {
 	__class__: bunga_Book
 };
-var bunga_BookInfo = function() { };
+var bunga_BookInfo = function(fasc,page,detail) {
+	this.fasc = fasc;
+	this.page = page;
+	this.detail = detail;
+};
 bunga_BookInfo.__name__ = "bunga.BookInfo";
+bunga_BookInfo.prototype = {
+	__class__: bunga_BookInfo
+};
 var bunga_DetailData = $hx_exports["bunga"]["DetailData"] = function(name,author,nameCN,fasc,page,detail,photos,fields,name2,vernacularName,vernacularName2,meaning,noHerbier,website,herbariumPicture,extra) {
 	this.name = name != null ? StringTools.trim(name) : "";
 	this.author = author != null ? StringTools.trim(author) : "";
@@ -722,7 +729,7 @@ bunga_CodedDescription.prototype = {
 	__class__: bunga_CodedDescription
 };
 var bunga_CodedTaxon = function(taxon) {
-	this.bookInfoByIds = new haxe_ds_StringMap();
+	this.bookInfoByIds = { };
 	bunga_CodedHierarchicalItem.call(this,taxon);
 	this.bookInfoByIds = taxon.bookInfoByIds;
 	var _this = taxon.descriptions;
@@ -822,8 +829,19 @@ bunga_Codec.decodeHierarchicalItem = function(item) {
 	return item1;
 };
 bunga_Codec.decodeTaxon = function(taxon,descriptions,states,books) {
+	var bookInfoByIds = taxon.bookInfoByIds != null ? taxon.bookInfoByIds : { };
+	if(Reflect.fields(bookInfoByIds).length == 0) {
+		var _g = 0;
+		var _g1 = bunga_Book.standard;
+		while(_g < _g1.length) {
+			var book = _g1[_g];
+			++_g;
+			var info = new bunga_BookInfo(book.id == "fmc" ? "" + taxon.fasc : "",book.id == "fmc" ? taxon.page : null,"");
+			bookInfoByIds[book.id] = info;
+		}
+	}
 	var _g = bunga_Codec.decodeHierarchicalItem(taxon);
-	var _g1 = taxon.bookInfoByIds;
+	var _g1 = bookInfoByIds;
 	var _this = taxon.descriptions;
 	var result = new Array(_this.length);
 	var _g2 = 0;
@@ -1276,7 +1294,7 @@ bunga_State.prototype = {
 	__class__: bunga_State
 };
 var bunga_Taxon = function(item,descriptions,bookInfoByIds) {
-	this.bookInfoByIds = new haxe_ds_StringMap();
+	this.bookInfoByIds = { };
 	bunga_HierarchicalItem.call(this,"taxon",item.id,item.hid,item.parentId,item.topLevel,Reflect.fields(item.children),item);
 	this.descriptions = descriptions;
 	if(bookInfoByIds != null) {
