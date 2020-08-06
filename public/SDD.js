@@ -168,6 +168,13 @@ Reflect.compareMethods = function(f1,f2) {
 		return false;
 	}
 };
+Reflect.deleteField = function(o,field) {
+	if(!Object.prototype.hasOwnProperty.call(o,field)) {
+		return false;
+	}
+	delete(o[field]);
+	return true;
+};
 var Std = function() { };
 Std.__name__ = "Std";
 Std.string = function(s) {
@@ -500,7 +507,7 @@ var bunga_DetailData = $hx_exports["bunga"]["DetailData"] = function(name,author
 	this.page = page;
 	this.detail = detail != null ? detail : "";
 	this.photos = photos != null ? photos : [];
-	this.extra = { };
+	this.extra = extra;
 };
 bunga_DetailData.__name__ = "bunga.DetailData";
 bunga_DetailData.findInDescription = function(description,section) {
@@ -615,7 +622,13 @@ bunga_HierarchicalItem.prototype = $extend(bunga_Item.prototype,{
 		while(_g < _g1.length) {
 			var id = _g1[_g];
 			++_g;
-			this.children[id] = hierarchyById[id];
+			var child = hierarchyById[id];
+			if(child == null) {
+				Reflect.deleteField(this.children,id);
+				console.log("src/bunga/HierarchicalItem.hx:25:","Child not found: " + this.name + " > " + id);
+			} else {
+				this.children[id] = hierarchyById[id];
+			}
 		}
 	}
 	,__class__: bunga_HierarchicalItem
@@ -712,7 +725,12 @@ var bunga_CodedHierarchicalItem = function(item) {
 	var _g_index = 0;
 	while(_g_index < _g_keys.length) {
 		var child = _g_access[_g_keys[_g_index++]];
-		this.children.push(child.id);
+		if(child == null) {
+			console.log("src/bunga/Codec.hx:21:",item.name + " has null child");
+			console.log("src/bunga/Codec.hx:22:",item);
+		} else {
+			this.children.push(child.id);
+		}
 	}
 };
 bunga_CodedHierarchicalItem.__name__ = "bunga.CodedHierarchicalItem";
