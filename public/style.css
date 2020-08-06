@@ -320,6 +320,11 @@ div.invisible {
     text-align: center;
 }
 
+.fixed-right {
+    position: fixed;
+    right: 0;
+}
+
 .absolute-top-right {
     position: absolute;
     top: 2px;
