@@ -45,7 +45,7 @@
             v-on:open-photo="maximizeImage">
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
-        <div v-if="showFields" class="height-full medium-margin thin-border white-background medium-padding horizontal-flexbox">
+        <div v-if="showFields" class="height-full medium-margin thin-border white-background medium-padding horizontal-flexbox fixed-right">
             <ul class="vertical-flexbox scroll">
                 <li v-for="field in extraFields" :key="field.id" class="horizontal-flexbox">
                     <label class="nowrap">
@@ -228,7 +228,6 @@ export default {
                 result = await loadSDD(file, this.extraFields);
             } else if (file.name.endsWith(".json")) {
                 result = await this.jsonUpload(file);
-                console.log(result);
             } else if (file.name.endsWith(".bunga.bold.csv")) {
                 result = await this.boldUpload(file);
             }

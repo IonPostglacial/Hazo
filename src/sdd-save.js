@@ -53,7 +53,7 @@ function saveSDD({ items, descriptors, extraFields }) {
         const fields = [...StandardFields, ...(extraFields ?? [])];
         let itemDetail = "";
         for (const { id, label, std } in fields) {
-            const value = item[std ? id : `extra-${id}`];
+            const value = std ? item[id] : item.extra[id];
             if (typeof value === "undefined" || value === null) continue;
             itemDetail += `${label}: ${value}<br><br>`;
         }
