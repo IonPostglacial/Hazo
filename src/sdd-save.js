@@ -52,7 +52,7 @@ function saveSDD({ items, descriptors, extraFields }) {
         representation.appendChild(label);
         const fields = [...StandardFields, ...(extraFields ?? [])];
         let itemDetail = "";
-        for (const { id, label, std } in fields) {
+        for (const { id, label, std } of fields) {
             if (typeof id !== "undefined") {
                 const value = std ? item[id] : item.extra[id];
                 if (typeof value === "undefined" || value === null) continue;
