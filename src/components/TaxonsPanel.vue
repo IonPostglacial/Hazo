@@ -45,20 +45,28 @@
             <fieldset v-for="book in books" :key="book.id">
                 <legend>{{ book.label }}</legend>
                 <div v-if="item.bookInfoByIds">
-                    <div v-if="editable && item.bookInfoByIds[book.id]">
+                    <div v-if="item.bookInfoByIds[book.id]">
                         <label class="medium-margin">
-                            book:&nbsp;<input type="text" v-model="item.bookInfoByIds[book.id].fasc" />
+                            book:&nbsp;
+                            <input v-if="editable" type="text" v-model="item.bookInfoByIds[book.id].fasc" />
+                            <div class="inline-block medium-padding medium-margin" v-if="!editable">
+                                {{ item.bookInfoByIds[book.id].fasc }}
+                            </div>
                         </label>
                         <label class="medium-margin">
-                            page:&nbsp;<input type="text" v-model="item.bookInfoByIds[book.id].page" />
+                            page:&nbsp;
+                            <input v-if="editable" type="text" v-model="item.bookInfoByIds[book.id].page" />
+                            <div class="inline-block medium-padding medium-margin" v-if="!editable">
+                                {{ item.bookInfoByIds[book.id].page }}
+                            </div>
                         </label>
                     </div>
-                    <label class="item-property">Detail</label>
                     <ckeditor v-if="editable" :editor="editor" v-model="item.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
+                    <div v-if="!editable" class="limited-width" v-html="item.bookInfoByIds[book.id].detail"></div><br/>
                 </div>
             </fieldset>
             <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
-            <div v-if="!editable" id="item-detail " class="limited-width"  v-html="item.detail"></div><br/>
+            <div v-if="!editable" id="item-detail" class="limited-width"  v-html="item.detail"></div><br/>
 
             <label class="item-property">Description</label>
             <TreeMenu :items="itemDescriptorTree"
