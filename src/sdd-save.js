@@ -53,11 +53,9 @@ function saveSDD({ items, descriptors, extraFields }) {
         const fields = [...StandardFields, ...(extraFields ?? [])];
         let itemDetail = "";
         for (const { id, label, std } of fields) {
-            if (typeof id !== "undefined") {
-                const value = std ? item[id] : item.extra[id];
-                if (typeof value === "undefined" || value === null) continue;
-                itemDetail += `${label}: ${value}<br><br>`;
-            }
+            const value = std ? item[id] : (item.extra ? item.extra[id] : null);
+            if (typeof value === "undefined" || value === null) continue;
+            itemDetail += `${label}: ${value}<br><br>`;
         }
         itemDetail +=
             (item.fasc ? `Flore Madagascar et Comores<br>fasc ${item.fasc}<br>page ${item.page ?? ""}<br><br>` : "") +
