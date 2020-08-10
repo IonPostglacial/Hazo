@@ -32,13 +32,10 @@
                             <input class="flex-grow-1" placeholder="Filter" type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
                         </label>
                         <ul class="no-list-style" v-if="selectedItemDescriptorId !== 0">
-                            <li class="horizontal-flexbox" v-for="(state, stateIndex) in selectedItemDescriptorFilteredStates" :key="state.id">
+                            <li class="horizontal-flexbox" v-for="(state, stateIndex) in selectedItemDescriptorFilteredStates" :key="selectedItem.id + state.id">
                                 <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
-                                    :checked="selectedItemDescriptorStates.map(s => s.id).includes(state.id)">
+                                    :checked="isStateChecked(state.id)">
                                 <input class="flex-grow-1" type="text" v-model="state.name" />
-                            </li>
-                            <li class="">
-                                <AddItem v-on:add-item="addState(descriptions[selectedItemDescriptorId], $event)"></AddItem>
                             </li>
                         </ul>
                     </div>
@@ -52,11 +49,10 @@
 import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
 import ImageBox from "./ImageBox.vue";
-import AddItem from "./AddItem.vue";
 
 export default {
     name: "TaxonsDescriptorsTab",
-    components: { TreeMenu, TaxonsPanel, ImageBox, AddItem },
+    components: { TreeMenu, TaxonsPanel, ImageBox },
     props: {
         showLeftMenu: Boolean,
         showImageBox: Boolean,
@@ -117,6 +113,9 @@ export default {
         },
         selectItemDescriptorId(id) {
             this.selectedItemDescriptorId = id;
+        },
+        isStateChecked(stateId) {
+            return this.selectedItemDescriptorStates.map(s => s.id).includes(stateId)
         },
         openPhoto(e) {
             this.$emit("open-photo", e);
