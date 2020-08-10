@@ -493,6 +493,15 @@ bunga_BookInfo.__name__ = "bunga.BookInfo";
 bunga_BookInfo.prototype = {
 	__class__: bunga_BookInfo
 };
+var bunga_SddCharacterData = function(character,states,mediaObjects) {
+	this.character = character;
+	this.states = states;
+	this.mediaObjects = mediaObjects;
+};
+bunga_SddCharacterData.__name__ = "bunga.SddCharacterData";
+bunga_SddCharacterData.prototype = {
+	__class__: bunga_SddCharacterData
+};
 var bunga_DetailData = $hx_exports["bunga"]["DetailData"] = function(name,author,nameCN,fasc,page,detail,photos,fields,name2,vernacularName,vernacularName2,meaning,noHerbier,website,herbariumPicture,extra) {
 	this.name = name != null ? StringTools.trim(name) : "";
 	this.author = author != null ? StringTools.trim(author) : "";
@@ -707,6 +716,57 @@ bunga_Character.fromSdd = function(character,photosByRef,statesById) {
 		result[i] = statesById[_this[i].ref];
 	}
 	return new bunga_Character(_g5,_g,result);
+};
+bunga_Character.toSdd = function(character,extraFields,mediaObjects) {
+	var _this = character.states;
+	var result = new Array(_this.length);
+	var _g = 0;
+	var _g1 = _this.length;
+	while(_g < _g1) {
+		var i = _g++;
+		result[i] = bunga_State.toSdd(_this[i]);
+	}
+	var statesData = result;
+	var result = new Array(statesData.length);
+	var _g = 0;
+	var _g1 = statesData.length;
+	while(_g < _g1) {
+		var i = _g++;
+		result[i] = statesData[i].state;
+	}
+	var states = result;
+	var _g = character.id;
+	var _g1 = character.parentId;
+	var _g2 = character.toRepresentation(extraFields);
+	var _g3 = states;
+	var _this = character.inapplicableStates;
+	var result = new Array(_this.length);
+	var _g4 = 0;
+	var _g5 = _this.length;
+	while(_g4 < _g5) {
+		var i = _g4++;
+		result[i] = new sdd_StateRef(_this[i].id);
+	}
+	var _g4 = new sdd_Character(_g,_g1,_g2,_g3,result,Reflect.fields(character.children));
+	var _g = states;
+	var _g1 = [];
+	var _g_current = 0;
+	var _g_array = statesData;
+	while(_g_current < _g_array.length) {
+		var x = _g_array[_g_current++];
+		_g1.push(x.mediaObjects);
+	}
+	var _g2 = [];
+	var e = $getIterator(_g1);
+	while(e.hasNext()) {
+		var e1 = e.next();
+		var x = $getIterator(e1);
+		while(x.hasNext()) {
+			var x1 = x.next();
+			_g2.push(x1);
+		}
+	}
+	return new bunga_SddCharacterData(_g4,_g,_g2.concat([]));
 };
 bunga_Character.__super__ = bunga_HierarchicalItem;
 bunga_Character.prototype = $extend(bunga_HierarchicalItem.prototype,{
@@ -1058,6 +1118,34 @@ bunga_Dataset.fromSdd = function(dataset,extraFields) {
 	}
 	return new bunga_Dataset(items,descriptors,null);
 };
+bunga_Dataset.toSdd = function(dataset,extraFields) {
+	var taxons = [];
+	var characters = [];
+	var states = [];
+	var mediaObjects = [];
+	var access = dataset.items;
+	var _g_access = access;
+	var _g_keys = Reflect.fields(access);
+	var _g_index = 0;
+	while(_g_index < _g_keys.length) {
+		var taxon = _g_access[_g_keys[_g_index++]];
+		var sddData = bunga_Taxon.toSdd(taxon,extraFields,mediaObjects);
+		taxons.push(sddData.taxon);
+		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
+	}
+	var access = dataset.descriptors;
+	var _g1_access = access;
+	var _g1_keys = Reflect.fields(access);
+	var _g1_index = 0;
+	while(_g1_index < _g1_keys.length) {
+		var character = _g1_access[_g1_keys[_g1_index++]];
+		var sddData = bunga_Character.toSdd(character,extraFields,mediaObjects);
+		characters.push(sddData.character);
+		states = states.concat(sddData.states);
+		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
+	}
+	return new sdd_Dataset(taxons,characters,states,mediaObjects);
+};
 bunga_Dataset.__super__ = bunga_DetailData;
 bunga_Dataset.prototype = $extend(bunga_DetailData.prototype,{
 	__class__: bunga_Dataset
@@ -1287,6 +1375,14 @@ bunga_ImageCache.prototype = {
 	}
 	,__class__: bunga_ImageCache
 };
+var bunga_SddStateData = function(state,mediaObjects) {
+	this.state = state;
+	this.mediaObjects = mediaObjects;
+};
+bunga_SddStateData.__name__ = "bunga.SddStateData";
+bunga_SddStateData.prototype = {
+	__class__: bunga_SddStateData
+};
 var bunga_State = function(id,descriptorId,name,photos) {
 	this.id = id;
 	this.descriptorId = descriptorId;
@@ -1308,8 +1404,19 @@ bunga_State.fromSdd = function(state,photosByRef) {
 	}
 	return new bunga_State(_g,_g1,_g2,result);
 };
+bunga_State.toSdd = function(state) {
+	return new bunga_SddStateData(new sdd_State(state.id,state.descriptorId,new sdd_Representation(state.name,"",[])),[]);
+};
 bunga_State.prototype = {
 	__class__: bunga_State
+};
+var bunga_SddTaxonData = function(taxon,mediaObjects) {
+	this.taxon = taxon;
+	this.mediaObjects = mediaObjects;
+};
+bunga_SddTaxonData.__name__ = "bunga.SddTaxonData";
+bunga_SddTaxonData.prototype = {
+	__class__: bunga_SddTaxonData
 };
 var bunga_Taxon = function(item,descriptions,bookInfoByIds) {
 	this.bookInfoByIds = { };
@@ -1396,6 +1503,32 @@ bunga_Taxon.fromSdd = function(taxon,extraFields,photosByRef,descriptors,statesB
 		_g.push(value);
 	}
 	return new bunga_Taxon(_g5,_g,null);
+};
+bunga_Taxon.toSdd = function(taxon,extraFields,mediaObjects) {
+	var _g = taxon.id;
+	var _g1 = taxon.parentId;
+	var _g2 = taxon.toRepresentation(extraFields);
+	var _g3 = Reflect.fields(taxon.children);
+	var _this = taxon.descriptions;
+	var result = new Array(_this.length);
+	var _g4 = 0;
+	var _g5 = _this.length;
+	while(_g4 < _g5) {
+		var i = _g4++;
+		var d = _this[i];
+		var _g6 = d.descriptor.id;
+		var _this1 = d.states;
+		var result1 = new Array(_this1.length);
+		var _g7 = 0;
+		var _g8 = _this1.length;
+		while(_g7 < _g8) {
+			var i1 = _g7++;
+			result1[i1] = new sdd_StateRef(_this1[i1].id);
+		}
+		result[i] = new sdd_CategoricalRef(_g6,result1);
+	}
+	var sddTaxon = new sdd_Taxon(_g,_g1,_g2,_g3,result);
+	return new bunga_SddTaxonData(sddTaxon,[]);
 };
 bunga_Taxon.__super__ = bunga_HierarchicalItem;
 bunga_Taxon.prototype = $extend(bunga_HierarchicalItem.prototype,{
@@ -3541,7 +3674,7 @@ sdd_Representation.__name__ = "sdd.Representation";
 sdd_Representation.prototype = {
 	__class__: sdd_Representation
 };
-var sdd_Character = function(id,representation,states) {
+var sdd_Character = function(id,parentId,representation,states,inapplicableStatesRefs,childrenIds) {
 	this.childrenIds = [];
 	this.inapplicableStatesRefs = [];
 	this.states = [];
@@ -3549,6 +3682,12 @@ var sdd_Character = function(id,representation,states) {
 	this.id = id;
 	if(states != null) {
 		this.states = states;
+	}
+	if(inapplicableStatesRefs != null) {
+		this.inapplicableStatesRefs = inapplicableStatesRefs;
+	}
+	if(childrenIds != null) {
+		this.childrenIds = childrenIds;
 	}
 };
 sdd_Character.__name__ = "sdd.Character";
@@ -3663,7 +3802,7 @@ sdd_Loader.prototype = {
 				throw haxe_Exception.thrown(exception);
 			}
 			var taxonId = value;
-			var value1 = new sdd_Taxon(taxonId,this.loadRepresentation(sdd_XmlExtensions.firstElementNamed(taxonElement1,"Representation"),mediaObjectsById));
+			var value1 = new sdd_Taxon(taxonId,null,this.loadRepresentation(sdd_XmlExtensions.firstElementNamed(taxonElement1,"Representation"),mediaObjectsById));
 			taxonsById.h[taxonId] = value1;
 		}
 		var codedDescriptionsElement = sdd_XmlExtensions.firstElementNamed(datasetElement,"CodedDescriptions");
@@ -3891,7 +4030,7 @@ sdd_Loader.prototype = {
 						states.push(state);
 					}
 				}
-				var value2 = new sdd_Character(characterId,this.loadRepresentation(sdd_XmlExtensions.firstElementNamed(characterElement1,"Representation"),mediaObjectsById),states);
+				var value2 = new sdd_Character(characterId,null,this.loadRepresentation(sdd_XmlExtensions.firstElementNamed(characterElement1,"Representation"),mediaObjectsById),states);
 				charactersById.h[characterId] = value2;
 			} catch( _g ) {
 				var _g1 = haxe_Exception.caught(_g);
@@ -4067,7 +4206,7 @@ sdd_StateRef.__name__ = "sdd.StateRef";
 sdd_StateRef.prototype = {
 	__class__: sdd_StateRef
 };
-var sdd_Taxon = function(id,representation,childrenIds,categoricals) {
+var sdd_Taxon = function(id,parentId,representation,childrenIds,categoricals) {
 	this.childrenIds = [];
 	this.categoricals = [];
 	sdd_Representation.call(this,representation.label,representation.detail,representation.mediaObjectsRefs);

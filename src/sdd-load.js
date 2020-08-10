@@ -1,14 +1,14 @@
 function loadSddFile(file) {
     return new Promise(function (resolve, reject) {
-        const fileReader = Object.assign(new FileReader(), {
-            onload() {
-                const xml = new window.sdd.Loader(false).load(fileReader.result);
-                resolve(xml);
-            },
-            onerror() {
-                reject(fileReader.error);
-            },
-        });
+        const fileReader = new FileReader();
+        
+        fileReader.onload = function () {
+            const xml = new window.sdd.Loader(false).load(fileReader.result);
+            resolve(xml);
+        };
+        fileReader.onerror = function () {
+            reject(fileReader.error);
+        };
         fileReader.readAsText(file);
     });
 }
