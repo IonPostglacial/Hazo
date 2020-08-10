@@ -9,8 +9,10 @@
                 </div>
             </div>
             <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between">
-                <li class="no-list-style" v-for="(nameField, fieldNum) in nameFields" :key="nameField">
-                    <label><input type="checkbox" v-model="visibleColumns[fieldNum]">col {{ fieldNum }}</label>
+                <li class="flex-grow-1 no-list-style" v-for="(nameField, fieldNum) in nameFields" :key="nameField">
+                    <label :class="'full-width button ' + (visibleColumns[fieldNum] ? 'background-color-1' : '')">
+                        <input type="checkbox" class="invisible" v-model="visibleColumns[fieldNum]">col {{ fieldNum }}
+                    </label>
                 </li>
             </ul>
         </div>
