@@ -1,4 +1,4 @@
-export default function download(content, extension, binary=false) {
+export default function download(content: any, extension: string, binary=false) {
     const filename = window.prompt("Choose a file name", "export") + `.${extension}`;
     const element = document.createElement("a");
     const url = binary ? URL.createObjectURL(content) : ("data:text/plain;charset=utf-8," + encodeURIComponent(content));

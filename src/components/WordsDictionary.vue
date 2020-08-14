@@ -47,12 +47,12 @@
 </template>
 
 <script>
-import parseCSV from "../parse-csv.js";
+import parseCSV from "../parse-csv.ts";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue from "../../node_modules/vue/dist/vue.esm.browser.js";
 import AddItem from "./AddItem.vue";
-import download from "../download.js";
+import download from "../download";
 
 export default {
     name: "WordsDictionary",

@@ -1,4 +1,4 @@
-import StandardFields from "./standard-fields.js";
+import StandardFields from "./standard-fields";
 
 function saveSDD({ items, descriptors, extraFields }) {
     const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");

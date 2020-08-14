@@ -95,11 +95,11 @@ import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import AddItem from "./components/AddItem.vue";
-import DB from "./db-storage.js";
+import DB from "./db-storage.ts";
 import Vue from "../node_modules/vue/dist/vue.esm.browser.js";
 import loadSDD from "./sdd-load";
 import saveSDD from "./sdd-save";
-import download from "./download.js";
+import download from "./download";
 
 export default {
     name: "App",
