@@ -16,10 +16,11 @@
     </div>    
 </template>
 
-<script>
+<script lang="ts">
 import AddItem from "./AddItem.vue";
+import Vue from "vue";
 
-export default {
+export default Vue.extend({
     name: "ImageBox",
     props: { photos: Array, editable: Boolean },
     data() {
@@ -31,13 +32,13 @@ export default {
         AddItem
     },
     methods: {
-        deletePhoto(index) {
+        deletePhoto(index: number) {
             this.$emit("delete-photo", index);
         },
-        openPhoto(index) {
+        openPhoto(index: number) {
             this.$emit("open-photo", { photos: this.photos, index });
         },
-        setPhoto(index, photoUrl) {
+        setPhoto(index: number, photoUrl: string) {
             this.$emit("set-photo", { index, url: photoUrl });
         },
         addPhoto() {
@@ -45,5 +46,5 @@ export default {
             this.newPhotoUrl = "";
         },
     }
-}
+});
 </script>

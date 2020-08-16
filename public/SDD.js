@@ -666,7 +666,7 @@ class bunga_HierarchicalItem extends bunga_Item {
 			let child = hierarchyById[id];
 			if(child == null) {
 				Reflect.deleteField(this.children,id);
-				console.log("src/bunga/HierarchicalItem.hx:25:","Child not found: " + this.name + " > " + id);
+				console.log("src/bunga/HierarchicalItem.hx:26:","Child not found: " + this.name + " > " + id);
 			} else {
 				this.children[id] = hierarchyById[id];
 			}
@@ -1633,6 +1633,7 @@ class bunga_Taxon extends bunga_HierarchicalItem {
 		return new bunga_SddTaxonData(sddTaxon,[]);
 	}
 }
+$hx_exports["bunga"]["Taxon"] = bunga_Taxon;
 bunga_Taxon.__name__ = "bunga.Taxon";
 Object.assign(bunga_Taxon.prototype, {
 	__class__: bunga_Taxon

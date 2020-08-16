@@ -12,6 +12,7 @@ declare global {
             Book: typeof sdd.bunga_Book;
             Dataset: typeof sdd.bunga_Dataset;
             Character: typeof sdd.bunga_Character;
+            Taxon: typeof sdd.bunga_Taxon;
             TaxonToTex: typeof sdd.bunga_TaxonToTex;
             ImageCache: typeof sdd.bunga_ImageCache;
             DetailHighlighter: typeof sdd.bunga_DetailHighlighter;

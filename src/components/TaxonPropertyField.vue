@@ -7,19 +7,22 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue";
+
+export default Vue.extend({
     props: {
         editable: Boolean,
-        item: Object,
+        item: window.bunga.Taxon,
         property: String,
     },
     methods: {
         pushToChildren() {
             for (const child of Object.values(this.item.children)) {
-                child[this.property] = this.item[this.property];
+                const anyChild: any = child, anyItem: any = this.item;
+                anyChild[this.property] = anyItem[this.property];
             }
         },
     },
-}
+});
 </script>

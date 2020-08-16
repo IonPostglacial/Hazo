@@ -7,8 +7,10 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue";
+
+export default Vue.extend({
     name: "AddItem",
     data() {
         return {
@@ -23,5 +25,5 @@ export default {
             this.$emit("add-item", val);
         }
     }
-}
+});
 </script>
