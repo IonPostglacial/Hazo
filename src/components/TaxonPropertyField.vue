@@ -13,7 +13,7 @@ import Vue from "vue";
 export default Vue.extend({
     props: {
         editable: Boolean,
-        item: window.bunga.Taxon,
+        item: Object,
         property: String,
     },
     methods: {

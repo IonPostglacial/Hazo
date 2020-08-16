@@ -81,7 +81,6 @@ export default {
             return this.descriptions[this.selectedItemDescriptorId]?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
         },
         selectedItemDescriptorTree() {
-            console.log("recalc");
             const itemStatesIds = [];
             const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
             const dependencyTree = JSON.parse(JSON.stringify(this.descriptions));
@@ -91,9 +90,6 @@ export default {
                 }
             }
             for (const descriptor of Object.values(dependencyTree)) {
-                const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor.id === descriptor.id);
-                if (typeof selectedDescription === "undefined") continue;
-
                 if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                     descriptor.hidden = true;
                 }

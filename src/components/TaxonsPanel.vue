@@ -77,17 +77,22 @@
     </section>
 </template>
 
-<script>
+<script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import ImageBox from "./ImageBox.vue";
-import TaxonPropertyField from "./TaxonPropertyField";
+import TaxonPropertyField from "./TaxonPropertyField.vue";
+//@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
+//@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { bunga_Character as Character, bunga_Taxon as Taxon } from "../libs/SDD"; // eslint-disable-line no-unused-vars
+import Vue from "vue";
+import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 
-export default {
+export default Vue.extend({
     name: "TaxonsPanel",
     components: { TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
-    props: { item: Object, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array, books:Array },
+    props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array, books:Array },
     data() {
         return {
             editor: ClassicEditor,
@@ -96,9 +101,9 @@ export default {
     },
     computed: {
         itemDescriptorTree() {
-            const itemStatesIds = [];
+            const itemStatesIds: string[] = [];
             const selectedItemIdDescriptions = this.item.descriptions ?? [];
-            const dependencyTree = JSON.parse(JSON.stringify(this.descriptions));
+            const dependencyTree: Record<string, Character & { warning?: boolean }> = JSON.parse(JSON.stringify(this.descriptions));
             for (const description of selectedItemIdDescriptions) {
                 for (const state of description?.states ?? []) {
                     itemStatesIds.push(state.id);
@@ -123,31 +128,32 @@ export default {
         },
     },
     methods: {
-        itemDescriptorsButtonClicked({ buttonId, parentId, id }) {
+        itemDescriptorsButtonClicked({ buttonId, parentId, id }: { buttonId: string, parentId: string, id: string }) {
             if (buttonId === "pushToChildren") {
-                const descriptor = this.descriptions[parentId];
+                const descriptor: Character = this.descriptions[parentId];
                 const state = descriptor.states.find(s => s.id === id);
 
                 for (const child of Object.values(this.item.children)) {
+                    if (!(child instanceof window.bunga.Taxon)) continue;
                     const desc = child.descriptions.find(d => d.descriptor.id === descriptor.id);
-                    if (!desc.states.find(s => s.id === state.id)) {
+                    if (desc && !desc.states.find(s => s.id === state?.id)) {
                         desc.states.push(Object.assign({}, state));
                     }
                 }
             }
         },
-        addItemPhoto(photo) {
+        addItemPhoto(photo: string) {
             this.item.photos.push(photo);
         },
-        setItemPhoto(index, photo) {
+        setItemPhoto(index: number, photo: string) {
             this.item.photos[index] = photo;
         },
-        deleteItemPhoto(index) {
+        deleteItemPhoto(index: number) {
             this.item.photos.splice(index, 1);
         },
-        openPhoto(photo) {
+        openPhoto(photo: { photos: string[], index: number }) {
             this.$emit("open-photo", photo);
         },
     }
-}
+});
 </script>
