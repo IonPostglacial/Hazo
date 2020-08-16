@@ -17,12 +17,14 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
-import Vue from "../../node_modules/vue/dist/vue.esm.browser.js";
+import Vue from "vue";
+import { bunga_Book as Book, bunga_Taxon as Taxon } from "../libs/SDD"; // eslint-disable-line no-unused-vars
+import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 
-export default {
+export default Vue.extend({
     name: "TaxonsTab",
     components: { TreeMenu, TaxonsPanel },
     props: {
@@ -32,7 +34,7 @@ export default {
         initItems: Object,
         extraFields: Array,
         selectedTaxon: String,
-        books:Array,
+        books: Array as PropValidator<Array<Book>>,
     },
     data() {
         return {
@@ -40,15 +42,15 @@ export default {
         };
     },
     computed: {
-        selectedItem() {
+        selectedItem(): Taxon {
             return this.items[this.selectedTaxon];
         }
     },
     methods: {
-        selectTaxon(id) {
+        selectTaxon(id: string) {
             this.$emit("taxon-selected", id);
         },
-        addItem({ value, parentId }) {
+        addItem({ value, parentId } : {value: string, parentId: string }) {
             let newItemIdNum = Object.keys(this.items).length;
             do {
                 newItemIdNum++
@@ -56,7 +58,7 @@ export default {
             const newItemId = "myt-" + newItemIdNum;
             const newItem = {
                 hid: "mytn-" + newItemId, id: newItemId, name: value, photos: [],
-                bookInfoByIds: Object.fromEntries(this.books.map(book => [book.id, { fasc: "", page: null, detail: "" }])),
+                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: null, detail: "" }])),
                 topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: [], extra: {}
             };
             this.items = { ...this.items, [newItemId]: newItem };
@@ -65,15 +67,15 @@ export default {
             }
             this.$emit("change-items", this.items);
         },
-        deleteItem({ parentId, itemId }) {
+        deleteItem({ parentId, itemId }: { parentId :string, itemId: string }) {
             if (typeof parentId !== "undefined") {
                 Vue.delete(this.items[parentId].children, itemId);
             }
             Vue.delete(this.items, itemId);
         },
-        openPhoto(e) {
+        openPhoto(e: { photos: string[], index: number }) {
             this.$emit("open-photo", e);
         },
     }
-}
+});
 </script>

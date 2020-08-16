@@ -45,45 +45,50 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
 import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
 import ImageBox from "./ImageBox.vue";
+import { PropValidator } from 'vue/types/options';   // eslint-disable-line no-unused-vars
+import { bunga_Book as Book, bunga_Character as Character, bunga_Field as Field, bunga_State as State, bunga_Taxon as Taxon } from "../libs/SDD";   // eslint-disable-line no-unused-vars
 
-export default {
+interface Description { descriptor: Character, states: State[] }
+
+export default Vue.extend({
     name: "TaxonsDescriptorsTab",
     components: { TreeMenu, TaxonsPanel, ImageBox },
     props: {
         showLeftMenu: Boolean,
         showImageBox: Boolean,
-        descriptions: Object,
-        initItems: Object,
-        extraFields: Array,
+        descriptions: Object as PropValidator<Record<string, Character>>,
+        initItems: Object as PropValidator<Record<string, Taxon>>,
+        extraFields: Array as PropValidator<Field[]>,
         taxonNameField: String,
         selectedTaxon: String,
-        books:Array,
+        books:Array as PropValidator<Book[]>,
     },
     data() {
         return {
-            items: this.initItems ?? {},
+            items: this.initItems,
             selectedItemDescriptorId: "",
             itemDescriptorSearch: "",
         };
     },
     computed: {
-        selectedItem() {
+        selectedItem(): Taxon {
             return this.items[this.selectedTaxon];
         },
-        selectedItemDescriptorStates() {
-            return this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
+        selectedItemDescriptorStates(): State[] {
+            return this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
         },
-        selectedItemDescriptorFilteredStates() {
+        selectedItemDescriptorFilteredStates(): State[] {
             return this.descriptions[this.selectedItemDescriptorId]?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
         },
         selectedItemDescriptorTree() {
-            const itemStatesIds = [];
+            const itemStatesIds: string[] = [];
             const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
-            const dependencyTree = JSON.parse(JSON.stringify(this.descriptions));
+            const dependencyTree: Record<string, Character> = JSON.parse(JSON.stringify(this.descriptions));
             for (const description of selectedItemIdDescriptions) {
                 for (const state of description?.states ?? []) {
                     itemStatesIds.push(state.id);
@@ -98,20 +103,20 @@ export default {
         },
     },
     methods: {
-        selectTaxon(id) {
+        selectTaxon(id: string) {
             this.$emit("taxon-selected", id);
         },
-        selectItemDescriptorId(id) {
+        selectItemDescriptorId(id: string) {
             this.selectedItemDescriptorId = id;
         },
-        isStateChecked(stateId) {
-            return this.selectedItemDescriptorStates.map(s => s.id).includes(stateId)
+        isStateChecked(stateId: string) {
+            return this.selectedItemDescriptorStates.map((s: State) => s.id).includes(stateId)
         },
-        openPhoto(e) {
+        openPhoto(e: { photos: string[], index: number }) {
             this.$emit("open-photo", e);
         },
         addAllItemStates() {
-            let selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
+            let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (typeof selectedDescription === "undefined") {
                 selectedDescription = { descriptor: Object.assign({}, this.descriptions[this.selectedItemDescriptorId]), states: [] };
                 this.selectedItem.descriptions.push(selectedDescription);
@@ -119,19 +124,20 @@ export default {
             selectedDescription.states = [...this.descriptions[this.selectedItemDescriptorId].states];
         },
         removeAllItemStates() {
-            const selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
-
-            selectedDescription.states = [];
+            const selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
+            if (selectedDescription) {
+                selectedDescription.states = [];
+            }
         },
-        addItemState(e, state) {
-            let selectedDescription = this.selectedItem.descriptions.find(d => d.descriptor.id === this.selectedItemDescriptorId);
+        addItemState(e: InputEvent, state: State) {
+            let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (typeof selectedDescription === "undefined") {
                 selectedDescription = { descriptor: Object.assign({}, this.descriptions[this.selectedItemDescriptorId]), states: [] };
                 this.selectedItem.descriptions.push(selectedDescription);
             }
-            const stateIndex = selectedDescription.states.findIndex(s => s.id === state.id);
+            const stateIndex = selectedDescription.states.findIndex((s: State) => s.id === state.id);
 
-            if (e.target.checked) {
+            if (e.target instanceof HTMLInputElement && e.target.checked) {
                 if (stateIndex < 0) {
                     selectedDescription.states.push(state);
                 }
@@ -143,7 +149,7 @@ export default {
             this.items[this.selectedItem.id] = Object.assign({}, this.selectedItem);
         },
     }
-}
+});
 </script>
 
 <style>

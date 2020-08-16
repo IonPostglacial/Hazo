@@ -32,25 +32,30 @@
     </li>
 </template>
 
-<script>
+<script lang="ts">
 import AddItem from "./AddItem.vue";
+import { bunga_Taxon as Taxon } from "../libs/SDD"; // eslint-disable-line no-unused-vars
+import { Button } from "../Button"; // eslint-disable-line no-unused-vars
+import Vue from "vue";
+import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
+import { CombinedVueInstance } from 'vue/types/vue'; // eslint-disable-line no-unused-vars
 
 const knownPrefixes = ["t", "myt-", "c", "d", "myd-"];
 
-export default {
+export default Vue.extend({
     name: "TreeMenuItem",
     components:  { AddItem },
     props: {
-        itemBus: Object,
-        item: Object,
+        itemBus: Object as PropValidator<CombinedVueInstance<any, any, any, any, any>>,
+        item: Object as PropValidator<Taxon>,
         name: String,
-        buttons: Array,
+        buttons: Array as PropValidator<Array<Button>>,
         nameField: String,
         editable: Boolean,
         spaceForAdd: Boolean,
         showIds: Boolean,
         selectedItem: String,
-        initOpenItems: Array,
+        initOpenItems: Array as PropValidator<Array<string>>,
     },
     data() {
         return {
@@ -60,7 +65,7 @@ export default {
     mounted() {
         this.itemBus.$on("openAll", () => this.open = Object.keys(this.item.children).length > 0);
         this.itemBus.$on("closeAll", () => this.open = false);
-        this.itemBus.$on("toggle", id =>  { if (id === this.item.id) { this.open = !this.open } });
+        this.itemBus.$on("toggle", (id: string) =>  { if (id === this.item.id) { this.open = !this.open } });
     }, 
     computed: {
         selected() {
@@ -81,7 +86,7 @@ export default {
             return Object.keys(this.item.children ?? {}).length > 0 || this.editable;
         },
         itemName() {
-            const name = this.item[this.nameField ?? "name"];
+            const name = (this.item as any)[this.nameField ?? "name"];
             if (typeof name === "undefined" || name === null || name === "") {
                 return "_";
             } else {
@@ -96,15 +101,15 @@ export default {
         toggleOpen() {
             this.itemBus.$emit("toggle", this.item.id);
         },
-        addItem(value) {
+        addItem(value: string) {
             this.$emit("add-item", { value, parentId: this.item.id });
         },
         deleteItem() {
             this.$emit("delete-item", { parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
         },
-        buttonClicked(buttonId) {
+        buttonClicked(buttonId: string) {
             this.$emit("button-click", { buttonId, parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
         },
     }
-}
+});
 </script>

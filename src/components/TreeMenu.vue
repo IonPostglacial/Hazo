@@ -37,25 +37,29 @@
     </div> 
 </template>
 
-<script>
-import Vue from "../../node_modules/vue/dist/vue.esm.browser.js";
+<script lang="ts">
+import Vue from "vue";
 import AddItem from "./AddItem.vue";
-import TreeMenuItem from "./TreeMenuItem";
+import TreeMenuItem from "./TreeMenuItem.vue";
+import { PropValidator } from 'vue/types/options';  // eslint-disable-line no-unused-vars
+import { bunga_Taxon as Taxon } from "../libs/SDD";  // eslint-disable-line no-unused-vars
+import { Button } from "../Button"; // eslint-disable-line no-unused-vars
+import { CombinedVueInstance } from 'vue/types/vue';  // eslint-disable-line no-unused-vars
 
-export default {
+export default Vue.extend({
     name: "TreeMenu",
     props: {
         name: String,
-        items: Object,
-        buttons: Array,
+        items: Object as PropValidator<Array<Taxon>>,
+        buttons: Array as PropValidator<Button>,
         editable: Boolean,
-        nameFields: Array,
+        nameFields: Array as PropValidator<Array<string>>,
         selectedItem: String,
     },
     components:  { AddItem, TreeMenuItem },
-    data() {
-        const initOpenItems = [];
-        let itemId = this.items[this.selectedItem]?.parentId;
+    data(): { menuFilter: string, itemsBus: CombinedVueInstance<any, any, any, any, any>, visibleColumns: boolean[], initOpenItems: string[] } {
+        const initOpenItems: string[] = [];
+        let itemId = (this.items as any)[this.selectedItem]?.parentId;
         while (typeof itemId !== "undefined") {
             initOpenItems.push(itemId);
             itemId = this.items[itemId]?.parentId;
@@ -68,21 +72,21 @@ export default {
         };
     },
     computed: {
-        itemsToDisplay() {
+        itemsToDisplay(): Array<Taxon> {
             if (!this.items) return [];
             return Object.values(this.items).filter((item) => {
                 if (this.menuFilter !== "") {
                     return !item.hidden && this.nameFields.
-                        map(field => item[field]).
+                        map(field => (item as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
                 } else {
-                    return !item.hidden && (this.parentId !== undefined || item.topLevel);
+                    return !item.hidden && (item.parentId !== undefined || item.topLevel);
                 }
             });
         },
     },
     methods: {
-        selectItem(id) {
+        selectItem(id: string) {
             this.$emit("select-item", id);
         },
         openAll() {
@@ -91,15 +95,15 @@ export default {
         closeAll() {
             this.itemsBus.$emit("closeAll");
         },
-        addItem(e) {
+        addItem(e: string) {
             this.$emit("add-item", e);
         },
-        deleteItem(e) {
+        deleteItem(e: string) {
             this.$emit("delete-item", e);
         },
-        buttonClicked(e) {
+        buttonClicked(e: string) {
             this.$emit("button-click", e);
         },
     }
-}
+});
 </script>

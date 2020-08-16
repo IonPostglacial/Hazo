@@ -50,7 +50,7 @@
 import parseCSV from "../parse-csv.ts";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import Vue from "../../node_modules/vue/dist/vue.esm.browser.js";
+import Vue from "vue";
 import AddItem from "./AddItem.vue";
 import download from "../download";
 
