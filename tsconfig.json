@@ -1,8 +1,12 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "strict": true,
-        "lib": ["es2020", "dom", "esnext"],
-        "strictNullChecks": true
+      "target": "esnext",
+      "moduleResolution": "node",
+      "lib": ["es2020", "dom", "esnext"],
+      "allowJs": true,
+      "noEmit": true,
+      "strict": true,
+      "isolatedModules": true,
+      "esModuleInterop": true
     }
-}
+  }

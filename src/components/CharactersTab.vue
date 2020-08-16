@@ -51,7 +51,7 @@
                         </li>
                     </ul>
                 </div>
-                <ImageBox v-if="showImageBox"
+                <ImageBox v-if="showImageBox && selectedDescriptionState"
                     style="height: 50%;"
                     class="scroll"
                     :photos="selectedDescriptionState.photos"
@@ -65,21 +65,23 @@
         </section>
     </div>
 </template>
-<script>
+<script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import AddItem from "../components/AddItem.vue";
 import ImageBox from "../components/ImageBox.vue";
-import Vue from "../../node_modules/vue/dist/vue.esm.browser.js";
+import Vue from "vue";
 
-export default {
+import type { bunga_Character as Character, bunga_State as State } from "../libs/SDD";
+
+export default Vue.extend({
     name: "CharactersTab",
     components: { AddItem, ImageBox, TreeMenu },
     computed: {
-        selectedDescriptionState() {
-            return this.descriptions[this.selectedDescription]?.states?.find(s => s.id === this.selectedState) ?? {};
+        selectedDescriptionState(): State | undefined {
+            return this.descriptions[this.selectedDescription]?.states?.find(s => s.id === this.selectedState);
         },
     },
-    data() {
+    data(): { descriptions: Record<string, Character>, selectedDescription: string, selectedState: string } {
         return {
             descriptions: this.initDescriptions ?? {},
             selectedDescription: "",
@@ -92,62 +94,78 @@ export default {
         initDescriptions: Object,
     },
     methods: {
-        selectDescription(id) {
+        selectDescription(id: string) {
             this.selectedDescription = id;
         },
-        addDescriptionPhoto(photo) {
+        addDescriptionPhoto(photo: string) {
             this.descriptions[this.selectedDescription].photos.push(photo);
         },
-        setDescriptionPhoto(index, photo) {
+        setDescriptionPhoto(index: number, photo: string) {
             this.descriptions[this.selectedDescription].photos[index] = photo;
         },
-        deleteDescriptionPhoto(index) {
+        deleteDescriptionPhoto(index: number) {
             this.descriptions[this.selectedDescription].photos.splice(index, 1);
         },
-        addStatePhoto(photo) {
-            if (typeof this.selectedDescriptionState.photos === "undefined") {
+        addStatePhoto(photo: string) {
+            if (this.selectedDescriptionState && typeof this.selectedDescriptionState?.photos === "undefined") {
                 this.selectedDescriptionState.photos = [];
             }
-            this.selectedDescriptionState.photos.push(photo);
+            this.selectedDescriptionState?.photos.push(photo);
         },
-        setStatePhoto(index, photo) {
-            this.selectedDescriptionState.photos[index] = photo;
-        },
-        deleteStatePhoto(index) {
-            this.selectedDescriptionState.photos.splice(index, 1);
-        },
-        addDescription({ value, parentId }) {
-            let nextId = Object.keys(this.descriptions).length;
-            while (typeof this.descriptions["myd-" + nextId] !== "undefined") {
-                nextId++;
+        setStatePhoto(index: number, photo: string) {
+            if (this.selectedDescriptionState) {
+                this.selectedDescriptionState.photos[index] = photo;
             }
-            const newDescriptionId = "myd-" + nextId;
-            const newDescription = {
-                hid: "mydn-" + nextId, id: newDescriptionId, name: value,states: [],
-                topLevel: typeof parentId === "undefined", children: {}, open: false, inapplicableStates: []
-            };
-            this.descriptions = { ...this.descriptions, [newDescriptionId]: newDescription };
+        },
+        deleteStatePhoto(index: number) {
+            this.selectedDescriptionState?.photos.splice(index, 1);
+        },
+        addDescription({ value, parentId }: { value: string, parentId: string }) {
+            window.bunga.Character.create(this.descriptions, { name: value, parentId, states: [], inapplicableStates: [] });
+            const newDescription = window.bunga.Character.create(this.descriptions, {
+                name: value,
+                parentId: parentId,
+                states: [],
+                inapplicableStates: []
+            });
+            this.descriptions = { ...this.descriptions, [newDescription.id]: newDescription };
             if(typeof parentId !== "undefined") {
-                this.descriptions[parentId].children = { ...this.descriptions[parentId].children, [newDescriptionId]: newDescription };
+                const parentDescription = this.descriptions[parentId];
+                newDescription.inapplicableStates = [...parentDescription.states];
+                const newState = {
+                    id: "s-auto-" + newDescription.id,
+                    descriptorId: parentId, name: newDescription.name, photos: []
+                };
+                parentDescription.states = [...parentDescription.states, newState];
+                for (const child of Object.values(parentDescription.children)) {
+                    if (child instanceof window.bunga.Character) {
+                        child.inapplicableStates = [...child.inapplicableStates, newState];
+                    }
+                }
+                parentDescription.children = Object.assign({}, this.descriptions[parentId].children, {
+                    [newDescription.id]: newDescription
+                });
             }
+            this.$emit("change-descriptions", this.descriptions);
         },
-        deleteDescription({ parentId, itemId }) {
+        deleteDescription({ parentId, itemId }: { parentId: string, itemId: string}) {
             if (typeof parentId !== "undefined") {
                 Vue.delete(this.descriptions[parentId].children, itemId);
             }
             Vue.delete(this.descriptions, itemId);
         },
-        addState(description, value) {
+        addState(description: Character, value: string) {
             if (typeof description === "undefined") throw "addState failed: description is undefined.";
             description.states.push({
                 id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
                 descriptorId: description.id,
-                name: value
+                name: value,
+                photos: []
             });
         },
-        openPhoto(e) {
+        openPhoto(e: { photos: string[], index: number }) {
             this.$emit("open-photo", e);
         },
     }
-}
+});
 </script>

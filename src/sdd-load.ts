@@ -1,10 +1,14 @@
-function loadSddFile(file) {
+import type { sdd_Dataset, bunga_Dataset, bunga_Field as Field } from "./libs/SDD";
+
+function loadSddFile(file: File): Promise<sdd_Dataset[]> {
     return new Promise(function (resolve, reject) {
         const fileReader = new FileReader();
         
         fileReader.onload = function () {
-            const xml = new window.sdd.Loader(false).load(fileReader.result);
-            resolve(xml);
+            if (typeof fileReader.result === "string") {
+                const xml = new window.sdd.Loader(false).load(fileReader.result);
+                resolve(xml);
+            }
         };
         fileReader.onerror = function () {
             reject(fileReader.error);
@@ -13,7 +17,7 @@ function loadSddFile(file) {
     });
 }
 
-async function loadSDD(file, extraFields=[]) {
+export async function loadSDD(file: File, extraFields:Field[]=[]): Promise<bunga_Dataset> {
     if (typeof extraFields === "undefined") { extraFields = [] }
 
     const datasets = await loadSddFile(file);
@@ -21,5 +25,3 @@ async function loadSDD(file, extraFields=[]) {
     
     return dataset;
 }
-
-export default loadSDD;

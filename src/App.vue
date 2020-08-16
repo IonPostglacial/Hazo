@@ -31,7 +31,7 @@
             :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
             :extra-fields="extraFields" :books="books" 
-            v-on:open-photo="maximizeImage">
+            v-on:open-photo="maximizeImage" v-on:change-items="changeItems">
         </TaxonsTab>
         <TaxonsDescriptorsTab v-if="selectedTab === 1"
             :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
@@ -42,7 +42,7 @@
         <CharactersTab v-if="selectedTab === 2"
             :init-descriptions="descriptions"
             :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
-            v-on:open-photo="maximizeImage">
+            v-on:open-photo="maximizeImage" v-on:change-descriptions="changeDescriptions">
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
         <div v-if="showFields" class="height-full medium-margin thin-border white-background medium-padding horizontal-flexbox fixed-right">
@@ -89,27 +89,31 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import type { bunga_Character as Character, bunga_Dataset as Dataset,
+    bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import AddItem from "./components/AddItem.vue";
-import DB from "./db-storage.ts";
-import Vue from "../node_modules/vue/dist/vue.esm.browser.js";
-import loadSDD from "./sdd-load";
-import saveSDD from "./sdd-save";
+import DB from "./db-storage";
+import Vue from "vue";
+import { loadSDD } from "./sdd-load";
+import saveSDD from "./sdd-save.js";
 import download from "./download";
 
-export default {
+export default Vue.extend({
     name: "App",
     components: {
         AddItem, TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
     },
     data() {
-        return window._BUNGA = {
-            databaseIds: [0],
-            selectedBase: 0,
+        const items: Record<string, Taxon> = {};
+        const descriptions: Record<string, Character> = {};
+        return {
+            databaseIds: ["0"],
+            selectedBase: "0",
             showLeftMenu: true,
             showImageBox: true,
             showFields: false,
@@ -124,10 +128,10 @@ export default {
                 "Descriptors",
                 "Dictionary"
             ],
-            extraFields: [],
+            extraFields: new Array<Field>(),
             books: window.bunga.Book.standard,
-            items: {},
-            descriptions: {},
+            items,
+            descriptions,
             dictionaryEntries: {},
             latexProgressText: "",
         };
@@ -142,8 +146,8 @@ export default {
         }
     },
     methods: {
-        loadBase(id) {
-            DB.load(id | 0).then(savedDataset => {
+        loadBase(id?: string) {
+            DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
                 for (const [id, taxon] of Object.entries(savedDataset?.taxons ?? {})) {
                     Vue.set(this.items, id, taxon);
@@ -155,23 +159,29 @@ export default {
                 this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
             });
         },
-        selectTaxon(id) {
+        changeDescriptions(descriptions: Record<string, Character>) {
+            this.descriptions = descriptions;
+        },
+        changeItems(items: Record<string, Taxon>) {
+            this.items = items;
+        },
+        selectTaxon(id: string) {
             this.selectedTaxon = id;
         },
         editExtraFields() {
             this.showFields = !this.showFields;
         },
-        addExtraField(name) {
-            this.extraFields.push({ id: name, label: name });
+        addExtraField(name: string) {
+            this.extraFields.push({ id: name, std: false, label: name });
         },
-        deleteExtraField(id) {
+        deleteExtraField(id:string) {
             const i = this.extraFields.findIndex(f => f.id === id);
             if (i >= 0) {
                 this.extraFields.splice(i, 1);
             }
         },
         createNewDatabase() {
-            const newDatabaseId = this.databaseIds.length;
+            const newDatabaseId = "" + this.databaseIds.length;
             this.databaseIds.push(newDatabaseId);
             this.selectedBase = newDatabaseId;
         },
@@ -181,7 +191,7 @@ export default {
         toggleImageBox() {
             this.showImageBox = !this.showImageBox;
         },
-        maximizeImage({ photos, index }) {
+        maximizeImage({ photos, index }: { photos: string[], index: number }) {
             this.showBigImage = true;
             this.bigImages = photos;
             this.bigImageIndex = index;
@@ -192,7 +202,7 @@ export default {
             this.bigImageIndex = 0;
         },
         saveData() {
-            DB.store({ id: this.selectedBase | 0, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries });
+            DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: window.bunga.Book.standard });
         },
         resetData() {
             for (const key of Object.keys(this.items)) {
@@ -203,27 +213,27 @@ export default {
             }
         },
         importFile() {
-            document.getElementById("import-data").click();
+            document.getElementById("import-data")?.click();
         },
         mergeFile() {
-            document.getElementById("merge-data").click();
+            document.getElementById("merge-data")?.click();
         },
         globalReplace() {
-            const pattern = window.prompt("Text pattern to replace");
-            const replacement = window.prompt("Replacement");
+            const pattern = window.prompt("Text pattern to replace") ?? "";
+            const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
 
             for (const [key, item] of Object.entries(this.items)) {
                 const newDetail = item.detail.replace(re, replacement);
-                this.items[key] = { ...item, detail: newDetail };
+                this.items[key] = Object.assign({}, item, { detail: newDetail });
             }
             for (const [key, description] of Object.entries(this.descriptions)) {
-                const newDetail = description.detail.replace(re);
-                this.descriptions[key] = { ...description, detail: newDetail };
+                const newDetail = description.detail.replace(re, replacement);
+                this.descriptions[key] = Object.assign({}, description, { detail: newDetail });
             }
         },
-        async fileRead(file) {
-            let result = {};
+        async fileRead(file: File): Promise<Dataset | null> {
+            let result: Dataset | null = null;
             if (file.name.endsWith(".xml")) {
                 result = await loadSDD(file, this.extraFields);
             } else if (file.name.endsWith(".json")) {
@@ -233,38 +243,44 @@ export default {
             }
             return result;
         },
-        async fileMerge(e) {
-            const result = await this.fileRead(e.target.files[0]);
-            const propertiesToMerge = window.prompt("Properties to merge ?").split(",");
-            const resultsByName = {};
-            for (const item of Object.values(result.items)) {
+        async fileMerge(e: InputEvent) {
+            if (!(e.target instanceof HTMLInputElement)) return;
+
+            const result = await this.fileRead((e.target.files ?? [])[0]);
+            const propertiesToMerge = (window.prompt("Properties to merge ?") ?? "").split(",");
+            const resultsByName: Record<string, Taxon> = {};
+            for (const item of Object.values(result?.taxons ?? {})) {
                 resultsByName[item.name] = item;
             }
             for (const item of Object.values(this.items)) {
-                const newInfo = resultsByName[item.name];
+                const newInfo: any = resultsByName[item.name], anyItem: any = item;
                 if (typeof newInfo !== "undefined") {
                     for (const prop of propertiesToMerge) {
-                        const value = newInfo[prop];
-                        const oldValue = item[prop];
+                        const value: any = newInfo[prop];
+                        const oldValue: any = anyItem[prop];
                         if (typeof oldValue === "undefined" || oldValue === null || oldValue === "" && typeof value !== "undefined" && value !== null) {
-                            item[prop] = value;
+                            anyItem[prop] = value;
                         }
                     }
                 }
             }
         },
-        async fileUpload(e) {
-            const result = await this.fileRead(e.target.files[0]);
+        async fileUpload(e: InputEvent) {
+            if (!(e.target instanceof HTMLInputElement)) return;
+
+            const result = await this.fileRead((e.target.files ?? [])[0]);
+            if (typeof result === "undefined" || result === null) return;
+
             if (typeof result.extraFields !== "undefined") {
                 this.extraFields = result.extraFields;
             }
-            if (typeof result.descriptions !== "undefined") {
-                for (const description of Object.values(result.descriptions)) {
+            if (typeof result.descriptors !== "undefined") {
+                for (const description of Object.values(result.descriptors)) {
                     Vue.set(this.descriptions, description.id, description);
                 }
             }
-            if (typeof result.items !== "undefined") {
-                for (const item of Object.values(result.items)) {
+            if (typeof result.taxons !== "undefined") {
+                for (const item of Object.values(result.taxons)) {
                     Vue.set(this.items, item.id, item);
                 }
             }
@@ -274,13 +290,16 @@ export default {
                 }
             }
         },
-        boldUpload(file) {
+        boldUpload(file: File): Promise<null> {
             return new Promise((resolve, reject) => {
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
-                    const hightlighter = new window.bunga.DetailHighlighter();
-                    hightlighter.loadWordText(fileReader.result);
-                    hightlighter.highlightTaxons(this.items);
+                    if (typeof fileReader.result === "string") {
+                        const hightlighter = new window.bunga.DetailHighlighter();
+                        hightlighter.loadWordText(fileReader.result);
+                        hightlighter.highlightTaxons(this.items)
+                    }
+                    resolve(null);
                 };
                 fileReader.onerror = function () {
                     reject(fileReader.error);
@@ -288,13 +307,15 @@ export default {
                 fileReader.readAsText(file);
             });
         },
-        jsonUpload(file) {
+        jsonUpload(file: File): Promise<Dataset> {
             return new Promise((resolve, reject) => {
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
-                    const db = JSON.parse(fileReader.result);
-                    const { items, descriptors } = window.bunga.Codec.decodeDataset(db);
-                    resolve({ items: items, descriptions: descriptors, dictionaryEntries: db.dictionaryEntries, extraFields: db.extraFields });
+                    if (typeof fileReader.result === "string") {
+                        const db = JSON.parse(fileReader.result);
+                        const dataset = window.bunga.Codec.decodeDataset(db);
+                        resolve(dataset);
+                    }
                 };
                 fileReader.onerror = function () {
                     reject(fileReader.error);
@@ -341,12 +362,14 @@ export default {
             });
         },
         jsonExport() {
-            const json = JSON.stringify({
-                id: this.selectedBase | 0,
-                ...window.bunga.Codec.encodeDataset({ items: this.items, descriptors: this.descriptions }),
+            const json = JSON.stringify(window.bunga.Codec.encodeDataset({
+                id: this.selectedBase, 
+                taxons: this.items, 
+                descriptors: this.descriptions, 
                 extraFields: this.extraFields,
-                dictionaryEntries: this.dictionaryEntries
-            });
+                dictionaryEntries: this.dictionaryEntries,
+                books: window.bunga.Book.standard,
+            }));
             download(json, "bunga.json");
         },
         exportSDD() {
@@ -358,5 +381,5 @@ export default {
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }
-}
+});
 </script>

@@ -1,5 +1,5 @@
 export default function parseCSV(str: string) {
-    let arr = [] as string[][];
+    let arr:string[][] = [];
     let quote = false;  // true means we're inside a quoted field
 
     // iterate over each character, keep track of current row and column (of the returned array)

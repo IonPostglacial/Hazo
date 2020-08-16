@@ -1,6 +1,7 @@
+import type { bunga_Dataset as Dataset } from "./libs/SDD";
+
 const DB_NAME = "Datasets";
 const DB_VERSION = 2;
-const standardBooks = (window as any).bunga.Book.standard as Book[];
 
 function createStore(db: IDBDatabase) {
     if (!db.objectStoreNames.contains("Datasets")) {
@@ -15,15 +16,16 @@ async function onUpgrade(db: IDBDatabase, oldVersion: number) {
         const datasetIds = await dbList();
 
         for (const datasetId of datasetIds) {
-            const dataset = await dbLoad(datasetId);
+            const dataset: any = await dbLoad(datasetId);
 
-            for (const taxon of Object.values(dataset.items) as any) {
+            for (const t of Object.values(dataset.items)) {
+                const taxon:any = t;
                 const extraProperties = Object.keys(taxon).filter(k => k.startsWith("extra-"));
                 if (typeof taxon.extra === "undefined") {
                     taxon.extra = {};
                 }
                 if (typeof taxon.bookInfoByIds === "undefined") {
-                    taxon.bookInfoByIds = Object.fromEntries(standardBooks.map(
+                    taxon.bookInfoByIds = Object.fromEntries(window.bunga.Book.standard.map(
                         b => [b.id, {
                             fasc: b.id === "fmc" ? taxon.fasc : "",
                             page: b.id === "fmc" ? taxon.page : null,
@@ -70,7 +72,7 @@ function dbStore(dataset: Dataset) {
     };
 }
 
-function dbList(): Promise<IDBValidKey[]> {
+function dbList(): Promise<string[]> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {
@@ -88,15 +90,19 @@ function dbList(): Promise<IDBValidKey[]> {
         
             const datasets = transaction.objectStore("Datasets");
 
-            const list = Object.assign(datasets.getAllKeys(), {
-                onsuccess() {
-                    resolve(list.result);
-                },
-                onerror() {
-                    console.log("Listing datasets failed.");
-                    reject(rq.result);
+            const list = datasets.getAllKeys(), result:string[] = [];
+            list.onsuccess = function () {
+                for (const key of list.result) {
+                    if (typeof key === "string") {
+                        result.push(key);
+                    }
                 }
-            });
+                resolve(result);
+            };
+            list.onerror = function () {
+                console.log("Listing datasets failed.");
+                reject(rq.result);
+            };
         };
         rq.onerror = function () {
             reject(rq.result);
@@ -104,7 +110,7 @@ function dbList(): Promise<IDBValidKey[]> {
     });
 }
 
-function dbLoad(id: IDBValidKey): Promise<Dataset> {
+function dbLoad(id: string): Promise<Dataset> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {

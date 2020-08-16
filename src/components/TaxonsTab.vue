@@ -63,6 +63,7 @@ export default {
             if (typeof parentId !== "undefined") {
                 this.items[parentId].children = { ...this.items[parentId].children, [newItemId]: newItem };
             }
+            this.$emit("change-items", this.items);
         },
         deleteItem({ parentId, itemId }) {
             if (typeof parentId !== "undefined") {
