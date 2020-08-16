@@ -90,8 +90,8 @@
 </template>
 
 <script lang="ts">
-import type { bunga_Character as Character, bunga_Dataset as Dataset,
-    bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD";
+import type { bunga_Character as Character, bunga_Dataset as Dataset, // eslint-disable-line no-unused-vars
+    bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD"; // eslint-disable-line no-unused-vars
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";

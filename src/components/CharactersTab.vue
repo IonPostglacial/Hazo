@@ -71,7 +71,7 @@ import AddItem from "../components/AddItem.vue";
 import ImageBox from "../components/ImageBox.vue";
 import Vue from "vue";
 
-import type { bunga_Character as Character, bunga_State as State } from "../libs/SDD";
+import type { bunga_Character as Character, bunga_State as State } from "../libs/SDD"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",

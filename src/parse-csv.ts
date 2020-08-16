@@ -1,10 +1,10 @@
 export default function parseCSV(str: string) {
-    let arr:string[][] = [];
+    const arr:string[][] = [];
     let quote = false;  // true means we're inside a quoted field
 
     // iterate over each character, keep track of current row and column (of the returned array)
     for (let row = 0, col = 0, c = 0; c < str.length; c++) {
-        let cc = str[c], nc = str[c+1];        // current character, next character
+        const cc = str[c], nc = str[c+1];        // current character, next character
         arr[row] = arr[row] || [];             // create a new row if necessary
         arr[row][col] = arr[row][col] || '';   // create a new column (start with empty string) if necessary
 
