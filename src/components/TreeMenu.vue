@@ -80,7 +80,7 @@ export default Vue.extend({
                         map(field => (item as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
                 } else {
-                    return !item.hidden && (item.parentId !== undefined || item.topLevel);
+                    return !item.hidden && item.topLevel;
                 }
             });
         },

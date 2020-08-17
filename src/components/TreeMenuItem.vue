@@ -16,7 +16,7 @@
         <div class="horizontal-flexbox start-aligned">
             <div class="indentation-width"></div>
             <div v-if="open" class="flex-grow-1">
-                <TreeMenuItem v-for="child in item.children" :item-bus="itemBus" :key="child.id" :editable="editable"       
+                <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                     :show-ids="showIds"
                     :space-for-add="spaceForAdd"
                     :selected-item="selectedItem"
@@ -92,6 +92,9 @@ export default Vue.extend({
             } else {
                 return name;
             }
+        },
+        childrenToDisplay() {
+            return Object.values(this.item.children).filter(child => !child.hidden);
         },
     },
     methods: {

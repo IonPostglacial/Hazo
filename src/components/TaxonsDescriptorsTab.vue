@@ -66,14 +66,23 @@ export default Vue.extend({
         extraFields: Array as PropValidator<Field[]>,
         taxonNameField: String,
         selectedTaxon: String,
-        books:Array as PropValidator<Book[]>,
+        books: Array as PropValidator<Book[]>,
     },
     data() {
         return {
             items: this.initItems,
             selectedItemDescriptorId: "",
             itemDescriptorSearch: "",
+            selectedItemDescriptorTree: {} as Record<string, Character>
         };
+    },
+    mounted() {
+        this.onStateSelection();
+    },
+    watch: {
+        selectedTaxon() {
+            this.onStateSelection();
+        }
     },
     computed: {
         selectedItem(): Taxon {
@@ -84,22 +93,6 @@ export default Vue.extend({
         },
         selectedItemDescriptorFilteredStates(): State[] {
             return this.descriptions[this.selectedItemDescriptorId]?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
-        },
-        selectedItemDescriptorTree() {
-            const itemStatesIds: string[] = [];
-            const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
-            const dependencyTree: Record<string, Character> = JSON.parse(JSON.stringify(this.descriptions));
-            for (const description of selectedItemIdDescriptions) {
-                for (const state of description?.states ?? []) {
-                    itemStatesIds.push(state.id);
-                }
-            }
-            for (const descriptor of Object.values(dependencyTree)) {
-                if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
-                    descriptor.hidden = true;
-                }
-            }
-            return dependencyTree;
         },
     },
     methods: {
@@ -115,6 +108,24 @@ export default Vue.extend({
         openPhoto(e: { photos: string[], index: number }) {
             this.$emit("open-photo", e);
         },
+        onStateSelection() {
+            if (typeof this.selectedItem === "undefined") return;
+
+            const itemStatesIds: string[] = [];
+            const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
+            const dependencyTree: Record<string, Character> = {};
+            for (const description of selectedItemIdDescriptions) {
+                for (const state of description?.states ?? []) {
+                    itemStatesIds.push(state.id);
+                }
+            }
+            for (const descriptor of Object.values(this.descriptions)) {
+                dependencyTree[descriptor.id] = Object.assign({}, descriptor);
+                descriptor.hidden = descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 );
+            }
+            this.selectedItemDescriptorTree = {};
+            this.selectedItemDescriptorTree = dependencyTree;
+        },
         addAllItemStates() {
             let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (typeof selectedDescription === "undefined") {
@@ -122,12 +133,14 @@ export default Vue.extend({
                 this.selectedItem.descriptions.push(selectedDescription);
             }
             selectedDescription.states = [...this.descriptions[this.selectedItemDescriptorId].states];
+            this.onStateSelection();
         },
         removeAllItemStates() {
             const selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (selectedDescription) {
                 selectedDescription.states = [];
             }
+            this.onStateSelection();
         },
         addItemState(e: InputEvent, state: State) {
             let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
@@ -147,6 +160,7 @@ export default Vue.extend({
                 }
             }
             this.items[this.selectedItem.id] = Object.assign({}, this.selectedItem);
+            this.onStateSelection();
         },
     }
 });
