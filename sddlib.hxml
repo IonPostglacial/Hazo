@@ -1,0 +1,21 @@
+--class-path src
+--dce full
+-lib hxtsdgen
+-D dts
+-D js-es=6
+--js public/SDD.js
+--resource res/sdd.mtt@sdd_template
+--resource res/detail-latex.mtt@tex_template
+-debug
+sdd.Loader
+sdd.Saver
+bunga.DetailData
+bunga.Hierarchy
+bunga.Book
+bunga.Dataset
+bunga.Character
+bunga.Taxon
+bunga.TaxonToTex
+bunga.ImageCache
+bunga.DetailHighlighter
+bunga.Codec
