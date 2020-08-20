@@ -7,14 +7,6 @@ export class bunga_Book {
 	static readonly standard: bunga_Book[];
 }
 
-export class bunga_Field {
-	constructor(std: boolean, id: string, label: string);
-	std: boolean;
-	id: string;
-	label: string;
-	static readonly standard: bunga_Field[];
-}
-
 export class sdd_MediaObjectRef {
 	constructor(ref: string);
 	ref: string;
@@ -104,6 +96,7 @@ export class sdd_StateRef {
 
 export class sdd_Character extends sdd_Representation {
 	constructor(id: string, parentId: string, representation: sdd_Representation, states?: sdd_State[], inapplicableStatesRefs?: sdd_StateRef[], childrenIds?: string[]);
+	_hx_constructor(id: string, parentId: string, representation: sdd_Representation, states?: sdd_State[], inapplicableStatesRefs?: sdd_StateRef[], childrenIds?: string[]): void;
 	id: string;
 	states: sdd_State[];
 	inapplicableStatesRefs: sdd_StateRef[];
@@ -136,6 +129,7 @@ export class bunga_Character extends bunga_HierarchicalItem {
 
 export class bunga_CodedHierarchicalItem extends bunga_Item {
 	constructor(item: bunga_HierarchicalItem);
+	_hx_constructor(item: bunga_HierarchicalItem): void;
 	type: string;
 	hid: string;
 	parentId: string;
@@ -158,6 +152,7 @@ export class bunga_BookInfo {
 
 export class bunga_CodedTaxon extends bunga_CodedHierarchicalItem {
 	constructor(taxon: bunga_Taxon);
+	_hx_constructor(taxon: bunga_Taxon): void;
 	descriptions: bunga_CodedDescription[];
 	bookInfoByIds: { [key: string]: bunga_BookInfo };
 }
@@ -198,6 +193,7 @@ export class sdd_CategoricalRef {
 
 export class sdd_Taxon extends sdd_Representation {
 	constructor(id: string, parentId: string, representation: sdd_Representation, childrenIds?: string[], categoricals?: sdd_CategoricalRef[]);
+	_hx_constructor(id: string, parentId: string, representation: sdd_Representation, childrenIds?: string[], categoricals?: sdd_CategoricalRef[]): void;
 	id: string;
 	hid: string;
 	parentId: string;
@@ -229,6 +225,15 @@ export class bunga_DetailHighlighter {
 	constructor();
 	loadWordText(text: string): void;
 	highlightTaxons(taxons: { [key: string]: bunga_Taxon }): void;
+}
+
+export class bunga_Field {
+	constructor(std: boolean, id: string, label: string, icon?: string);
+	std: boolean;
+	id: string;
+	label: string;
+	icon: string;
+	static readonly standard: bunga_Field[];
 }
 
 export type bunga_HierarchyEntry = {
