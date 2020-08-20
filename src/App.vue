@@ -97,6 +97,7 @@
 import type { bunga_Character as Character, bunga_Dataset as Dataset, // eslint-disable-line no-unused-vars
     bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset } from "./bunga/Codec";
+import { highlightTaxonsDetails } from "./bunga/DetailHighlighter";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
@@ -300,9 +301,7 @@ export default Vue.extend({
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
-                        const hightlighter = new window.bunga.DetailHighlighter();
-                        hightlighter.loadWordText(fileReader.result);
-                        hightlighter.highlightTaxons(this.items)
+                        highlightTaxonsDetails(fileReader.result, this.items);
                     }
                     resolve(null);
                 };

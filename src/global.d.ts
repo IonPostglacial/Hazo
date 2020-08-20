@@ -16,7 +16,6 @@ declare global {
             Taxon: typeof sdd.bunga_Taxon;
             TaxonToTex: typeof sdd.bunga_TaxonToTex;
             ImageCache: typeof sdd.bunga_ImageCache;
-            DetailHighlighter: typeof sdd.bunga_DetailHighlighter;
             Item: typeof sdd.bunga_Item;
             HierarchicalItem: typeof sdd.bunga_HierarchicalItem;
         }

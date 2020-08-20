@@ -212,12 +212,6 @@ export class bunga_Dataset {
 	static toSdd(dataset: bunga_Dataset, extraFields: bunga_Field[]): sdd_Dataset;
 }
 
-export class bunga_DetailHighlighter {
-	constructor();
-	loadWordText(text: string): void;
-	highlightTaxons(taxons: { [key: string]: bunga_Taxon }): void;
-}
-
 export class bunga_Field {
 	constructor(std: boolean, id: string, label: string, icon?: string);
 	std: boolean;
