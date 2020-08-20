@@ -96,6 +96,7 @@
 <script lang="ts">
 import type { bunga_Character as Character, bunga_Dataset as Dataset, // eslint-disable-line no-unused-vars
     bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD"; // eslint-disable-line no-unused-vars
+import { encodeDataset, decodeDataset } from "./bunga/Codec";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
@@ -317,7 +318,7 @@ export default Vue.extend({
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
                         const db = JSON.parse(fileReader.result);
-                        const dataset = window.bunga.Codec.decodeDataset(db);
+                        const dataset = decodeDataset(db);
                         resolve(dataset);
                     }
                 };
@@ -366,7 +367,7 @@ export default Vue.extend({
             });
         },
         jsonExport() {
-            const json = JSON.stringify(window.bunga.Codec.encodeDataset({
+            const json = JSON.stringify(encodeDataset({
                 id: this.selectedBase, 
                 taxons: this.items, 
                 descriptors: this.descriptions, 

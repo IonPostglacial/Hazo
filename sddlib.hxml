@@ -16,6 +16,5 @@ bunga.Dataset
 bunga.Character
 bunga.Taxon
 bunga.TaxonToTex
-bunga.ImageCache
 bunga.DetailHighlighter
-bunga.Codec
+bunga.Item

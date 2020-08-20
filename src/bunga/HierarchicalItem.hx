@@ -3,6 +3,8 @@ package bunga;
 import bunga.DetailData;
 import haxe.DynamicAccess;
 
+@:keep
+@:expose
 @:structInit
 class HierarchicalItem extends Item {
 	public var type:String;
@@ -11,18 +13,12 @@ class HierarchicalItem extends Item {
 	public var topLevel:Bool;
 	public var hidden = false;
 	public var children:DynamicAccess<HierarchicalItem>;
-
-	public function setEmptyChildren(childrenIds:Array<String>) {
-		for (id in childrenIds) {
-			children[id] = null;
-		}
-	}
+	private var childrenIds:Array<String>;
 
 	public function hydrateChildren(hierarchyById:DynamicAccess<HierarchicalItem>) {
-		for (id in children.keys()) {
+		for (id in childrenIds) {
 			final child = hierarchyById[id];
-			if (child == null) {
-				Reflect.deleteField(children, id);
+			if (child != null) {
 				trace('Child not found: $name > $id');
 			} else {
 				children[id] = hierarchyById[id];
@@ -37,8 +33,6 @@ class HierarchicalItem extends Item {
 		this.parentId = parentId;
 		this.topLevel = topLevel;
 		this.children = {};
-		for (id in childrenIds) {
-			children[id] = null;
-		}
+		this.childrenIds = childrenIds;
 	}
 }

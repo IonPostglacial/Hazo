@@ -22,7 +22,7 @@ export class sdd_Representation {
 }
 
 export class bunga_DetailData {
-	protected constructor(name: string, author?: string, nameCN?: string, fasc?: number, page?: number, detail?: string, photos?: string[], fields?: bunga_Field[], name2?: string, vernacularName?: string, vernacularName2?: string, meaning?: string, noHerbier?: number, website?: string, herbariumPicture?: string, extra?: { [key: string]: any });
+	protected constructor(name: string, author?: string, nameCN?: string, fasc?: number, page?: number, detail?: string, photos?: string[], name2?: string, vernacularName?: string, vernacularName2?: string, meaning?: string, noHerbier?: number, website?: string, herbariumPicture?: string, extra?: { [key: string]: any });
 	name: string;
 	author: string;
 	nameCN: string;
@@ -48,10 +48,10 @@ export class bunga_Item extends bunga_DetailData {
 }
 
 export class bunga_HierarchicalItem extends bunga_Item {
-	constructor(type: string, id: string, hid: string, parentId: string, topLevel: boolean, childrenIds: string[], data: bunga_DetailData);
+	constructor(type: string, id: string, hid: string, parentId: string?, topLevel: boolean, childrenIds: string[], data: bunga_DetailData);
 	type: string;
 	hid: string;
-	parentId: string;
+	parentId: string?;
 	topLevel: boolean;
 	hidden: boolean;
 	children: { [key: string]: bunga_HierarchicalItem };
@@ -144,9 +144,9 @@ export class bunga_CodedDescription {
 }
 
 export class bunga_BookInfo {
-	constructor(fasc: string, page: number, detail: string);
-	fasc: string;
-	page: number;
+	constructor(fasc: string?, page: number?, detail: string);
+	fasc: string?;
+	page: number?;
 	detail: string;
 }
 
@@ -174,15 +174,6 @@ export class bunga_CodedDataset {
 	extraFields: bunga_Field[];
 	dictionaryEntries: { [key: string]: any };
 	static getAllStates(dataset: bunga_Dataset): bunga_State[];
-}
-
-export class bunga_Codec {
-	protected constructor();
-	static decodeHierarchicalItem<T>(item: bunga_CodedHierarchicalItem): bunga_HierarchicalItem;
-	static decodeTaxon(taxon: bunga_CodedTaxon, descriptions: { [key: string]: bunga_Character }, states: { [key: string]: bunga_State }, books: bunga_Book[]): bunga_Taxon;
-	static decodeCharacter(character: bunga_CodedCharacter, states: { [key: string]: bunga_State }): bunga_Character;
-	static encodeDataset(dataset: bunga_Dataset): bunga_CodedDataset;
-	static decodeDataset(dataset: bunga_CodedDataset): bunga_Dataset;
 }
 
 export class sdd_CategoricalRef {
