@@ -56,6 +56,10 @@
                         Label:&nbsp;
                     <input type="text" v-model="field.label">
                     </label>
+                    <label class="nowrap">
+                        Icon:&nbsp;
+                    <input type="text" v-model="field.icon">
+                    </label>
                     <div class="close" style="width: 42px;" v-on:click="deleteExtraField(field.id)">&nbsp;</div>
                 </li>
                 <AddItem v-on:add-item="addExtraField"></AddItem>
@@ -172,7 +176,7 @@ export default Vue.extend({
             this.showFields = !this.showFields;
         },
         addExtraField(name: string) {
-            this.extraFields.push({ id: name, std: false, label: name });
+            this.extraFields.push({ id: name, std: false, label: name, icon: "" });
         },
         deleteExtraField(id:string) {
             const i = this.extraFields.findIndex(f => f.id === id);

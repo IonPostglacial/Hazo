@@ -7,6 +7,7 @@ declare global {
             Saver: typeof sdd.sdd_Saver;
         },
         bunga: {
+            Field: typeof sdd.bunga_Field;
             DetailData: typeof sdd.bunga_DetailData;
             Hierarchy: typeof sdd.bunga_Hierarchy;
             Book: typeof sdd.bunga_Book;

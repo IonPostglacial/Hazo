@@ -36,7 +36,7 @@
                     <TaxonPropertyField :editable="editable" :item="item" property="herbariumPicture">Herbarium Picture</TaxonPropertyField>
 
                     <div v-for="extraField in extraFields" :key="extraField.id">
-                        <TaxonPropertyField :editable="editable" :item="item.extra" :property="extraField.id">{{ extraField.label }}</TaxonPropertyField>
+                        <TaxonPropertyField :editable="editable" :item="item.extra" :icon="extraField.icon" :property="extraField.id">{{ extraField.label }}</TaxonPropertyField>
                     </div>
                 </div>
             </div>

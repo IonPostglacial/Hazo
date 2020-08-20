@@ -1,5 +1,6 @@
 <template>
     <div>
+        <img v-if="icon" width="18" height="18 " :src="'icons/' + icon" :alt="property">
         <label class="item-property"><slot></slot></label>
         <input v-if="editable" type="text" v-model="item[property]" />
         <div class="inline-block medium-padding medium-margin"  v-if="!editable" target="_blank">{{ item[property] }}</div>
@@ -15,6 +16,7 @@ export default Vue.extend({
         editable: Boolean,
         item: Object,
         property: String,
+        icon: String,
     },
     methods: {
         pushToChildren() {

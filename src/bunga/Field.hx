@@ -1,10 +1,13 @@
 package bunga;
 
+@:keep
+@:expose
 @:structInit
 class Field {
 	public var std:Bool;
 	public var id:String;
 	public var label:String;
+	public var icon:String = "";
 
 	public static final standard:Array<Field> = [
 		{std: true, id: "name2", label: "Syn"},
