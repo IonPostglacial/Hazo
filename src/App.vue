@@ -98,6 +98,7 @@ import type { bunga_Character as Character, bunga_Dataset as Dataset, // eslint-
     bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset } from "./bunga/Codec";
 import { highlightTaxonsDetails } from "./bunga/DetailHighlighter";
+import { hierarchyToZip } from "./bunga/Hierarchy";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
@@ -352,8 +353,8 @@ export default Vue.extend({
             }
             download(csv, "csv");
         },
-        emptyZip() {
-            const zipTxt = new Blob([window.bunga.Hierarchy.toZip(this.items)], {type: "application/zip"});
+        async emptyZip() {
+            const zipTxt = await hierarchyToZip(this.items);
             download(zipTxt, "zip", true);
         },
         texExport() {

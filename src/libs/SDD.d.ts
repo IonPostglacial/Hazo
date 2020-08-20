@@ -221,18 +221,6 @@ export class bunga_Field {
 	static readonly standard: bunga_Field[];
 }
 
-export type bunga_HierarchyEntry = {
-	children: { [key: string]: bunga_HierarchyEntry };
-	id: string;
-	name: string;
-	topLevel: boolean;
-}
-
-export class bunga_Hierarchy {
-	protected constructor();
-	static toZip(hierarchy: { [key: string]: bunga_HierarchyEntry }): ArrayBuffer;
-}
-
 export class bunga_ImageCache {
 	constructor();
 	initFromDatabase(): Promise<void>;

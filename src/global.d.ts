@@ -9,7 +9,6 @@ declare global {
         bunga: {
             Field: typeof sdd.bunga_Field;
             DetailData: typeof sdd.bunga_DetailData;
-            Hierarchy: typeof sdd.bunga_Hierarchy;
             Book: typeof sdd.bunga_Book;
             Dataset: typeof sdd.bunga_Dataset;
             Character: typeof sdd.bunga_Character;
