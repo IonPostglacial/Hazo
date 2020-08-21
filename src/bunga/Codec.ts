@@ -1,9 +1,10 @@
 import type { bunga_HierarchicalItem, bunga_Taxon, bunga_BookInfo as BookInfo, 
-	bunga_Character, bunga_State as State, bunga_Book, bunga_Field as Field } from "../libs/SDD";
+	bunga_Character, bunga_State as State, bunga_Field as Field } from "../libs/SDD";
+import { Book } from "./Book";
 import { Dataset } from "./Dataset";
 
 const Item = window.bunga.Item, DetailData = window.bunga.DetailData, 
-	HierarchicalItem = window.bunga.HierarchicalItem, Book = window.bunga.Book, Taxon = window.bunga.Taxon, Character = window.bunga.Character;
+	HierarchicalItem = window.bunga.HierarchicalItem, Taxon = window.bunga.Taxon, Character = window.bunga.Character;
 
 class CodedHierarchicalItem extends window.bunga.Item {
 	type: string;
@@ -69,7 +70,7 @@ class CodedDataset {
 	states: State[];
 	taxons: CodedTaxon[];
 	descriptors: CodedCharacter[];
-	books: bunga_Book[];
+	books: Book[];
 	extraFields: Field[];
 	dictionaryEntries: Record<string, any>;
 
@@ -105,7 +106,7 @@ function decodeHierarchicalItem(item: CodedHierarchicalItem): bunga_Hierarchical
 	);
 }
 
-function decodeTaxon(taxon: CodedTaxon, descriptions: Record<string, bunga_Character>, states: Record<string, State>, books: bunga_Book[]): bunga_Taxon {
+function decodeTaxon(taxon: CodedTaxon, descriptions: Record<string, bunga_Character>, states: Record<string, State>, books: Book[]): bunga_Taxon {
 	const bookInfoByIds = (typeof taxon.bookInfoByIds !== "undefined") ? taxon.bookInfoByIds : {};
 
 	if (Object.keys(bookInfoByIds).length === 0) {

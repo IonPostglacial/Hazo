@@ -1,4 +1,5 @@
 import type { Dataset } from "./bunga/Dataset";
+import { Book } from "./bunga/Book";
 
 const DB_NAME = "Datasets";
 const DB_VERSION = 2;
@@ -25,7 +26,7 @@ async function onUpgrade(db: IDBDatabase, oldVersion: number) {
                     taxon.extra = {};
                 }
                 if (typeof taxon.bookInfoByIds === "undefined") {
-                    taxon.bookInfoByIds = Object.fromEntries(window.bunga.Book.standard.map(
+                    taxon.bookInfoByIds = Object.fromEntries(Book.standard.map(
                         b => [b.id, {
                             fasc: b.id === "fmc" ? taxon.fasc : "",
                             page: b.id === "fmc" ? taxon.page : null,

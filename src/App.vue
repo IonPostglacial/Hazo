@@ -97,6 +97,7 @@
 import type { bunga_Character as Character, // eslint-disable-line no-unused-vars
     bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD"; // eslint-disable-line no-unused-vars
 import type { Dataset } from "./bunga/Dataset"; // eslint-disable-line no-unused-vars
+import { Book } from "./bunga/Book";
 import { encodeDataset, decodeDataset } from "./bunga/Codec";
 import { highlightTaxonsDetails } from "./bunga/DetailHighlighter";
 import { hierarchyToZip } from "./bunga/Hierarchy";
@@ -138,7 +139,7 @@ export default Vue.extend({
                 "Dictionary"
             ],
             extraFields: new Array<Field>(),
-            books: window.bunga.Book.standard,
+            books: Book.standard,
             items,
             descriptions,
             dictionaryEntries: {},
@@ -211,7 +212,7 @@ export default Vue.extend({
             this.bigImageIndex = 0;
         },
         saveData() {
-            DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: window.bunga.Book.standard });
+            DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: Book.standard });
         },
         resetData() {
             for (const key of Object.keys(this.items)) {
@@ -373,7 +374,7 @@ export default Vue.extend({
                 descriptors: this.descriptions, 
                 extraFields: this.extraFields,
                 dictionaryEntries: this.dictionaryEntries,
-                books: window.bunga.Book.standard,
+                books: Book.standard,
             }));
             download(json, "bunga.json");
         },

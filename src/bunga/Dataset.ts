@@ -1,5 +1,6 @@
-import type { bunga_Taxon, bunga_Character, bunga_Book, bunga_Field, bunga_State, sdd_Taxon, sdd_State, sdd_Character, sdd_Dataset, sdd_MediaObject } from "../libs/SDD";
-const Book = window.bunga.Book, Character = window.bunga.Character, State = window.bunga.State, Taxon = window.bunga.Taxon;
+import type { bunga_Taxon, bunga_Character, bunga_Field, bunga_State, sdd_Taxon, sdd_State, sdd_Character, sdd_Dataset, sdd_MediaObject } from "../libs/SDD";
+import { Book } from "./Book";
+const Character = window.bunga.Character, State = window.bunga.State, Taxon = window.bunga.Taxon;
 
 function extractStatesById(sddContent:sdd_Dataset, photosByRef: Record<string, string>) {
 	const statesById: Record<string, bunga_State> = {};
@@ -41,11 +42,11 @@ export class Dataset {
 	id = "0";
 	taxons: Record<string, bunga_Taxon>;
 	descriptors: Record<string, bunga_Character>;
-	books: bunga_Book[];
+	books: Book[];
 	extraFields: bunga_Field[];
 	dictionaryEntries: Record<string, any>;
 
-	constructor(id: string, taxons: Record<string, bunga_Taxon>, descriptors: Record<string, bunga_Character>, books: bunga_Book[] = Book.standard.slice(), extraFields: bunga_Field[] = [], dictionaryEntries: Record<string, any> = {}) {
+	constructor(id: string, taxons: Record<string, bunga_Taxon>, descriptors: Record<string, bunga_Character>, books: Book[] = Book.standard.slice(), extraFields: bunga_Field[] = [], dictionaryEntries: Record<string, any> = {}) {
 		this.id = id;
 		this.taxons = taxons;
 		this.descriptors = descriptors;
