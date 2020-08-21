@@ -1,6 +1,8 @@
 import type { bunga_HierarchicalItem, bunga_Taxon, bunga_BookInfo as BookInfo, 
-	bunga_Character, bunga_State as State, bunga_Dataset, bunga_Book, bunga_Field as Field } from "../libs/SDD";
-const Dataset = window.bunga.Dataset, Item = window.bunga.Item, DetailData = window.bunga.DetailData, 
+	bunga_Character, bunga_State as State, bunga_Book, bunga_Field as Field } from "../libs/SDD";
+import { Dataset } from "./Dataset";
+
+const Item = window.bunga.Item, DetailData = window.bunga.DetailData, 
 	HierarchicalItem = window.bunga.HierarchicalItem, Book = window.bunga.Book, Taxon = window.bunga.Taxon, Character = window.bunga.Character;
 
 class CodedHierarchicalItem extends window.bunga.Item {
@@ -71,7 +73,7 @@ class CodedDataset {
 	extraFields: Field[];
 	dictionaryEntries: Record<string, any>;
 
-	static getAllStates(dataset: bunga_Dataset): State[] {
+	static getAllStates(dataset: Dataset): State[] {
 		let states: State[] = [];
 		for (const character of Object.values(dataset.descriptors)) {
 			states = states.concat(character.states);
@@ -79,7 +81,7 @@ class CodedDataset {
 		return states;
 	}
 
-	constructor(dataset: bunga_Dataset) {
+	constructor(dataset: Dataset) {
 		this.id = dataset.id;
 		this.taxons = Object.values(dataset.taxons).map(taxon => new CodedTaxon(taxon));
 		this.descriptors = Object.values(dataset.descriptors).map(character => new CodedCharacter(character));
@@ -137,11 +139,11 @@ function decodeCharacter(character:CodedCharacter, states: Record<string, State>
 	);
 }
 
-export function encodeDataset(dataset: bunga_Dataset) {
+export function encodeDataset(dataset: Dataset) {
 	return new CodedDataset(dataset);
 }
 
-export function decodeDataset(dataset: CodedDataset): bunga_Dataset {
+export function decodeDataset(dataset: CodedDataset): Dataset {
 	const states: Record<string, State> = {};
 	const descriptors: Record<string, bunga_Character> = {};
 	const taxons: Record<string, bunga_Taxon> = {};

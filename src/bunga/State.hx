@@ -8,6 +8,8 @@ class SddStateData {
     public var mediaObjects:Array<sdd.MediaObject>;
 }
 
+@:keep
+@:expose
 @:structInit
 class State {
     public var id:String;

@@ -1,4 +1,4 @@
-import type { bunga_Dataset as Dataset } from "./libs/SDD";
+import type { Dataset } from "./bunga/Dataset";
 
 const DB_NAME = "Datasets";
 const DB_VERSION = 2;

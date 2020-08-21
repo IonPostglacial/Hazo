@@ -94,8 +94,9 @@
 </template>
 
 <script lang="ts">
-import type { bunga_Character as Character, bunga_Dataset as Dataset, // eslint-disable-line no-unused-vars
+import type { bunga_Character as Character, // eslint-disable-line no-unused-vars
     bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD"; // eslint-disable-line no-unused-vars
+import type { Dataset } from "./bunga/Dataset"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset } from "./bunga/Codec";
 import { highlightTaxonsDetails } from "./bunga/DetailHighlighter";
 import { hierarchyToZip } from "./bunga/Hierarchy";
