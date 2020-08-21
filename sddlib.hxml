@@ -9,8 +9,5 @@
 sdd.Loader
 sdd.Saver
 bunga.DetailData
-bunga.Book
-bunga.Dataset
 bunga.Character
 bunga.Taxon
-bunga.Item

@@ -26,7 +26,7 @@ class Character extends HierarchicalItem {
 	public var inapplicableStates:Array<State>;
 
 	public inline function new(item:HierarchicalItem, states:Array<State>, inapplicableStates:Array<State>) {
-		super("character", item.id, item.hid, item.parentId, item.topLevel, item.children.keys(), item);
+		super("character", item.parentId, item.childrenIds, item);
 		this.states = states;
 		this.inapplicableStates = inapplicableStates;
 	}
@@ -35,12 +35,9 @@ class Character extends HierarchicalItem {
 		return {
 			item: {
 				type: "character",
-				id: character.id,
-				hid: character.id,
 				parentId: character.parentId,
-				topLevel: character.parentId == null,
 				childrenIds: character.childrenIds,
-				data: DetailData.fromRepresentation(character, [], photosByRef),
+				data: DetailData.fromRepresentation(character.id, character, [], photosByRef),
 			},
 			states: character.states.map(s -> statesById[s.id]),
 			inapplicableStates: character.inapplicableStatesRefs.map(s -> statesById[s.ref]),
@@ -73,12 +70,10 @@ class Character extends HierarchicalItem {
 		return {
 			item: {
 				type: "character",
-				id: newCharacterId,
-				hid: newCharacterId,
 				parentId: data.parentId,
-				topLevel: data.parentId == null,
 				childrenIds: [],
 				data: {
+					id: newCharacterId,
 					name: data.name
 				},
 			},

@@ -6,9 +6,8 @@ import haxe.DynamicAccess;
 @:keep
 @:expose
 @:structInit
-class HierarchicalItem extends Item {
+class HierarchicalItem extends DetailData {
 	public var type:String;
-	public var hid:String;
 	public var parentId:Null<String>;
 	public var topLevel:Bool;
 	public var hidden = false;
@@ -18,7 +17,7 @@ class HierarchicalItem extends Item {
 	public function hydrateChildren(hierarchyById:DynamicAccess<HierarchicalItem>) {
 		for (id in childrenIds) {
 			final child = hierarchyById[id];
-			if (child != null) {
+			if (child == null) {
 				trace('Child not found: $name > $id');
 			} else {
 				children[id] = hierarchyById[id];
@@ -26,12 +25,13 @@ class HierarchicalItem extends Item {
 		}
 	}
 
-	public inline function new(type, id, hid, parentId, topLevel, childrenIds:Array<String>, data:DetailData) {
-		super(id, data);
+	public function new(type, parentId, childrenIds:Array<String>, data:DetailData) {
+		super(data.id, data.name, data.author, data.nameCN, data.fasc,
+			data.page, data.detail, data.photos, data.name2, data.vernacularName, data.vernacularName2,
+			data.meaning, data.noHerbier, data.website, data.herbariumPicture, data.extra);
 		this.type = type;
-		this.hid = hid;
 		this.parentId = parentId;
-		this.topLevel = topLevel;
+		this.topLevel = parentId == null;
 		this.children = {};
 		this.childrenIds = childrenIds;
 	}

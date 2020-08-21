@@ -16,7 +16,7 @@ class Taxon extends HierarchicalItem {
 	public var bookInfoByIds:DynamicAccess<BookInfo> = {};
 
 	public inline function new(item:HierarchicalItem, descriptions, ?bookInfoByIds) {
-		super("taxon", item.id, item.hid, item.parentId, item.topLevel, item.children.keys(), item);
+		super("taxon", item.parentId, item.childrenIds, item);
 		this.descriptions = descriptions;
 		if (bookInfoByIds != null) {
 			this.bookInfoByIds = bookInfoByIds;
@@ -36,12 +36,9 @@ class Taxon extends HierarchicalItem {
 		return {
 			item: {
 				type: "taxon",
-				id: taxon.id,
-				hid: taxon.id,
 				parentId: taxon.parentId,
-				topLevel: taxon.parentId == null,
 				childrenIds: taxon.childrenIds,
-				data: DetailData.fromRepresentation(taxon, extraFields, photosByRef)
+				data: DetailData.fromRepresentation(taxon.id, taxon, extraFields, photosByRef)
 			},
 			descriptions: [for (_ => value in descriptions) value],
 		};

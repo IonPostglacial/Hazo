@@ -3,22 +3,19 @@ import type { bunga_HierarchicalItem, bunga_Taxon, bunga_BookInfo as BookInfo,
 import { Book } from "./Book";
 import { Dataset } from "./Dataset";
 
-const Item = window.bunga.Item, DetailData = window.bunga.DetailData, 
+const DetailData = window.bunga.DetailData, 
 	HierarchicalItem = window.bunga.HierarchicalItem, Taxon = window.bunga.Taxon, Character = window.bunga.Character;
 
-class CodedHierarchicalItem extends window.bunga.Item {
+class CodedHierarchicalItem extends DetailData {
 	type: string;
-	hid: string;
 	parentId: string|null;
 	topLevel: boolean;
 	children: string[] = [];
 
 	constructor(item: bunga_HierarchicalItem) {
-		super(item.id,
-			new DetailData(item.name, item.author, item.nameCN, item.fasc, item.page, item.detail, item.photos, item.name2, item.vernacularName,
-				item.vernacularName2, item.meaning, item.noHerbier, item.website, item.herbariumPicture, item.extra));
+		super(item.id, item.name, item.author, item.nameCN, item.fasc, item.page, item.detail, item.photos, item.name2, item.vernacularName,
+			item.vernacularName2, item.meaning, item.noHerbier, item.website, item.herbariumPicture, item.extra);
 		this.type = item.type;
-		this.hid = item.hid;
 		this.parentId = item.parentId;
 		this.topLevel = item.topLevel;
 		for (const child of Object.values(item.children)) {
@@ -93,14 +90,10 @@ class CodedDataset {
 	}
 }
 
-
 function decodeHierarchicalItem(item: CodedHierarchicalItem): bunga_HierarchicalItem {
 	return new window.bunga.HierarchicalItem(
 		item.type,
-		item.id,
-		item.hid,
 		item.parentId,
-		item.topLevel,
 		item.children,
 		item,
 	);
@@ -150,16 +143,21 @@ export function decodeDataset(dataset: CodedDataset): Dataset {
 	const taxons: Record<string, bunga_Taxon> = {};
 	const books = Book.standard.slice();
 
-	for (const state of dataset.states)
+	for (const state of dataset.states) {
 		states[state.id] = state;
-	for (const descriptor of dataset.descriptors)
+	}
+	for (const descriptor of dataset.descriptors) {
 		descriptors[descriptor.id] = decodeCharacter(descriptor, states);
-	for (const taxon of dataset.taxons)
+	}
+	for (const taxon of dataset.taxons) {
 		taxons[taxon.id] = decodeTaxon(taxon, descriptors, states, books);
-	for (const descriptor of Object.values(descriptors))
+	}
+	for (const descriptor of Object.values(descriptors)) {
 		descriptor.hydrateChildren(descriptors);
-	for (const taxon of Object.values(taxons))
+	}
+	for (const taxon of Object.values(taxons)) {
 		taxon.hydrateChildren(taxons);
+	}
 	return new Dataset(
 		dataset.id,
 		taxons,

@@ -7,6 +7,7 @@ using StringTools;
 @:expose
 @:structInit
 class DetailData {
+	public var id:String;
 	public var name:String;
 	public var author:String;
 	public var nameCN:String;
@@ -23,9 +24,10 @@ class DetailData {
 	public var photos:Array<String>;
 	public var extra:DynamicAccess<Any>;
 
-	inline function new(?name:String, ?author:String, ?nameCN:String,
+	public function new(id:String, ?name:String, ?author:String, ?nameCN:String,
 			?fasc, ?page, ?detail:String, ?photos:Array<String>,
 			?name2, ?vernacularName, ?vernacularName2, ?meaning, ?noHerbier, ?website, ?herbariumPicture, ?extra) {
+		this.id = id;
 		this.name = if (name != null) name.trim() else "";
 		this.author = if (author != null) author.trim() else "";
 		this.nameCN = if (nameCN != null) nameCN.trim() else "";
@@ -72,7 +74,7 @@ class DetailData {
 		};
 	}
 
-	public inline static function fromRepresentation(representation:sdd.Representation, extraFields:Array<Field>, photosByRef:DynamicAccess<String>):DetailData {
+	public inline static function fromRepresentation(id:String, representation:sdd.Representation, extraFields:Array<Field>, photosByRef:DynamicAccess<String>):DetailData {
 		final names = representation.label.split("/");
 		final name = names[0], author = names[1], nameCN = names[2];
 
@@ -91,7 +93,7 @@ class DetailData {
 			detail = emptyParagraphRe.replace(detail, "");
 		}
 		final photos = representation.mediaObjectsRefs.map(m -> photosByRef[m.ref]);
-		final data:DetailData = { name: name, author: author, nameCN: nameCN, fasc: fasc, page: page, detail: detail, photos: photos };
+		final data:DetailData = { id: id, name: name, author: author, nameCN: nameCN, fasc: fasc, page: page, detail: detail, photos: photos };
 
 		for (field in fields) {
 			Reflect.setField(if (field.std) data else data.extra, field.id, findInDescription(representation.detail, field.label));
