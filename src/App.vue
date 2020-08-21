@@ -99,6 +99,7 @@ import type { bunga_Character as Character, bunga_Dataset as Dataset, // eslint-
 import { encodeDataset, decodeDataset } from "./bunga/Codec";
 import { highlightTaxonsDetails } from "./bunga/DetailHighlighter";
 import { hierarchyToZip } from "./bunga/Hierarchy";
+import { TaxonToTex } from "./bunga/TaxonToTex";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
@@ -358,12 +359,10 @@ export default Vue.extend({
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new window.bunga.TaxonToTex(Object.values(this.items));
+            const taxonToTex = new TaxonToTex(Object.values(this.items));
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export(Object.values(this.items)).then(tex => {
-                this.latexProgressText = "";
-                const blob = new Blob([tex], {type: "application/zip"});
-                download(blob, "zip", true);
+                download(tex, "zip", true);
             });
         },
         jsonExport() {

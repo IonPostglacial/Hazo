@@ -13,7 +13,6 @@ declare global {
             Dataset: typeof sdd.bunga_Dataset;
             Character: typeof sdd.bunga_Character;
             Taxon: typeof sdd.bunga_Taxon;
-            TaxonToTex: typeof sdd.bunga_TaxonToTex;
             ImageCache: typeof sdd.bunga_ImageCache;
             Item: typeof sdd.bunga_Item;
             HierarchicalItem: typeof sdd.bunga_HierarchicalItem;

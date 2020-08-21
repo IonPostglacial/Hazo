@@ -248,13 +248,6 @@ export class bunga_Taxon extends bunga_HierarchicalItem {
 	static toSdd(taxon: bunga_Taxon, extraFields: bunga_Field[], mediaObjects: sdd_MediaObject[]): bunga_SddTaxonData;
 }
 
-export class bunga_TaxonToTex {
-	constructor(taxons: bunga_Taxon[]);
-	picture(resolve: (code: string) => any, urls: string[]): string;
-	onProgress(listener: (progress: number, progressMax: number) => void): void;
-	export(taxons: bunga_Taxon[]): Promise<ArrayBuffer>;
-}
-
 export class sdd_Loader {
 	constructor(strictMode: boolean);
 	readonly exceptionLog: string[];

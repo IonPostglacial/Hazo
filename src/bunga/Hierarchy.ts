@@ -1,20 +1,11 @@
 import JSZip from "jszip";
+import { generateFileName } from "./FileNameGenerator";
 
 interface HierarchyEntry {
 	id: string;
 	name: string;
 	topLevel: boolean;
 	children: Record<string, HierarchyEntry>;
-}
-
-const forbiddenChars = [" ", "*", ".", '"', "/", "\\", "[", "]", ":", ";", "|", ","];
-
-function generateFileName(name: string): string {
-	let generatedName = name;
-	for (const char of forbiddenChars) {
-		generatedName = generatedName.replace(char, "_");
-	}
-	return generatedName;
 }
 
 function getEntries(hierarchy: Record<string, HierarchyEntry>, zip: JSZip, path = "") {
