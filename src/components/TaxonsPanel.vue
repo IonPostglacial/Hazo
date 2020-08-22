@@ -67,11 +67,12 @@
             <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
             <div v-if="!editable" id="item-detail" class="limited-width"  v-html="item.detail"></div><br/>
 
-            <label class="item-property">Description</label>
-            <TreeMenu :items="itemDescriptorTree"
-                :buttons="editable ? [{ id: 'pushToChildren', for: 'state', label: 'Push' }] : []"
-                v-on:button-click="itemDescriptorsButtonClicked">
-            </TreeMenu>     
+            <CollapsiblePanel label="Description">
+                <TreeMenu :items="itemDescriptorTree"
+                    :buttons="editable ? [{ id: 'pushToChildren', for: 'state', label: 'Push' }] : []"
+                    v-on:button-click="itemDescriptorsButtonClicked">
+                </TreeMenu>
+            </CollapsiblePanel>
         </div>
     </section>
 </template>
@@ -120,9 +121,9 @@ export default Vue.extend({
 
                 if (descriptorStates.length === 0) {
                     descriptor.warning = true;
-                    descriptor.children = {};
+                } else {
+                    descriptor.name += ": " + descriptorStates.map(child => child.name).join(", ");
                 }
-                Object.assign(descriptor.children, descriptorStates);
             }
             return dependencyTree;
         },
