@@ -35,7 +35,7 @@
 
 <script lang="ts">
 import AddItem from "./AddItem.vue";
-import { Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
@@ -48,7 +48,7 @@ export default Vue.extend({
     components:  { AddItem },
     props: {
         itemBus: Object as PropValidator<CombinedVueInstance<any, any, any, any, any>>,
-        item: Object as PropValidator<Taxon>,
+        item: Object as PropValidator<HierarchicalItem>,
         name: String,
         buttons: Array as PropValidator<Array<Button>>,
         nameField: String,
