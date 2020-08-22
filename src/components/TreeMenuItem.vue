@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import AddItem from "./AddItem.vue";
-import { Taxon } from "../bunga/Taxon"; // eslint-disable-line no-unused-vars
+import { Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars

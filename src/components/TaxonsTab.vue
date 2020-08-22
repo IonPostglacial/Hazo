@@ -21,9 +21,8 @@
 import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
 import Vue from "vue";
-import { Taxon } from "../bunga/Taxon"; // eslint-disable-line no-unused-vars
+import { Book, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
-import type { Book } from "../bunga/Book"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "TaxonsTab",

@@ -85,8 +85,7 @@ import TaxonPropertyField from "./TaxonPropertyField.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Character } from "../bunga/Character"; // eslint-disable-line no-unused-vars
-import { Taxon } from "../bunga/Taxon"; // eslint-disable-line no-unused-vars
+import { Character, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 

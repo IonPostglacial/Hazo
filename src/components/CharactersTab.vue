@@ -73,9 +73,7 @@ import TreeMenu from "./TreeMenu.vue";
 import AddItem from "../components/AddItem.vue";
 import ImageBox from "../components/ImageBox.vue";
 import Vue from "vue";
-
-import { Character } from "../bunga/Character";
-import type { State } from "../bunga/State"; // eslint-disable-line no-unused-vars
+import { Character, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",

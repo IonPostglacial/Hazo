@@ -1,5 +1,4 @@
-import type { Dataset } from "./bunga/Dataset";
-import { Book } from "./bunga/Book";
+import { Book, Dataset } from "./bunga";
 
 const DB_NAME = "Datasets";
 const DB_VERSION = 2;

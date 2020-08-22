@@ -94,15 +94,8 @@
 </template>
 
 <script lang="ts">
-import type { Dataset } from "./bunga/Dataset"; // eslint-disable-line no-unused-vars
-import { Book } from "./bunga/Book";
-import { Character } from "./bunga/Character"; // eslint-disable-line no-unused-vars
-import { Field } from "./bunga/Field"; // eslint-disable-line no-unused-vars
-import { Taxon } from "./bunga/Taxon"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset } from "./bunga/Codec";
-import { highlightTaxonsDetails } from "./bunga/DetailHighlighter";
-import { hierarchyToZip } from "./bunga/Hierarchy";
-import { TaxonToTex } from "./bunga/TaxonToTex";
+import { Book, Character, Dataset, Field, Taxon, TaxonToTex } from "./bunga"; // eslint-disable-line no-unused-vars
+import { encodeDataset, decodeDataset, hierarchyToZip, highlightTaxonsDetails } from "./bunga";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
