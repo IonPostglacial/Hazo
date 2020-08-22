@@ -1,4 +1,4 @@
-const Field = window.bunga.Field;
+import { Field } from "./bunga/Field";
 
 function saveSDD({ items, descriptors, extraFields }) {
     const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");

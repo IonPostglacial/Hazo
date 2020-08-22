@@ -1,9 +1,12 @@
-import type { bunga_Taxon, bunga_Character, bunga_Field, bunga_State, sdd_Taxon, sdd_State, sdd_Character, sdd_Dataset, sdd_MediaObject } from "../libs/SDD";
+import { Taxon} from "./Taxon";
+import { Character } from "./Character";
+import { Field } from "./Field";
+import { State } from "./State";
+import { sdd_Taxon, sdd_State, sdd_Character, sdd_Dataset, sdd_MediaObject } from "../libs/SDD";
 import { Book } from "./Book";
-const Character = window.bunga.Character, State = window.bunga.State, Taxon = window.bunga.Taxon;
 
-function extractStatesById(sddContent:sdd_Dataset, photosByRef: Record<string, string>) {
-	const statesById: Record<string, bunga_State> = {};
+function extractStatesById(sddContent: sdd_Dataset, photosByRef: Record<string, string>) {
+	const statesById: Record<string, State> = {};
 
 	for (const state of sddContent.states) {
 		statesById[state.id] = State.fromSdd(state, photosByRef);
@@ -11,8 +14,8 @@ function extractStatesById(sddContent:sdd_Dataset, photosByRef: Record<string, s
 	return statesById;
 }
 
-function extractItemsById(sddContent:sdd_Dataset, descriptors: Record<string, bunga_Character>, extraFields: bunga_Field[], statesById: Record<string, bunga_State>, photosByRef: Record<string, string>) {
-	const itemsById: Record<string, bunga_Taxon> = {};
+function extractItemsById(sddContent: sdd_Dataset, descriptors: Record<string, Character>, extraFields: Field[], statesById: Record<string, State>, photosByRef: Record<string, string>) {
+	const itemsById: Record<string, Taxon> = {};
 
 	for (const taxon of sddContent.taxons) {
 		itemsById[taxon.id] = Taxon.fromSdd(taxon, extraFields, photosByRef, descriptors, statesById);
@@ -20,8 +23,8 @@ function extractItemsById(sddContent:sdd_Dataset, descriptors: Record<string, bu
 	return itemsById;
 }
 
-function extractDescriptorsById(sddContent:sdd_Dataset, statesById: Record<string, bunga_State>, photosByRef: Record<string, string>) {
-	const descriptorsById: Record<string, bunga_Character> = {};
+function extractDescriptorsById(sddContent: sdd_Dataset, statesById: Record<string, State>, photosByRef: Record<string, string>) {
+	const descriptorsById: Record<string, Character> = {};
 
 	for (const character of sddContent.characters) {
 		descriptorsById[character.id] = Character.fromSdd(character, photosByRef, statesById);
@@ -29,7 +32,7 @@ function extractDescriptorsById(sddContent:sdd_Dataset, statesById: Record<strin
 	return descriptorsById;
 }
 
-function extractPhotosByRef(sddContent:sdd_Dataset) {
+function extractPhotosByRef(sddContent: sdd_Dataset) {
 	const photosByRef: Record<string, string> = {};
 
 	for (const mediaObject of sddContent.mediaObjects) {
@@ -40,13 +43,13 @@ function extractPhotosByRef(sddContent:sdd_Dataset) {
 
 export class Dataset {
 	id = "0";
-	taxons: Record<string, bunga_Taxon>;
-	descriptors: Record<string, bunga_Character>;
+	taxons: Record<string, Taxon>;
+	descriptors: Record<string, Character>;
 	books: Book[];
-	extraFields: bunga_Field[];
+	extraFields: Field[];
 	dictionaryEntries: Record<string, any>;
 
-	constructor(id: string, taxons: Record<string, bunga_Taxon>, descriptors: Record<string, bunga_Character>, books: Book[] = Book.standard.slice(), extraFields: bunga_Field[] = [], dictionaryEntries: Record<string, any> = {}) {
+	constructor(id: string, taxons: Record<string, Taxon>, descriptors: Record<string, Character>, books: Book[] = Book.standard.slice(), extraFields: Field[] = [], dictionaryEntries: Record<string, any> = {}) {
 		this.id = id;
 		this.taxons = taxons;
 		this.descriptors = descriptors;
@@ -55,7 +58,7 @@ export class Dataset {
 		this.dictionaryEntries = dictionaryEntries;
 	}
 
-	static fromSdd(dataset: sdd_Dataset, extraFields: bunga_Field[]):Dataset {
+	static fromSdd(dataset: sdd_Dataset, extraFields: Field[]):Dataset {
 		const photosByRef = extractPhotosByRef(dataset);
 		const statesById = extractStatesById(dataset, photosByRef);
 
@@ -74,7 +77,7 @@ export class Dataset {
 		return new Dataset("0", taxons, descriptors);
 	}
 
-	static toSdd(dataset:Dataset, extraFields:Array<bunga_Field>):sdd_Dataset {
+	static toSdd(dataset:Dataset, extraFields:Array<Field>): sdd_Dataset {
 		const taxons: sdd_Taxon[] = [],
 			characters: sdd_Character[] = [];
 		let states: sdd_State[] = [],

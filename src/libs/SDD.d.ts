@@ -7,130 +7,15 @@ export class sdd_MediaObjectRef {
 
 export class sdd_Representation {
 	constructor(label: string, detail: string, mediaObjectsRefs?: sdd_MediaObjectRef[]);
-	_hx_constructor(label: string, detail: string, mediaObjectsRefs?: sdd_MediaObjectRef[]): void;
 	label: string;
 	detail: string;
 	mediaObjectsRefs: sdd_MediaObjectRef[];
 	static _hx_skip_constructor: boolean;
 }
 
-export class bunga_DetailData {
-	constructor(id: string, name?: string, author?: string, nameCN?: string, fasc?: number, page?: number, detail?: string, photos?: string[], name2?: string, vernacularName?: string, vernacularName2?: string, meaning?: string, noHerbier?: number, website?: string, herbariumPicture?: string, extra?: { [key: string]: any });
-	id: string;
-	name: string;
-	author: string;
-	nameCN: string;
-	name2: string;
-	vernacularName: string;
-	vernacularName2: string;
-	meaning: string;
-	herbariumPicture: string;
-	website: string;
-	noHerbier: number;
-	fasc: number;
-	page: number;
-	detail: string;
-	photos: string[];
-	extra: { [key: string]: any };
-	toRepresentation(extraFields: bunga_Field[]): sdd_Representation;
-	static fromRepresentation(id: string, representation: sdd_Representation, extraFields: bunga_Field[], photosByRef: { [key: string]: string }): bunga_DetailData;
-}
-
-export class bunga_HierarchicalItem extends bunga_DetailData {
-	constructor(type: string, parentId: string|null, childrenIds: string[], data: bunga_DetailData);
-	type: string;
-	parentId: string|null;
-	topLevel: boolean;
-	hidden: boolean;
-	children: { [key: string]: bunga_HierarchicalItem };
-	hydrateChildren(hierarchyById: { [key: string]: bunga_HierarchicalItem }): void;
-}
-
-export class sdd_State extends sdd_Representation {
-	constructor(id: string, characterId: string, representation: sdd_Representation);
-	id: string;
-	characterId: string;
-}
-
 export class sdd_StateRef {
 	constructor(ref: string);
 	ref: string;
-}
-
-export class sdd_Character extends sdd_Representation {
-	constructor(id: string, parentId: string, representation: sdd_Representation, states?: sdd_State[], inapplicableStatesRefs?: sdd_StateRef[], childrenIds?: string[]);
-	_hx_constructor(id: string, parentId: string, representation: sdd_Representation, states?: sdd_State[], inapplicableStatesRefs?: sdd_StateRef[], childrenIds?: string[]): void;
-	id: string;
-	states: sdd_State[];
-	inapplicableStatesRefs: sdd_StateRef[];
-	parentId: string;
-	childrenIds: string[];
-}
-
-export class sdd_MediaObject {
-	constructor(id: string, source: string, label: string, detail: string);
-	id: string;
-	source: string;
-	label: string;
-	detail: string;
-}
-
-export class bunga_SddCharacterData {
-	constructor(character: sdd_Character, states: sdd_State[], mediaObjects: sdd_MediaObject[]);
-	character: sdd_Character;
-	states: sdd_State[];
-	mediaObjects: sdd_MediaObject[];
-}
-
-export interface bunga_CharacterCreationData {
-	name: string;
-	parentId: string;
-	states: bunga_State[];
-	inapplicableStates: bunga_State[];
-}
-
-export class bunga_Character extends bunga_HierarchicalItem {
-	constructor(item: bunga_HierarchicalItem, states: bunga_State[], inapplicableStates: bunga_State[]);
-	states: bunga_State[];
-	inapplicableStates: bunga_State[];
-	static fromSdd(character: sdd_Character, photosByRef: { [key: string]: string }, statesById: { [key: string]: bunga_State }): bunga_Character;
-	static toSdd(character: bunga_Character, extraFields: bunga_Field[], mediaObjects: sdd_MediaObject[]): bunga_SddCharacterData;
-	static create(characters: { [key: string]: bunga_Character }, data: bunga_CharacterCreationData): bunga_Character;
-}
-
-export class bunga_Field {
-	constructor(std: boolean, id: string, label: string, icon?: string);
-	std: boolean;
-	id: string;
-	label: string;
-	icon: string;
-	static readonly standard: bunga_Field[];
-}
-
-export class bunga_SddStateData {
-	constructor(state: sdd_State, mediaObjects: sdd_MediaObject[]);
-	state: sdd_State;
-	mediaObjects: sdd_MediaObject[];
-}
-
-export class bunga_State {
-	constructor(id: string, descriptorId: string, name: string, photos: string[]);
-	id: string;
-	descriptorId: string;
-	name: string;
-	photos: string[];
-	static fromSdd(state: sdd_State, photosByRef: { [key: string]: string }): bunga_State;
-	static toSdd(state: bunga_State): bunga_SddStateData;
-}
-
-export class bunga_Description {
-	constructor(descriptor: bunga_Character, states: bunga_State[]);
-	descriptor: bunga_Character;
-	states: bunga_State[];
-}
-
-export class bunga_BookInfo {
-	protected constructor();
 }
 
 export class sdd_CategoricalRef {
@@ -140,27 +25,35 @@ export class sdd_CategoricalRef {
 }
 
 export class sdd_Taxon extends sdd_Representation {
-	constructor(id: string, parentId: string, representation: sdd_Representation, childrenIds?: string[], categoricals?: sdd_CategoricalRef[]);
-	_hx_constructor(id: string, parentId: string, representation: sdd_Representation, childrenIds?: string[], categoricals?: sdd_CategoricalRef[]): void;
+	constructor(id: string, parentId: string|undefined, representation: sdd_Representation, childrenIds?: string[], categoricals?: sdd_CategoricalRef[]);
 	id: string;
 	hid: string;
-	parentId: string;
+	parentId: string|undefined;
 	categoricals: sdd_CategoricalRef[];
 	childrenIds: string[];
 }
 
-export class bunga_SddTaxonData {
-	constructor(taxon: sdd_Taxon, mediaObjects: sdd_MediaObject[]);
-	taxon: sdd_Taxon;
-	mediaObjects: sdd_MediaObject[];
+export class sdd_State extends sdd_Representation {
+	constructor(id: string, characterId: string, representation: sdd_Representation);
+	id: string;
+	characterId: string;
 }
 
-export class bunga_Taxon extends bunga_HierarchicalItem {
-	constructor(item: bunga_HierarchicalItem, descriptions: bunga_Description[], bookInfoByIds?: { [key: string]: bunga_BookInfo });
-	descriptions: bunga_Description[];
-	bookInfoByIds: { [key: string]: bunga_BookInfo };
-	static fromSdd(taxon: sdd_Taxon, extraFields: bunga_Field[], photosByRef: { [key: string]: string }, descriptors: { [key: string]: bunga_Character }, statesById: { [key: string]: bunga_State }): bunga_Taxon;
-	static toSdd(taxon: bunga_Taxon, extraFields: bunga_Field[], mediaObjects: sdd_MediaObject[]): bunga_SddTaxonData;
+export class sdd_Character extends sdd_Representation {
+	constructor(id: string, parentId: string|undefined, representation: sdd_Representation, states?: sdd_State[], inapplicableStatesRefs?: sdd_StateRef[], childrenIds?: string[]);
+	id: string;
+	states: sdd_State[];
+	inapplicableStatesRefs: sdd_StateRef[];
+	parentId: string|undefined;
+	childrenIds: string[];
+}
+
+export class sdd_MediaObject {
+	constructor(id: string, source: string, label: string, detail: string);
+	id: string;
+	source: string;
+	label: string;
+	detail: string;
 }
 
 export class sdd_Dataset {

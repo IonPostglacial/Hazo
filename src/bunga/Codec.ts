@@ -1,20 +1,21 @@
-import type { bunga_HierarchicalItem, bunga_Taxon, bunga_BookInfo as BookInfo, 
-	bunga_Character, bunga_State as State, bunga_Field as Field } from "../libs/SDD";
+import { HierarchicalItem } from "./HierarchicalItem";
+import { Taxon } from "./Taxon";
+import { BookInfo } from "./BookInfo";
+import { Character } from "./Character";
+import { State } from "./State";
+import { Field } from "./Field";
 import { Book } from "./Book";
 import { Dataset } from "./Dataset";
-
-const DetailData = window.bunga.DetailData, 
-	HierarchicalItem = window.bunga.HierarchicalItem, Taxon = window.bunga.Taxon, Character = window.bunga.Character;
+import { DetailData } from "./DetailData";
 
 class CodedHierarchicalItem extends DetailData {
 	type: string;
-	parentId: string|null;
+	parentId: string|undefined;
 	topLevel: boolean;
 	children: string[] = [];
 
-	constructor(item: bunga_HierarchicalItem) {
-		super(item.id, item.name, item.author, item.nameCN, item.fasc, item.page, item.detail, item.photos, item.name2, item.vernacularName,
-			item.vernacularName2, item.meaning, item.noHerbier, item.website, item.herbariumPicture, item.extra);
+	constructor(item: HierarchicalItem) {
+		super(item);
 		this.type = item.type;
 		this.parentId = item.parentId;
 		this.topLevel = item.topLevel;
@@ -43,7 +44,7 @@ class CodedTaxon extends CodedHierarchicalItem {
 	descriptions: CodedDescription[];
 	bookInfoByIds: Record<string, BookInfo> = {};
 
-	constructor(taxon: bunga_Taxon) {
+	constructor(taxon: Taxon) {
 		super(taxon);
 		this.bookInfoByIds = taxon.bookInfoByIds;
 		this.descriptions = taxon.descriptions.map(d => new CodedDescription(d.descriptor.id, d.states.map(s => s.id)));
@@ -55,7 +56,7 @@ class CodedCharacter extends CodedHierarchicalItem {
 	inapplicableStatesIds: string[];
 	inapplicableStates: State[]|null = null; // Only here to fix an oversight of the JS version
 
-	constructor(character: bunga_Character) {
+	constructor(character: Character) {
 		super(character);
 		this.states = character.states.map(s => s.id);
 		this.inapplicableStatesIds = character.inapplicableStates.map(s => s.id);
@@ -90,47 +91,46 @@ class CodedDataset {
 	}
 }
 
-function decodeHierarchicalItem(item: CodedHierarchicalItem): bunga_HierarchicalItem {
-	return new window.bunga.HierarchicalItem(
-		item.type,
-		item.parentId,
-		item.children,
-		item,
-	);
+function decodeHierarchicalItem(item: CodedHierarchicalItem): HierarchicalItem {
+	return new HierarchicalItem({...item, childrenIds: item.children});
 }
 
-function decodeTaxon(taxon: CodedTaxon, descriptions: Record<string, bunga_Character>, states: Record<string, State>, books: Book[]): bunga_Taxon {
+function decodeTaxon(taxon: CodedTaxon, descriptions: Record<string, Character>, states: Record<string, State>, books: Book[]): Taxon {
 	const bookInfoByIds = (typeof taxon.bookInfoByIds !== "undefined") ? taxon.bookInfoByIds : {};
 
 	if (Object.keys(bookInfoByIds).length === 0) {
 		for (const book of Book.standard) {
 			const info:BookInfo = {
 				fasc: (book.id === "fmc") ? "" + taxon.fasc : "",
-				page: (book.id === "fmc") ? taxon.page : null,
+				page: (book.id === "fmc") ? taxon.page : undefined,
 				detail: ""
 			};
 			bookInfoByIds[book.id] = info;
 		}
 	}
-	return new Taxon(
-		decodeHierarchicalItem(taxon),
-		taxon.descriptions.map(function(d) { return {
+	const item = decodeHierarchicalItem(taxon);
+	return new Taxon({
+		...item,
+		childrenIds: item.childrenIds,
+		descriptions: taxon.descriptions.map(function(d) { return {
 			descriptor: descriptions[d.descriptorId],
 			states: d.statesIds.map(id => states[id]),
 		}}),
 		bookInfoByIds,
-	);
+	});
 }
 
-function decodeCharacter(character:CodedCharacter, states: Record<string, State>): bunga_Character {
-	return new Character(
-		decodeHierarchicalItem(character),
-		character.states.map(id => states[id]),
-		(typeof character.inapplicableStates !== "undefined") ?
+function decodeCharacter(character:CodedCharacter, states: Record<string, State>): Character {
+	const item = decodeHierarchicalItem(character);
+	return new Character({
+		...item,
+		childrenIds: item.childrenIds,
+		states: character.states.map(id => states[id]),
+		inapplicableStates: (typeof character.inapplicableStates !== "undefined") ?
 			(character.inapplicableStates?.map(s => states[s.id]) ?? []) :
 			(character.inapplicableStatesIds?.map(id => states[id]) ?? [])
 		
-	);
+	});
 }
 
 export function encodeDataset(dataset: Dataset) {
@@ -139,8 +139,8 @@ export function encodeDataset(dataset: Dataset) {
 
 export function decodeDataset(dataset: CodedDataset): Dataset {
 	const states: Record<string, State> = {};
-	const descriptors: Record<string, bunga_Character> = {};
-	const taxons: Record<string, bunga_Taxon> = {};
+	const descriptors: Record<string, Character> = {};
+	const taxons: Record<string, Taxon> = {};
 	const books = Book.standard.slice();
 
 	for (const state of dataset.states) {

@@ -51,8 +51,11 @@ import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
 import ImageBox from "./ImageBox.vue";
 import type { Book } from "../bunga/Book"; // eslint-disable-line no-unused-vars
-import { PropValidator } from 'vue/types/options';   // eslint-disable-line no-unused-vars
-import { bunga_Character as Character, bunga_Field as Field, bunga_State as State, bunga_Taxon as Taxon } from "../libs/SDD";   // eslint-disable-line no-unused-vars
+import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
+import { Character } from "../bunga/Character"; // eslint-disable-line no-unused-vars
+import { Field } from "../bunga/Field"; // eslint-disable-line no-unused-vars
+import { State } from "../bunga/State"; // eslint-disable-line no-unused-vars
+import { Taxon } from "../bunga/Taxon"; // eslint-disable-line no-unused-vars
 
 interface Description { descriptor: Character, states: State[] }
 

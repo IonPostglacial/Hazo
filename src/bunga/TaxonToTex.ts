@@ -1,5 +1,7 @@
 import JSZip from "jszip";
-import type { bunga_Taxon as Taxon, bunga_Character as Character, bunga_State as State } from "../libs/SDD";
+import { Character } from "./Character";
+import { State } from "./State";
+import type { Taxon } from "./Taxon";
 import { generateFileName } from "./FileNameGenerator";
 
 export class TaxonToTex {

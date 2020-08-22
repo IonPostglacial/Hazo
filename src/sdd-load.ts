@@ -1,4 +1,5 @@
-import type { sdd_Dataset, bunga_Field as Field } from "./libs/SDD";
+import type { sdd_Dataset } from "./libs/SDD";
+import { Field } from "./bunga/Field";
 import { Dataset } from "./bunga/Dataset";
 
 function loadSddFile(file: File): Promise<sdd_Dataset[]> {

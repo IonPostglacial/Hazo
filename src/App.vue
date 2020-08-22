@@ -94,10 +94,11 @@
 </template>
 
 <script lang="ts">
-import type { bunga_Character as Character, // eslint-disable-line no-unused-vars
-    bunga_Field as Field, bunga_Taxon as Taxon } from "./libs/SDD"; // eslint-disable-line no-unused-vars
 import type { Dataset } from "./bunga/Dataset"; // eslint-disable-line no-unused-vars
 import { Book } from "./bunga/Book";
+import { Character } from "./bunga/Character"; // eslint-disable-line no-unused-vars
+import { Field } from "./bunga/Field"; // eslint-disable-line no-unused-vars
+import { Taxon } from "./bunga/Taxon"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset } from "./bunga/Codec";
 import { highlightTaxonsDetails } from "./bunga/DetailHighlighter";
 import { hierarchyToZip } from "./bunga/Hierarchy";

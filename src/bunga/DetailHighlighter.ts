@@ -1,4 +1,4 @@
-import { bunga_Taxon as Taxon } from "../libs/SDD";
+import { Taxon } from "./Taxon";
 
 function escape(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

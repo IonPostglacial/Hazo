@@ -42,7 +42,7 @@ import Vue from "vue";
 import AddItem from "./AddItem.vue";
 import TreeMenuItem from "./TreeMenuItem.vue";
 import { PropValidator } from 'vue/types/options';  // eslint-disable-line no-unused-vars
-import { bunga_Taxon as Taxon } from "../libs/SDD";  // eslint-disable-line no-unused-vars
+import { Taxon } from "../bunga/Taxon";  // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import { CombinedVueInstance } from 'vue/types/vue';  // eslint-disable-line no-unused-vars
 

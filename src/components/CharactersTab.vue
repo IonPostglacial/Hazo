@@ -74,7 +74,8 @@ import AddItem from "../components/AddItem.vue";
 import ImageBox from "../components/ImageBox.vue";
 import Vue from "vue";
 
-import type { bunga_Character as Character, bunga_State as State } from "../libs/SDD"; // eslint-disable-line no-unused-vars
+import { Character } from "../bunga/Character";
+import type { State } from "../bunga/State"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -135,8 +136,8 @@ export default Vue.extend({
             this.selectedDescriptionState?.photos.splice(index, 1);
         },
         addDescription({ value, parentId }: { value: string, parentId: string }) {
-            window.bunga.Character.create(this.descriptions, { name: value, parentId, states: [], inapplicableStates: [] });
-            const newDescription = window.bunga.Character.create(this.descriptions, {
+            Character.create(this.descriptions, { name: value, parentId, states: [], inapplicableStates: [] });
+            const newDescription = Character.create(this.descriptions, {
                 name: value,
                 parentId: parentId,
                 states: [],
@@ -152,7 +153,7 @@ export default Vue.extend({
                 };
                 parentDescription.states = [...parentDescription.states, newState];
                 for (const child of Object.values(parentDescription.children)) {
-                    if (child instanceof window.bunga.Character) {
+                    if (child instanceof Character) {
                         child.inapplicableStates = [...child.inapplicableStates, newState];
                     }
                 }
