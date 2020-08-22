@@ -10,8 +10,8 @@
                 v-on:delete-photo="deleteItemPhoto"
                 v-on:open-photo="openPhoto">
             </ImageBox>
-            <div :class="'horizontal-flexbox start-align flex-grow-1' + (editable ? '' : 'scroll')">
-                <div class="thin-border medium-margin white-background scroll flex-grow-1">
+            <div :class="'horizontal-flexbox start-align flex-grow-1 ' + (editable ? '' : 'scroll')">
+                <CollapsiblePanel label="Properties">
                     <label class="item-property">NS</label>
                     <div class="inline-block medium-padding medium-margin" v-if="!editable"><i>{{ item.name }}</i> {{ item.author }}</div><br/>
                     <div v-if="editable">
@@ -38,12 +38,11 @@
                     <div v-for="extraField in extraFields" :key="extraField.id">
                         <TaxonPropertyField :editable="editable" :item="item.extra" :icon="extraField.icon" :property="extraField.id">{{ extraField.label }}</TaxonPropertyField>
                     </div>
-                </div>
+                </CollapsiblePanel>
             </div>
         </div>
-        <div :class="'thin-border medium-margin white-background flex-grow-1 vertical-flexbox ' + (editable ? 'scroll' : '')">
-            <fieldset v-for="book in books" :key="book.id">
-                <legend>{{ book.label }}</legend>
+        <div :class="'vertical-flexbox ' + (editable ? 'scroll' : '')">
+            <CollapsiblePanel v-for="book in books" :key="book.id" :label="book.label">
                 <div v-if="item.bookInfoByIds">
                     <div v-if="item.bookInfoByIds[book.id]">
                         <label class="medium-margin">
@@ -64,7 +63,7 @@
                         <div v-if="!editable" class="limited-width" v-html="item.bookInfoByIds[book.id].detail"></div><br/>
                     </div>
                 </div>
-            </fieldset>
+            </CollapsiblePanel>
             <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
             <div v-if="!editable" id="item-detail" class="limited-width"  v-html="item.detail"></div><br/>
 
@@ -78,6 +77,7 @@
 </template>
 
 <script lang="ts">
+import CollapsiblePanel from "./CollapsiblePanel.vue";
 import TreeMenu from "./TreeMenu.vue";
 import ImageBox from "./ImageBox.vue";
 import TaxonPropertyField from "./TaxonPropertyField.vue";
@@ -91,7 +91,7 @@ import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unu
 
 export default Vue.extend({
     name: "TaxonsPanel",
-    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
+    components: { CollapsiblePanel, TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
     props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array, books:Array },
     data() {
         return {

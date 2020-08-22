@@ -18,6 +18,7 @@
             <div v-if="open" class="flex-grow-1">
                 <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                     :show-ids="showIds"
+                    :init-open="initOpen"
                     :space-for-add="spaceForAdd"
                     :selected-item="selectedItem"
                     :init-open-items="initOpenItems"
@@ -40,7 +41,7 @@ import Vue from "vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { CombinedVueInstance } from 'vue/types/vue'; // eslint-disable-line no-unused-vars
 
-const knownPrefixes = ["t", "myt-", "c", "d", "myd-"];
+const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
 export default Vue.extend({
     name: "TreeMenuItem",
@@ -55,11 +56,12 @@ export default Vue.extend({
         spaceForAdd: Boolean,
         showIds: Boolean,
         selectedItem: String,
+        initOpen: Boolean,
         initOpenItems: Array as PropValidator<Array<string>>,
     },
     data() {
         return {
-            open: this.initOpenItems.includes(this.item.id),
+            open: this.initOpenItems.includes(this.item.id) || this.initOpen,
         };
     },
     mounted() {

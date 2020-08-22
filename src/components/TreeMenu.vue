@@ -25,6 +25,7 @@
                     :editable="editable && fieldNum === 0" :buttons="buttons"
                     :name-field="nameField"
                     :selected-item="selectedItem"
+                    :init-open="initOpen"
                     :init-open-items="initOpenItems"
                     v-on:selected="selectItem"
                     v-on:add-item="addItem"
@@ -55,6 +56,7 @@ export default Vue.extend({
         editable: Boolean,
         nameFields: Array as PropValidator<Array<string>>,
         selectedItem: String,
+        initOpen: Boolean,
     },
     components:  { AddItem, TreeMenuItem },
     data(): { menuFilter: string, itemsBus: CombinedVueInstance<any, any, any, any, any>, visibleColumns: boolean[], initOpenItems: string[] } {
