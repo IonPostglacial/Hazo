@@ -43,7 +43,7 @@ import Vue from "vue";
 import AddItem from "./AddItem.vue";
 import TreeMenuItem from "./TreeMenuItem.vue";
 import { PropValidator } from 'vue/types/options';  // eslint-disable-line no-unused-vars
-import { Taxon } from "../bunga";  // eslint-disable-line no-unused-vars
+import { HierarchicalItem } from "../bunga";  // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import { CombinedVueInstance } from 'vue/types/vue';  // eslint-disable-line no-unused-vars
 
@@ -51,7 +51,7 @@ export default Vue.extend({
     name: "TreeMenu",
     props: {
         name: String,
-        items: Object as PropValidator<Array<Taxon>>,
+        items: Object as PropValidator<Array<HierarchicalItem>>,
         buttons: Array as PropValidator<Button>,
         editable: Boolean,
         nameFields: Array as PropValidator<Array<string>>,
@@ -74,7 +74,7 @@ export default Vue.extend({
         };
     },
     computed: {
-        itemsToDisplay(): Array<Taxon> {
+        itemsToDisplay(): Array<HierarchicalItem> {
             if (!this.items) return [];
             return Object.values(this.items).filter((item) => {
                 if (this.menuFilter !== "") {
