@@ -18,7 +18,7 @@ export class State {
             id: state.id,
             descriptorId: state.characterId,
             name: state.label,
-            photos: state.mediaObjectsRefs.map(m => photosByRef[m.ref]),
+            photos: state.mediaObjectsRefs?.map(m => photosByRef[m.ref]),
         };
     }
 
