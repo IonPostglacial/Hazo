@@ -30,7 +30,7 @@ export class Taxon extends HierarchicalItem {
 		for (const categorical of taxon.categoricals) {
 			const description:Description = {
 				descriptor: descriptors[categorical.ref],
-				states: categorical.stateRefs.map(s => statesById[s.ref])
+				states: categorical.stateRefs?.map(s => statesById[s.ref]) ?? []
 			};
 			descriptions.set(categorical.ref, description);
 		}

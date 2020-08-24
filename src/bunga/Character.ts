@@ -25,8 +25,8 @@ export class Character extends HierarchicalItem {
 
 	constructor(init : CharacterInit) {
 		super(init);
-		this.states = init.states;
-		this.inapplicableStates = init.inapplicableStates;
+		this.states = init.states ?? [];
+		this.inapplicableStates = init.inapplicableStates ?? [];
 	}
 
 	static fromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: Record<string, State>): Character {
@@ -34,8 +34,8 @@ export class Character extends HierarchicalItem {
 			type: "character",
 			parentId: character.parentId,
 			childrenIds: character.childrenIds,
-			states: character.states.map(s => statesById[s.id]),
-			inapplicableStates: character.inapplicableStatesRefs.map(s => statesById[s.ref]),
+			states: character.states?.map(s => statesById[s.id]),
+			inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById[s.ref]),
 			...DetailData.fromRepresentation(character.id, character, [], photosByRef),
 		});
 	}
