@@ -2,7 +2,10 @@ export class AddItem extends HTMLElement {
     constructor() {
         super();
         const shadow = this.attachShadow({mode: 'open'});
-        shadow.innerHTML = `
+    }
+
+    connectedCallback() {
+        this.shadowRoot!.innerHTML = `
             <link rel="stylesheet" href="style.css">
             <div class="horizontal-flexbox">
                 <input class="flex-grow-1" type="text" v-model="text" />
@@ -10,17 +13,17 @@ export class AddItem extends HTMLElement {
                     Add
                 </button>
             </div>`;
-        const button = shadow.querySelector("button");
-        const input = shadow.querySelector("input");
+        const button = this.shadowRoot!.querySelector("button")!;
+        const input = this.shadowRoot!.querySelector("input")!;
 
         const addItem = () => {
-            const text = input!.value;
-            input!.value = "";
+            const text = input.value;
+            input.value = "";
             const e = new CustomEvent("add-item", { detail: text });
             this.dispatchEvent(e);
         };
-        button!.onclick = addItem;
-        input!.onkeydown = (e) => {
+        button.onclick = addItem;
+        input.onkeydown = (e) => {
             if (e.key === "Enter") {
                 addItem();
             }
