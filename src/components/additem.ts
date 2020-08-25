@@ -1,3 +1,5 @@
+import { $, _, txt } from "../htmlbuilder";
+
 export class AddItem extends HTMLElement {
     constructor() {
         super();
@@ -5,16 +7,19 @@ export class AddItem extends HTMLElement {
     }
 
     connectedCallback() {
-        this.shadowRoot!.innerHTML = `
-            <link rel="stylesheet" href="style.css">
-            <div class="horizontal-flexbox">
-                <input class="flex-grow-1" type="text" v-model="text" />
-                <button class="background-color-1" v-on:click="addItem">
-                    Add
-                </button>
-            </div>`;
-        const button = this.shadowRoot!.querySelector("button")!;
-        const input = this.shadowRoot!.querySelector("input")!;
+        const root = {
+            style: _("link", { rel: "stylesheet", href: "style.css" }, {}),
+            hbox:  _("div", { class: "horizontal-flexbox" }, {
+                textField: _("input", { type: "text", class: "flex-grow-1" }, {}),
+                button:    _("button", { class: "background-color-1" }, {
+                    text: txt("Add")
+                })
+            })
+        };
+        this.shadowRoot!.appendChild($(root.style));
+        this.shadowRoot!.appendChild($(root.hbox));
+        const button = $(root.hbox.button);
+        const input = $(root.hbox.textField);
 
         const addItem = () => {
             const text = input.value;
