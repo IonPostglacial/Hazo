@@ -11,7 +11,7 @@
                 v-on:open-photo="openPhoto">
             </ImageBox>
             <div :class="'horizontal-flexbox start-align flex-grow-1 ' + (editable ? '' : 'scroll')">
-                <CollapsiblePanel label="Properties">
+                <collapsible-panel label="Properties">
                     <label class="item-property">NS</label>
                     <div class="inline-block medium-padding medium-margin" v-if="!editable"><i>{{ item.name }}</i> {{ item.author }}</div><br/>
                     <div v-if="editable">
@@ -38,11 +38,11 @@
                     <div v-for="extraField in extraFields" :key="extraField.id">
                         <TaxonPropertyField :editable="editable" :item="item.extra" :icon="extraField.icon" :property="extraField.id">{{ extraField.label }}</TaxonPropertyField>
                     </div>
-                </CollapsiblePanel>
+                </collapsible-panel>
             </div>
         </div>
         <div :class="'vertical-flexbox ' + (editable ? 'scroll' : '')">
-            <CollapsiblePanel v-for="book in books" :key="book.id" :label="book.label">
+            <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
                 <div v-if="item.bookInfoByIds">
                     <div v-if="item.bookInfoByIds[book.id]">
                         <label class="medium-margin">
@@ -63,22 +63,21 @@
                         <div v-if="!editable" class="limited-width" v-html="item.bookInfoByIds[book.id].detail"></div><br/>
                     </div>
                 </div>
-            </CollapsiblePanel>
+            </collapsible-panel>
             <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
             <div v-if="!editable" id="item-detail" class="limited-width"  v-html="item.detail"></div><br/>
 
-            <CollapsiblePanel label="Description">
+            <collapsible-panel label="Description">
                 <TreeMenu :items="itemDescriptorTree"
                     :buttons="editable ? [{ id: 'pushToChildren', for: 'state', label: 'Push' }] : []"
                     v-on:button-click="itemDescriptorsButtonClicked">
                 </TreeMenu>
-            </CollapsiblePanel>
+            </collapsible-panel>
         </div>
     </section>
 </template>
 
 <script lang="ts">
-import CollapsiblePanel from "./CollapsiblePanel.vue";
 import TreeMenu from "./TreeMenu.vue";
 import ImageBox from "./ImageBox.vue";
 import TaxonPropertyField from "./TaxonPropertyField.vue";
@@ -92,7 +91,7 @@ import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unu
 
 export default Vue.extend({
     name: "TaxonsPanel",
-    components: { CollapsiblePanel, TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
+    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
     props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array, books:Array },
     data() {
         return {

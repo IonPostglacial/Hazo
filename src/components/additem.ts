@@ -1,7 +1,7 @@
 export class AddItem extends HTMLElement {
     constructor() {
         super();
-        const shadow = this.attachShadow({mode: 'open'});
+        this.attachShadow({ mode: "open" });
     }
 
     connectedCallback() {
