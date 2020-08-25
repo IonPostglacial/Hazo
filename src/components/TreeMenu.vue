@@ -34,13 +34,12 @@
                 </TreeMenuItem>
             </ul>
         </div>
-         <AddItem v-if="editable" v-on:add-item="addItem({ value: $event })"></AddItem>
+         <add-item v-if="editable" v-on:add-item="addItem({ value: $event.detail })"></add-item>
     </div> 
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import AddItem from "./AddItem.vue";
 import TreeMenuItem from "./TreeMenuItem.vue";
 import { PropValidator } from 'vue/types/options';  // eslint-disable-line no-unused-vars
 import { HierarchicalItem } from "../bunga";  // eslint-disable-line no-unused-vars
@@ -58,7 +57,7 @@ export default Vue.extend({
         selectedItem: String,
         initOpen: Boolean,
     },
-    components:  { AddItem, TreeMenuItem },
+    components:  { TreeMenuItem },
     data(): { menuFilter: string, itemsBus: CombinedVueInstance<any, any, any, any, any>, visibleColumns: boolean[], initOpenItems: string[] } {
         const initOpenItems: string[] = [];
         let itemId = (this.items as any)[this.selectedItem]?.parentId;

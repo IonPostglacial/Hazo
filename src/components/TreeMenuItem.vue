@@ -26,7 +26,7 @@
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
                 <li v-if="editable || spaceForAdd" :class="spaceForAdd ? 'visibility-hidden' : ''">
-                    <AddItem v-on:add-item="addItem"></AddItem>
+                    <add-item v-on:add-item="addItem"></add-item>
                 </li>
             </div>
         </div>
@@ -34,7 +34,6 @@
 </template>
 
 <script lang="ts">
-import AddItem from "./AddItem.vue";
 import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
@@ -45,7 +44,6 @@ const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
 export default Vue.extend({
     name: "TreeMenuItem",
-    components:  { AddItem },
     props: {
         itemBus: Object as PropValidator<CombinedVueInstance<any, any, any, any, any>>,
         item: Object as PropValidator<HierarchicalItem>,
@@ -106,8 +104,8 @@ export default Vue.extend({
         toggleOpen() {
             this.itemBus.$emit("toggle", this.item.id);
         },
-        addItem(value: string) {
-            this.$emit("add-item", { value, parentId: this.item.id });
+        addItem({detail}: {detail: string}) {
+            this.$emit("add-item", { value: detail, parentId: this.item.id });
         },
         deleteItem() {
             this.$emit("delete-item", { parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });

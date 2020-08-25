@@ -8,29 +8,17 @@
             <input v-if="editable" type="text" :value="photo" v-on:change="setPhoto(index, e.target.value)" />
         </div>
         <div class="vertical-flexbox space-between relative">
-            <div class="small-margin thin-border">
-                <img class="medium-max-width medium-max-height" :src="newPhotoUrl">
-            </div>
-            <AddItem v-if="editable" v-on:add-item="addPhoto" v-model="newPhotoUrl"></AddItem>
+            <add-item v-if="editable" v-on:add-item="addPhoto"></add-item>
         </div>
-    </div>    
+    </div>
 </template>
 
 <script lang="ts">
-import AddItem from "./AddItem.vue";
 import Vue from "vue";
 
 export default Vue.extend({
     name: "ImageBox",
     props: { photos: Array, editable: Boolean },
-    data() {
-        return {
-            newPhotoUrl: ""
-        };
-    },
-    components: {
-        AddItem
-    },
     methods: {
         deletePhoto(index: number) {
             this.$emit("delete-photo", index);
@@ -41,9 +29,8 @@ export default Vue.extend({
         setPhoto(index: number, photoUrl: string) {
             this.$emit("set-photo", { index, url: photoUrl });
         },
-        addPhoto() {
-            this.$emit("add-photo", this.newPhotoUrl);
-            this.newPhotoUrl = "";
+        addPhoto({detail}: {detail: string}) {
+            this.$emit("add-photo", detail);
         },
     }
 });

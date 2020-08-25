@@ -50,7 +50,7 @@
                             </label>
                         </li>
                         <li>
-                            <AddItem v-on:add-item="addState"></AddItem>
+                            <add-item v-on:add-item="addState"></add-item>
                         </li>
                     </ul>
                 </div>
@@ -70,14 +70,13 @@
 </template>
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
-import AddItem from "../components/AddItem.vue";
 import ImageBox from "../components/ImageBox.vue";
 import Vue from "vue";
 import { Character, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { AddItem, ImageBox, TreeMenu },
+    components: { ImageBox, TreeMenu },
     computed: {
         selectedDescription(): Character | undefined {
             return this.descriptions[this.selectedDescriptionId];
@@ -167,12 +166,12 @@ export default Vue.extend({
             }
             Vue.delete(this.descriptions, itemId);
         },
-        addState(value: string) {
+        addState({detail} : {detail: string}) {
             if (typeof this.selectedDescription === "undefined") throw "addState failed: description is undefined.";
             this.selectedDescription.states.push({
                 id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
                 descriptorId: this.selectedDescription.id,
-                name: value,
+                name: detail,
                 photos: []
             });
         },

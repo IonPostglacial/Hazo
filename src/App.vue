@@ -62,7 +62,7 @@
                     </label>
                     <div class="close" style="width: 42px;" v-on:click="deleteExtraField(field.id)">&nbsp;</div>
                 </li>
-                <AddItem v-on:add-item="addExtraField"></AddItem>
+                <add-item v-on:add-item="addExtraField"></add-item>
             </ul>
         </div>
     </div>
@@ -100,7 +100,6 @@ import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
-import AddItem from "./components/AddItem.vue";
 import DB from "./db-storage";
 import Vue from "vue";
 import { loadSDD } from "./sdd-load";
@@ -110,7 +109,7 @@ import download from "./download";
 export default Vue.extend({
     name: "App",
     components: {
-        AddItem, TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
+        TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
     },
     data() {
         const items: Record<string, Taxon> = {};
@@ -175,8 +174,8 @@ export default Vue.extend({
         editExtraFields() {
             this.showFields = !this.showFields;
         },
-        addExtraField(name: string) {
-            this.extraFields.push({ id: name, std: false, label: name, icon: "" });
+        addExtraField({detail} : {detail: string}) {
+            this.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
         },
         deleteExtraField(id:string) {
             const i = this.extraFields.findIndex(f => f.id === id);

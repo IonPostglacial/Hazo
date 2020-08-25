@@ -17,7 +17,7 @@
                         <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.nameFR }}</label></td>
                     </tr>
                 </table>
-                <AddItem v-on:add-item="addEntry"></AddItem>
+                <add-item v-on:add-item="addEntry"></add-item>
             </div>
             <div v-if="typeof selectedEntry !== 'undefined'" class="white-background medium-padding scroll height-full">
                 <div class="horizontal-flexbox">
@@ -51,14 +51,12 @@ import parseCSV from "../parse-csv.ts";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue from "vue";
-import AddItem from "./AddItem.vue";
 import download from "../download";
 
 export default {
     name: "WordsDictionary",
     components: {
         ckeditor: CKEditor.component,
-        AddItem,
     },
     props: {
         initEntries: Object,
@@ -108,9 +106,9 @@ export default {
             }
             download(csv, "csv");
         },
-        addEntry(nameCN) {
+        addEntry({detail}) {
             const id = Date.now();
-            Vue.set(this.entries, id, { id, nameCN, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
+            Vue.set(this.entries, id, { id, nameCN: detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
         },
         uploadCSV(e) {
             const file = e.target.files[0];
