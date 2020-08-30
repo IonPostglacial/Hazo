@@ -3,7 +3,6 @@
     <nav class="horizontal-flexbox space-between thin-border">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
-            <button type="button" v-on:click="toggleImageBox">Image Box</button>
         </div>
         <div class="medium-margin">
             <div class="selector" v-for="(tab, index) in tabs" :key="index">
@@ -29,19 +28,19 @@
         <TaxonsTab v-if="selectedTab === 0"
             :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" 
             :selected-taxon="selectedTaxon"
-            :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
+            :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books" 
             v-on:open-photo="maximizeImage" v-on:change-items="changeItems">
         </TaxonsTab>
         <TaxonsDescriptorsTab v-if="selectedTab === 1"
             :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
-            :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
+            :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books" 
             v-on:open-photo="maximizeImage">
         </TaxonsDescriptorsTab>
         <CharactersTab v-if="selectedTab === 2"
             :init-descriptions="descriptions"
-            :show-left-menu="showLeftMenu" :show-image-box="showImageBox"
+            :show-left-menu="showLeftMenu"
             v-on:open-photo="maximizeImage" v-on:change-descriptions="changeDescriptions">
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
@@ -118,7 +117,6 @@ export default Vue.extend({
             databaseIds: ["0"],
             selectedBase: "0",
             showLeftMenu: true,
-            showImageBox: true,
             showFields: false,
             selectedTab: 0,
             selectedTaxon: "",
@@ -190,9 +188,6 @@ export default Vue.extend({
         },
         toggleLeftMenu() {
             this.showLeftMenu = !this.showLeftMenu;
-        },
-        toggleImageBox() {
-            this.showImageBox = !this.showImageBox;
         },
         maximizeImage({ photos, index }: { photos: string[], index: number }) {
             this.showBigImage = true;

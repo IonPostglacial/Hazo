@@ -1,8 +1,7 @@
 <template>
     <section v-if="typeof item !== 'undefined'" :class="'flex-grow-1 ' + (editable ? 'horizontal-flexbox' : 'vertical-flexbox scroll')">
         <div :class="'vertical-flexbox' + (editable ? ' scroll' : '')">
-            <ImageBox v-if="showImageBox"
-                class="scroll min-height-300"
+            <ImageBox class="scroll min-height-300"
                 :photos="item.photos"
                 :editable="editable"
                 v-on:add-photo="addItemPhoto"
@@ -96,7 +95,7 @@ import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unu
 export default Vue.extend({
     name: "TaxonsPanel",
     components: { TreeMenu, ImageBox, ckeditor: CKEditor.component },
-    props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array, books:Array },
+    props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, extraFields: Array, books:Array },
     data() {
         return {
             editor: ClassicEditor,

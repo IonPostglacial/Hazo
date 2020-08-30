@@ -9,9 +9,7 @@
             </TreeMenu>
         </nav>
         <section v-if="typeof selectedDescription !== 'undefined'" class="vertical-flexbox flex-grow-1">
-            <ImageBox v-if="showImageBox"
-                :photos="selectedDescription.photos"
-                editable
+            <ImageBox editable :photos="selectedDescription.photos"
                 v-on:add-photo="addDescriptionPhoto"
                 v-on:set-photo="setDescriptionPhoto"
                 v-on:delete-photo="deleteDescriptionPhoto"
@@ -54,7 +52,7 @@
                         </li>
                     </ul>
                 </div>
-                <ImageBox v-if="showImageBox && selectedDescriptionState"
+                <ImageBox v-if="selectedDescriptionState"
                     style="height: 50%;"
                     class="scroll"
                     :photos="selectedDescriptionState.photos"
@@ -94,7 +92,6 @@ export default Vue.extend({
     },
     props: {
         showLeftMenu: Boolean,
-        showImageBox: Boolean,
         initDescriptions: Object,
     },
     methods: {

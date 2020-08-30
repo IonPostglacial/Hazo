@@ -9,10 +9,10 @@
                 <section class="vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox scroll">
                         <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="openPhoto" 
-                            :show-image-box="showImageBox" :extra-fields="extraFields" :books="books">
+                            :extra-fields="extraFields" :books="books">
                         </TaxonsPanel>
                         <div v-if="selectedTaxon !== ''" class="vertical-flexbox">
-                            <ImageBox class="scroll min-height-200" v-if="showImageBox && selectedItemDescriptorId !== ''"
+                            <ImageBox class="scroll min-height-200" v-if="selectedItemDescriptorId !== ''"
                                 v-on:open-photo="openPhoto"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
                             <TreeMenu class="thin-border medium-margin white-background scroll"
@@ -61,7 +61,6 @@ export default Vue.extend({
     components: { TreeMenu, TaxonsPanel, ImageBox },
     props: {
         showLeftMenu: Boolean,
-        showImageBox: Boolean,
         descriptions: Object as PropValidator<Record<string, Character>>,
         initItems: Object as PropValidator<Record<string, Taxon>>,
         extraFields: Array as PropValidator<Field[]>,

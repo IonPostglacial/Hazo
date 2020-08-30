@@ -9,7 +9,6 @@
         </nav>
         <TaxonsPanel editable
             :v-if="typeof selectedItem !== 'undefined'"
-            :show-image-box="showImageBox"
             :extra-fields="extraFields" :books="books"
             :item="selectedItem" :descriptions="descriptions"
             v-on:open-photo="openPhoto">
@@ -29,7 +28,6 @@ export default Vue.extend({
     components: { TreeMenu, TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
-        showImageBox: Boolean,
         descriptions: Object,
         initItems: Object,
         extraFields: Array,
