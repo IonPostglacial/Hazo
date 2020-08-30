@@ -10,7 +10,8 @@
                 v-on:open-photo="openPhoto">
             </ImageBox>
             <div :class="'horizontal-flexbox start-align flex-grow-1 ' + (editable ? '' : 'scroll')">
-                <collapsible-panel label="Properties">
+                <collapsible-panel label="Properties" 
+                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
                     <label class="item-property">NS</label>
                     <div class="inline-block medium-padding medium-margin" v-if="!editable"><i>{{ item.name }}</i> {{ item.author }}</div><br/>
                     <div v-if="editable">
@@ -18,14 +19,14 @@
                         <label class="item-property">Author</label>
                         <input type="text" v-model="item.author" />
                     </div>
-                    <item-property-field property="name2" :value="item.name2" :editable="editable"
-                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">Synonymous</item-property-field>
-                    <item-property-field property="nameCN" :value="item.nameCN" :editable="editable"
-                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">中文名</item-property-field>
-                    <item-property-field property="vernacularName" :value="item.vernacularName" :editable="editable"
-                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">NV</item-property-field>
-                    <item-property-field property="vernacularName2" :value="item.vernacularName2" :editable="editable"
-                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">NV 2</item-property-field>
+                    <item-property-field property="name2" :value="item.name2" :editable="editable">
+                        Synonymous</item-property-field>
+                    <item-property-field property="nameCN" :value="item.nameCN" :editable="editable">
+                        中文名</item-property-field>
+                    <item-property-field property="vernacularName" :value="item.vernacularName" :editable="editable">
+                        NV</item-property-field>
+                    <item-property-field property="vernacularName2" :value="item.vernacularName2" :editable="editable">
+                        NV 2</item-property-field>
 
                     <label class="item-property">Website</label>
                     <input v-if="editable" type="text" v-model="item.website" />
@@ -34,13 +35,13 @@
                     <label class="item-property">Meaning</label>
                     <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
 
-                    <item-property-field property="noHerbier" :value="item.noHerbier" :editable="editable"
-                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">N° Herbier</item-property-field>
-                    <item-property-field property="herbariumPicture" :value="item.herbariumPicture" :editable="editable"
-                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">Herbarium Picture</item-property-field>
+                    <item-property-field property="noHerbier" :value="item.noHerbier" :editable="editable">
+                        N° Herbier</item-property-field>
+                    <item-property-field property="herbariumPicture" :value="item.herbariumPicture" :editable="editable">
+                        Herbarium Picture</item-property-field>
                     <div v-for="extraField in extraFields" :key="extraField.id">
-                        <item-property-field :property="extraField.id" :icon="extraField.icon" :value="item.extra[extraField.id]" :editable="editable"
-                            v-on:set-property="setExtraProperty" v-on:push-to-children="pushToChildren">{{ extraField.label }}</item-property-field>
+                        <item-property-field :property="extraField.id" :icon="extraField.icon" :value="item.extra[extraField.id]" :editable="editable">
+                            {{ extraField.label }}</item-property-field>
                     </div>
                 </collapsible-panel>
             </div>

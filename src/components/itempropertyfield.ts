@@ -69,12 +69,12 @@ export class ItemPropertyField extends HTMLElement {
             const valueInput = root!.querySelector("#value-input") as HTMLInputElement;
             valueInput.onchange = () => {
                 this.value = valueInput.value;        
-                const e = new CustomEvent("set-property", { detail: { property: this.property, value: this.value } });
+                const e = new CustomEvent("set-property", { bubbles: true, detail: { property: this.property, value: this.value } });
                 this.dispatchEvent(e);
             };
             const buttonPush = root!.querySelector("#button-push") as HTMLButtonElement;
             buttonPush.onclick = () => {
-                const e = new CustomEvent("push-to-children", { detail: this.property });
+                const e = new CustomEvent("push-to-children", { bubbles: true, detail: this.property });
                 this.dispatchEvent(e);
             };
         } else {
