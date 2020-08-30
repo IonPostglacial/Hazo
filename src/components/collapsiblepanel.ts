@@ -13,8 +13,8 @@ template.innerHTML = `<link rel="stylesheet" href="style.css" />
     </div>`;
 
 export class CollapsiblePanel extends HTMLElement {
-    label = "";
-    open = true;
+    #label = "";
+    #open = true;
     #headerText: HTMLElement|null = null;
 
     static get observedAttributes() { return ["label"]; }
@@ -22,33 +22,39 @@ export class CollapsiblePanel extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
-        this.label = this.getAttribute("label") ?? this.label;
+    }
+
+    get label() { return this.#label; }
+    get open() { return this.#open; }
+
+    set label(newLabel) {
+        this.#label = newLabel;
+        if (this.#headerText !== null) {
+            this.#headerText.textContent = this.label;
+        }
+    }
+
+    set open(isOpen) {
+        this.#open = isOpen;
+        this.shadowRoot!.getElementById("open-button-arrow")!.className = this.#open ? "bottom-arrow" : "left-arrow";
+        this.shadowRoot!.getElementById("panel")!.hidden = !this.#open;
     }
 
     connectedCallback() {
         this.className = "thin-border medium-margin white-background vertical-flexbox flex-grow-1";
-
+        
         this.shadowRoot!.appendChild(template.content.cloneNode(true));
         this.#headerText = this.shadowRoot?.getElementById("header-text") ?? null;
-        this.updateRendering();
-
+        
+        this.label = this.getAttribute("label") ?? this.#label;
         this.shadowRoot!.getElementById("open-button")!.onclick = () => {
             this.open = !this.open;
-            this.shadowRoot!.getElementById("open-button-arrow")!.className = this.open ? "bottom-arrow" : "left-arrow";
-            this.shadowRoot!.getElementById("panel")!.hidden = !this.open;
-        }
-    }
-
-    updateRendering() {
-        if (this.#headerText !== null) {
-            this.#headerText.textContent = this.label;
         }
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         if (name === "label") {
             this.label = newValue;
-            this.updateRendering();
         }
     }
 }

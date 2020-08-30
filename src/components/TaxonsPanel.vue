@@ -19,11 +19,14 @@
                         <label class="item-property">Author</label>
                         <input type="text" v-model="item.author" />
                     </div>
-
-                    <TaxonPropertyField :editable="editable" :item="item" property="name2">Synonymous</TaxonPropertyField>
-                    <TaxonPropertyField :editable="editable" :item="item" property="nameCN">中文名</TaxonPropertyField>
-                    <TaxonPropertyField :editable="editable" :item="item" property="vernacularName">NV</TaxonPropertyField>
-                    <TaxonPropertyField :editable="editable" :item="item" property="vernacularName2">NV 2</TaxonPropertyField>
+                    <item-property-field property="name2" :value="item.name2" :editable="editable"
+                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">Synonymous</item-property-field>
+                    <item-property-field property="nameCN" :value="item.nameCN" :editable="editable"
+                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">中文名</item-property-field>
+                    <item-property-field property="vernacularName" :value="item.vernacularName" :editable="editable"
+                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">NV</item-property-field>
+                    <item-property-field property="vernacularName2" :value="item.vernacularName2" :editable="editable"
+                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">NV 2</item-property-field>
 
                     <label class="item-property">Website</label>
                     <input v-if="editable" type="text" v-model="item.website" />
@@ -32,11 +35,13 @@
                     <label class="item-property">Meaning</label>
                     <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
 
-                    <TaxonPropertyField :editable="editable" :item="item" property="noHerbier">N° Herbier</TaxonPropertyField>
-                    <TaxonPropertyField :editable="editable" :item="item" property="herbariumPicture">Herbarium Picture</TaxonPropertyField>
-
+                    <item-property-field property="noHerbier" :value="item.noHerbier" :editable="editable"
+                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">N° Herbier</item-property-field>
+                    <item-property-field property="herbariumPicture" :value="item.herbariumPicture" :editable="editable"
+                        v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">Herbarium Picture</item-property-field>
                     <div v-for="extraField in extraFields" :key="extraField.id">
-                        <TaxonPropertyField :editable="editable" :item="item.extra" :icon="extraField.icon" :property="extraField.id">{{ extraField.label }}</TaxonPropertyField>
+                        <item-property-field :property="extraField.id" :icon="extraField.icon" :value="item.extra[extraField.id]" :editable="editable"
+                            v-on:set-property="setExtraProperty" v-on:push-to-children="pushToChildren">{{ extraField.label }}</item-property-field>
                     </div>
                 </collapsible-panel>
             </div>
@@ -80,7 +85,6 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import ImageBox from "./ImageBox.vue";
-import TaxonPropertyField from "./TaxonPropertyField.vue";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
@@ -91,7 +95,7 @@ import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unu
 
 export default Vue.extend({
     name: "TaxonsPanel",
-    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component, TaxonPropertyField },
+    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component },
     props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, showImageBox: Boolean, extraFields: Array, books:Array },
     data() {
         return {
@@ -117,7 +121,6 @@ export default Vue.extend({
                 if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                     descriptor.hidden = true;
                 }
-
                 if (descriptorStates.length === 0) {
                     descriptor.warning = true;
                 } else {
@@ -140,6 +143,18 @@ export default Vue.extend({
                         desc.states.push(Object.assign({}, state));
                     }
                 }
+            }
+        },
+        setProperty({ detail }: { detail: { property: string, value: string } }) {
+            (this.item as any)[detail.property] = detail.value;
+        },
+        setExtraProperty({ detail }: { detail: { property: string, value: string } }) {
+            this.item.extra[detail.property] = detail.value;
+        },
+        pushToChildren({ detail: property }: { detail: string }) {
+            for (const child of Object.values(this.item.children)) {
+                const anyChild: any = child, anyItem: any = this.item;
+                anyChild[property] = anyItem[property];
             }
         },
         addItemPhoto(photo: string) {
