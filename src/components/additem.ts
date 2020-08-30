@@ -1,4 +1,9 @@
-import { $, _, txt } from "../htmlbuilder";
+const template = document.createElement("template");
+template.innerHTML = `<link rel="stylesheet" href="style.css" />
+    <div class="horizontal-flexbox">
+        <input type="text" class="flex-grow-1" />
+        <button class="background-color-1">Add</button>
+    </div>`;
 
 export class AddItem extends HTMLElement {
     constructor() {
@@ -7,19 +12,9 @@ export class AddItem extends HTMLElement {
     }
 
     connectedCallback() {
-        const root = {
-            style: _("link", { rel: "stylesheet", href: "style.css" }, {}),
-            hbox:  _("div", { class: "horizontal-flexbox" }, {
-                textField: _("input", { type: "text", class: "flex-grow-1" }, {}),
-                button:    _("button", { class: "background-color-1" }, {
-                    text: txt("Add")
-                })
-            })
-        };
-        this.shadowRoot!.appendChild($(root.style));
-        this.shadowRoot!.appendChild($(root.hbox));
-        const button = $(root.hbox.button);
-        const input = $(root.hbox.textField);
+        this.shadowRoot!.appendChild(template.content.cloneNode(true));
+        const button = this.shadowRoot?.querySelector("button")!;
+        const input = this.shadowRoot?.querySelector("input")!;
 
         const addItem = () => {
             const text = input.value;
