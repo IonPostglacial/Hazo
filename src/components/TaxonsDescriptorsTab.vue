@@ -12,6 +12,11 @@
                             :extra-fields="extraFields" :books="books">
                         </TaxonsPanel>
                         <div v-if="selectedTaxon !== ''" class="vertical-flexbox">
+                            <picture-box class="scroll min-height-200" v-if="selectedItemDescriptorId !== ''"
+                                    @open-photo="openPhoto">
+                                <picture-frame v-for="(photo, index) in selectedItemDescriptorPhoto" :key="index"
+                                    :url="photo" :index="index"></picture-frame>
+                            </picture-box>
                             <ImageBox class="scroll min-height-200" v-if="selectedItemDescriptorId !== ''"
                                 v-on:open-photo="openPhoto"
                                 :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
@@ -49,7 +54,6 @@
 import Vue from "vue";
 import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
-import ImageBox from "./ImageBox.vue";
 import type { Book } from "../bunga/Book"; // eslint-disable-line no-unused-vars
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { Character, Field, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
@@ -58,7 +62,7 @@ interface Description { descriptor: Character, states: State[] }
 
 export default Vue.extend({
     name: "TaxonsDescriptorsTab",
-    components: { TreeMenu, TaxonsPanel, ImageBox },
+    components: { TreeMenu, TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
         descriptions: Object as PropValidator<Record<string, Character>>,
@@ -88,6 +92,9 @@ export default Vue.extend({
         selectedItem(): Taxon {
             return this.items[this.selectedTaxon];
         },
+        selectedItemDescriptorPhotos(): string[] {
+            return this.descriptions[this.selectedItemDescriptorId].photos;
+        },
         selectedItemDescriptorStates(): State[] {
             return this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
         },
@@ -105,8 +112,9 @@ export default Vue.extend({
         isStateChecked(stateId: string) {
             return this.selectedItemDescriptorStates.map((s: State) => s.id).includes(stateId)
         },
-        openPhoto(e: { photos: string[], index: number }) {
-            this.$emit("open-photo", e);
+        openPhoto(e: Event & {detail: { index: number }}) {
+            e.stopPropagation();
+            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedItemDescriptorPhotos });
         },
         onStateSelection() {
             if (typeof this.selectedItem === "undefined") return;

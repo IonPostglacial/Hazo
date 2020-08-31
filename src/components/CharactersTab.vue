@@ -9,12 +9,14 @@
             </TreeMenu>
         </nav>
         <section v-if="typeof selectedDescription !== 'undefined'" class="vertical-flexbox flex-grow-1">
-            <ImageBox editable :photos="selectedDescription.photos"
-                v-on:add-photo="addDescriptionPhoto"
-                v-on:set-photo="setDescriptionPhoto"
-                v-on:delete-photo="deleteDescriptionPhoto"
-                v-on:open-photo="openPhoto">
-            </ImageBox>
+            <picture-box editable="true"
+                    @add-photo="addDescriptionPhoto"
+                    @set-photo="setDescriptionPhoto"
+                    @delete-photo="deleteDescriptionPhoto"
+                    @open-photo="openDescriptionPhoto">
+                <picture-frame v-for="(photo, index) in selectedDescription.photos" :key="index"
+                    :url="photo" :index="index" editable="true"></picture-frame>
+            </picture-box>
             <ul class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedDescription.name" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedDescription.nameEN" /></div>
@@ -52,29 +54,29 @@
                         </li>
                     </ul>
                 </div>
-                <ImageBox v-if="selectedDescriptionState"
-                    style="height: 50%;"
-                    class="scroll"
-                    :photos="selectedDescriptionState.photos"
-                    editable
-                    v-on:add-photo="addStatePhoto"
-                    v-on:set-photo="setStatePhoto"
-                    v-on:delete-photo="deleteStatePhoto"
-                    v-on:open-photo="openPhoto">
-                </ImageBox>
+                <picture-box v-if="selectedDescriptionState"
+                        style="height: 50%;"
+                        class="scroll"
+                        editable="true"
+                        @add-photo="addStatePhoto"
+                        @set-photo="setStatePhoto"
+                        @delete-photo="deleteStatePhoto"
+                        @open-photo="openStatePhoto">
+                    <picture-frame v-for="(photo, index) in selectedDescriptionState.photos" :key="index"      
+                        :url="photo" :index="index" :editable="true"></picture-frame>
+                </picture-box>
             </div>
         </section>
     </div>
 </template>
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
-import ImageBox from "../components/ImageBox.vue";
 import Vue from "vue";
 import { Character, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { ImageBox, TreeMenu },
+    components: { TreeMenu },
     computed: {
         selectedDescription(): Character | undefined {
             return this.descriptions[this.selectedDescriptionId];
@@ -106,28 +108,28 @@ export default Vue.extend({
         selectDescription(id: string) {
             this.selectedDescriptionId = id;
         },
-        addDescriptionPhoto(photo: string) {
-            this.selectedDescription!.photos.push(photo);
+        addDescriptionPhoto(e: {detail: {value: string}}) {
+            this.selectedDescription!.photos.push(e.detail.value);
         },
-        setDescriptionPhoto(index: number, photo: string) {
-            this.selectedDescription!.photos[index] = photo;
+        setDescriptionPhoto(e: {detail: {index: number, value: string}}) {
+            this.selectedDescription!.photos[e.detail.index] = e.detail.value;
         },
-        deleteDescriptionPhoto(index: number) {
-            this.selectedDescription!.photos.splice(index, 1);
+        deleteDescriptionPhoto(e: {detail: {index: number}}) {
+            this.selectedDescription!.photos.splice(e.detail.index, 1);
         },
-        addStatePhoto(photo: string) {
+        addStatePhoto(e: {detail: {value: string}}) {
             if (this.selectedDescriptionState && typeof this.selectedDescriptionState?.photos === "undefined") {
                 this.selectedDescriptionState.photos = [];
             }
-            this.selectedDescriptionState?.photos.push(photo);
+            this.selectedDescriptionState?.photos.push(e.detail.value);
         },
-        setStatePhoto(index: number, photo: string) {
+        setStatePhoto(e: {detail: {index: number, value: string}}) {
             if (this.selectedDescriptionState) {
-                this.selectedDescriptionState.photos[index] = photo;
+                this.selectedDescriptionState.photos[e.detail.index] = e.detail.value;
             }
         },
-        deleteStatePhoto(index: number) {
-            this.selectedDescriptionState?.photos.splice(index, 1);
+        deleteStatePhoto(e: {detail: {index: number}}) {
+            this.selectedDescriptionState?.photos.splice(e.detail.index, 1);
         },
         addDescription({ value, parentId }: { value: string, parentId: string }) {
             Character.create(this.descriptions, { name: value, parentId, states: [], inapplicableStates: [] });
@@ -172,8 +174,13 @@ export default Vue.extend({
                 photos: []
             });
         },
-        openPhoto(e: { photos: string[], index: number }) {
-            this.$emit("open-photo", e);
+        openDescriptionPhoto(e: Event & {detail: { index: number }}) {
+            e.stopPropagation();
+            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedDescription!.photos});
+        },
+        openStatePhoto(e: Event & {detail: { index: number }}) {
+            e.stopPropagation();
+            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedDescriptionState?.photos});
         },
     }
 });

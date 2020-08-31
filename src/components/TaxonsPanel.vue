@@ -1,14 +1,14 @@
 <template>
     <section v-if="typeof item !== 'undefined'" :class="'flex-grow-1 ' + (editable ? 'horizontal-flexbox' : 'vertical-flexbox scroll')">
         <div :class="'vertical-flexbox' + (editable ? ' scroll' : '')">
-            <ImageBox class="scroll min-height-300"
-                :photos="item.photos"
-                :editable="editable"
-                v-on:add-photo="addItemPhoto"
-                v-on:set-photo="setItemPhoto"
-                v-on:delete-photo="deleteItemPhoto"
-                v-on:open-photo="openPhoto">
-            </ImageBox>
+            <picture-box class="scroll min-height-300" :editable="editable"
+                    @open-photo="openPhoto"
+                    @add-photo="addItemPhoto"
+                    @set-photo="setItemPhoto" 
+                    @delete-photo="deleteItemPhoto">
+                <picture-frame v-for="(photo, index) in item.photos"
+                    :key="index" :index="index" :editable="editable" :url="photo"></picture-frame>
+            </picture-box>
             <div :class="'horizontal-flexbox start-align flex-grow-1 ' + (editable ? '' : 'scroll')">
                 <collapsible-panel label="Properties" 
                         v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
@@ -84,7 +84,6 @@
 
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
-import ImageBox from "./ImageBox.vue";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
@@ -95,7 +94,7 @@ import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unu
 
 export default Vue.extend({
     name: "TaxonsPanel",
-    components: { TreeMenu, ImageBox, ckeditor: CKEditor.component },
+    components: { TreeMenu, ckeditor: CKEditor.component },
     props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, extraFields: Array, books:Array },
     data() {
         return {
@@ -157,17 +156,18 @@ export default Vue.extend({
                 anyChild[property] = anyItem[property];
             }
         },
-        addItemPhoto(photo: string) {
-            this.item.photos.push(photo);
+        addItemPhoto(e: {detail: { value: string }}) {
+            this.item.photos.push(e.detail.value);
         },
-        setItemPhoto(index: number, photo: string) {
-            this.item.photos[index] = photo;
+        setItemPhoto(e: {detail: {index: number, value: string}}) {
+            this.item.photos[e.detail.index] = e.detail.value;
         },
-        deleteItemPhoto(index: number) {
-            this.item.photos.splice(index, 1);
+        deleteItemPhoto(e: {detail: { index: number }}) {
+            this.item.photos.splice(e.detail.index, 1);
         },
-        openPhoto(photo: { photos: string[], index: number }) {
-            this.$emit("open-photo", photo);
+        openPhoto(e: Event & {detail: { index: number }}) {
+            e.stopPropagation();
+            this.$emit("open-photo", {index: e.detail.index, photos: this.item.photos});
         },
     }
 });
