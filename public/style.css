@@ -111,6 +111,12 @@ input[type="text"]:read-only {
     max-width: 90vw;
 }
 
+.full-background {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 .stick-to-top,
 .stick-to-bottom {
     position: sticky;
@@ -270,6 +276,16 @@ div.invisible {
 
 .flex-grow-2 {
     flex-grow: 2;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.square-1-3 {
+    width: 30%;
+    padding-bottom: 30%;
+    position: relative;
 }
 
 .hide-next-unchecked + * {

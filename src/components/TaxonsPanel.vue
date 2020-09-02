@@ -73,17 +73,14 @@
             <div v-if="!editable" id="item-detail" class="limited-width"  v-html="item.detail"></div><br/>
 
             <collapsible-panel label="Description">
-                <TreeMenu :items="itemDescriptorTree"
-                    :buttons="editable ? [{ id: 'pushToChildren', for: 'state', label: 'Push' }] : []"
-                    v-on:button-click="itemDescriptorsButtonClicked">
-                </TreeMenu>
+                <SquareTreeViewer :rootItems="itemDescriptorTree"></SquareTreeViewer>
             </collapsible-panel>
         </div>
     </section>
 </template>
 
 <script lang="ts">
-import TreeMenu from "./TreeMenu.vue";
+import SquareTreeViewer from "./SquareTreeViewer.vue";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
@@ -94,7 +91,7 @@ import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unu
 
 export default Vue.extend({
     name: "TaxonsPanel",
-    components: { TreeMenu, ckeditor: CKEditor.component },
+    components: { SquareTreeViewer, ckeditor: CKEditor.component },
     props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, extraFields: Array, books:Array },
     data() {
         return {
@@ -123,7 +120,7 @@ export default Vue.extend({
                 if (descriptorStates.length === 0) {
                     descriptor.warning = true;
                 } else {
-                    descriptor.name += ": " + descriptorStates.map(child => child.name).join(", ");
+                    Object.assign(descriptor.children, descriptorStates);
                 }
             }
             return dependencyTree;
