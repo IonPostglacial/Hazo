@@ -1,52 +1,54 @@
 <template>
-    <section v-if="typeof item !== 'undefined'" :class="'flex-grow-1 ' + (editable ? 'horizontal-flexbox' : 'vertical-flexbox scroll')">
-        <div :class="'vertical-flexbox' + (editable ? ' scroll' : '')">
-            <picture-box class="scroll min-height-300" :editable="editable"
+    <section v-if="typeof item !== 'undefined'" class="flex-grow-1 horizontal-flexbox">
+        <div class="vertical-flexbox scroll">
+            <picture-box class="min-height-300" :editable="editable"
                     @open-photo="openPhoto"
                     @add-photo="addItemPhoto"
                     @set-photo="setItemPhoto" 
                     @delete-photo="deleteItemPhoto">
-                <picture-frame v-for="(photo, index) in item.photos"
-                    :key="index" :index="index" :editable="editable" :url="photo"></picture-frame>
+                <picture-frame v-for="(photo, index) in item.photos" :key="index"
+                    :index="index" :editable="editable" :url="photo"></picture-frame>
             </picture-box>
-            <div :class="'horizontal-flexbox start-align flex-grow-1 ' + (editable ? '' : 'scroll')">
+            <div class="horizontal-flexbox start-align flex-grow-1 relative">
                 <collapsible-panel label="Properties" 
                         v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
-                    <label class="item-property">NS</label>
-                    <div class="inline-block medium-padding medium-margin" v-if="!editable"><i>{{ item.name }}</i> {{ item.author }}</div><br/>
-                    <div v-if="editable">
-                        <input class="italic" type="text" lang="lat" spellcheck="false" v-model="item.name" /><br>
-                        <label class="item-property">Author</label>
-                        <input type="text" v-model="item.author" />
-                    </div>
-                    <item-property-field property="name2" :value="item.name2" :editable="editable">
-                        Synonymous</item-property-field>
-                    <item-property-field property="nameCN" :value="item.nameCN" :editable="editable">
-                        中文名</item-property-field>
-                    <item-property-field property="vernacularName" :value="item.vernacularName" :editable="editable">
-                        NV</item-property-field>
-                    <item-property-field property="vernacularName2" :value="item.vernacularName2" :editable="editable">
-                        NV 2</item-property-field>
+                    <div class="scroll large-max-width">
+                        <label class="item-property">NS</label>
+                        <div class="inline-block medium-padding medium-margin" v-if="!editable"><i>{{ item.name }}</i> {{ item.author }}</div><br/>
+                        <div v-if="editable">
+                            <input class="italic" type="text" lang="lat" spellcheck="false" v-model="item.name" /><br>
+                            <label class="item-property">Author</label>
+                            <input type="text" v-model="item.author" />
+                        </div>
+                        <item-property-field property="name2" :value="item.name2" :editable="editable">
+                            Synonymous</item-property-field>
+                        <item-property-field property="nameCN" :value="item.nameCN" :editable="editable">
+                            中文名</item-property-field>
+                        <item-property-field property="vernacularName" :value="item.vernacularName" :editable="editable">
+                            NV</item-property-field>
+                        <item-property-field property="vernacularName2" :value="item.vernacularName2" :editable="editable">
+                            NV 2</item-property-field>
 
-                    <label class="item-property">Website</label>
-                    <input v-if="editable" type="text" v-model="item.website" />
-                    <a v-if="!editable" target="_blank" :href="item.website">{{ item.website }}</a><br/>
+                        <label class="item-property">Website</label>
+                        <input v-if="editable" type="text" v-model="item.website" />
+                        <a v-if="!editable" target="_blank" :href="item.website">{{ item.website }}</a><br/>
 
-                    <label class="item-property">Meaning</label>
-                    <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
+                        <label class="item-property">Meaning</label>
+                        <textarea :readonly="!editable"  v-model="item.meaning"></textarea><br/>
 
-                    <item-property-field property="noHerbier" :value="item.noHerbier" :editable="editable">
-                        N° Herbier</item-property-field>
-                    <item-property-field property="herbariumPicture" :value="item.herbariumPicture" :editable="editable">
-                        Herbarium Picture</item-property-field>
-                    <div v-for="extraField in extraFields" :key="extraField.id">
-                        <item-property-field :property="extraField.id" :icon="extraField.icon" :value="item.extra[extraField.id]" :editable="editable">
-                            {{ extraField.label }}</item-property-field>
+                        <item-property-field property="noHerbier" :value="item.noHerbier" :editable="editable">
+                            N° Herbier</item-property-field>
+                        <item-property-field property="herbariumPicture" :value="item.herbariumPicture" :editable="editable">
+                            Herbarium Picture</item-property-field>
+                        <div v-for="extraField in extraFields" :key="extraField.id">
+                            <item-property-field :property="extraField.id" :icon="extraField.icon" :value="item.extra[extraField.id]" :editable="editable">
+                                {{ extraField.label }}</item-property-field>
+                        </div>
                     </div>
                 </collapsible-panel>
             </div>
         </div>
-        <div :class="'vertical-flexbox ' + (editable ? 'scroll' : '')">
+        <div class="vertical-flexbox scroll">
             <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
                 <div v-if="item.bookInfoByIds">
                     <div v-if="item.bookInfoByIds[book.id]">
@@ -69,11 +71,13 @@
                     </div>
                 </div>
             </collapsible-panel>
-            <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
-            <div v-if="!editable" id="item-detail" class="limited-width"  v-html="item.detail"></div><br/>
+            <collapsible-panel label="Additional Text" id="item-detail">
+                <ckeditor v-if="editable" :editor="editor" v-model="item.detail" :config="editorConfig"></ckeditor>
+                <div v-if="!editable" class="limited-width" v-html="item.detail"></div>
+            </collapsible-panel>
 
             <collapsible-panel label="Description">
-                <SquareTreeViewer :rootItems="itemDescriptorTree"></SquareTreeViewer>
+                <SquareTreeViewer class="large-max-width" :editable="!editable" :rootItems="itemDescriptorTree" @item-selected="onItemStateSelected"></SquareTreeViewer>
             </collapsible-panel>
         </div>
     </section>
@@ -85,7 +89,7 @@ import SquareTreeViewer from "./SquareTreeViewer.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Character, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Character, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 
@@ -103,7 +107,7 @@ export default Vue.extend({
         itemDescriptorTree() {
             const itemStatesIds: string[] = [];
             const selectedItemIdDescriptions = this.item.descriptions ?? [];
-            const dependencyTree: Record<string, Character & { warning?: boolean }> = JSON.parse(JSON.stringify(this.descriptions));
+            const dependencyTree: Record<string, Character & { warning?: boolean, selected?: boolean }> = JSON.parse(JSON.stringify(this.descriptions));
             for (const description of selectedItemIdDescriptions) {
                 for (const state of description?.states ?? []) {
                     itemStatesIds.push(state.id);
@@ -112,12 +116,13 @@ export default Vue.extend({
             for (const descriptor of Object.values(dependencyTree)) {
                 const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor.id === descriptor.id);
                 if (typeof selectedDescription === "undefined") continue;
-                const descriptorStates = selectedDescription.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId }, s));
+                const itemDescriptorStateIds = selectedDescription.states.map(s => s.id);
+                const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemDescriptorStateIds.includes(s.id) }, s));
 
                 if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
                     descriptor.hidden = true;
                 }
-                if (descriptorStates.length === 0) {
+                if (itemDescriptorStateIds.length === 0) {
                     descriptor.warning = true;
                 } else {
                     Object.assign(descriptor.children, descriptorStates);
@@ -152,6 +157,9 @@ export default Vue.extend({
                 const anyChild: any = child, anyItem: any = this.item;
                 anyChild[property] = anyItem[property];
             }
+        },
+        onItemStateSelected(e: { selected: boolean, item: State }) {
+            this.$emit("taxon-state-selected", e);
         },
         addItemPhoto(e: {detail: { value: string }}) {
             this.item.photos.push(e.detail.value);

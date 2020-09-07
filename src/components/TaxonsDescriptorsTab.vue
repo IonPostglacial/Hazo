@@ -8,41 +8,9 @@
             <div class="horizontal-flexbox flex-grow-1 scroll">
                 <section class="vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox scroll">
-                        <TaxonsPanel :item="selectedItem" :descriptions="descriptions" v-on:open-photo="openPhoto" 
+                        <TaxonsPanel :item="selectedItem" :descriptions="descriptions" @open-photo="openPhoto" @taxon-state-selected="addItemState" 
                             :extra-fields="extraFields" :books="books">
                         </TaxonsPanel>
-                        <div v-if="selectedTaxon !== ''" class="vertical-flexbox">
-                            <picture-box class="scroll min-height-200" v-if="selectedItemDescriptorId !== ''"
-                                    @open-photo="openPhoto">
-                                <picture-frame v-for="(photo, index) in selectedItemDescriptorPhoto" :key="index"
-                                    :url="photo" :index="index"></picture-frame>
-                            </picture-box>
-                            <ImageBox class="scroll min-height-200" v-if="selectedItemDescriptorId !== ''"
-                                v-on:open-photo="openPhoto"
-                                :photos="descriptions[selectedItemDescriptorId].photos"></ImageBox>
-                            <TreeMenu class="thin-border medium-margin white-background scroll"
-                                v-on:select-item="selectItemDescriptorId" :selected-item="selectedItemDescriptorId"   
-                                :items="selectedItemDescriptorTree" name="item-description">
-                            </TreeMenu>
-                        </div>
-                    </div>
-                </section>
-                <section v-if="selectedTaxon != ''" class="vertical-flexbox flex-grow-1">
-                    <div class="thin-border medium-margin medium-padding white-background scroll">
-                        <div class="horizontal-flexbox space-between" v-if="selectedItemDescriptorId !== 0">
-                            <button class="background-color-ok" v-on:click="addAllItemStates">Check All</button>
-                            <button class="background-color-ko" v-on:click="removeAllItemStates"> Uncheck All</button>
-                        </div>
-                        <label class="horizontal-flexbox" v-if="selectedItemDescriptorId !== 0"><div>&nbsp;</div>
-                            <input class="flex-grow-1" placeholder="Filter" type="search" v-model="itemDescriptorSearch" name="search-item-descriptor" id="search-item-descriptor">
-                        </label>
-                        <ul class="no-list-style" v-if="selectedItemDescriptorId !== 0">
-                            <li class="horizontal-flexbox" v-for="(state, stateIndex) in selectedItemDescriptorFilteredStates" :key="selectedItem.id + state.id">
-                                <input v-on:change="addItemState($event, state)" type="checkbox" :name="'state-' + stateIndex" :id="'state-' + stateIndex"
-                                    :checked="isStateChecked(state.id)">
-                                <input class="flex-grow-1" type="text" v-model="state.name" />
-                            </li>
-                        </ul>
                     </div>
                 </section>
             </div>
@@ -134,33 +102,17 @@ export default Vue.extend({
             this.selectedItemDescriptorTree = {};
             this.selectedItemDescriptorTree = dependencyTree;
         },
-        addAllItemStates() {
+        addItemState({ selected, item }: { selected: boolean, item: State }) {
             let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (typeof selectedDescription === "undefined") {
                 selectedDescription = { descriptor: Object.assign({}, this.descriptions[this.selectedItemDescriptorId]), states: [] };
                 this.selectedItem.descriptions.push(selectedDescription);
             }
-            selectedDescription.states = [...this.descriptions[this.selectedItemDescriptorId].states];
-            this.onStateSelection();
-        },
-        removeAllItemStates() {
-            const selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
-            if (selectedDescription) {
-                selectedDescription.states = [];
-            }
-            this.onStateSelection();
-        },
-        addItemState(e: InputEvent, state: State) {
-            let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
-            if (typeof selectedDescription === "undefined") {
-                selectedDescription = { descriptor: Object.assign({}, this.descriptions[this.selectedItemDescriptorId]), states: [] };
-                this.selectedItem.descriptions.push(selectedDescription);
-            }
-            const stateIndex = selectedDescription.states.findIndex((s: State) => s.id === state.id);
+            const stateIndex = selectedDescription.states.findIndex((s: State) => s.id === item.id);
 
-            if (e.target instanceof HTMLInputElement && e.target.checked) {
+            if (selected) {
                 if (stateIndex < 0) {
-                    selectedDescription.states.push(state);
+                    selectedDescription.states.push(item);
                 }
             } else {
                 if (stateIndex >= 0) {
