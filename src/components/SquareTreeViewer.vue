@@ -6,11 +6,11 @@
             <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name }}</button>
         </div>
         <div class="horizontal-flexbox flex-wrap relative">
-            <button v-for="item in itemsToDisplay" :key="item.id" type="button" class="square-1-3 relative vertical-flexbox full-background"
+            <component v-for="item in itemsToDisplay" :key="item.id" :is="hasChildren(item) ? 'button' : 'div'" type="button" class="square-1-3 relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
                     :style="item.photos.length > 0 ? 'background-image: url(' + item.photos[0] + ')' : ''"
                     @click="openItem(item)">
                 <div class="white-background thin-border">{{ item.name }}</div>
-            </button>
+            </component>
         </div>
     </div>
 </template>
@@ -42,11 +42,14 @@ export default Vue.extend({
                     return !item.hidden && (this.currentItems === this.rootItems ? item.topLevel : !item.topLevel);
                 }
             });
-        }
+        },
     },
     methods: {
+        hasChildren(item: HierarchicalItem): boolean {
+            return item.children && Object.keys(item.children).length > 0;
+        },
         openItem(item: HierarchicalItem) {
-            if (Object.keys(item.children).length > 0) {
+            if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
                 this.currentItems = item.children;
             }
