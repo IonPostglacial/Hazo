@@ -37,7 +37,11 @@ export class CollapsiblePanel extends HTMLElement {
     set open(isOpen) {
         this.#open = isOpen;
         this.shadowRoot!.getElementById("open-button-arrow")!.className = this.#open ? "bottom-arrow" : "left-arrow";
-        this.shadowRoot!.getElementById("panel")!.hidden = !this.#open;
+        if (this.#open) {
+            this.shadowRoot!.getElementById("panel")?.classList.remove("invisible");
+        } else {
+            this.shadowRoot!.getElementById("panel")?.classList.add("invisible");
+        }
     }
 
     connectedCallback() {
