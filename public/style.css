@@ -292,6 +292,11 @@ div.invisible {
     position: relative;
 }
 
+.text-ellipsed {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .hide-next-unchecked + * {
     display: none;
 }
