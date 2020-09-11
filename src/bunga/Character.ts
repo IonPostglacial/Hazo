@@ -1,4 +1,4 @@
-import type { sdd_MediaObject, sdd_Character, sdd_State } from "../libs/SDD";
+import type { MediaObject as sdd_MediaObject, Character as sdd_Character, State as sdd_State } from "../sdd/datatypes";
 import { DetailData } from "./DetailData";
 import { Field } from "./Field";
 import { State } from "./State";

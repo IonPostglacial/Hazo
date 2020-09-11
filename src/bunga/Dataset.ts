@@ -2,7 +2,7 @@ import { Taxon} from "./Taxon";
 import { Character } from "./Character";
 import { Field } from "./Field";
 import { State } from "./State";
-import { sdd_Taxon, sdd_State, sdd_Character, sdd_Dataset, sdd_MediaObject } from "../libs/SDD";
+import { Taxon as sdd_Taxon, State as sdd_State, Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject } from "../sdd/datatypes";
 import { Book } from "./Book";
 
 function extractStatesById(sddContent: sdd_Dataset, photosByRef: Record<string, string>) {

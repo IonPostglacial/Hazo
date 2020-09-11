@@ -1,4 +1,4 @@
-import { sdd_Taxon, sdd_MediaObject } from "../libs/SDD";
+import { Taxon as sdd_Taxon, MediaObject } from "../sdd/datatypes";
 import { HierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
 import { Character } from "./Character";
 import { Description } from "./Description";
@@ -9,7 +9,7 @@ import { Field } from "./Field";
 
 interface SddTaxonData {
 	taxon: sdd_Taxon;
-	mediaObjects: sdd_MediaObject[];
+	mediaObjects: MediaObject[];
 }
 
 interface TaxonInit extends HierarchicalItemInit { descriptions: Description[], bookInfoByIds?: Record<string, BookInfo> }
@@ -43,7 +43,7 @@ export class Taxon extends HierarchicalItem {
 		});
 	}
 
-	public static toSdd(taxon: Taxon, extraFields: Field[], mediaObjects: sdd_MediaObject[]):SddTaxonData {
+	public static toSdd(taxon: Taxon, extraFields: Field[], mediaObjects: MediaObject[]):SddTaxonData {
 		const sddTaxon: sdd_Taxon = {
 			id: taxon.id,
 			hid: taxon.id,

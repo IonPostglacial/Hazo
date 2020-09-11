@@ -1,4 +1,4 @@
-import type { sdd_Representation } from "../libs/SDD";
+import type { Representation } from "../sdd/datatypes";
 import { Field } from "./Field";
 
 function escapeRegex(string:String):String {
@@ -80,7 +80,7 @@ export class DetailData {
 		return desc;
 	}
 
-	toRepresentation(extraFields: Field[]): sdd_Representation {
+	toRepresentation(extraFields: Field[]): Representation {
 		const data: DetailData = this;
 		return {
 			mediaObjectsRefs: [],
@@ -95,7 +95,7 @@ export class DetailData {
 		};
 	}
 
-	static fromRepresentation(id: string, representation: sdd_Representation, extraFields: Field[], photosByRef: Record<string, string>): DetailData {
+	static fromRepresentation(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): DetailData {
 		const names = representation.label.split("/");
 		const name = names[0], author = names[1], nameCN = names[2];
 

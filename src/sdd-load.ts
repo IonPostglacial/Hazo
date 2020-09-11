@@ -1,4 +1,5 @@
-import type { sdd_Dataset } from "./libs/SDD";
+import type { Dataset as sdd_Dataset } from "./sdd/datatypes";
+import { Loader } from "./sdd/loader";
 import { Dataset, Field } from "./bunga";
 
 function loadSddFile(file: File): Promise<sdd_Dataset[]> {
@@ -7,7 +8,7 @@ function loadSddFile(file: File): Promise<sdd_Dataset[]> {
         
         fileReader.onload = function () {
             if (typeof fileReader.result === "string") {
-                const xml = new window.sdd.Loader(false).load(fileReader.result);
+                const xml = new Loader(false).load(fileReader.result);
                 resolve(xml);
             }
         };
@@ -18,7 +19,7 @@ function loadSddFile(file: File): Promise<sdd_Dataset[]> {
     });
 }
 
-export async function loadSDD(file: File, extraFields:Field[]=[]): Promise<Dataset> {
+export async function loadSDD(file: File, extraFields: Field[] = []): Promise<Dataset> {
     if (typeof extraFields === "undefined") { extraFields = [] }
 
     const datasets = await loadSddFile(file);

@@ -1,8 +1,8 @@
-import type { sdd_State, sdd_MediaObject } from "../libs/SDD";
+import type { State as sdd_State, MediaObject } from "../sdd/datatypes";
 
 interface SddStateData {
     state: sdd_State;
-    mediaObjects: sdd_MediaObject[];
+    mediaObjects: MediaObject[];
 }
 
 export class State {
