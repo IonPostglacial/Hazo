@@ -1,9 +1,0 @@
---class-path src
---class-path test
---dce full
---js public/test.js
---resource res/test.sdd.xml@sdd_sample
---resource res/sdd.mtt@sdd_template
---library utest
--debug
---main TestAll
