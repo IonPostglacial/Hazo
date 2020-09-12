@@ -1,7 +1,7 @@
 <template>
     <section v-if="typeof item !== 'undefined'" class="flex-grow-1 horizontal-flexbox">
         <div class="vertical-flexbox scroll">
-            <picture-box class="min-height-300" :editable="editable"
+            <picture-box :editable="editable"
                     @open-photo="openPhoto"
                     @add-photo="addItemPhoto"
                     @set-photo="setItemPhoto" 
@@ -9,7 +9,7 @@
                 <picture-frame v-for="(photo, index) in item.photos" :key="index"
                     :index="index" :editable="editable" :url="photo"></picture-frame>
             </picture-box>
-            <div class="horizontal-flexbox start-align flex-grow-1 relative">
+            <div class="horizontal-flexbox start-align relative">
                 <collapsible-panel label="Properties" 
                         v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
                     <div class="scroll large-max-width">
