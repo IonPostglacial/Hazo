@@ -18,7 +18,7 @@ export function createCharacter(init: CharacterInit): Character {
 
 export function addNewCharacter(characters: Record<string, Character>, data: CharacterCreationData): Character {
 	let nextId = Object.keys(characters).length;
-	while (characters["myd-" + nextId] != null) {
+	while (typeof characters["myd-" + nextId] !== "undefined") {
 		nextId++;
 	}
 	const newCharacterId = "myd-" + nextId;
