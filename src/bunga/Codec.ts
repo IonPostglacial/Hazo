@@ -1,105 +1,80 @@
-import { HierarchicalItem } from "./HierarchicalItem";
-import { Taxon } from "./Taxon";
-import { BookInfo } from "./BookInfo";
-import { Character } from "./Character";
-import { State } from "./State";
-import { Field } from "./Field";
-import { Book } from "./Book";
-import { Dataset } from "./Dataset";
-import { DetailData } from "./DetailData";
+import { Book, BookInfo, Character, Dataset, DetailData, Field, HierarchicalItem, State, Taxon } from "./datatypes";
+import { standardBooks } from "./stdcontent";
+import { createDataset } from "./Dataset";
+import { createDetailData } from './DetailData';
+import { createHierarchicalItem, hydrateChildren } from './HierarchicalItem';
+import { createTaxon } from './Taxon';
+import { createCharacter } from './Character';
 
-class CodedHierarchicalItem extends DetailData {
-	type: string;
-	parentId: string|undefined;
-	topLevel: boolean;
-	children: string[] = [];
+function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>) {
+	const children = [];
 
-	constructor(item: HierarchicalItem) {
-		super(item);
-		this.type = item.type;
-		this.parentId = item.parentId;
-		this.topLevel = item.topLevel;
-		for (const child of Object.values(item.children)) {
-			if (typeof child === "undefined" || child === null) {
-				console.log(item.name + " has null child");
-				console.log(item);
-			} else {
-				this.children.push(child.id);
-			}
+	for (const child of Object.values(item.children)) {
+		if (typeof child === "undefined" || child === null) {
+			console.log(item.name + " has null child");
+			console.log(item);
+		} else {
+			children.push(child.id);
 		}
 	}
+	return {
+		type: item.type,
+		parentId: item.parentId,
+		topLevel: item.topLevel,
+		children: children,
+		...createDetailData(item),
+	};
 }
 
-class CodedDescription {
-	descriptorId: string;
-	statesIds: string[];
+function encodeDescription(descriptorId: string, statesIds: string[]) {
+	return { descriptorId, statesIds };
+}
 
-	constructor(descriptorId: string, statesIds: string[]) {
-		this.descriptorId = descriptorId;
-		this.statesIds = statesIds;
+function encodeTaxon(taxon: Taxon) {
+	return {
+		bookInfoByIds: taxon.bookInfoByIds,
+		descriptions: taxon.descriptions.map(d => encodeDescription(d.descriptor.id, d.states.map(s => s.id))),
+		...encodeHierarchicalItem(taxon),
+	};
+}
+
+function encodeCharacter(character: Character) {
+	return {
+		states: character.states.map(s => s.id),
+		inapplicableStatesIds: character.inapplicableStates.map(s => s.id),
+		...encodeHierarchicalItem(character),
+	};
+}
+
+function getAllStates(dataset: Dataset): State[] {
+	let states: State[] = [];
+	for (const character of Object.values(dataset.descriptors)) {
+		states = states.concat(character.states);
 	}
+	return states;
 }
 
-class CodedTaxon extends CodedHierarchicalItem {
-	descriptions: CodedDescription[];
-	bookInfoByIds: Record<string, BookInfo> = {};
-
-	constructor(taxon: Taxon) {
-		super(taxon);
-		this.bookInfoByIds = taxon.bookInfoByIds;
-		this.descriptions = taxon.descriptions.map(d => new CodedDescription(d.descriptor.id, d.states.map(s => s.id)));
-	}
+export function encodeDataset(dataset: Dataset) {
+	return {
+		id: dataset.id,
+		taxons: Object.values(dataset.taxons).map(taxon => encodeTaxon(taxon)),
+		descriptors: Object.values(dataset.descriptors).map(character => encodeCharacter(character)),
+		states: getAllStates(dataset),
+		books: dataset.books,
+		extraFields: dataset.extraFields,
+		dictionaryEntries: dataset.dictionaryEntries,
+	};
 }
 
-class CodedCharacter extends CodedHierarchicalItem {
-	states: string[];
-	inapplicableStatesIds: string[];
-	inapplicableStates: State[]|null = null; // Only here to fix an oversight of the JS version
-
-	constructor(character: Character) {
-		super(character);
-		this.states = character.states.map(s => s.id);
-		this.inapplicableStatesIds = character.inapplicableStates.map(s => s.id);
-	}
+function decodeHierarchicalItem<T>(item: ReturnType<typeof encodeHierarchicalItem>): HierarchicalItem<T> {
+	return createHierarchicalItem({...item, childrenIds: item.children});
 }
 
-class CodedDataset {
-	id: string;
-	states: State[];
-	taxons: CodedTaxon[];
-	descriptors: CodedCharacter[];
-	books: Book[];
-	extraFields: Field[];
-	dictionaryEntries: Record<string, any>;
-
-	static getAllStates(dataset: Dataset): State[] {
-		let states: State[] = [];
-		for (const character of Object.values(dataset.descriptors)) {
-			states = states.concat(character.states);
-		}
-		return states;
-	}
-
-	constructor(dataset: Dataset) {
-		this.id = dataset.id;
-		this.taxons = Object.values(dataset.taxons).map(taxon => new CodedTaxon(taxon));
-		this.descriptors = Object.values(dataset.descriptors).map(character => new CodedCharacter(character));
-		this.states = CodedDataset.getAllStates(dataset);
-		this.books = dataset.books;
-		this.extraFields = dataset.extraFields;
-		this.dictionaryEntries = dataset.dictionaryEntries;
-	}
-}
-
-function decodeHierarchicalItem(item: CodedHierarchicalItem): HierarchicalItem {
-	return new HierarchicalItem({...item, childrenIds: item.children});
-}
-
-function decodeTaxon(taxon: CodedTaxon, descriptions: Record<string, Character>, states: Record<string, State>, books: Book[]): Taxon {
+function decodeTaxon(taxon: ReturnType<typeof encodeTaxon>, descriptions: Record<string, Character>, states: Record<string, State>, books: Book[]): Taxon {
 	const bookInfoByIds = (typeof taxon.bookInfoByIds !== "undefined") ? taxon.bookInfoByIds : {};
 
 	if (Object.keys(bookInfoByIds).length === 0) {
-		for (const book of Book.standard) {
+		for (const book of standardBooks) {
 			const info:BookInfo = {
 				fasc: (book.id === "fmc") ? "" + taxon.fasc : "",
 				page: (book.id === "fmc") ? taxon.page : undefined,
@@ -109,9 +84,9 @@ function decodeTaxon(taxon: CodedTaxon, descriptions: Record<string, Character>,
 		}
 	}
 	const item = decodeHierarchicalItem(taxon);
-	return new Taxon({
+	return createTaxon({
 		...item,
-		childrenIds: item.childrenIds,
+		childrenIds: item._childrenIds,
 		descriptions: taxon.descriptions.map(function(d) { return {
 			descriptor: descriptions[d.descriptorId],
 			states: d.statesIds.map(id => states[id]),
@@ -120,28 +95,22 @@ function decodeTaxon(taxon: CodedTaxon, descriptions: Record<string, Character>,
 	});
 }
 
-function decodeCharacter(character:CodedCharacter, states: Record<string, State>): Character {
+function decodeCharacter(character: ReturnType<typeof encodeCharacter>, states: Record<string, State>): Character {
 	const item = decodeHierarchicalItem(character);
-	return new Character({
+	return createCharacter({
 		...item,
-		childrenIds: item.childrenIds,
+		childrenIds: item._childrenIds,
 		states: character.states.map(id => states[id]),
-		inapplicableStates: (typeof character.inapplicableStates !== "undefined") ?
-			(character.inapplicableStates?.map(s => states[s.id]) ?? []) :
-			(character.inapplicableStatesIds?.map(id => states[id]) ?? [])
+		inapplicableStates: character.inapplicableStatesIds?.map(id => states[id]) ?? [],
 		
 	});
 }
 
-export function encodeDataset(dataset: Dataset) {
-	return new CodedDataset(dataset);
-}
-
-export function decodeDataset(dataset: CodedDataset): Dataset {
+export function decodeDataset(dataset: ReturnType<typeof encodeDataset>): Dataset {
 	const states: Record<string, State> = {};
 	const descriptors: Record<string, Character> = {};
 	const taxons: Record<string, Taxon> = {};
-	const books = Book.standard.slice();
+	const books = standardBooks.slice();
 
 	for (const state of dataset.states) {
 		states[state.id] = state;
@@ -153,12 +122,12 @@ export function decodeDataset(dataset: CodedDataset): Dataset {
 		taxons[taxon.id] = decodeTaxon(taxon, descriptors, states, books);
 	}
 	for (const descriptor of Object.values(descriptors)) {
-		descriptor.hydrateChildren(descriptors);
+		hydrateChildren(descriptor, descriptors);
 	}
 	for (const taxon of Object.values(taxons)) {
-		taxon.hydrateChildren(taxons);
+		hydrateChildren(taxon, taxons);
 	}
-	return new Dataset(
+	return createDataset(
 		dataset.id,
 		taxons,
 		descriptors,

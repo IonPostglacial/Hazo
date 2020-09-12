@@ -46,7 +46,7 @@ export default Vue.extend({
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropValidator<CombinedVueInstance<any, any, any, any, any>>,
-        item: Object as PropValidator<HierarchicalItem>,
+        item: Object as PropValidator<HierarchicalItem<any>>,
         name: String,
         buttons: Array as PropValidator<Array<Button>>,
         nameField: String,

@@ -22,9 +22,8 @@
 import Vue from "vue";
 import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
-import type { Book } from "../bunga/Book"; // eslint-disable-line no-unused-vars
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
-import { Character, Field, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Book, Character, Field, State, Taxon } from "../bunga/datatypes"; // eslint-disable-line no-unused-vars
 
 interface Description { descriptor: Character, states: State[] }
 

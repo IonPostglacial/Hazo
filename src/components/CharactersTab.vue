@@ -72,7 +72,7 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import Vue from "vue";
-import { Character, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import { addNewCharacter, Character, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -132,8 +132,8 @@ export default Vue.extend({
             this.selectedDescriptionState?.photos.splice(e.detail.index, 1);
         },
         addDescription({ value, parentId }: { value: string, parentId: string }) {
-            Character.create(this.descriptions, { name: value, parentId, states: [], inapplicableStates: [] });
-            const newDescription = Character.create(this.descriptions, {
+            addNewCharacter(this.descriptions, { name: value, parentId, states: [], inapplicableStates: [] });
+            const newDescription = addNewCharacter(this.descriptions, {
                 name: value,
                 parentId: parentId,
                 states: [],
@@ -149,9 +149,7 @@ export default Vue.extend({
                 };
                 parentDescription.states = [...parentDescription.states, newState];
                 for (const child of Object.values(parentDescription.children)) {
-                    if (child instanceof Character) {
-                        child.inapplicableStates = [...child.inapplicableStates, newState];
-                    }
+                    child.inapplicableStates = [...child.inapplicableStates, newState];
                 }
                 parentDescription.children = Object.assign({}, this.descriptions[parentId].children, {
                     [newDescription.id]: newDescription

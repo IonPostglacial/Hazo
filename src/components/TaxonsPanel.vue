@@ -138,7 +138,6 @@ export default Vue.extend({
                 const state = descriptor.states.find(s => s.id === id);
 
                 for (const child of Object.values(this.item.children)) {
-                    if (!(child instanceof Taxon)) continue;
                     const desc = child.descriptions.find(d => d.descriptor.id === descriptor.id);
                     if (desc && !desc.states.find(s => s.id === state?.id)) {
                         desc.states.push(Object.assign({}, state));

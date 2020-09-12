@@ -50,7 +50,7 @@ export default Vue.extend({
     name: "TreeMenu",
     props: {
         name: String,
-        items: Object as PropValidator<Array<HierarchicalItem>>,
+        items: Object as PropValidator<Array<HierarchicalItem<any>>>,
         buttons: Array as PropValidator<Button>,
         editable: Boolean,
         nameFields: Array as PropValidator<Array<string>>,
@@ -73,7 +73,7 @@ export default Vue.extend({
         };
     },
     computed: {
-        itemsToDisplay(): Array<HierarchicalItem> {
+        itemsToDisplay(): Array<HierarchicalItem<any>> {
             if (!this.items) return [];
             return Object.values(this.items).filter((item) => {
                 if (this.menuFilter !== "") {

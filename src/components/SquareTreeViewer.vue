@@ -24,17 +24,17 @@ export default Vue.extend({
     name: "SquareTreeViewer",
     props: {
         editable: Boolean,
-        rootItems: Object as PropValidator<Record<string, HierarchicalItem & { selected?: boolean }>>,
+        rootItems: Object as PropValidator<Record<string, HierarchicalItem<any> & { selected?: boolean }>>,
     },
     data() {
         return {
             currentItems: this.rootItems,
-            breadCrumbs: [] as HierarchicalItem[],
+            breadCrumbs: [] as HierarchicalItem<any>[],
             menuFilter: "",
         }
     },
     computed: {
-        itemsToDisplay(): Array<HierarchicalItem> {
+        itemsToDisplay(): Array<HierarchicalItem<any>> {
             if (!this.currentItems) return [];
             return Object.values(this.currentItems).filter((item) => {
                 if (!this.editable && item.selected === false) return false;
@@ -47,16 +47,16 @@ export default Vue.extend({
         },
     },
     methods: {
-        isClickable(item: HierarchicalItem): boolean {
+        isClickable(item: HierarchicalItem<any>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
-        isSelectable(item: HierarchicalItem & { selected?: boolean }): boolean {
+        isSelectable(item: HierarchicalItem<any> & { selected?: boolean }): boolean {
             return this.editable && typeof item.selected !== "undefined";
         },
-        hasChildren(item: HierarchicalItem): boolean {
+        hasChildren(item: HierarchicalItem<any>): boolean {
             return item.children && Object.keys(item.children).length > 0;
         },
-        openItem(item: HierarchicalItem & { selected?: boolean }) {
+        openItem(item: HierarchicalItem<any> & { selected?: boolean }) {
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
                 this.currentItems = item.children;
@@ -70,7 +70,7 @@ export default Vue.extend({
             this.currentItems = this.rootItems;
             this.breadCrumbs = [];
         },
-        goToBreadCrumb(breadCrumb: HierarchicalItem) {
+        goToBreadCrumb(breadCrumb: HierarchicalItem<any>) {
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
             this.currentItems = breadCrumb.children;

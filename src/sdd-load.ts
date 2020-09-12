@@ -1,6 +1,7 @@
 import type { Dataset as sdd_Dataset } from "./sdd/datatypes";
 import { Loader } from "./sdd/loader";
-import { Dataset, Field } from "./bunga";
+import { Dataset, Field } from "./bunga/datatypes"
+import { datasetFromSdd } from "./bunga";
 
 function loadSddFile(file: File): Promise<sdd_Dataset[]> {
     return new Promise(function (resolve, reject) {
@@ -23,7 +24,7 @@ export async function loadSDD(file: File, extraFields: Field[] = []): Promise<Da
     if (typeof extraFields === "undefined") { extraFields = [] }
 
     const datasets = await loadSddFile(file);
-    const dataset = Dataset.fromSdd(datasets[0], extraFields);
+    const dataset = datasetFromSdd(datasets[0], extraFields);
     
     return dataset;
 }

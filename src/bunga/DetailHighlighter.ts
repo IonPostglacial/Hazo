@@ -1,4 +1,4 @@
-import { Taxon } from "./Taxon";
+import { Taxon } from "./datatypes";
 
 function escape(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

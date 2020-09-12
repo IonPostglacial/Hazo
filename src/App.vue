@@ -93,7 +93,8 @@
 </template>
 
 <script lang="ts">
-import { Book, Character, Dataset, Field, Taxon, TaxonToTex } from "./bunga"; // eslint-disable-line no-unused-vars
+import { standardBooks } from "./bunga/stdcontent";
+import { Character, Dataset, Field, Taxon, TaxonToTex } from "./bunga"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, hierarchyToZip, highlightTaxonsDetails } from "./bunga";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
@@ -130,7 +131,7 @@ export default Vue.extend({
                 "Dictionary"
             ],
             extraFields: new Array<Field>(),
-            books: Book.standard,
+            books: standardBooks,
             items,
             descriptions,
             dictionaryEntries: {},
@@ -200,7 +201,7 @@ export default Vue.extend({
             this.bigImageIndex = 0;
         },
         saveData() {
-            DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: Book.standard });
+            DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
         },
         resetData() {
             for (const key of Object.keys(this.items)) {
@@ -362,7 +363,7 @@ export default Vue.extend({
                 descriptors: this.descriptions, 
                 extraFields: this.extraFields,
                 dictionaryEntries: this.dictionaryEntries,
-                books: Book.standard,
+                books: standardBooks,
             }));
             download(json, "bunga.json");
         },

@@ -1,7 +1,5 @@
 import JSZip from "jszip";
-import { Character } from "./Character";
-import { State } from "./State";
-import type { Taxon } from "./Taxon";
+import { Character, State, Taxon } from "./datatypes";
 import { generateFileName } from "./FileNameGenerator";
 
 export class TaxonToTex {

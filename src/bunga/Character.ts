@@ -1,14 +1,6 @@
-import type { MediaObject as sdd_MediaObject, Character as sdd_Character, State as sdd_State } from "../sdd/datatypes";
-import { DetailData } from "./DetailData";
-import { Field } from "./Field";
-import { State } from "./State";
-import { HierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
-
-interface SddCharacterData {
-	character: sdd_Character;
-	states:Array<sdd_State>;
-	mediaObjects:Array<sdd_MediaObject>;
-}
+import { Character, State } from "./datatypes";
+import { HierarchicalItemInit } from "./HierarchicalItem";
+import { createHierarchicalItem } from "./HierarchicalItem";
 
 interface CharacterCreationData {
 	name: string;
@@ -19,58 +11,24 @@ interface CharacterCreationData {
 
 interface CharacterInit extends HierarchicalItemInit { states: State[], inapplicableStates: State[] }
 
-export class Character extends HierarchicalItem {
-	states: State[];
-	inapplicableStates: State[];
+export function createCharacter(init: CharacterInit): Character {
+	return Object.assign({ states: init.states ?? [], inapplicableStates: init.inapplicableStates ?? [] },
+		createHierarchicalItem<Character>(init));
+}
 
-	constructor(init : CharacterInit) {
-		super(init);
-		this.states = init.states ?? [];
-		this.inapplicableStates = init.inapplicableStates ?? [];
+export function addNewCharacter(characters: Record<string, Character>, data: CharacterCreationData): Character {
+	let nextId = Object.keys(characters).length;
+	while (characters["myd-" + nextId] != null) {
+		nextId++;
 	}
-
-	static fromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: Record<string, State>): Character {
-		return new Character({
-			type: "character",
-			parentId: character.parentId,
-			childrenIds: character.childrenIds,
-			states: character.states?.map(s => statesById[s.id]),
-			inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById[s.ref]),
-			...DetailData.fromRepresentation(character.id, character, [], photosByRef),
-		});
-	}
-
-	static toSdd(character: Character, extraFields: Field[], mediaObjects: sdd_MediaObject[]): SddCharacterData {
-		const statesData = character.states.map(s => State.toSdd(s));
-		const states = statesData.map(data => data.state);
-		return {
-			character: {
-				id: character.id,
-				parentId: character.parentId,
-				states: states,
-				inapplicableStatesRefs: character.inapplicableStates.map(s => ({ ref: s.id })),
-				childrenIds: character.childrenIds.slice(),
-				...character.toRepresentation(extraFields),
-			},
-			states: states,
-			mediaObjects: statesData.flatMap(data => data.mediaObjects).concat([]),
-		};
-	}
-
-	public static create(characters: Record<string, Character>, data:CharacterCreationData):Character {
-		let nextId = Object.keys(characters).length;
-		while (characters["myd-" + nextId] != null) {
-			nextId++;
-		}
-		const newCharacterId = "myd-" + nextId;
-		return new Character({
-			type: "character",
-			id: newCharacterId,
-			parentId: data.parentId,
-			childrenIds: [],
-			name: data.name,
-			states: data.states,
-			inapplicableStates: data.inapplicableStates,
-		});
-	}
+	const newCharacterId = "myd-" + nextId;
+	return createCharacter({
+		type: "character",
+		id: newCharacterId,
+		parentId: data.parentId,
+		childrenIds: [],
+		name: data.name,
+		states: data.states,
+		inapplicableStates: data.inapplicableStates,
+	});
 }

@@ -1,36 +1,26 @@
-import { DetailData, DetailDataInit } from "./DetailData";
+import { HierarchicalItem } from "./datatypes";
+import { createDetailData, DetailDataInit } from "./DetailData";
 
 export interface HierarchicalItemInit extends DetailDataInit { type: string, parentId: string|undefined, childrenIds: readonly string[] }
 
-export class HierarchicalItem extends DetailData {
-	type: string;
-	parentId: string|undefined;
-	topLevel: boolean;
-	hidden = false;
-	children: Record<string, HierarchicalItem>;
-	#childrenIds: string[];
+export function createHierarchicalItem<T>(init : HierarchicalItemInit): HierarchicalItem<T> {
+	return Object.assign({
+		type: init.type,
+		parentId: init.parentId,
+		topLevel: !init.parentId,
+		hidden: false,
+		children: {},
+		_childrenIds: init.childrenIds.slice(),
+	}, createDetailData(init));
+}
 
-	hydrateChildren(hierarchyById: Record<string, HierarchicalItem>) {
-		for (const id of this.#childrenIds) {
-			const child = hierarchyById[id];
-			if (typeof child === "undefined" || child == null) {
-				console.log('Child not found: $name > $id');
-			} else {
-				this.children[id] = hierarchyById[id];
-			}
+export function hydrateChildren<T>(item: HierarchicalItem<T>, hierarchyById: Record<string, T>) {
+	for (const id of item._childrenIds) {
+		const child = hierarchyById[id];
+		if (typeof child === "undefined" || child == null) {
+			console.log('Child not found: $name > $id');
+		} else {
+			item.children[id] = hierarchyById[id];
 		}
-	}
-
-	get childrenIds(): readonly string[] {
-		return this.#childrenIds;
-	}
-
-	constructor(init : HierarchicalItemInit) {
-		super(init);
-		this.type = init.type;
-		this.parentId = init.parentId;
-		this.topLevel = !init.parentId;
-		this.children = {};
-		this.#childrenIds = init.childrenIds.slice();
 	}
 }
