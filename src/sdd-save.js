@@ -1,4 +1,4 @@
-import { Field } from "./bunga";
+import { standardFields } from "./bunga";
 
 function saveSDD({ items, descriptors, extraFields }) {
     const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");
@@ -50,7 +50,7 @@ function saveSDD({ items, descriptors, extraFields }) {
             (item.nameCN ? ` / ${item.nameCN}` : "");
         const label = Object.assign(xml.createElement("Label"), { textContent: name || "_" });
         representation.appendChild(label);
-        const fields = [...Field.standard, ...(extraFields ?? [])];
+        const fields = [...standardFields, ...(extraFields ?? [])];
         let itemDetail = "";
         for (const { id, label, std } of fields) {
             const value = std ? item[id] : (item.extra ? item.extra[id] : null);
