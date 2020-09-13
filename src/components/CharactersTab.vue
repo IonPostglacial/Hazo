@@ -132,7 +132,6 @@ export default Vue.extend({
             this.selectedDescriptionState?.photos.splice(e.detail.index, 1);
         },
         addDescription({ value, parentId }: { value: string, parentId: string }) {
-            addNewCharacter(this.descriptions, { name: value, parentId, states: [], inapplicableStates: [] });
             const newDescription = addNewCharacter(this.descriptions, {
                 name: value,
                 parentId: parentId,
