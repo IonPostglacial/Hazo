@@ -1,8 +1,8 @@
 import JSZip from "jszip";
 import { Character, State, Taxon } from "./datatypes";
-import { generateFileName } from "./FileNameGenerator";
+import { generateFileName } from "./generatefilename";
 
-export class TaxonToTex {
+export class TexExporter {
     photos: string[];
     pictureNameByUrl: Map<string, string>;
     progressListeners: ((progress: number, progressMax: number) => void)[];

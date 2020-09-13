@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { generateFileName } from "./FileNameGenerator";
+import { generateFileName } from "./generatefilename";
 
 interface HierarchyEntry {
 	id: string;
@@ -19,7 +19,7 @@ function getEntries(hierarchy: Record<string, HierarchyEntry>, zip: JSZip, path 
 	}
 }
 
-export function hierarchyToZip(hierarchy: Record<string, HierarchyEntry>): Promise<Blob> {
+export function exportZipFolder(hierarchy: Record<string, HierarchyEntry>): Promise<Blob> {
 	const zip = new JSZip();
 
 	getEntries(hierarchy, zip);

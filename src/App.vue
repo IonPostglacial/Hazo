@@ -94,8 +94,8 @@
 
 <script lang="ts">
 import { standardBooks } from "./bunga/stdcontent";
-import { Character, Dataset, Field, Taxon, TaxonToTex } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, hierarchyToZip, highlightTaxonsDetails } from "./bunga";
+import { Character, Dataset, Field, Taxon, TexExporter } from "./bunga"; // eslint-disable-line no-unused-vars
+import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails } from "./bunga";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
@@ -346,11 +346,11 @@ export default Vue.extend({
             download(csv, "csv");
         },
         async emptyZip() {
-            const zipTxt = await hierarchyToZip(this.items);
+            const zipTxt = await exportZipFolder(this.items);
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new TaxonToTex(Object.values(this.items));
+            const taxonToTex = new TexExporter(Object.values(this.items));
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export(Object.values(this.items)).then(tex => {
                 download(tex, "zip", true);
