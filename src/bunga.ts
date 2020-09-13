@@ -9,5 +9,7 @@ export * from "./bunga/zipfolderexport";
 export * from "./bunga/Taxon";
 export * from "./bunga/texexporter";
 export * from "./bunga/datatypes";
+export * from "./bunga/stdcontent";
 export * from "./bunga/sddimport";
 export * from "./bunga/sddexport";
+export * from "./bunga/hierarchy";
