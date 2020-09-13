@@ -48,7 +48,7 @@ export interface HierarchicalItem<T> extends DetailData {
 	topLevel: boolean;
 	hidden: boolean;
     children: Record<string, T>;
-    _childrenIds: string[];
+    childrenOrder: string[];
 }
 
 export interface Character extends HierarchicalItem<Character> {

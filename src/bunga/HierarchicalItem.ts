@@ -10,12 +10,12 @@ export function createHierarchicalItem<T>(init : HierarchicalItemInit): Hierarch
 		topLevel: !init.parentId,
 		hidden: false,
 		children: {},
-		_childrenIds: init.childrenIds.slice(),
+		childrenOrder: init.childrenIds.slice(),
 	}, createDetailData(init));
 }
 
 export function hydrateChildren<T>(item: HierarchicalItem<T>, hierarchyById: Record<string, T>) {
-	for (const id of item._childrenIds) {
+	for (const id of item.childrenOrder) {
 		const child = hierarchyById[id];
 		if (typeof child === "undefined" || child == null) {
 			console.log('Child not found: $name > $id');

@@ -53,7 +53,7 @@ function characterToSdd(character: Character, extraFields: Field[], mediaObjects
 			parentId: character.parentId,
 			states: states,
 			inapplicableStatesRefs: character.inapplicableStates.map(s => ({ ref: s.id })),
-			childrenIds: character._childrenIds.slice(),
+			childrenIds: character.childrenOrder.slice(),
 			...detailDataToSdd(character, extraFields),
 		},
 		states: states,
@@ -67,7 +67,7 @@ function taxonToSdd(taxon: Taxon, extraFields: Field[], mediaObjects: MediaObjec
         hid: taxon.id,
         parentId: taxon.parentId,
         ...detailDataToSdd(taxon, extraFields),
-        childrenIds: taxon._childrenIds.slice(),
+        childrenIds: taxon.childrenOrder.slice(),
         categoricals: taxon.descriptions.map(d => ({
             ref: d.descriptor.id,
             stateRefs: d.states.map(s => ({ ref: s.id }))

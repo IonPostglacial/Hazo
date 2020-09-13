@@ -86,7 +86,7 @@ function decodeTaxon(taxon: ReturnType<typeof encodeTaxon>, descriptions: Record
 	const item = decodeHierarchicalItem(taxon);
 	return createTaxon({
 		...item,
-		childrenIds: item._childrenIds,
+		childrenIds: item.childrenOrder,
 		descriptions: taxon.descriptions.map(function(d) { return {
 			descriptor: descriptions[d.descriptorId],
 			states: d.statesIds.map(id => states[id]),
@@ -99,7 +99,7 @@ function decodeCharacter(character: ReturnType<typeof encodeCharacter>, states: 
 	const item = decodeHierarchicalItem(character);
 	return createCharacter({
 		...item,
-		childrenIds: item._childrenIds,
+		childrenIds: item.childrenOrder,
 		states: character.states.map(id => states[id]),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states[id]) ?? [],
 		
