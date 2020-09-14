@@ -33,7 +33,7 @@ export default Vue.extend({
     components: { TreeMenu, TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
-        descriptions: Object as PropValidator<Record<string, Character>>,
+        descriptions: Object as PropValidator<Hierarchy<Character>>,
         initItems: Object as PropValidator<Hierarchy<Taxon>>,
         extraFields: Array as PropValidator<Field[]>,
         taxonNameField: String,
@@ -61,13 +61,13 @@ export default Vue.extend({
             return this.items.getItemById(this.selectedTaxon);
         },
         selectedItemDescriptorPhotos(): string[] {
-            return this.descriptions[this.selectedItemDescriptorId].photos;
+            return this.descriptions.getItemById(this.selectedItemDescriptorId).photos;
         },
         selectedItemDescriptorStates(): State[] {
             return this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
         },
         selectedItemDescriptorFilteredStates(): State[] {
-            return this.descriptions[this.selectedItemDescriptorId]?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
+            return this.descriptions.getItemById(this.selectedItemDescriptorId)?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
         },
     },
     methods: {
@@ -95,7 +95,7 @@ export default Vue.extend({
                     itemStatesIds.push(state.id);
                 }
             }
-            for (const descriptor of Object.values(this.descriptions)) {
+            for (const descriptor of this.descriptions.allItems) {
                 dependencyTree.setItem(Object.assign({}, descriptor));
                 descriptor.hidden = descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 );
             }
@@ -104,7 +104,7 @@ export default Vue.extend({
         addItemState({ selected, item }: { selected: boolean, item: State }) {
             let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (typeof selectedDescription === "undefined") {
-                selectedDescription = { descriptor: Object.assign({}, this.descriptions[this.selectedItemDescriptorId]), states: [] };
+                selectedDescription = { descriptor: Object.assign({}, this.descriptions.getItemById(this.selectedItemDescriptorId)), states: [] };
                 this.selectedItem.descriptions.push(selectedDescription);
             }
             const stateIndex = selectedDescription.states.findIndex((s: State) => s.id === item.id);
