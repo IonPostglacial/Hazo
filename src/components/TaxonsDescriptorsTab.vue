@@ -23,7 +23,8 @@ import Vue from "vue";
 import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
-import { Book, Character, Field, State, Taxon } from "../bunga/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Field, Hierarchy, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import { ObservableMap } from '@/observablemap';
 
 interface Description { descriptor: Character, states: State[] }
 
@@ -33,7 +34,7 @@ export default Vue.extend({
     props: {
         showLeftMenu: Boolean,
         descriptions: Object as PropValidator<Record<string, Character>>,
-        initItems: Object as PropValidator<Record<string, Taxon>>,
+        initItems: Object as PropValidator<Hierarchy<Taxon>>,
         extraFields: Array as PropValidator<Field[]>,
         taxonNameField: String,
         selectedTaxon: String,
@@ -44,7 +45,7 @@ export default Vue.extend({
             items: this.initItems,
             selectedItemDescriptorId: "",
             itemDescriptorSearch: "",
-            selectedItemDescriptorTree: {} as Record<string, Character>
+            selectedItemDescriptorTree: {} as Hierarchy<Character>
         };
     },
     mounted() {
@@ -57,7 +58,7 @@ export default Vue.extend({
     },
     computed: {
         selectedItem(): Taxon {
-            return this.items[this.selectedTaxon];
+            return this.items.getItemById(this.selectedTaxon);
         },
         selectedItemDescriptorPhotos(): string[] {
             return this.descriptions[this.selectedItemDescriptorId].photos;
@@ -88,17 +89,16 @@ export default Vue.extend({
 
             const itemStatesIds: string[] = [];
             const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
-            const dependencyTree: Record<string, Character> = {};
+            const dependencyTree = new Hierarchy<Character>("", new ObservableMap());
             for (const description of selectedItemIdDescriptions) {
                 for (const state of description?.states ?? []) {
                     itemStatesIds.push(state.id);
                 }
             }
             for (const descriptor of Object.values(this.descriptions)) {
-                dependencyTree[descriptor.id] = Object.assign({}, descriptor);
+                dependencyTree.setItem(Object.assign({}, descriptor));
                 descriptor.hidden = descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 );
             }
-            this.selectedItemDescriptorTree = {};
             this.selectedItemDescriptorTree = dependencyTree;
         },
         addItemState({ selected, item }: { selected: boolean, item: State }) {
@@ -118,7 +118,7 @@ export default Vue.extend({
                     selectedDescription.states.splice(stateIndex, 1);
                 }
             }
-            this.items[this.selectedItem.id] = Object.assign({}, this.selectedItem);
+            this.items.setItem(Object.assign({}, this.selectedItem));
             this.onStateSelection();
         },
     }

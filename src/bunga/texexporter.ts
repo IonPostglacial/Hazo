@@ -3,11 +3,13 @@ import { Character, State, Taxon } from "./datatypes";
 import { generateFileName } from "./generatefilename";
 
 export class TexExporter {
+    taxons: Taxon[];
     photos: string[];
     pictureNameByUrl: Map<string, string>;
     progressListeners: ((progress: number, progressMax: number) => void)[];
 
     constructor(taxons: Taxon[]) {
+        this.taxons = taxons;
         this.progressListeners = [];
         this.pictureNameByUrl = new Map();
         this.photos = [];
@@ -34,7 +36,7 @@ export class TexExporter {
         }
     }
 
-    private _generateTex(taxons: Taxon[]): string {
+    private _generateTex(): string {
         const descriptionTemplate = (description: { descriptor: Character, states: State[] }) => `
             \\item ${description.descriptor.name}: ${description.states.map(s => s.name).join(" ")}
         `;
@@ -91,16 +93,16 @@ export class TexExporter {
 
             \\section{Taxons}
 
-            ${taxons.map(taxonTemplate).join("\n")}
+            ${this.taxons.map(taxonTemplate).join("\n")}
 
             \\end{document}
         `;
     }
 
-    export(taxons: Taxon[]):Promise<Blob> {
+    export():Promise<Blob> {
         const zip = new JSZip();
 
-        const texFileContent = this._generateTex(taxons);
+        const texFileContent = this._generateTex();
 
         const texFolder = zip.folder("latex");
         texFolder?.file("export.tex", texFileContent);

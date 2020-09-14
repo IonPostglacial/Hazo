@@ -24,7 +24,7 @@ export default Vue.extend({
     name: "SquareTreeViewer",
     props: {
         editable: Boolean,
-        rootItems: Object as PropValidator<Record<string, HierarchicalItem<any> & { selected?: boolean }>>,
+        rootItems: Array as PropValidator<(HierarchicalItem<any> & { selected?: boolean })[]>,
     },
     data() {
         return {
@@ -36,7 +36,7 @@ export default Vue.extend({
     computed: {
         itemsToDisplay(): Array<HierarchicalItem<any>> {
             if (!this.currentItems) return [];
-            return Object.values(this.currentItems).filter((item) => {
+            return this.currentItems.filter((item) => {
                 if (!this.editable && item.selected === false) return false;
                 if (this.menuFilter !== "") {
                     return !item.hidden && item.name.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
@@ -59,7 +59,7 @@ export default Vue.extend({
         openItem(item: HierarchicalItem<any> & { selected?: boolean }) {
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
-                this.currentItems = item.children;
+                this.currentItems = Object.values(item.children);
             }
             if (this.isSelectable(item)) {
                 item.selected = !item.selected;
@@ -73,7 +73,7 @@ export default Vue.extend({
         goToBreadCrumb(breadCrumb: HierarchicalItem<any>) {
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
-            this.currentItems = breadCrumb.children;
+            this.currentItems = Object.values(breadCrumb.children);
         }
     },
 });

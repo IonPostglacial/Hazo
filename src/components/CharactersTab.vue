@@ -28,7 +28,7 @@
                 <div v-if="selectedDescription.parentId">
                     <label>Inapplicable If</label>
                     <ul class="indented">
-                        <li class="medium-padding" v-for="state in descriptions[selectedDescription.parentId].states" :key="state.id">
+                        <li class="medium-padding" v-for="state in descriptions.getItemById(selectedDescription.parentId).states" :key="state.id">
                             <label>
                             <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedDescription.inapplicableStates.find(s => s.id === state.id)" />
                             {{ state.name }}
@@ -72,29 +72,32 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import Vue from "vue";
-import { addNewCharacter, Character, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import { addNewCharacter, Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import type { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
+import { createDetailData } from '@/bunga/DetailData';
+import { createHierarchicalItem } from '@/bunga/HierarchicalItem';
 
 export default Vue.extend({
     name: "CharactersTab",
     components: { TreeMenu },
     computed: {
-        selectedDescription(): Character | undefined {
-            return this.descriptions[this.selectedDescriptionId];
+        selectedDescription(): Character|undefined {
+            return this.descriptions.getItemById(this.selectedDescriptionId);
         },
-        selectedDescriptionState(): State | undefined {
+        selectedDescriptionState(): State|undefined {
             return this.selectedDescription?.states?.find(s => s.id === this.selectedState);
         },
     },
-    data(): { descriptions: Record<string, Character>, selectedDescriptionId: string, selectedState: string } {
+    data(): { descriptions: Hierarchy<Character>, selectedDescriptionId: string, selectedState: string } {
         return {
-            descriptions: this.initDescriptions ?? {},
+            descriptions: this.initDescriptions,
             selectedDescriptionId: "",
             selectedState: "",
         };
     },
     props: {
         showLeftMenu: Boolean,
-        initDescriptions: Object,
+        initDescriptions: Hierarchy as PropValidator<Hierarchy<Character>>,
     },
     methods: {
         setInapplicableState(state: State, selected: boolean) {
@@ -132,15 +135,18 @@ export default Vue.extend({
             this.selectedDescriptionState?.photos.splice(e.detail.index, 1);
         },
         addDescription({ value, parentId }: { value: string, parentId: string }) {
-            const newDescription = addNewCharacter(this.descriptions, {
-                name: value,
-                parentId: parentId,
+            const newDescription = this.descriptions.addItem({
+                ...createHierarchicalItem<Character>({
+                    ...createDetailData({ id: "", name: value }),
+                    type: "character",
+                    parentId: parentId,
+                    childrenIds: [],
+                }),
                 states: [],
                 inapplicableStates: []
             });
-            this.descriptions = { ...this.descriptions, [newDescription.id]: newDescription };
             if(typeof parentId !== "undefined") {
-                const parentDescription = this.descriptions[parentId];
+                const parentDescription = this.descriptions.getItemById(parentId);
                 newDescription.inapplicableStates = [...parentDescription.states];
                 const newState = {
                     id: "s-auto-" + newDescription.id,
@@ -148,19 +154,15 @@ export default Vue.extend({
                 };
                 parentDescription.states = [...parentDescription.states, newState];
                 for (const child of Object.values(parentDescription.children)) {
-                    child.inapplicableStates = [...child.inapplicableStates, newState];
+                    if (child.id !== newDescription.id) {
+                        child.inapplicableStates = [...child.inapplicableStates, newState];
+                    }
                 }
-                parentDescription.children = Object.assign({}, this.descriptions[parentId].children, {
-                    [newDescription.id]: newDescription
-                });
             }
             this.$emit("change-descriptions", this.descriptions);
         },
-        deleteDescription({ parentId, itemId }: { parentId: string, itemId: string}) {
-            if (typeof parentId !== "undefined") {
-                Vue.delete(this.descriptions[parentId].children, itemId);
-            }
-            Vue.delete(this.descriptions, itemId);
+        deleteDescription({ itemId }: { itemId: string}) {
+            this.descriptions.removeItem(this.descriptions.getItemById(itemId));
         },
         addState({detail} : {detail: string}) {
             if (typeof this.selectedDescription === "undefined") throw "addState failed: description is undefined.";

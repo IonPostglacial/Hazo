@@ -45,12 +45,13 @@ import { PropValidator } from 'vue/types/options';  // eslint-disable-line no-un
 import { HierarchicalItem } from "../bunga";  // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import { CombinedVueInstance } from 'vue/types/vue';  // eslint-disable-line no-unused-vars
+import { Hierarchy } from '@/bunga/hierarchy';
 
 export default Vue.extend({
     name: "TreeMenu",
     props: {
         name: String,
-        items: Object as PropValidator<Array<HierarchicalItem<any>>>,
+        items: Hierarchy as PropValidator<Hierarchy<HierarchicalItem<any>>>,
         buttons: Array as PropValidator<Button>,
         editable: Boolean,
         nameFields: Array as PropValidator<Array<string>>,
@@ -60,10 +61,10 @@ export default Vue.extend({
     components:  { TreeMenuItem },
     data(): { menuFilter: string, itemsBus: CombinedVueInstance<any, any, any, any, any>, visibleColumns: boolean[], initOpenItems: string[] } {
         const initOpenItems: string[] = [];
-        let itemId = (this.items as any)[this.selectedItem]?.parentId;
+        let itemId = this.items.getItemById(this.selectedItem)?.parentId;
         while (typeof itemId !== "undefined") {
             initOpenItems.push(itemId);
-            itemId = this.items[itemId]?.parentId;
+            itemId = this.items.getItemById(itemId)?.parentId;
         }
         return {
             menuFilter: "",
@@ -75,15 +76,15 @@ export default Vue.extend({
     computed: {
         itemsToDisplay(): Array<HierarchicalItem<any>> {
             if (!this.items) return [];
-            return Object.values(this.items).filter((item) => {
-                if (this.menuFilter !== "") {
+            if (this.menuFilter !== "") {
+                return Object.values(this.items.allItems).filter((item) => {
                     return !item.hidden && this.nameFields.
                         map(field => (item as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
-                } else {
-                    return !item.hidden && item.topLevel;
-                }
-            });
+                });
+            } else {
+                return this.items.topLevelItems;
+            }
         },
     },
     methods: {

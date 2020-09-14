@@ -7,7 +7,7 @@ export function createHierarchicalItem<T>(init : HierarchicalItemInit): Hierarch
 	return Object.assign({
 		type: init.type,
 		parentId: init.parentId,
-		topLevel: !init.parentId,
+		topLevel: typeof init.parentId === "undefined",
 		hidden: false,
 		children: {},
 		childrenOrder: init.childrenIds.slice(),

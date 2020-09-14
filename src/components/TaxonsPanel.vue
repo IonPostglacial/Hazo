@@ -92,11 +92,12 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Character, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
+import { Hierarchy } from '@/bunga/hierarchy';
 
 export default Vue.extend({
     name: "TaxonsPanel",
     components: { SquareTreeViewer, ckeditor: CKEditor.component },
-    props: { item: Object as PropValidator<Taxon>, descriptions: Object, editable: Boolean, extraFields: Array, books:Array },
+    props: { item: Object as PropValidator<Taxon>, descriptions: Hierarchy as PropValidator<Hierarchy<Character>>, editable: Boolean, extraFields: Array, books:Array },
     data() {
         return {
             editor: ClassicEditor,
@@ -107,7 +108,7 @@ export default Vue.extend({
         itemDescriptorTree() {
             const itemStatesIds: string[] = [];
             const selectedItemIdDescriptions = this.item.descriptions ?? [];
-            const dependencyTree: Record<string, Character & { warning?: boolean, selected?: boolean }> = JSON.parse(JSON.stringify(this.descriptions));
+            const dependencyTree: Record<string, Character & { warning?: boolean, selected?: boolean }> = JSON.parse(JSON.stringify(this.descriptions.toObject()));
             for (const description of selectedItemIdDescriptions) {
                 for (const state of description?.states ?? []) {
                     itemStatesIds.push(state.id);
@@ -128,13 +129,13 @@ export default Vue.extend({
                     Object.assign(descriptor.children, descriptorStates);
                 }
             }
-            return dependencyTree;
+            return Object.values(dependencyTree);
         },
     },
     methods: {
         itemDescriptorsButtonClicked({ buttonId, parentId, id }: { buttonId: string, parentId: string, id: string }) {
             if (buttonId === "pushToChildren") {
-                const descriptor: Character = this.descriptions[parentId];
+                const descriptor: Character = this.descriptions.getItemById(parentId);
                 const state = descriptor.states.find(s => s.id === id);
 
                 for (const child of Object.values(this.item.children)) {

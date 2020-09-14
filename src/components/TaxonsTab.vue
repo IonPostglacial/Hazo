@@ -22,6 +22,8 @@ import TaxonsPanel from "./TaxonsPanel.vue";
 import Vue from "vue";
 import { Book, Taxon } from "../bunga/datatypes"; // eslint-disable-line no-unused-vars
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
+import { Hierarchy } from '@/bunga/hierarchy';
+import { createDetailData } from '@/bunga/DetailData';
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -29,19 +31,19 @@ export default Vue.extend({
     props: {
         showLeftMenu: Boolean,
         descriptions: Object,
-        initItems: Object,
+        initItems: Hierarchy as PropValidator<Hierarchy<Taxon>>,
         extraFields: Array,
         selectedTaxon: String,
         books: Array as PropValidator<Array<Book>>,
     },
     data() {
         return {
-            items: this.initItems ?? {},
+            items: this.initItems,
         };
     },
     computed: {
         selectedItem(): Taxon {
-            return this.items[this.selectedTaxon];
+            return this.items.getItemById(this.selectedTaxon);
         }
     },
     methods: {
@@ -49,27 +51,18 @@ export default Vue.extend({
             this.$emit("taxon-selected", id);
         },
         addItem({ value, parentId } : {value: string, parentId: string }) {
-            let newItemIdNum = Object.keys(this.items).length;
-            do {
-                newItemIdNum++
-            } while(typeof this.items["myt-" + newItemIdNum] !== "undefined");
-            const newItemId = "myt-" + newItemIdNum;
-            const newItem = {
-                hid: "mytn-" + newItemId, id: newItemId, name: value, photos: [],
-                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: null, detail: "" }])),
-                topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, open: false, descriptions: [], extra: {}
-            };
-            this.items = { ...this.items, [newItemId]: newItem };
-            if (typeof parentId !== "undefined") {
-                this.items[parentId].children = { ...this.items[parentId].children, [newItemId]: newItem };
-            }
+            this.items.addItem({
+                ...createDetailData({ id: "", name: value, photos: [], }),
+                type: "taxon",
+                hidden: false,
+                childrenOrder: [],
+                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
+                topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, descriptions: [], extra: {}
+            });
             this.$emit("change-items", this.items);
         },
-        deleteItem({ parentId, itemId }: { parentId :string, itemId: string }) {
-            if (typeof parentId !== "undefined") {
-                Vue.delete(this.items[parentId].children, itemId);
-            }
-            Vue.delete(this.items, itemId);
+        deleteItem({ itemId }: { itemId: string }) {
+            this.items.removeItem(this.items.getItemById(itemId));
         },
         openPhoto(e: { photos: string[], index: number }) {
             this.$emit("open-photo", e);

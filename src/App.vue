@@ -95,7 +95,8 @@
 <script lang="ts">
 import { standardBooks } from "./bunga/stdcontent";
 import { Character, Dataset, Field, Taxon, TexExporter } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails } from "./bunga";
+import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails, Hierarchy } from "./bunga";
+import { ObservableMap } from "./observablemap";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
@@ -112,8 +113,6 @@ export default Vue.extend({
         TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
     },
     data() {
-        const items: Record<string, Taxon> = {};
-        const descriptions: Record<string, Character> = {};
         return {
             databaseIds: ["0"],
             selectedBase: "0",
@@ -132,8 +131,8 @@ export default Vue.extend({
             ],
             extraFields: new Array<Field>(),
             books: standardBooks,
-            items,
-            descriptions,
+            items: new Hierarchy<Taxon>("myt-", new ObservableMap()),
+            descriptions: new Hierarchy<Character>("myd-", new ObservableMap()),
             dictionaryEntries: {},
             latexProgressText: "",
         };
@@ -151,20 +150,20 @@ export default Vue.extend({
         loadBase(id?: string) {
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
-                for (const [id, taxon] of Object.entries(savedDataset?.taxons ?? {})) {
-                    Vue.set(this.items, id, taxon);
+                for (const taxon of Object.values(savedDataset?.taxons ?? {})) {
+                    this.items.setItem(taxon);
                 }
-                for (const [id, character] of Object.entries(savedDataset?.descriptors ?? {})) {
-                    Vue.set(this.descriptions, id, character);
+                for (const character of Object.values(savedDataset?.descriptors ?? {})) {
+                    this.descriptions.setItem(character);
                 }
                 this.extraFields = savedDataset?.extraFields ?? [];
                 this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
             });
         },
-        changeDescriptions(descriptions: Record<string, Character>) {
+        changeDescriptions(descriptions: Hierarchy<Character>) {
             this.descriptions = descriptions;
         },
-        changeItems(items: Record<string, Taxon>) {
+        changeItems(items: Hierarchy<Taxon>) {
             this.items = items;
         },
         selectTaxon(id: string) {
@@ -201,15 +200,11 @@ export default Vue.extend({
             this.bigImageIndex = 0;
         },
         saveData() {
-            DB.store({ id: this.selectedBase, taxons: this.items, descriptors: this.descriptions, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
+            DB.store({ id: this.selectedBase, taxons: this.items.toObject(), descriptors: this.descriptions.toObject(), extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
         },
         resetData() {
-            for (const key of Object.keys(this.items)) {
-                Vue.delete(this.items, key);
-            }
-            for (const key of Object.keys(this.descriptions)) {
-                Vue.delete(this.descriptions, key);
-            }
+            this.items.clear();
+            this.descriptions.clear();
         },
         importFile() {
             document.getElementById("import-data")?.click();
@@ -222,13 +217,13 @@ export default Vue.extend({
             const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
 
-            for (const [key, item] of Object.entries(this.items)) {
+            for (const item of this.items.allItems) {
                 const newDetail = item.detail.replace(re, replacement);
-                this.items[key] = Object.assign({}, item, { detail: newDetail });
+                this.items.setItem(Object.assign({}, item, { detail: newDetail }));
             }
-            for (const [key, description] of Object.entries(this.descriptions)) {
+            for (const description of this.descriptions.allItems) {
                 const newDetail = description.detail.replace(re, replacement);
-                this.descriptions[key] = Object.assign({}, description, { detail: newDetail });
+                this.descriptions.setItem(Object.assign({}, description, { detail: newDetail }));
             }
         },
         async fileRead(file: File): Promise<Dataset | null> {
@@ -251,7 +246,7 @@ export default Vue.extend({
             for (const item of Object.values(result?.taxons ?? {})) {
                 resultsByName[item.name] = item;
             }
-            for (const item of Object.values(this.items)) {
+            for (const item of this.items.allItems) {
                 const newInfo: any = resultsByName[item.name], anyItem: any = item;
                 if (typeof newInfo !== "undefined") {
                     for (const prop of propertiesToMerge) {
@@ -275,12 +270,12 @@ export default Vue.extend({
             }
             if (typeof result.descriptors !== "undefined") {
                 for (const description of Object.values(result.descriptors)) {
-                    Vue.set(this.descriptions, description.id, description);
+                    this.descriptions.setItem(description);
                 }
             }
             if (typeof result.taxons !== "undefined") {
                 for (const item of Object.values(result.taxons)) {
-                    Vue.set(this.items, item.id, item);
+                    this.items.setItem(item);
                 }
             }
             if (typeof result.dictionaryEntries !== "undefined") {
@@ -294,7 +289,7 @@ export default Vue.extend({
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
-                        highlightTaxonsDetails(fileReader.result, this.items);
+                        highlightTaxonsDetails(fileReader.result, this.items.toObject());
                     }
                     resolve(null);
                 };
@@ -324,7 +319,7 @@ export default Vue.extend({
             const references = [];
             const div = document.createElement("div");
             const startsWithLetter = /^[^\W\d_]+.*/;
-            for (const item of Object.values(this.items)) {
+            for (const item of this.items.allItems) {
                 div.innerHTML = item.detail;
                 const words = div.innerText.split(/[\s\t,;:=/."'-()]/) ?? [];
                 for (const word of words) {
@@ -346,21 +341,21 @@ export default Vue.extend({
             download(csv, "csv");
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.items);
+            const zipTxt = await exportZipFolder(this.items.toObject());
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new TexExporter(Object.values(this.items));
+            const taxonToTex = new TexExporter([...this.items.allItems]);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
-            taxonToTex.export(Object.values(this.items)).then(tex => {
+            taxonToTex.export().then(tex => {
                 download(tex, "zip", true);
             });
         },
         jsonExport() {
             const json = JSON.stringify(encodeDataset({
                 id: this.selectedBase, 
-                taxons: this.items, 
-                descriptors: this.descriptions, 
+                taxons: this.items.toObject(), 
+                descriptors: this.descriptions.toObject(), 
                 extraFields: this.extraFields,
                 dictionaryEntries: this.dictionaryEntries,
                 books: standardBooks,
