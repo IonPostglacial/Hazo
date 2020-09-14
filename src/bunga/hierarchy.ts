@@ -48,7 +48,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         } else {
             const parent = this.items.get(newItem.parentId);
             if (typeof parent === "undefined") {
-                console.error(`Trying to add an item to a parent that doesn't exist: ${newItem.parentId}`);
+                console.warn(`Added item "${newItem.name}" with an invalid parent id: ${newItem.parentId}`);
             } else {
                 parent.children = { ...parent.children, [newId]: newItem };
                 if(typeof parent.childrenOrder === "undefined") {
