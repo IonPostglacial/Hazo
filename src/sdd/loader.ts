@@ -29,7 +29,7 @@ function assertNotNull<T>(value: T|undefined|null, exception:SddException): T {
 
 function firstChildNamed(element: Element, name: string): Element|undefined {
     for (let i = 0; i < element.children.length; i++) {
-        if (element.childNodes[i].nodeName === name) return element.children[i];
+        if (element.children[i].nodeName === name) return element.children[i];
     }
     return undefined;
 }
@@ -251,7 +251,7 @@ export class Loader {
 		return taxonsById;
 	}
 
-	loadDatasetCharacters(datasetElement: Element, mediaObjectsById:Map<string, MediaObject>):CharactersAndStatesById {
+	loadDatasetCharacters(datasetElement: Element, mediaObjectsById:Map<string, MediaObject>): CharactersAndStatesById {
 		const charactersById = new Map<string, Character>();
 		const charactersElements = firstChildNamed(datasetElement, "Characters");
 		const statesById = new Map<string, State>();
@@ -351,7 +351,6 @@ export class Loader {
         forEachChildrenNamed(datasetsElements, "Dataset", (datasetElement) => {
             datasets.push(this.loadDataset(datasetElement));
 		});
-		console.log(datasets);
 		return datasets;
 	}
 }
