@@ -1,6 +1,6 @@
 <template>
     <li>
-        <div class="horizontal-flexbox center-items">
+        <div class="horizontal-flexbox center-items medium-height">
             <label v-if="hasArrows" v-on:click="toggleOpen" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered">
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>

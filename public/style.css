@@ -427,6 +427,10 @@ div.invisible {
     max-height: 80vh;
 }
 
+.medium-height {
+    height: 26px;
+}
+
 .relative {
     position: relative;
 }
