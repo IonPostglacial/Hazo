@@ -33,7 +33,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
 
     addItem(item: Omit<T, "id"> & { id?: string }): T {
         let newId = item.id; 
-        if (typeof newId === "undefined") {
+        if (typeof newId === "undefined" || newId === null || newId === "") {
             let nextId = this.itemsOrder.length;
             while (this.items.has(this.idPrefix + nextId)) {
                 nextId++;
