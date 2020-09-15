@@ -74,7 +74,7 @@ export default Vue.extend({
         };
     },
     computed: {
-        itemsToDisplay(): Array<HierarchicalItem<any>> {
+        itemsToDisplay(): Iterable<HierarchicalItem<any>> {
             if (!this.items) return [];
             if (this.menuFilter !== "") {
                 return Object.values(this.items.allItems).filter((item) => {

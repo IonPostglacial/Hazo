@@ -14,9 +14,6 @@ interface IMap<T> {
 export class Hierarchy<T extends HierarchicalItem<T>> {
     private idPrefix: string;
     private items: IMap<T>;
-    get allItems(): Array<T> {
-        return this.items.values();
-    }
     private itemsOrder: string[];
 
     constructor(idPrefix: string, items: IMap<T>) {
@@ -27,8 +24,19 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             map(item => item.id);
     }
 
-    get topLevelItems(): HierarchicalItem<T>[] {
-        return this.itemsOrder.map(id => this.items.get(id));
+    get allItems(): Iterable<T> {
+        return this.items.values();
+    }
+
+    get topLevelItems(): Iterable<T> {
+        const items = this.items, itemsOrders = this.itemsOrder;
+        return {
+            *[Symbol.iterator]() {
+                for (let i = 0; i < itemsOrders.length; i++) {
+                    yield items.get(itemsOrders[i]);
+                }
+            }
+        }
     }
 
     addItem(item: Omit<T, "id"> & { id?: string }): T {
