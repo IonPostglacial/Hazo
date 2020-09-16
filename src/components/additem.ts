@@ -1,7 +1,7 @@
 const template = document.createElement("template");
 template.innerHTML = `<link rel="stylesheet" href="style.css" />
     <div class="horizontal-flexbox">
-        <input type="text" class="flex-grow-1" />
+        <input type="text" class="flex-grow-1" placeholder="Add an item" />
         <button class="background-color-1">Add</button>
     </div>`;
 

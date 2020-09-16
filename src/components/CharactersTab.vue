@@ -40,22 +40,7 @@
         </section>
         <section v-if="typeof selectedDescription !== 'undefined'" class="scroll">
             <div class="relative" style="height: 98%">
-                <div class="scroll thin-border medium-margin medium-padding white-background" style="height: 50%;">
-                    <label>States</label>
-                    <ul class="indented">
-                        <li class="medium-padding" v-for="state in selectedDescription.states || []" :key="state.id">
-                            <label class="blue-hover medium-padding">
-                                <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
-                                <input type="text" v-model="state.name" />
-                            </label>
-                        </li>
-                        <li>
-                            <add-item v-on:add-item="addState"></add-item>
-                        </li>
-                    </ul>
-                </div>
                 <picture-box v-if="selectedDescriptionState"
-                        style="height: 50%;"
                         class="scroll"
                         editable="true"
                         @add-photo="addStatePhoto"
@@ -65,6 +50,26 @@
                     <picture-frame v-for="(photo, index) in selectedDescriptionState.photos" :key="index"      
                         :url="photo" :index="index" :editable="true"></picture-frame>
                 </picture-box>
+                <collapsible-panel label="States">
+                    <div class="scroll thin-border medium-margin medium-padding white-background">
+                        <ul class="no-list-style medium-padding medium-margin">
+                            <li class="medium-padding" v-for="state in selectedDescription.states || []" :key="state.id">
+                                <label class="blue-hover medium-padding nowrap">
+                                    <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
+                                    <input type="text" v-model="state.name" />
+                                </label>
+                            </li>
+                            <li>
+                                <add-item v-on:add-item="addState"></add-item>
+                            </li>
+                            <li>
+                                <button v-if="!showAddMultiple" type="button" class="background-color-1" @click="showAddMultipleStates">Multistate Editor</button><br>
+                                <textarea v-if="showAddMultiple" v-model="addMultipleContent"></textarea><br>
+                                <button v-if="showAddMultiple" type="button" class="background-color-1" @click="addMultipleStates">Add States</button>
+                            </li>
+                        </ul>
+                    </div>
+                </collapsible-panel>
             </div>
         </section>
     </div>
@@ -88,11 +93,13 @@ export default Vue.extend({
             return this.selectedDescription?.states?.find(s => s.id === this.selectedState);
         },
     },
-    data(): { descriptions: Hierarchy<Character>, selectedDescriptionId: string, selectedState: string } {
+    data() {
         return {
             descriptions: this.initDescriptions,
             selectedDescriptionId: "",
             selectedState: "",
+            showAddMultiple: false,
+            addMultipleContent: "",
         };
     },
     props: {
@@ -100,6 +107,19 @@ export default Vue.extend({
         initDescriptions: Hierarchy as PropValidator<Hierarchy<Character>>,
     },
     methods: {
+        showAddMultipleStates() {
+            this.showAddMultiple = true;
+        },
+        addMultipleStates() {
+            const statesToAdd = this.addMultipleContent.split("\n").map(name => name.trim());
+            for (const state of statesToAdd) {
+                if (state !== "") {
+                    this.addState({ detail: state });
+                }
+            }
+            this.addMultipleContent = "";
+            this.showAddMultiple = false;
+        },
         setInapplicableState(state: State, selected: boolean) {
             if (selected) {
                 this.selectedDescription!.inapplicableStates.push(state);
