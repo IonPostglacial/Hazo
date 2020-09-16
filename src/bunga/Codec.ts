@@ -1,4 +1,4 @@
-import { Book, BookInfo, Character, Dataset, DetailData, Field, HierarchicalItem, State, Taxon } from "./datatypes";
+import { Book, BookInfo, Character, Dataset, DetailData, HierarchicalItem, State, Taxon } from "./datatypes";
 import { standardBooks } from "./stdcontent";
 import { createDataset } from "./Dataset";
 import { createDetailData } from './DetailData';

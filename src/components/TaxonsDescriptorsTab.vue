@@ -57,17 +57,17 @@ export default Vue.extend({
         }
     },
     computed: {
-        selectedItem(): Taxon {
+        selectedItem(): Taxon|undefined {
             return this.items.getItemById(this.selectedTaxon);
         },
         selectedItemDescriptorPhotos(): string[] {
-            return this.descriptions.getItemById(this.selectedItemDescriptorId).photos;
+            return this.descriptions.getItemById(this.selectedItemDescriptorId)?.photos ?? [];
         },
         selectedItemDescriptorStates(): State[] {
-            return this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
+            return this.selectedItem?.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
         },
         selectedItemDescriptorFilteredStates(): State[] {
-            return this.descriptions.getItemById(this.selectedItemDescriptorId)?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase()));
+            return this.descriptions.getItemById(this.selectedItemDescriptorId)?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase())) ?? [];
         },
     },
     methods: {
@@ -102,7 +102,12 @@ export default Vue.extend({
             this.selectedItemDescriptorTree = dependencyTree;
         },
         addItemState({ selected, item }: { selected: boolean, item: State }) {
-            let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
+            if (!this.selectedItem || !this.selectedItem.descriptions) {
+                console.warn("Cannot add item states : no item selected.");
+                return;
+            }
+
+            let selectedDescription = this.selectedItem?.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (typeof selectedDescription === "undefined") {
                 selectedDescription = { descriptor: Object.assign({}, this.descriptions.getItemById(this.selectedItemDescriptorId)), states: [] };
                 this.selectedItem.descriptions.push(selectedDescription);

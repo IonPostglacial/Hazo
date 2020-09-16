@@ -42,7 +42,7 @@ export default Vue.extend({
         };
     },
     computed: {
-        selectedItem(): Taxon {
+        selectedItem(): Taxon|undefined {
             return this.items.getItemById(this.selectedTaxon);
         }
     },
@@ -62,7 +62,12 @@ export default Vue.extend({
             this.$emit("change-items", this.items);
         },
         deleteItem({ itemId }: { itemId: string }) {
-            this.items.removeItem(this.items.getItemById(itemId));
+            const itemToDelete = this.items.getItemById(itemId);
+            if (typeof itemToDelete !== "undefined") {
+                this.items.removeItem(itemToDelete);
+            } else {
+                console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`);
+            }
         },
         openPhoto(e: { photos: string[], index: number }) {
             this.$emit("open-photo", e);

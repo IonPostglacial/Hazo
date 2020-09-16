@@ -1,7 +1,7 @@
 import { HierarchicalItem } from "./datatypes";
 
 interface IMap<T> {
-    get(key: string): T;
+    get(key: string): T|undefined;
     has(key: string): boolean;
     set(key: string, value: T): void;
     delete(key: string): void;
@@ -33,7 +33,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return {
             *[Symbol.iterator]() {
                 for (let i = 0; i < itemsOrders.length; i++) {
-                    yield items.get(itemsOrders[i]);
+                    yield items.get(itemsOrders[i]) as T; // It should never be undefined
                 }
             }
         }
@@ -69,11 +69,21 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return newItem;
     }
 
-    getItemById(id: string): T {
+    getItemById(id: string): T|undefined {
         return this.items.get(id);
     }
 
     setItem(item: T): void {
+        if(!item.id) {
+            console.warn(`Hierarchy: Trying to set an item with no id: ${item.name}`);
+            return;
+        }
+        const emptyChildIndex = item.childrenOrder.indexOf("");
+        if (emptyChildIndex >= 0) {
+            console.warn(`Cannot import child with no id: ${item.name} > ${item.children[""].name}`)
+            item.childrenOrder.splice(emptyChildIndex, 1);
+            delete item.children[""];
+        }
         if (this.items.has(item.id)) {
             this.items.set(item.id, item);
         
@@ -93,14 +103,19 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     removeItem(item: T): void {
         this.items.delete(item.id);
         const order = this.itemsOrder.indexOf(item.id);
-        this.itemsOrder.splice(order, 1);
 
-        if (typeof item.parentId !== "undefined") {
+        if (typeof item.parentId === "undefined") {
+            this.itemsOrder.splice(order, 1);
+        } else {
             const parent = this.items.get(item.parentId);
             if (typeof parent === "undefined") {
                 console.error(`Trying to remove an item with a parent that doesn't exist: ${item.parentId}`);
             } else {
-                delete parent.children[item.id];
+                const childOrder = parent.childrenOrder.indexOf(item.id);
+                parent.childrenOrder.splice(childOrder, 1);
+                const newChildren = { ...parent.children };
+                delete newChildren[item.id];
+                parent.children = newChildren;
             }
         }
     }

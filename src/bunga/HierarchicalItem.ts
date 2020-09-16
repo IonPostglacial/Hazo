@@ -14,12 +14,14 @@ export function createHierarchicalItem<T>(init : HierarchicalItemInit): Hierarch
 	}, createDetailData(init));
 }
 
-export function hydrateChildren<T>(item: HierarchicalItem<T>, hierarchyById: Record<string, T>) {
+export function hydrateChildren<T extends HierarchicalItem<T>>(item: HierarchicalItem<T>, hierarchyById: Record<string, T>) {
 	for (const id of item.childrenOrder) {
 		const child = hierarchyById[id];
 		if (typeof child === "undefined" || child == null) {
-			console.log('Child not found: $name > $id');
-		} else {
+			console.log(`Child not found: ${name} > ${id}`);
+		} else if (!id) {
+			console.log(`Child with no id: ${child.name}`);
+		}else {
 			item.children[id] = hierarchyById[id];
 		}
 	}

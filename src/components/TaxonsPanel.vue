@@ -133,19 +133,6 @@ export default Vue.extend({
         },
     },
     methods: {
-        itemDescriptorsButtonClicked({ buttonId, parentId, id }: { buttonId: string, parentId: string, id: string }) {
-            if (buttonId === "pushToChildren") {
-                const descriptor: Character = this.descriptions.getItemById(parentId);
-                const state = descriptor.states.find(s => s.id === id);
-
-                for (const child of Object.values(this.item.children)) {
-                    const desc = child.descriptions.find(d => d.descriptor.id === descriptor.id);
-                    if (desc && !desc.states.find(s => s.id === state?.id)) {
-                        desc.states.push(Object.assign({}, state));
-                    }
-                }
-            }
-        },
         setProperty({ detail }: { detail: { property: string, value: string } }) {
             (this.item as any)[detail.property] = detail.value;
         },

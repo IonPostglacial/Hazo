@@ -165,8 +165,8 @@ export default Vue.extend({
                 states: [],
                 inapplicableStates: []
             });
-            if(typeof parentId !== "undefined") {
-                const parentDescription = this.descriptions.getItemById(parentId);
+            const parentDescription = this.descriptions.getItemById(parentId);
+            if(typeof parentDescription !== "undefined") {
                 newDescription.inapplicableStates = [...parentDescription.states];
                 const newState = {
                     id: "s-auto-" + newDescription.id,
@@ -182,7 +182,12 @@ export default Vue.extend({
             this.$emit("change-descriptions", this.descriptions);
         },
         deleteDescription({ itemId }: { itemId: string}) {
-            this.descriptions.removeItem(this.descriptions.getItemById(itemId));
+            const descriptionToDelete = this.descriptions.getItemById(itemId);
+            if (typeof descriptionToDelete !== "undefined") {
+                this.descriptions.removeItem(descriptionToDelete);
+            } else {
+                console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`, this.descriptions);
+            }
         },
         addState({detail} : {detail: string}) {
             if (typeof this.selectedDescription === "undefined") throw "addState failed: description is undefined.";

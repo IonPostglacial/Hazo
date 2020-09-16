@@ -3,7 +3,7 @@ import Vue from "vue";
 export class ObservableMap<T> {
     r = {} as Record<string, T>;
 
-    get(key: string): T {
+    get(key: string): T|undefined {
         return this.r[key];
     }
 
