@@ -1,23 +1,16 @@
 <template>
-    <div class="horizontal-flexbox start-align flex-grow-1 height-full">
-        <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu editable :items="items" name="item" v-on:select-item="selectTaxon" :selected-item="selectedTaxon"
-                :name-fields="['name', 'vernacularName', 'nameCN']"
-                v-on:add-item="addItem"
-                v-on:delete-item="deleteItem">
-            </TreeMenu>
-        </nav>
-        <TaxonsPanel editable
-            :v-if="typeof selectedItem !== 'undefined'"
-            :extra-fields="extraFields" :books="books"
-            :item="selectedItem" :descriptions="descriptions"
-            v-on:open-photo="openPhoto">
-        </TaxonsPanel>
-    </div>
+    <TaxonsPanel editable
+        :v-if="typeof selectedItem !== 'undefined'"
+        :showLeftMenu="showLeftMenu"
+        :extra-fields="extraFields" :books="books"
+        :item="selectedItem" :items="items" :descriptions="descriptions"
+        @add-taxon="addItem"
+        @delete-taxon="deleteItem"
+        @open-photo="openPhoto" @taxon-selected="selectTaxon">
+    </TaxonsPanel>
 </template>
 
 <script lang="ts">
-import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
 import Vue from "vue";
 import { Book, Taxon } from "../bunga/datatypes"; // eslint-disable-line no-unused-vars
@@ -27,7 +20,7 @@ import { createDetailData } from '@/bunga/DetailData';
 
 export default Vue.extend({
     name: "TaxonsTab",
-    components: { TreeMenu, TaxonsPanel },
+    components: { TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
         descriptions: Object,

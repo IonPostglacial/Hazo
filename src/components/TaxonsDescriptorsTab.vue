@@ -1,26 +1,11 @@
 <template>
-    <div class="horizontal-flexbox start-align flex-grow-1">
-        <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu :items="items" name="item" v-on:select-item="selectTaxon" :selected-item="selectedTaxon" :name-fields="['name', 'vernacularName', 'nameCN']">
-            </TreeMenu>
-        </nav>
-        <section v-if="typeof selectedItem !== 'undefined'" class="vertical-flexbox flex-grow-1">
-            <div class="horizontal-flexbox flex-grow-1 scroll">
-                <section class="vertical-flexbox flex-grow-1">
-                    <div class="horizontal-flexbox scroll">
-                        <TaxonsPanel :item="selectedItem" :descriptions="descriptions" @open-photo="openPhoto" @taxon-state-selected="addItemState" 
-                            :extra-fields="extraFields" :books="books">
-                        </TaxonsPanel>
-                    </div>
-                </section>
-            </div>
-        </section>
-    </div>
+    <TaxonsPanel :showLeftMenu="showLeftMenu" :item="selectedItem" :items="items" :descriptions="descriptions" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
+        :extra-fields="extraFields" :books="books">
+    </TaxonsPanel>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import TreeMenu from "./TreeMenu.vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { Book, Character, Field, Hierarchy, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
@@ -30,7 +15,7 @@ interface Description { descriptor: Character, states: State[] }
 
 export default Vue.extend({
     name: "TaxonsDescriptorsTab",
-    components: { TreeMenu, TaxonsPanel },
+    components: { TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
         descriptions: Object as PropValidator<Hierarchy<Character>>,
@@ -60,15 +45,6 @@ export default Vue.extend({
         selectedItem(): Taxon|undefined {
             return this.items.getItemById(this.selectedTaxon);
         },
-        selectedItemDescriptorPhotos(): string[] {
-            return this.descriptions.getItemById(this.selectedItemDescriptorId)?.photos ?? [];
-        },
-        selectedItemDescriptorStates(): State[] {
-            return this.selectedItem?.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
-        },
-        selectedItemDescriptorFilteredStates(): State[] {
-            return this.descriptions.getItemById(this.selectedItemDescriptorId)?.states?.filter(s => s.name.toUpperCase().startsWith(this.itemDescriptorSearch.toUpperCase())) ?? [];
-        },
     },
     methods: {
         selectTaxon(id: string) {
@@ -78,11 +54,13 @@ export default Vue.extend({
             this.selectedItemDescriptorId = id;
         },
         isStateChecked(stateId: string) {
-            return this.selectedItemDescriptorStates.map((s: State) => s.id).includes(stateId)
+            const selectedItemDescriptorStates = this.selectedItem?.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
+            return selectedItemDescriptorStates.map((s: State) => s.id).includes(stateId)
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedItemDescriptorPhotos });
+            const selectedItemDescriptorPhotos = this.descriptions.getItemById(this.selectedItemDescriptorId)?.photos ?? [];
+            this.$emit("open-photo", {index: e.detail.index, photos: selectedItemDescriptorPhotos });
         },
         onStateSelection() {
             if (typeof this.selectedItem === "undefined") return;
