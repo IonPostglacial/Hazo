@@ -22,7 +22,7 @@
                     :space-for-add="spaceForAdd"
                     :selected-item="selectedItem"
                     :init-open-items="initOpenItems"
-                    :name-field="nameField" :name="name" :item="child" :buttons="buttons" 
+                    :name-field="nameField" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
                 <li v-if="editable || spaceForAdd" :class="spaceForAdd ? 'visibility-hidden' : ''">
@@ -47,7 +47,6 @@ export default Vue.extend({
     props: {
         itemBus: Object as PropValidator<CombinedVueInstance<any, any, any, any, any>>,
         item: Object as PropValidator<HierarchicalItem<any>>,
-        name: String,
         buttons: Array as PropValidator<Array<Button>>,
         nameField: String,
         editable: Boolean,

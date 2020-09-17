@@ -19,7 +19,7 @@
         <div class="horizontal-flexbox">
             <ul v-for="(nameField, fieldNum) in (nameFields || ['name']).filter((e, i) => visibleColumns[i])" :key="nameField"
                 :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
-                <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item" :name="name"      
+                <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item"   
                     :show-ids="fieldNum === 0"
                     :space-for-add="editable && fieldNum > 0"
                     :editable="editable && fieldNum === 0" :buttons="buttons"
@@ -50,7 +50,6 @@ import { Hierarchy } from '@/bunga/hierarchy';
 export default Vue.extend({
     name: "TreeMenu",
     props: {
-        name: String,
         items: Hierarchy as PropValidator<Hierarchy<HierarchicalItem<any>>>,
         buttons: Array as PropValidator<Button>,
         editable: Boolean,
