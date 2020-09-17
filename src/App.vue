@@ -44,26 +44,9 @@
             v-on:open-photo="maximizeImage" v-on:change-descriptions="changeDescriptions">
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
-        <div v-if="showFields" class="height-full medium-margin thin-border white-background medium-padding horizontal-flexbox fixed-right">
-            <ul class="vertical-flexbox scroll">
-                <li v-for="field in extraFields" :key="field.id" class="horizontal-flexbox">
-                    <label class="nowrap">
-                        Id:&nbsp;
-                        <input type="text" v-model="field.id">
-                    </label>
-                    <label class="nowrap">
-                        Label:&nbsp;
-                    <input type="text" v-model="field.label">
-                    </label>
-                    <label class="nowrap">
-                        Icon:&nbsp;
-                    <input type="text" v-model="field.icon">
-                    </label>
-                    <div class="close" style="width: 42px;" v-on:click="deleteExtraField(field.id)">&nbsp;</div>
-                </li>
-                <add-item v-on:add-item="addExtraField"></add-item>
-            </ul>
-        </div>
+        <extra-fields-panel :showFields="showFields" :extraFields="extraFields"
+            @add-extra-field="addExtraField" @delete-extra-field="deleteExtraField">
+        </extra-fields-panel>
     </div>
     <section class="medium-margin horizontal-flexbox space-between thin-border">
         <div>
@@ -101,6 +84,7 @@ import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
+import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
 import DB from "./db-storage";
 import Vue from "vue";
 import { loadSDD } from "./sdd-load";
@@ -110,7 +94,7 @@ import download from "./download";
 export default Vue.extend({
     name: "App",
     components: {
-        TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary
+        TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary, ExtraFieldsPanel
     },
     data() {
         return {
