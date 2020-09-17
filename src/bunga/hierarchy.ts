@@ -81,6 +81,9 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             console.warn(`Hierarchy: Trying to set an item with no id: ${item.name}`);
             return;
         }
+        if(typeof item.childrenOrder === "undefined") {
+            item.childrenOrder = Object.keys(item.children);
+        }
         const emptyChildIndex = item.childrenOrder.indexOf("");
         if (emptyChildIndex >= 0) {
             console.warn(`Cannot import child with no id: ${item.name} > ${item.children[""].name}`)
