@@ -24,26 +24,40 @@ export default Vue.extend({
     name: "SquareTreeViewer",
     props: {
         editable: Boolean,
-        rootItems: Array as PropValidator<(HierarchicalItem<any> & { selected?: boolean })[]>,
+        rootItems: Object as PropValidator<Array<HierarchicalItem<any> & { selected?: boolean }>>,
     },
     data() {
         return {
+            isRoot: true,
             currentItems: this.rootItems,
             breadCrumbs: [] as HierarchicalItem<any>[],
             menuFilter: "",
         }
     },
     computed: {
-        itemsToDisplay(): Array<HierarchicalItem<any>> {
+        itemsToDisplay(): Iterable<HierarchicalItem<any>> {
+            console.log(this.currentItems);
             if (!this.currentItems) return [];
-            return this.currentItems.filter((item) => {
-                if (!this.editable && item.selected === false) return false;
+            const shouldDisplayItem = (item: HierarchicalItem<any> & { selected?: boolean }) => {
+                if (!this.editable && item.selected === false) {
+                    return false;
+                }
                 if (this.menuFilter !== "") {
                     return !item.hidden && item.name.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
                 } else {
-                    return !item.hidden && (this.currentItems === this.rootItems ? item.topLevel : !item.topLevel);
+                    return !item.hidden && (this.isRoot ? item.topLevel : !item.topLevel);
                 }
-            });
+            };
+            const currentItems = this.currentItems;
+            return {
+                *[Symbol.iterator]() {
+                    for(const item of currentItems) {
+                        if (shouldDisplayItem(item)) {
+                            yield item;
+                        }
+                    }
+                }
+            }
         },
     },
     methods: {
@@ -57,6 +71,7 @@ export default Vue.extend({
             return item.children && Object.keys(item.children).length > 0;
         },
         openItem(item: HierarchicalItem<any> & { selected?: boolean }) {
+            this.isRoot = false;
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
                 this.currentItems = Object.values(item.children);
@@ -67,6 +82,7 @@ export default Vue.extend({
             }
         },
         backToTop() {
+            this.isRoot = true;
             this.currentItems = this.rootItems;
             this.breadCrumbs = [];
         },

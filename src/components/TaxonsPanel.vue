@@ -93,6 +93,7 @@ import { Character, State, Taxon } from "../bunga"; // eslint-disable-line no-un
 import Vue from "vue";
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
+import { ObservableMap } from '@/observablemap';
 
 export default Vue.extend({
     name: "TaxonsPanel",
@@ -108,13 +109,15 @@ export default Vue.extend({
         itemDescriptorTree() {
             const itemStatesIds: string[] = [];
             const selectedItemIdDescriptions = this.item.descriptions ?? [];
-            const dependencyTree: Record<string, Character & { warning?: boolean, selected?: boolean }> = JSON.parse(JSON.stringify(this.descriptions.toObject()));
+
             for (const description of selectedItemIdDescriptions) {
                 for (const state of description?.states ?? []) {
                     itemStatesIds.push(state.id);
                 }
             }
-            for (const descriptor of Object.values(dependencyTree)) {
+            const dependencyHierarchy = new Hierarchy<Character & { warning?: boolean, selected?: boolean }>("", new ObservableMap());
+            for (const item of this.descriptions.allItems) {
+                const descriptor = { ...item, warning: false };
                 const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor.id === descriptor.id);
                 if (typeof selectedDescription === "undefined") continue;
                 const itemDescriptorStateIds = selectedDescription.states.map(s => s.id);
@@ -128,8 +131,9 @@ export default Vue.extend({
                 } else {
                     Object.assign(descriptor.children, descriptorStates);
                 }
+                dependencyHierarchy.setItem(descriptor);
             }
-            return Object.values(dependencyTree);
+            return dependencyHierarchy.allItems;
         },
     },
     methods: {

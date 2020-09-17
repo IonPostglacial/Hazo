@@ -23,8 +23,16 @@ export class ObservableMap<T> {
         return Object.entries(this.r)[Symbol.iterator]();
     }
 
-    values(): Array<T> {
-        return Object.values(this.r);
+    values(): Iterable<T> {
+        const entries = this.r;
+        return {
+            *[Symbol.iterator]() {
+                for (const property in entries) {
+                    yield entries[property];
+                }
+            }
+        }
+
     }
 
     clear() {

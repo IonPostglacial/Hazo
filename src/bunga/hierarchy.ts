@@ -6,7 +6,7 @@ interface IMap<T> {
     set(key: string, value: T): void;
     delete(key: string): void;
     [Symbol.iterator](): Iterator<[string, T]>;
-    values(): Array<T>;
+    values(): Iterable<T>;
     clear(): void;
     toObject(): any;
 }
@@ -19,9 +19,12 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     constructor(idPrefix: string, items: IMap<T>) {
         this.idPrefix = idPrefix;
         this.items = items;
-        this.itemsOrder = items.values().
-            filter(item => item.topLevel).
-            map(item => item.id);
+        this.itemsOrder = [];
+        for (const item of items.values()) {
+            if (item.topLevel) {
+                this.itemsOrder.push(item.id);
+            }
+        }
     }
 
     get allItems(): Iterable<T> {
