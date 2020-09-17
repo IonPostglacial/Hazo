@@ -86,7 +86,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
         const emptyChildIndex = item.childrenOrder.indexOf("");
         if (emptyChildIndex >= 0) {
-            console.warn(`Cannot import child with no id: ${item.name} > ${item.children[""].name}`)
+            console.warn(`Cannot import child with no id: ${item.name} > ${item.children[""]?.name}`)
             item.childrenOrder.splice(emptyChildIndex, 1);
             delete item.children[""];
         }
