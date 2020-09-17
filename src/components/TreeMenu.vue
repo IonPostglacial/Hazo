@@ -27,10 +27,12 @@
                     :selected-item="selectedItem"
                     :init-open="initOpen"
                     :init-open-items="initOpenItems"
-                    v-on:selected="selectItem"
-                    v-on:add-item="addItem"
-                    v-on:delete-item="deleteItem" 
-                    v-on:button-clicked="buttonClicked">
+                    @selected="selectItem"
+                    @add-item="addItem"
+                    @delete-item="deleteItem" 
+                    @button-clicked="buttonClicked"
+                    @move-item-up="moveItemUp"
+                    @move-item-down="moveItemDown">
                 </TreeMenuItem>
             </ul>
         </div>
@@ -101,6 +103,12 @@ export default Vue.extend({
         },
         deleteItem(e: string) {
             this.$emit("delete-item", e);
+        },
+        moveItemUp(item: HierarchicalItem<any>) {
+            this.items.moveItemUp(item);
+        },
+        moveItemDown(item: HierarchicalItem<any>) {
+            this.items.moveItemDown(item);
         },
         buttonClicked(e: string) {
             this.$emit("button-click", e);

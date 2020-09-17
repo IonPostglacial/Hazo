@@ -65,7 +65,10 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
                 if(typeof parent.childrenOrder === "undefined") {
                     parent.childrenOrder = Object.keys(parent.children);
                 } else {
-                    parent.childrenOrder.push(newId);
+                    const order = parent.childrenOrder.indexOf(newId);
+                    if (order === -1) {
+                        parent.childrenOrder.push(newId);
+                    }
                 }
             }
         }
@@ -124,6 +127,38 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
                 parent.children = newChildren;
             }
         }
+    }
+
+    moveItemUp(item: T): void {
+        let orders: Array<string>;
+        if (typeof item.parentId === "undefined") {
+            orders = this.itemsOrder
+        } else {
+            orders = this.items.get(item.parentId)?.childrenOrder ?? [];
+        }
+        const order = orders.indexOf(item.id);
+        if (order > 0) {
+            const tmp = orders[order - 1];
+            orders[order - 1] = orders[order];
+            orders[order] = tmp;
+        }
+        this.setItem({...item});
+    }
+
+    moveItemDown(item: T): void {
+        let orders: Array<string>;
+        if (typeof item.parentId === "undefined") {
+            orders = this.itemsOrder
+        } else {
+            orders = this.items.get(item.parentId)?.childrenOrder ?? [];
+        }
+        const order = orders.indexOf(item.id);
+        if (order < orders.length - 1) {
+            const tmp = orders[order + 1];
+            orders[order + 1] = orders[order];
+            orders[order] = tmp;
+        }
+        this.setItem({...item});
     }
 
     clear() {

@@ -35,7 +35,7 @@
         <TaxonsDescriptorsTab v-if="selectedTab === 1"
             :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu"
-            :extra-fields="extraFields" :books="books" 
+            :extra-fields="extraFields" :books="books"
             v-on:open-photo="maximizeImage">
         </TaxonsDescriptorsTab>
         <CharactersTab v-if="selectedTab === 2"
@@ -134,10 +134,10 @@ export default Vue.extend({
         loadBase(id?: string) {
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
-                for (const taxon of Object.values(savedDataset?.taxons ?? {})) {
+                for (const taxon of savedDataset?.taxons) {
                     this.items.setItem(taxon);
                 }
-                for (const character of Object.values(savedDataset?.descriptors ?? {})) {
+                for (const character of savedDataset?.descriptors) {
                     this.descriptions.setItem(character);
                 }
                 this.extraFields = savedDataset?.extraFields ?? [];
@@ -184,7 +184,18 @@ export default Vue.extend({
             this.bigImageIndex = 0;
         },
         saveData() {
-            DB.store({ id: this.selectedBase, taxons: this.items.toObject(), descriptors: this.descriptions.toObject(), extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
+            const taxons = [...this.items.topLevelItems], descriptors = [...this.descriptions.topLevelItems];
+            for (const taxon of this.items.allItems) {
+                if (typeof taxon.parentId !== "undefined") {
+                    taxons.push(taxon);
+                }
+            }
+            for (const description of this.descriptions.allItems) {
+                if (typeof description.parentId !== "undefined") {
+                    descriptors.push(description);
+                }
+            }
+            DB.store({ id: this.selectedBase, taxons: taxons, descriptors: descriptors, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
         },
         resetData() {
             this.items.clear();

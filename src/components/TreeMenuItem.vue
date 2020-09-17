@@ -11,7 +11,9 @@
                 <slot></slot>
             </label>
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
-            <div v-if="editable" class="close" v-on:click="deleteItem"></div>
+            <div v-if="editable" @click="moveUp" class="move-up">🡡</div>
+            <div v-if="editable" @click="moveDown" class="move-down">🡣</div>
+            <div v-if="editable" class="close" @click="deleteItem"></div>
         </div>
         <div class="horizontal-flexbox start-aligned">
             <div class="indentation-width"></div>
@@ -121,6 +123,14 @@ export default Vue.extend({
         buttonClicked(buttonId: string) {
             this.$emit("button-click", { buttonId, parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
         },
+        moveUp() {
+            console.log("up");
+            this.$emit("move-item-up", this.item);
+        },
+        moveDown() {
+            console.log("down");
+            this.$emit("move-item-down", this.item);
+        }
     }
 });
 </script>

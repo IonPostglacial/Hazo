@@ -311,12 +311,29 @@ div.invisible {
     height: 18px;
 }
 
+.close,
+.move-up,
+.move-down {
+    width: 18px;
+	height: 18px;
+}
+
+.move-up,
+.move-down {
+    user-select: none;
+    opacity: 0.3;
+    line-height: 18px;
+}
+
+.move-up:hover,
+.move-down:hover {
+    opacity: 1;
+}
+
 .close {
 	position: relative;
 	right: 0;
 	top: 0px;
-	width: 18px;
-	height: 18px;
 	opacity: 0.3;
 }
 

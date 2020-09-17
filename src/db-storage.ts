@@ -1,8 +1,10 @@
-import { Dataset } from "./bunga/datatypes";
+import { Character, Dataset, HierarchicalItem, Taxon } from "./bunga/datatypes";
 import { standardBooks }from "./bunga/stdcontent";
 
 const DB_NAME = "Datasets";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
+
+type DatasetDB = Omit<Dataset, "taxons" | "descriptors"> & { taxons: Taxon[], descriptors: Character[] };
 
 function createStore(db: IDBDatabase) {
     if (!db.objectStoreNames.contains("Datasets")) {
@@ -13,6 +15,16 @@ function createStore(db: IDBDatabase) {
 async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     createStore(db);
     
+    if (oldVersion === 2) {
+        const datasetIds = await dbList();
+
+        for (const datasetId of datasetIds) {
+            const dataset: any = await dbLoad(datasetId);
+            dataset.taxons = Object.values(dataset.taxons).filter(item => typeof (item as HierarchicalItem<any>).parentId === "undefined");
+            dataset.descriptors = Object.values(dataset.descriptors).filter(item => typeof (item as HierarchicalItem<any>).parentId === "undefined");
+            dbStore(dataset);
+        }
+    }
     if (oldVersion === 1) {
         const datasetIds = await dbList();
 
@@ -48,7 +60,7 @@ async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     }
 }
 
-function dbStore(dataset: Dataset) {
+function dbStore(dataset: DatasetDB) {
     const rq = indexedDB.open(DB_NAME, DB_VERSION);
     
     rq.onupgradeneeded = function (event) {
@@ -111,7 +123,7 @@ function dbList(): Promise<string[]> {
     });
 }
 
-function dbLoad(id: string): Promise<Dataset> {
+function dbLoad(id: string): Promise<DatasetDB> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {

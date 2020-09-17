@@ -7,21 +7,17 @@ import { createTaxon } from './Taxon';
 import { createCharacter } from './Character';
 
 function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>) {
-	const children = [];
+	const children = new Set<string>();
+	const order = item.childrenOrder ?? Object.values(item.children);
 
-	for (const child of Object.values(item.children)) {
-		if (typeof child === "undefined" || child === null) {
-			console.log(item.name + " has null child");
-			console.log(item);
-		} else {
-			children.push(child.id);
-		}
+	for (const childId of order) {
+		children.add(childId);
 	}
 	return {
 		type: item.type,
 		parentId: item.parentId,
 		topLevel: item.topLevel,
-		children: children,
+		children: [...children],
 		...createDetailData(item),
 	};
 }
