@@ -93,7 +93,16 @@ export default Vue.extend({
             }
         },
         childrenToDisplay() {
-            return Object.values(this.item.children).filter(child => !child.hidden);
+            const children = this.item.children, childrenOrder = this.item.childrenOrder;
+            return {
+                *[Symbol.iterator]() {
+                    for (const childId of childrenOrder) {
+                        if (!children[childId].hidden) {
+                            yield children[childId];
+                        }
+                    }
+                }
+            }
         },
     },
     methods: {
