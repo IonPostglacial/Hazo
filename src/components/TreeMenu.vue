@@ -78,11 +78,18 @@ export default Vue.extend({
         itemsToDisplay(): Iterable<HierarchicalItem<any>> {
             if (!this.items) return [];
             if (this.menuFilter !== "") {
-                return Object.values(this.items.allItems).filter((item) => {
-                    return !item.hidden && this.nameFields.
-                        map(field => (item as any)[field]).
-                        some(name => name?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
-                });
+                const self = this;
+                return {
+                    *[Symbol.iterator]() {
+                        for (const item of self.items.allItems) {
+                            if (!item.hidden && self.nameFields.
+                                    map(field => (item as any)[field]).
+                                    some(name => name?.toUpperCase().startsWith(self.menuFilter?.toUpperCase()) ?? false)) {
+                                yield item;
+                            }
+                        }
+                    }
+                };
             } else {
                 return this.items.topLevelItems;
             }
