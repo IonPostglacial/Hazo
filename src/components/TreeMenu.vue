@@ -9,15 +9,15 @@
                 </div>
             </div>
             <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between">
-                <li class="flex-grow-1 no-list-style" v-for="(nameField, fieldNum) in nameFields" :key="nameField">
+                <li class="flex-grow-1 no-list-style" v-for="(nameField, fieldNum) in nameFields" :key="nameField.propertyName">
                     <label :class="'full-width button ' + (visibleColumns[fieldNum] ? 'background-color-1' : '')">
-                        <input type="checkbox" class="invisible" v-model="visibleColumns[fieldNum]">col {{ fieldNum }}
+                        <input type="checkbox" class="invisible" v-model="visibleColumns[fieldNum]">{{ nameField.label }}
                     </label>
                 </li>
             </ul>
         </div>
         <div class="horizontal-flexbox">
-            <ul v-for="(nameField, fieldNum) in (nameFields || ['name']).filter((e, i) => visibleColumns[i])" :key="nameField"
+            <ul v-for="(nameField, fieldNum) in (nameFields || ['name']).filter((e, i) => visibleColumns[i])" :key="nameField.propertyName"
                 :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item"   
                     :show-ids="fieldNum === 0"
@@ -55,7 +55,7 @@ export default Vue.extend({
         items: Hierarchy as PropType<Hierarchy<HierarchicalItem<any>>>,
         buttons: Array as PropType<Button[]>,
         editable: Boolean,
-        nameFields: Array as PropType<Array<string>>,
+        nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
         selectedItem: String,
         initOpen: Boolean,
     },
@@ -83,7 +83,7 @@ export default Vue.extend({
                     *[Symbol.iterator]() {
                         for (const item of self.items.allItems) {
                             if (!item.hidden && self.nameFields.
-                                    map(field => (item as any)[field]).
+                                    map(field => (item as any)[field.propertyName]).
                                     some(name => name?.toUpperCase().startsWith(self.menuFilter?.toUpperCase()) ?? false)) {
                                 yield item;
                             }

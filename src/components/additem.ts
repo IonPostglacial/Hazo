@@ -3,8 +3,8 @@ template.innerHTML = `<link rel="stylesheet" href="style.css" />
     <div class="horizontal-flexbox">
         <input type="text" id="single-line-input" class="flex-grow-1" placeholder="Add an item" />
         <textarea type="text" id="multi-line-input" class="flex-grow-1 invisible" placeholder="Add multiple items"></textarea>
-        <button id="multiline-button">¶</button>
-        <button id="add-button" class="background-color-1">Add</button>
+        <button id="multiline-button" title="Activate multiline mode">¶</button>
+        <button id="add-button" title="Add an item" class="background-color-1">Add</button>
     </div>`;
 
 export class AddItem extends HTMLElement {

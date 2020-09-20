@@ -49,7 +49,7 @@ export default Vue.extend({
         itemBus: Object as PropType<MenuEventHub>,
         item: Object as PropType<HierarchicalItem<any>>,
         buttons: Array as PropType<Array<Button>>,
-        nameField: String,
+        nameField: Object as PropType<{ label: string, propertyName: string }>,
         editable: Boolean,
         spaceForAdd: Boolean,
         showIds: Boolean,
@@ -86,7 +86,7 @@ export default Vue.extend({
             return Object.keys(this.item.children ?? {}).length > 0 || this.editable;
         },
         itemName() {
-            const name = (this.item as any)[this.nameField ?? "name"];
+            const name = (this.item as any)[this.nameField.propertyName ?? "name"];
             if (typeof name === "undefined" || name === null || name === "") {
                 return "_";
             } else {

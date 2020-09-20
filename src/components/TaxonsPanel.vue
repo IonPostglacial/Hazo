@@ -1,8 +1,9 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu :editable="editable" :items="taxonsHierarchy" :selected-item="taxon ? taxon.id : ''" @select-item="selectTaxon" :name-fields="['name', 'vernacularName', 'nameCN']"
-                @add-item="addTaxon" @delete-item="deleteTaxon">
+            <TreeMenu :editable="editable" :items="taxonsHierarchy" :selected-item="taxon ? taxon.id : ''" 
+                :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
+                @select-item="selectTaxon" @add-item="addTaxon" @delete-item="deleteTaxon">
             </TreeMenu>
         </nav>
         <section v-if="typeof taxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox">
@@ -54,7 +55,7 @@
                     </collapsible-panel>
                 </div>
             </div>
-            <div class="vertical-flexbox scroll">
+            <div class="vertical-flexbox scroll flex-grow-1">
                 <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
                     <div v-if="taxon.bookInfoByIds">
                         <div v-if="taxon.bookInfoByIds[book.id]">
