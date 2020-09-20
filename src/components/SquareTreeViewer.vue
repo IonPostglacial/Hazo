@@ -35,7 +35,6 @@ export default Vue.extend({
     },
     computed: {
         itemsToDisplay(): Iterable<HierarchicalItem<any>> {
-            console.log(this.currentItems);
             if (!this.currentItems) return [];
             const shouldDisplayItem = (item: HierarchicalItem<any> & { selected?: boolean }) => {
                 if (!this.editable && item.selected === false) {

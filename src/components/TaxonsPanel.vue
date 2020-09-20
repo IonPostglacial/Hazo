@@ -37,7 +37,7 @@
 
                             <label class="item-property">Website</label>
                             <input v-if="editable" type="text" v-model="taxon.website" />
-                            <a v-if="!editable" target="_blank" :href="taxon.website">{{ item.website }}</a><br/>
+                            <a v-if="!editable" target="_blank" :href="taxon.website">{{ taxon.website }}</a><br/>
 
                             <label class="item-property">Meaning</label>
                             <textarea :readonly="!editable"  v-model="taxon.meaning"></textarea><br/>
@@ -125,11 +125,11 @@ export default Vue.extend({
                 }
             }
             const dependencyHierarchy = new Hierarchy<Character & { warning?: boolean, selected?: boolean }>("", new ObservableMap());
+
             for (const item of this.descriptions.allItems) {
                 const descriptor = { ...item, warning: false };
                 const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor.id === descriptor.id);
-                if (typeof selectedDescription === "undefined") continue;
-                const itemDescriptorStateIds = selectedDescription.states.map(s => s.id);
+                const itemDescriptorStateIds = selectedDescription?.states.map(s => s.id) ?? [];
                 const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemDescriptorStateIds.includes(s.id) }, s));
 
                 if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
