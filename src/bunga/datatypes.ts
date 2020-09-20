@@ -66,11 +66,22 @@ export interface Taxon extends HierarchicalItem<Taxon> {
     bookInfoByIds:Record<string, BookInfo>;
 }
 
+export interface DictionaryEntry {
+	id: string,
+	nameCN: string;
+	nameEN: string;
+	nameFR: string;
+	defCN: string;
+	defEN: string;
+	defFR: string;
+	url: string;
+}
+
 export interface Dataset {
 	id: string;
 	taxons: Record<string, Taxon>;
 	descriptors: Record<string, Character>;
 	books: Book[];
 	extraFields: Field[];
-	dictionaryEntries: Record<string, any>;
+	dictionaryEntries: Record<string, DictionaryEntry>;
 }
