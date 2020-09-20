@@ -98,15 +98,14 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Character, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
-import Vue from "vue";
-import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
 import { ObservableMap } from '@/observablemap';
 
 export default Vue.extend({
     name: "TaxonsPanel",
     components: { SquareTreeViewer, ckeditor: CKEditor.component, TreeMenu },
-    props: { item: Object as PropValidator<Taxon>, items: Hierarchy as PropValidator<Hierarchy<Character>>, descriptions: Hierarchy as PropValidator<Hierarchy<Character>>,
+    props: { item: Object as PropType<Taxon>, items: Hierarchy as PropType<Hierarchy<Character>>, descriptions: Hierarchy as PropType<Hierarchy<Character>>,
         showLeftMenu: Boolean, editable: Boolean, extraFields: Array, books:Array
     },
     data() {

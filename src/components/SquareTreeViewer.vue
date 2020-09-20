@@ -16,15 +16,14 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
-import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "SquareTreeViewer",
     props: {
         editable: Boolean,
-        rootItems: Object as PropValidator<Array<HierarchicalItem<any> & { selected?: boolean }>>,
+        rootItems: Object as PropType<Array<HierarchicalItem<any> & { selected?: boolean }>>,
     },
     data() {
         return {

@@ -76,9 +76,8 @@
 </template>
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
-import Vue from "vue";
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { addNewCharacter, Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
-import type { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { createDetailData } from '@/bunga/DetailData';
 import { createHierarchicalItem } from '@/bunga/HierarchicalItem';
 
@@ -104,7 +103,7 @@ export default Vue.extend({
     },
     props: {
         showLeftMenu: Boolean,
-        initDescriptions: Hierarchy as PropValidator<Hierarchy<Character>>,
+        initDescriptions: Hierarchy as PropType<Hierarchy<Character>>,
     },
     methods: {
         showAddMultipleStates() {

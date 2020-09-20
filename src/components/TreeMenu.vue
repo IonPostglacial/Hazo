@@ -41,10 +41,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { MenuEventHub } from "../menu-event-hub";
 import TreeMenuItem from "./TreeMenuItem.vue";
-import { PropValidator } from 'vue/types/options';  // eslint-disable-line no-unused-vars
-import { HierarchicalItem } from "../bunga";  // eslint-disable-line no-unused-vars
+import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import { CombinedVueInstance } from 'vue/types/vue';  // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
@@ -52,15 +52,15 @@ import { Hierarchy } from '@/bunga/hierarchy';
 export default Vue.extend({
     name: "TreeMenu",
     props: {
-        items: Hierarchy as PropValidator<Hierarchy<HierarchicalItem<any>>>,
-        buttons: Array as PropValidator<Button>,
+        items: Hierarchy as PropType<Hierarchy<HierarchicalItem<any>>>,
+        buttons: Array as PropType<Button[]>,
         editable: Boolean,
-        nameFields: Array as PropValidator<Array<string>>,
+        nameFields: Array as PropType<Array<string>>,
         selectedItem: String,
         initOpen: Boolean,
     },
     components:  { TreeMenuItem },
-    data(): { menuFilter: string, itemsBus: CombinedVueInstance<any, any, any, any, any>, visibleColumns: boolean[], initOpenItems: string[] } {
+    data() {
         const initOpenItems: string[] = [];
         let itemId = this.items.getItemById(this.selectedItem)?.parentId;
         while (typeof itemId !== "undefined") {
@@ -69,7 +69,7 @@ export default Vue.extend({
         }
         return {
             menuFilter: "",
-            itemsBus: new Vue(),
+            itemsBus: new MenuEventHub(),
             visibleColumns: (this.nameFields ?? ["name"]).map(() => true),
             initOpenItems: initOpenItems,
         };
@@ -93,10 +93,10 @@ export default Vue.extend({
             this.$emit("select-item", id);
         },
         openAll() {
-            this.itemsBus.$emit("openAll");
+            this.itemsBus.emitOpenAll();
         },
         closeAll() {
-            this.itemsBus.$emit("closeAll");
+            this.itemsBus.emitCloseAll();
         },
         addItem(e: string) {
             this.$emit("add-item", e);

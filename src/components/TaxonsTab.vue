@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import TaxonsPanel from "./TaxonsPanel.vue";
-import Vue from "vue";
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Book, Taxon } from "../bunga/datatypes"; // eslint-disable-line no-unused-vars
 import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
@@ -24,10 +24,10 @@ export default Vue.extend({
     props: {
         showLeftMenu: Boolean,
         descriptions: Object,
-        initItems: Hierarchy as PropValidator<Hierarchy<Taxon>>,
+        initItems: Hierarchy as PropType<Hierarchy<Taxon>>,
         extraFields: Array,
         selectedTaxon: String,
-        books: Array as PropValidator<Array<Book>>,
+        books: Array as PropType<Array<Book>>,
     },
     data() {
         return {

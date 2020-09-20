@@ -5,9 +5,8 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import TaxonsPanel from "./TaxonsPanel.vue";
-import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { Book, Character, Field, Hierarchy, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import { ObservableMap } from '@/observablemap';
 
@@ -18,12 +17,12 @@ export default Vue.extend({
     components: { TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
-        descriptions: Object as PropValidator<Hierarchy<Character>>,
-        initItems: Object as PropValidator<Hierarchy<Taxon>>,
-        extraFields: Array as PropValidator<Field[]>,
+        descriptions: Object as PropType<Hierarchy<Character>>,
+        initItems: Object as PropType<Hierarchy<Taxon>>,
+        extraFields: Array as PropType<Field[]>,
         taxonNameField: String,
         selectedTaxon: String,
-        books: Array as PropValidator<Book[]>,
+        books: Array as PropType<Book[]>,
     },
     data() {
         return {

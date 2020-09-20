@@ -38,25 +38,24 @@
 <script lang="ts">
 import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
-import Vue from "vue";
-import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
-import { CombinedVueInstance } from 'vue/types/vue'; // eslint-disable-line no-unused-vars
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { MenuEventHub } from "../menu-event-hub"; // eslint-disable-line no-unused-vars
 
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
 export default Vue.extend({
     name: "TreeMenuItem",
     props: {
-        itemBus: Object as PropValidator<CombinedVueInstance<any, any, any, any, any>>,
-        item: Object as PropValidator<HierarchicalItem<any>>,
-        buttons: Array as PropValidator<Array<Button>>,
+        itemBus: Object as PropType<MenuEventHub>,
+        item: Object as PropType<HierarchicalItem<any>>,
+        buttons: Array as PropType<Array<Button>>,
         nameField: String,
         editable: Boolean,
         spaceForAdd: Boolean,
         showIds: Boolean,
         selectedItem: String,
         initOpen: Boolean,
-        initOpenItems: Array as PropValidator<Array<string>>,
+        initOpenItems: Array as PropType<Array<string>>,
     },
     data() {
         return {
@@ -64,9 +63,9 @@ export default Vue.extend({
         };
     },
     mounted() {
-        this.itemBus.$on("openAll", () => this.open = Object.keys(this.item.children).length > 0);
-        this.itemBus.$on("closeAll", () => this.open = false);
-        this.itemBus.$on("toggle", (id: string) =>  { if (id === this.item.id) { this.open = !this.open } });
+        this.itemBus.onOpenAll(() => this.open = Object.keys(this.item.children).length > 0);
+        this.itemBus.onCloseAll(() => this.open = false);
+        this.itemBus.onToggle((id: string) =>  { if (id === this.item.id) { this.open = !this.open } });
     }, 
     computed: {
         selected() {
@@ -112,7 +111,7 @@ export default Vue.extend({
             this.$emit("selected", this.item.id);
         },
         toggleOpen() {
-            this.itemBus.$emit("toggle", this.item.id);
+            this.itemBus.emitToggle(this.item.id);
         },
         addItem({detail}: {detail: string}) {
             this.$emit("add-item", { value: detail, parentId: this.item.id });
