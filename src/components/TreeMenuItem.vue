@@ -18,14 +18,8 @@
         <div class="horizontal-flexbox start-aligned">
             <div class="indentation-width"></div>
             <div v-if="open" class="flex-grow-1">
-                <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
-                    :show-ids="showIds"
-                    :init-open="initOpen"
-                    :space-for-add="spaceForAdd"
-                    :selected-item="selectedItem"
-                    :init-open-items="initOpenItems"
-                    :name-field="nameField" :item="child" :buttons="buttons" 
-                    v-on="$listeners" :parent-id="item.id">
+                <TreeMenuItem v-for="child in childrenToDisplay" :key="child.id"
+                    v-bind="$attrs" :item="child" :parent-id="item.id">
                 </TreeMenuItem>
                 <li v-if="editable || spaceForAdd" :class="spaceForAdd ? 'visibility-hidden' : ''">
                     <add-item v-on:add-item="addItem"></add-item>
@@ -38,55 +32,54 @@
 <script lang="ts">
 import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
-import Vue from "vue";
-import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
-import { CombinedVueInstance } from 'vue/types/vue'; // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
+import type { MenuEventHub } from "../menu-event-hub"; // eslint-disable-line no-unused-vars
 
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
-export default Vue.extend({
+export default defineComponent({
     name: "TreeMenuItem",
     props: {
-        itemBus: Object as PropValidator<CombinedVueInstance<any, any, any, any, any>>,
-        item: Object as PropValidator<HierarchicalItem<any>>,
-        buttons: Array as PropValidator<Array<Button>>,
+        itemBus: Object as PropType<MenuEventHub>,
+        item: Object as PropType<HierarchicalItem<any>>,
+        buttons: Array as PropType<Array<Button>>,
         nameField: String,
         editable: Boolean,
         spaceForAdd: Boolean,
         showIds: Boolean,
         selectedItem: String,
         initOpen: Boolean,
-        initOpenItems: Array as PropValidator<Array<string>>,
+        initOpenItems: Array as PropType<Array<string>>,
     },
     data() {
         return {
-            open: this.initOpenItems.includes(this.item.id) || this.initOpen,
+            open: this.initOpenItems?.includes(this.item!.id) ?? this.initOpen,
         };
     },
     mounted() {
-        this.itemBus.$on("openAll", () => this.open = Object.keys(this.item.children).length > 0);
-        this.itemBus.$on("closeAll", () => this.open = false);
-        this.itemBus.$on("toggle", (id: string) =>  { if (id === this.item.id) { this.open = !this.open } });
+        this.itemBus!.onOpenAll(() => this.open = Object.keys(this.item!.children).length > 0);
+        this.itemBus!.onCloseAll(() => this.open = false);
+        this.itemBus!.onToggle((id: string) =>  { if (id === this.item!.id) { this.open = !this.open } });
     }, 
     computed: {
-        selected() {
-            return this.selectedItem === this.item.id;
+        selected(): boolean {
+            return this.selectedItem === this.item!.id;
         },
-        prettyId() {
+        prettyId(): string {
             for (const prefix of knownPrefixes) {
-                if (this.item.id.startsWith(prefix)) {
-                    return this.item.id.substring(prefix.length);
+                if (this.item!.id.startsWith(prefix)) {
+                    return this.item!.id.substring(prefix.length);
                 }
             }
-            return this.item.id;
+            return this.item!.id;
         },
-        itemButtons() {
-            return this.buttons?.filter((button) => button.for === this.item.type);
+        itemButtons(): Button[]|undefined {
+            return this.buttons?.filter((button) => button.for === this.item!.type);
         },
-        hasArrows() {
-            return Object.keys(this.item.children ?? {}).length > 0 || this.editable;
+        hasArrows(): boolean {
+            return Object.keys(this.item!.children ?? {}).length > 0 || (this.editable ?? false);
         },
-        itemName() {
+        itemName(): string {
             const name = (this.item as any)[this.nameField ?? "name"];
             if (typeof name === "undefined" || name === null || name === "") {
                 return "_";
@@ -94,8 +87,8 @@ export default Vue.extend({
                 return name;
             }
         },
-        childrenToDisplay() {
-            const children = this.item.children, childrenOrder = this.item.childrenOrder;
+        childrenToDisplay(): Iterable<HierarchicalItem<any>> {
+            const children = this.item!.children, childrenOrder = this.item!.childrenOrder;
             return {
                 *[Symbol.iterator]() {
                     for (const childId of childrenOrder) {
@@ -109,19 +102,19 @@ export default Vue.extend({
     },
     methods: {
         select() {
-            this.$emit("selected", this.item.id);
+            this.$emit("selected", this.item!.id);
         },
         toggleOpen() {
-            this.itemBus.$emit("toggle", this.item.id);
+            this.itemBus!.emitToggle(this.item!.id);
         },
         addItem({detail}: {detail: string}) {
-            this.$emit("add-item", { value: detail, parentId: this.item.id });
+            this.$emit("add-item", { value: detail, parentId: this.item!.id });
         },
         deleteItem() {
-            this.$emit("delete-item", { parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
+            this.$emit("delete-item", { parentId: this.item!.parentId, id: this.item!.id, itemId: this.item!.id });
         },
         buttonClicked(buttonId: string) {
-            this.$emit("button-click", { buttonId, parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
+            this.$emit("button-click", { buttonId, parentId: this.item!.parentId, id: this.item!.id, itemId: this.item!.id });
         },
         moveUp() {
             console.log("up");

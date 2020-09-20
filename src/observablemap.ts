@@ -12,11 +12,11 @@ export class ObservableMap<T> {
     }
 
     set(key: string, value: T): void {
-        Vue.set(this.r, key, value);
+        this.r[key] = value;
     }
 
     delete(key: string): void {
-        Vue.delete(this.r, key);
+        delete this.r[key];
     }
 
     [Symbol.iterator](): Iterator<[string, T]> {
@@ -32,12 +32,11 @@ export class ObservableMap<T> {
                 }
             }
         }
-
     }
 
     clear() {
         for (const key of Object.keys(this.r)) {
-            Vue.delete(this.r, key);
+            delete this.r[key];
         }
     }
 

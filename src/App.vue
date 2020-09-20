@@ -86,12 +86,12 @@ import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
 import DB from "./db-storage";
-import Vue from "vue";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
+import { defineComponent } from "vue";
 
-export default Vue.extend({
+export default defineComponent({
     name: "App",
     components: {
         TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary, ExtraFieldsPanel
@@ -117,7 +117,7 @@ export default Vue.extend({
             books: standardBooks,
             items: new Hierarchy<Taxon>("myt-", new ObservableMap()),
             descriptions: new Hierarchy<Character>("myd-", new ObservableMap()),
-            dictionaryEntries: {},
+            dictionaryEntries: {} as Record<string, any>,
             latexProgressText: "",
         };
     },
@@ -275,7 +275,8 @@ export default Vue.extend({
             }
             if (typeof result.dictionaryEntries !== "undefined") {
                 for (const entry of Object.values(result.dictionaryEntries)) {
-                    Vue.set(this.dictionaryEntries, entry.id, entry);
+                    //Vue.set(this.dictionaryEntries, entry.id, entry);
+                    this.dictionaryEntries[entry.id] = entry;
                 }
             }
         },

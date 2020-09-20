@@ -1,5 +1,5 @@
 <template>
-    <TaxonsPanel :showLeftMenu="showLeftMenu" :item="selectedItem" :items="items" :descriptions="descriptions" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
+    <TaxonsPanel :showLeftMenu="showLeftMenu" :taxon="selectedItem" :taxonsHierarchy="items" :descriptions="descriptions" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
         :extra-fields="extraFields" :books="books">
     </TaxonsPanel>
 </template>
@@ -7,23 +7,23 @@
 <script lang="ts">
 import Vue from "vue";
 import TaxonsPanel from "./TaxonsPanel.vue";
-import { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Book, Character, Field, Hierarchy, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import { ObservableMap } from '@/observablemap';
 
 interface Description { descriptor: Character, states: State[] }
 
-export default Vue.extend({
+export default defineComponent({
     name: "TaxonsDescriptorsTab",
     components: { TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
-        descriptions: Object as PropValidator<Hierarchy<Character>>,
-        initItems: Object as PropValidator<Hierarchy<Taxon>>,
-        extraFields: Array as PropValidator<Field[]>,
+        descriptions: Object as PropType<Hierarchy<Character>>,
+        initItems: Object as PropType<Hierarchy<Taxon>>,
+        extraFields: Array as PropType<Field[]>,
         taxonNameField: String,
         selectedTaxon: String,
-        books: Array as PropValidator<Book[]>,
+        books: Array as PropType<Book[]>,
     },
     data() {
         return {
@@ -43,7 +43,7 @@ export default Vue.extend({
     },
     computed: {
         selectedItem(): Taxon|undefined {
-            return this.items.getItemById(this.selectedTaxon);
+            return this.items?.getItemById(this.selectedTaxon ?? "");
         },
     },
     methods: {
@@ -58,12 +58,14 @@ export default Vue.extend({
             return selectedItemDescriptorStates.map((s: State) => s.id).includes(stateId)
         },
         openPhoto(e: Event & {detail: { index: number }}) {
+            if (typeof this.descriptions === "undefined") return;
+
             e.stopPropagation();
             const selectedItemDescriptorPhotos = this.descriptions.getItemById(this.selectedItemDescriptorId)?.photos ?? [];
             this.$emit("open-photo", {index: e.detail.index, photos: selectedItemDescriptorPhotos });
         },
         onStateSelection() {
-            if (typeof this.selectedItem === "undefined") return;
+            if (typeof this.selectedItem === "undefined" || typeof this.descriptions === "undefined") return;
 
             const itemStatesIds: string[] = [];
             const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
@@ -80,7 +82,7 @@ export default Vue.extend({
             this.selectedItemDescriptorTree = dependencyTree;
         },
         addItemState({ selected, item }: { selected: boolean, item: State }) {
-            if (!this.selectedItem || !this.selectedItem.descriptions) {
+            if (!this.selectedItem || !this.selectedItem.descriptions || !this.descriptions || !this.items) {
                 console.warn("Cannot add item states : no item selected.");
                 return;
             }

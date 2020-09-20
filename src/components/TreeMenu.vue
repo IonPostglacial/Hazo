@@ -41,35 +41,34 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { MenuEventHub } from "../menu-event-hub";
 import TreeMenuItem from "./TreeMenuItem.vue";
-import { PropValidator } from 'vue/types/options';  // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue";  // eslint-disable-line no-unused-vars
 import { HierarchicalItem } from "../bunga";  // eslint-disable-line no-unused-vars
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
-import { CombinedVueInstance } from 'vue/types/vue';  // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
 
-export default Vue.extend({
+export default defineComponent({
     name: "TreeMenu",
     props: {
-        items: Hierarchy as PropValidator<Hierarchy<HierarchicalItem<any>>>,
-        buttons: Array as PropValidator<Button>,
+        items: Hierarchy as PropType<Hierarchy<HierarchicalItem<any>>>,
+        buttons: Array as PropType<Button[]>,
         editable: Boolean,
-        nameFields: Array as PropValidator<Array<string>>,
+        nameFields: Array as PropType<Array<string>>,
         selectedItem: String,
         initOpen: Boolean,
     },
     components:  { TreeMenuItem },
-    data(): { menuFilter: string, itemsBus: CombinedVueInstance<any, any, any, any, any>, visibleColumns: boolean[], initOpenItems: string[] } {
+    data() {
         const initOpenItems: string[] = [];
-        let itemId = this.items.getItemById(this.selectedItem)?.parentId;
+        let itemId = this.items!.getItemById(this.selectedItem ?? "")?.parentId;
         while (typeof itemId !== "undefined") {
             initOpenItems.push(itemId);
-            itemId = this.items.getItemById(itemId)?.parentId;
+            itemId = this.items!.getItemById(itemId)?.parentId;
         }
         return {
             menuFilter: "",
-            itemsBus: new Vue(),
+            itemsBus: new MenuEventHub(),
             visibleColumns: (this.nameFields ?? ["name"]).map(() => true),
             initOpenItems: initOpenItems,
         };
@@ -79,7 +78,7 @@ export default Vue.extend({
             if (!this.items) return [];
             if (this.menuFilter !== "") {
                 return Object.values(this.items.allItems).filter((item) => {
-                    return !item.hidden && this.nameFields.
+                    return !item.hidden && this.nameFields!.
                         map(field => (item as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) ?? false);
                 });
@@ -93,10 +92,10 @@ export default Vue.extend({
             this.$emit("select-item", id);
         },
         openAll() {
-            this.itemsBus.$emit("openAll");
+            this.itemsBus.emitOpenAll();
         },
         closeAll() {
-            this.itemsBus.$emit("closeAll");
+            this.itemsBus.emitCloseAll();
         },
         addItem(e: string) {
             this.$emit("add-item", e);
@@ -105,10 +104,10 @@ export default Vue.extend({
             this.$emit("delete-item", e);
         },
         moveItemUp(item: HierarchicalItem<any>) {
-            this.items.moveItemUp(item);
+            this.items!.moveItemUp(item);
         },
         moveItemDown(item: HierarchicalItem<any>) {
-            this.items.moveItemDown(item);
+            this.items!.moveItemDown(item);
         },
         buttonClicked(e: string) {
             this.$emit("button-click", e);

@@ -76,18 +76,17 @@
 </template>
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
-import Vue from "vue";
+import { defineComponent, PropType } from "vue";
 import { addNewCharacter, Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
-import type { PropValidator } from 'vue/types/options'; // eslint-disable-line no-unused-vars
 import { createDetailData } from '@/bunga/DetailData';
 import { createHierarchicalItem } from '@/bunga/HierarchicalItem';
 
-export default Vue.extend({
+export default defineComponent({
     name: "CharactersTab",
     components: { TreeMenu },
     computed: {
         selectedDescription(): Character|undefined {
-            return this.descriptions.getItemById(this.selectedDescriptionId);
+            return this.descriptions?.getItemById(this.selectedDescriptionId);
         },
         selectedDescriptionState(): State|undefined {
             return this.selectedDescription?.states?.find(s => s.id === this.selectedState);
@@ -104,7 +103,7 @@ export default Vue.extend({
     },
     props: {
         showLeftMenu: Boolean,
-        initDescriptions: Hierarchy as PropValidator<Hierarchy<Character>>,
+        initDescriptions: Hierarchy as PropType<Hierarchy<Character>>,
     },
     methods: {
         showAddMultipleStates() {
@@ -155,6 +154,8 @@ export default Vue.extend({
             this.selectedDescriptionState?.photos.splice(e.detail.index, 1);
         },
         addDescription({ value, parentId }: { value: string, parentId: string }) {
+            if (typeof this.descriptions === "undefined") throw "";
+
             const newDescription = this.descriptions.addItem({
                 ...createHierarchicalItem<Character>({
                     ...createDetailData({ id: "", name: value }),
@@ -165,7 +166,7 @@ export default Vue.extend({
                 states: [],
                 inapplicableStates: []
             });
-            const parentDescription = this.descriptions.getItemById(parentId);
+            const parentDescription = this.descriptions?.getItemById(parentId);
             if(typeof parentDescription !== "undefined") {
                 newDescription.inapplicableStates = [...parentDescription.states];
                 const newState = {
@@ -182,6 +183,8 @@ export default Vue.extend({
             this.$emit("change-descriptions", this.descriptions);
         },
         deleteDescription({ itemId }: { itemId: string}) {
+            if (typeof this.descriptions === "undefined") throw "";
+
             const descriptionToDelete = this.descriptions.getItemById(itemId);
             if (typeof descriptionToDelete !== "undefined") {
                 this.descriptions.removeItem(descriptionToDelete);

@@ -22,8 +22,8 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-export default Vue.extend({
+import { defineComponent } from 'vue'
+export default defineComponent({
     props: { showFields: Boolean, extraFields: Array },
     methods: {
         addExtraField(e: { detail: string }) {

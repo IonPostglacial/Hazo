@@ -46,14 +46,16 @@
     </div>
 </template>
 
-<script>
-import parseCSV from "../parse-csv.ts";
+<script lang="ts">
+import parseCSV from "../parse-csv";
+//@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
+//@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import Vue from "vue";
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
 import download from "../download";
 
-export default {
+export default defineComponent({
     name: "WordsDictionary",
     components: {
         ckeditor: CKEditor.component,
@@ -63,7 +65,7 @@ export default {
     },
     data() {
         return {
-            selectedEntryId: Number,
+            selectedEntryId: "",
             entries: this.initEntries ?? {},
             editor: ClassicEditor,
             editorConfig: {},
@@ -71,10 +73,10 @@ export default {
         };
     },
     computed: {
-        selectedEntry() {
+        selectedEntry(): any {
             return this.entries[this.selectedEntryId];
         },
-        entriesToDisplay() {
+        entriesToDisplay(): any[] {
             return Object.values(this.entries).filter((entry) => {
                 if (this.entriesFilter !== "") {
                     return ["nameCN", "nameEN", "nameFR"].
@@ -89,11 +91,13 @@ export default {
     methods: {
         importCSV() {
             const csvFileChooser = document.getElementById("csvFileChooser");
-            csvFileChooser.click();
+            if (csvFileChooser !== null) {
+                csvFileChooser.click();
+            }
         },
         exportCSV() {
             let csv = "\uFEFFnameCN,nameEN,defCN,defEN,nameFR,defFN,url\n";
-            function escapeValue(value) {
+            function escapeValue(value: string) {
                 let escapedValue = value;
                 if (escapedValue.includes(",") || escapedValue.includes("\n")) {
                     escapedValue = escapedValue.replace('"', '""');
@@ -106,25 +110,29 @@ export default {
             }
             download(csv, "csv");
         },
-        addEntry({detail}) {
+        addEntry(e: { detail: string }) {
             const id = Date.now();
-            Vue.set(this.entries, id, { id, nameCN: detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
+            this.entries[id] = { id, nameCN: e.detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" };
         },
-        uploadCSV(e) {
-            const file = e.target.files[0];
+        uploadCSV(e: InputEvent) {
+           if (!(e.target instanceof HTMLInputElement)) return;
+
+            const file = (e.target.files ?? [])[0];
             const fileReader = new FileReader();
             fileReader.onload = () => {
-                const csv = parseCSV(fileReader.result);
-                for (const [id, [nameCN, nameEN, defCN, defEN]] of csv.entries()) {
-                    if (id > 0) {
-                        Vue.set(this.entries, id, { id, nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" });
+                if (typeof fileReader.result === "string") {
+                    const csv = parseCSV(fileReader.result);
+                    for (const [id, [nameCN, nameEN, defCN, defEN]] of csv.entries()) {
+                        if (id > 0) {
+                            this.entries[id] = { id, nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" };
+                        }
                     }
                 }
             };
             fileReader.readAsText(file);
         }
     }
-}
+});
 </script>
 
 <style>
