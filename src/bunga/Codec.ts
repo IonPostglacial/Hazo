@@ -1,10 +1,25 @@
-import { Book, BookInfo, Character, Dataset, DetailData, HierarchicalItem, State, Taxon } from "./datatypes";
+import { Book, BookInfo, Character, Dataset, DetailData, DictionaryEntry, Field, HierarchicalItem, State, Taxon } from "./datatypes";
 import { standardBooks } from "./stdcontent";
 import { createDataset } from "./Dataset";
 import { createDetailData } from './DetailData';
 import { createHierarchicalItem, hydrateChildren } from './HierarchicalItem';
 import { createTaxon } from './Taxon';
 import { createCharacter } from './Character';
+
+interface EncodedDataset {
+	id: string
+	taxons: ReturnType<typeof encodeTaxon>[];
+	characters: ReturnType<typeof encodeCharacter>[];
+	states: State[];
+	books: Book[];
+	extraFields: Field[];
+	dictionaryEntries: DictionaryEntry[]|Record<string, DictionaryEntry>;
+}
+
+interface AlreadyEncodedDataset extends Omit<EncodedDataset, "characters"> {
+	descriptors?: ReturnType<typeof encodeCharacter>[]; // Legacy name of characters
+	characters?: ReturnType<typeof encodeCharacter>[];
+}
 
 function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>) {
 	const children = new Set<string>();
@@ -50,11 +65,11 @@ function getAllStates(dataset: Dataset): State[] {
 	return states;
 }
 
-export function encodeDataset(dataset: Dataset) {
+export function encodeDataset(dataset: Dataset): EncodedDataset {
 	return {
 		id: dataset.id,
 		taxons: Object.values(dataset.taxons).map(taxon => encodeTaxon(taxon)),
-		descriptors: Object.values(dataset.descriptors).map(character => encodeCharacter(character)),
+		characters: Object.values(dataset.descriptors).map(character => encodeCharacter(character)),
 		states: getAllStates(dataset),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
@@ -102,23 +117,23 @@ function decodeCharacter(character: ReturnType<typeof encodeCharacter>, states: 
 	});
 }
 
-export function decodeDataset(dataset: ReturnType<typeof encodeDataset>): Dataset {
+export function decodeDataset(dataset: AlreadyEncodedDataset): Dataset {
 	const states: Record<string, State> = {};
-	const descriptors: Record<string, Character> = {};
+	const characters: Record<string, Character> = {};
 	const taxons: Record<string, Taxon> = {};
 	const books = standardBooks.slice();
 
 	for (const state of dataset.states) {
 		states[state.id] = state;
 	}
-	for (const descriptor of dataset.descriptors) {
-		descriptors[descriptor.id] = decodeCharacter(descriptor, states);
+	for (const descriptor of (dataset.characters ?? dataset.descriptors ?? [])) {
+		characters[descriptor.id] = decodeCharacter(descriptor, states);
 	}
 	for (const taxon of dataset.taxons) {
-		taxons[taxon.id] = decodeTaxon(taxon, descriptors, states, books);
+		taxons[taxon.id] = decodeTaxon(taxon, characters, states, books);
 	}
-	for (const descriptor of Object.values(descriptors)) {
-		hydrateChildren(descriptor, descriptors);
+	for (const descriptor of Object.values(characters)) {
+		hydrateChildren(descriptor, characters);
 	}
 	for (const taxon of Object.values(taxons)) {
 		hydrateChildren(taxon, taxons);
@@ -126,7 +141,7 @@ export function decodeDataset(dataset: ReturnType<typeof encodeDataset>): Datase
 	return createDataset(
 		dataset.id,
 		taxons,
-		descriptors,
+		characters,
 		books,
 		dataset.extraFields,
 		dataset.dictionaryEntries,
