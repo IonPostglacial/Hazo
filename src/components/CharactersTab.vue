@@ -62,11 +62,6 @@
                             <li>
                                 <add-item v-on:add-item="addState"></add-item>
                             </li>
-                            <li>
-                                <button v-if="!showAddMultiple" type="button" class="background-color-1" @click="showAddMultipleStates">Multistate Editor</button><br>
-                                <textarea v-if="showAddMultiple" v-model="addMultipleContent"></textarea><br>
-                                <button v-if="showAddMultiple" type="button" class="background-color-1" @click="addMultipleStates">Add States</button>
-                            </li>
                         </ul>
                     </div>
                 </collapsible-panel>
@@ -97,8 +92,6 @@ export default Vue.extend({
             descriptions: this.initDescriptions,
             selectedDescriptionId: "",
             selectedState: "",
-            showAddMultiple: false,
-            addMultipleContent: "",
         };
     },
     props: {
@@ -106,19 +99,6 @@ export default Vue.extend({
         initDescriptions: Hierarchy as PropType<Hierarchy<Character>>,
     },
     methods: {
-        showAddMultipleStates() {
-            this.showAddMultiple = true;
-        },
-        addMultipleStates() {
-            const statesToAdd = this.addMultipleContent.split("\n").map(name => name.trim());
-            for (const state of statesToAdd) {
-                if (state !== "") {
-                    this.addState({ detail: state });
-                }
-            }
-            this.addMultipleContent = "";
-            this.showAddMultiple = false;
-        },
         setInapplicableState(state: State, selected: boolean) {
             if (selected) {
                 this.selectedDescription!.inapplicableStates.push(state);
