@@ -3,7 +3,7 @@
         :v-if="typeof selectedItem !== 'undefined'"
         :showLeftMenu="showLeftMenu"
         :extra-fields="extraFields" :books="books"
-        :taxon="selectedItem" :taxonsHierarchy="items" :descriptions="descriptions"
+        :taxon="selectedItem" :taxonsHierarchy="taxonsHierarchy" :characters="characters"
         @add-taxon="addItem"
         @delete-taxon="deleteItem"
         @open-photo="openPhoto" @taxon-selected="selectTaxon">
@@ -23,20 +23,20 @@ export default Vue.extend({
     components: { TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
-        descriptions: Object,
-        initItems: Hierarchy as PropType<Hierarchy<Taxon>>,
+        characters: Object,
+        initTaxons: Hierarchy as PropType<Hierarchy<Taxon>>,
         extraFields: Array,
         selectedTaxon: String,
         books: Array as PropType<Array<Book>>,
     },
     data() {
         return {
-            items: this.initItems,
+            taxonsHierarchy: this.initTaxons,
         };
     },
     computed: {
         selectedItem(): Taxon|undefined {
-            return this.items.getItemById(this.selectedTaxon);
+            return this.taxonsHierarchy.getItemById(this.selectedTaxon);
         }
     },
     methods: {
@@ -44,7 +44,7 @@ export default Vue.extend({
             this.$emit("taxon-selected", id);
         },
         addItem({ value, parentId } : {value: string, parentId: string }) {
-            this.items.addItem({
+            this.taxonsHierarchy.addItem({
                 ...createDetailData({ id: "", name: value, photos: [], }),
                 type: "taxon",
                 hidden: false,
@@ -52,12 +52,12 @@ export default Vue.extend({
                 bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, descriptions: [], extra: {}
             });
-            this.$emit("change-items", this.items);
+            this.$emit("change-taxons", this.taxonsHierarchy);
         },
         deleteItem({ itemId }: { itemId: string }) {
-            const itemToDelete = this.items.getItemById(itemId);
+            const itemToDelete = this.taxonsHierarchy.getItemById(itemId);
             if (typeof itemToDelete !== "undefined") {
-                this.items.removeItem(itemToDelete);
+                this.taxonsHierarchy.removeItem(itemToDelete);
             } else {
                 console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`);
             }

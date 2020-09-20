@@ -1,36 +1,36 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
-            <TreeMenu editable :items="descriptions" name="description"
+            <TreeMenu editable :items="charactersHierarchy" name="description"
                 :name-fields="['name', 'nameCN']"
-                v-on:select-item="selectDescription" :selected-item="selectedDescriptionId"
-                v-on:add-item="addDescription"
-                v-on:delete-item="deleteDescription">
+                @select-item="selectCharacter" :selected-item="selectedCharacterId"
+                @add-item="addCharacter"
+                @delete-item="deleteCharacter">
             </TreeMenu>
         </nav>
-        <section v-if="typeof selectedDescription !== 'undefined'" class="vertical-flexbox flex-grow-1">
+        <section v-if="typeof selectedCharacter !== 'undefined'" class="vertical-flexbox flex-grow-1">
             <picture-box editable="true"
-                    @add-photo="addDescriptionPhoto"
-                    @set-photo="setDescriptionPhoto"
-                    @delete-photo="deleteDescriptionPhoto"
+                    @add-photo="addCharacterPhoto"
+                    @set-photo="setCharacterPhoto"
+                    @delete-photo="deleteCharacterPhoto"
                     @open-photo="openDescriptionPhoto">
-                <picture-frame v-for="(photo, index) in selectedDescription.photos" :key="index"
+                <picture-frame v-for="(photo, index) in selectedCharacter.photos" :key="index"
                     :url="photo" :index="index" editable="true"></picture-frame>
             </picture-box>
             <ul class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedDescription.name" /></div>
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedDescription.nameEN" /></div>
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedDescription.nameCN" /></div>
+                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name" /></div>
+                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameEN" /></div>
+                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameCN" /></div>
 
                 <label class="item-property">Detail</label>
-                <textarea v-model="selectedDescription.detail"></textarea><br/>
+                <textarea v-model="selectedCharacter.detail"></textarea><br/>
 
-                <div v-if="selectedDescription.parentId">
+                <div v-if="selectedCharacter.parentId">
                     <label>Inapplicable If</label>
                     <ul class="indented">
-                        <li class="medium-padding" v-for="state in descriptions.getItemById(selectedDescription.parentId).states" :key="state.id">
+                        <li class="medium-padding" v-for="state in charactersHierarchy.getItemById(selectedCharacter.parentId).states" :key="state.id">
                             <label>
-                            <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedDescription.inapplicableStates.find(s => s.id === state.id)" />
+                            <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
                             {{ state.name }}
                             </label>
                         </li>
@@ -38,22 +38,22 @@
                 </div>
             </ul>
         </section>
-        <section v-if="typeof selectedDescription !== 'undefined'" class="scroll">
+        <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll">
             <div class="relative" style="height: 98%">
-                <picture-box v-if="selectedDescriptionState"
+                <picture-box v-if="selectedCharacterState"
                         class="scroll"
                         editable="true"
                         @add-photo="addStatePhoto"
                         @set-photo="setStatePhoto"
                         @delete-photo="deleteStatePhoto"
                         @open-photo="openStatePhoto">
-                    <picture-frame v-for="(photo, index) in selectedDescriptionState.photos" :key="index"      
+                    <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="index"      
                         :url="photo" :index="index" :editable="true"></picture-frame>
                 </picture-box>
                 <collapsible-panel label="States">
                     <div class="scroll thin-border medium-margin medium-padding white-background">
                         <ul class="no-list-style medium-padding medium-margin">
-                            <li class="medium-padding" v-for="state in selectedDescription.states || []" :key="state.id">
+                            <li class="medium-padding" v-for="state in selectedCharacter.states || []" :key="state.id">
                                 <label class="blue-hover medium-padding nowrap">
                                     <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
                                     <input type="text" v-model="state.name" />
@@ -80,61 +80,61 @@ export default Vue.extend({
     name: "CharactersTab",
     components: { TreeMenu },
     computed: {
-        selectedDescription(): Character|undefined {
-            return this.descriptions.getItemById(this.selectedDescriptionId);
+        selectedCharacter(): Character|undefined {
+            return this.charactersHierarchy.getItemById(this.selectedCharacterId);
         },
-        selectedDescriptionState(): State|undefined {
-            return this.selectedDescription?.states?.find(s => s.id === this.selectedState);
+        selectedCharacterState(): State|undefined {
+            return this.selectedCharacter?.states?.find(s => s.id === this.selectedState);
         },
     },
     data() {
         return {
-            descriptions: this.initDescriptions,
-            selectedDescriptionId: "",
+            charactersHierarchy: this.initCharacters,
+            selectedCharacterId: "",
             selectedState: "",
         };
     },
     props: {
         showLeftMenu: Boolean,
-        initDescriptions: Hierarchy as PropType<Hierarchy<Character>>,
+        initCharacters: Hierarchy as PropType<Hierarchy<Character>>,
     },
     methods: {
         setInapplicableState(state: State, selected: boolean) {
             if (selected) {
-                this.selectedDescription!.inapplicableStates.push(state);
+                this.selectedCharacter!.inapplicableStates.push(state);
             } else {
-                const i = this.selectedDescription!.inapplicableStates.findIndex(s => s.id === state.id);
-                this.selectedDescription!.inapplicableStates.splice(i, 1);
+                const i = this.selectedCharacter!.inapplicableStates.findIndex(s => s.id === state.id);
+                this.selectedCharacter!.inapplicableStates.splice(i, 1);
             }
         },
-        selectDescription(id: string) {
-            this.selectedDescriptionId = id;
+        selectCharacter(id: string) {
+            this.selectedCharacterId = id;
         },
-        addDescriptionPhoto(e: {detail: {value: string}}) {
-            this.selectedDescription!.photos.push(e.detail.value);
+        addCharacterPhoto(e: {detail: {value: string}}) {
+            this.selectedCharacter!.photos.push(e.detail.value);
         },
-        setDescriptionPhoto(e: {detail: {index: number, value: string}}) {
-            this.selectedDescription!.photos[e.detail.index] = e.detail.value;
+        setCharacterPhoto(e: {detail: {index: number, value: string}}) {
+            this.selectedCharacter!.photos[e.detail.index] = e.detail.value;
         },
-        deleteDescriptionPhoto(e: {detail: {index: number}}) {
-            this.selectedDescription!.photos.splice(e.detail.index, 1);
+        deleteCharacterPhoto(e: {detail: {index: number}}) {
+            this.selectedCharacter!.photos.splice(e.detail.index, 1);
         },
         addStatePhoto(e: {detail: {value: string}}) {
-            if (this.selectedDescriptionState && typeof this.selectedDescriptionState?.photos === "undefined") {
-                this.selectedDescriptionState.photos = [];
+            if (this.selectedCharacterState && typeof this.selectedCharacterState?.photos === "undefined") {
+                this.selectedCharacterState.photos = [];
             }
-            this.selectedDescriptionState?.photos.push(e.detail.value);
+            this.selectedCharacterState?.photos.push(e.detail.value);
         },
         setStatePhoto(e: {detail: {index: number, value: string}}) {
-            if (this.selectedDescriptionState) {
-                this.selectedDescriptionState.photos[e.detail.index] = e.detail.value;
+            if (this.selectedCharacterState) {
+                this.selectedCharacterState.photos[e.detail.index] = e.detail.value;
             }
         },
         deleteStatePhoto(e: {detail: {index: number}}) {
-            this.selectedDescriptionState?.photos.splice(e.detail.index, 1);
+            this.selectedCharacterState?.photos.splice(e.detail.index, 1);
         },
-        addDescription({ value, parentId }: { value: string, parentId: string }) {
-            const newDescription = this.descriptions.addItem({
+        addCharacter({ value, parentId }: { value: string, parentId: string }) {
+            const newDescription = this.charactersHierarchy.addItem({
                 ...createHierarchicalItem<Character>({
                     ...createDetailData({ id: "", name: value }),
                     type: "character",
@@ -144,7 +144,7 @@ export default Vue.extend({
                 states: [],
                 inapplicableStates: []
             });
-            const parentDescription = this.descriptions.getItemById(parentId);
+            const parentDescription = this.charactersHierarchy.getItemById(parentId);
             if(typeof parentDescription !== "undefined") {
                 newDescription.inapplicableStates = [...parentDescription.states];
                 const newState = {
@@ -158,32 +158,32 @@ export default Vue.extend({
                     }
                 }
             }
-            this.$emit("change-descriptions", this.descriptions);
+            this.$emit("change-characters", this.charactersHierarchy);
         },
-        deleteDescription({ itemId }: { itemId: string}) {
-            const descriptionToDelete = this.descriptions.getItemById(itemId);
+        deleteCharacter({ itemId }: { itemId: string}) {
+            const descriptionToDelete = this.charactersHierarchy.getItemById(itemId);
             if (typeof descriptionToDelete !== "undefined") {
-                this.descriptions.removeItem(descriptionToDelete);
+                this.charactersHierarchy.removeItem(descriptionToDelete);
             } else {
-                console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`, this.descriptions);
+                console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`, this.charactersHierarchy);
             }
         },
         addState({detail} : {detail: string}) {
-            if (typeof this.selectedDescription === "undefined") throw "addState failed: description is undefined.";
-            this.selectedDescription.states.push({
+            if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
+            this.selectedCharacter.states.push({
                 id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
-                descriptorId: this.selectedDescription.id,
+                descriptorId: this.selectedCharacter.id,
                 name: detail,
                 photos: []
             });
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedDescription!.photos});
+            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedCharacter!.photos});
         },
         openStatePhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedDescriptionState?.photos});
+            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedCharacterState?.photos});
         },
     }
 });

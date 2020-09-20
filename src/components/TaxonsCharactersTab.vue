@@ -1,5 +1,5 @@
 <template>
-    <TaxonsPanel :showLeftMenu="showLeftMenu" :taxon="selectedItem" :taxonsHierarchy="items" :descriptions="descriptions" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
+    <TaxonsPanel :showLeftMenu="showLeftMenu" :taxon="selectedItem" :taxonsHierarchy="taxonsHierarchy" :characters="characters" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
         :extra-fields="extraFields" :books="books">
     </TaxonsPanel>
 </template>
@@ -8,17 +8,17 @@
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import TaxonsPanel from "./TaxonsPanel.vue";
 import { Book, Character, Field, Hierarchy, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
-import { ObservableMap } from '@/observablemap';
+import { ObservableMap } from "../observablemap";
 
 interface Description { descriptor: Character, states: State[] }
 
 export default Vue.extend({
-    name: "TaxonsDescriptorsTab",
+    name: "TaxonsCharactersTab",
     components: { TaxonsPanel },
     props: {
         showLeftMenu: Boolean,
-        descriptions: Object as PropType<Hierarchy<Character>>,
-        initItems: Object as PropType<Hierarchy<Taxon>>,
+        characters: Object as PropType<Hierarchy<Character>>,
+        initTaxons: Object as PropType<Hierarchy<Taxon>>,
         extraFields: Array as PropType<Field[]>,
         taxonNameField: String,
         selectedTaxon: String,
@@ -26,7 +26,7 @@ export default Vue.extend({
     },
     data() {
         return {
-            items: this.initItems,
+            taxonsHierarchy: this.initTaxons,
             selectedItemDescriptorId: "",
             itemDescriptorSearch: "",
             selectedItemDescriptorTree: {} as Hierarchy<Character>
@@ -42,7 +42,7 @@ export default Vue.extend({
     },
     computed: {
         selectedItem(): Taxon|undefined {
-            return this.items.getItemById(this.selectedTaxon);
+            return this.taxonsHierarchy.getItemById(this.selectedTaxon);
         },
     },
     methods: {
@@ -58,7 +58,7 @@ export default Vue.extend({
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            const selectedItemDescriptorPhotos = this.descriptions.getItemById(this.selectedItemDescriptorId)?.photos ?? [];
+            const selectedItemDescriptorPhotos = this.characters.getItemById(this.selectedItemDescriptorId)?.photos ?? [];
             this.$emit("open-photo", {index: e.detail.index, photos: selectedItemDescriptorPhotos });
         },
         onStateSelection() {
@@ -72,7 +72,7 @@ export default Vue.extend({
                     itemStatesIds.push(state.id);
                 }
             }
-            for (const descriptor of this.descriptions.allItems) {
+            for (const descriptor of this.characters.allItems) {
                 dependencyTree.setItem(Object.assign({}, descriptor));
                 descriptor.hidden = descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 );
             }
@@ -86,7 +86,7 @@ export default Vue.extend({
 
             let selectedDescription = this.selectedItem?.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
             if (typeof selectedDescription === "undefined") {
-                selectedDescription = { descriptor: Object.assign({}, this.descriptions.getItemById(this.selectedItemDescriptorId)), states: [] };
+                selectedDescription = { descriptor: Object.assign({}, this.characters.getItemById(this.selectedItemDescriptorId)), states: [] };
                 this.selectedItem.descriptions.push(selectedDescription);
             }
             const stateIndex = selectedDescription.states.findIndex((s: State) => s.id === item.id);
@@ -100,7 +100,7 @@ export default Vue.extend({
                     selectedDescription.states.splice(stateIndex, 1);
                 }
             }
-            this.items.setItem(Object.assign({}, this.selectedItem));
+            this.taxonsHierarchy.setItem(Object.assign({}, this.selectedItem));
             this.onStateSelection();
         },
     }

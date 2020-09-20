@@ -105,7 +105,7 @@ import { ObservableMap } from '@/observablemap';
 export default Vue.extend({
     name: "TaxonsPanel",
     components: { SquareTreeViewer, ckeditor: CKEditor.component, TreeMenu },
-    props: { taxon: Object as PropType<Taxon>, taxonsHierarchy: Hierarchy as PropType<Hierarchy<Character>>, descriptions: Hierarchy as PropType<Hierarchy<Character>>,
+    props: { taxon: Object as PropType<Taxon>, taxonsHierarchy: Hierarchy as PropType<Hierarchy<Character>>, characters: Hierarchy as PropType<Hierarchy<Character>>,
         showLeftMenu: Boolean, editable: Boolean, extraFields: Array, books:Array
     },
     data() {
@@ -126,7 +126,7 @@ export default Vue.extend({
             }
             const dependencyHierarchy = new Hierarchy<Character & { warning?: boolean, selected?: boolean }>("", new ObservableMap());
 
-            for (const item of this.descriptions.allItems) {
+            for (const item of this.characters.allItems) {
                 const descriptor = { ...item, warning: false };
                 const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor.id === descriptor.id);
                 const itemDescriptorStateIds = selectedDescription?.states.map(s => s.id) ?? [];

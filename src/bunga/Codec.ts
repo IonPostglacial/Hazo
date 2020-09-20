@@ -59,7 +59,7 @@ function encodeCharacter(character: Character) {
 
 function getAllStates(dataset: Dataset): State[] {
 	let states: State[] = [];
-	for (const character of Object.values(dataset.descriptors)) {
+	for (const character of Object.values(dataset.characters)) {
 		states = states.concat(character.states);
 	}
 	return states;
@@ -69,7 +69,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	return {
 		id: dataset.id,
 		taxons: Object.values(dataset.taxons).map(taxon => encodeTaxon(taxon)),
-		characters: Object.values(dataset.descriptors).map(character => encodeCharacter(character)),
+		characters: Object.values(dataset.characters).map(character => encodeCharacter(character)),
 		states: getAllStates(dataset),
 		books: dataset.books,
 		extraFields: dataset.extraFields,

@@ -26,22 +26,23 @@
     </div>
     <div :class="'horizontal-flexbox start-align flex-grow-1 height-main-panel ' + (showBigImage ? 'invisible' : '')">
         <TaxonsTab v-if="selectedTab === 0"
-            :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" 
+            :init-taxons="taxonsHierarchy" :characters="charactersHierarchy" @taxon-selected="selectTaxon" 
             :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books" 
-            v-on:open-photo="maximizeImage" v-on:change-items="changeItems">
+            @open-photo="maximizeImage" @change-taxons="changeTaxonsHierarchy">
         </TaxonsTab>
-        <TaxonsDescriptorsTab v-if="selectedTab === 1"
-            :init-items="items" :descriptions="descriptions" v-on:taxon-selected="selectTaxon" :selected-taxon="selectedTaxon"
+        <TaxonsCharactersTab v-if="selectedTab === 1"
+            :init-taxons="taxonsHierarchy" :characters="charactersHierarchy" @taxon-selected="selectTaxon"
+            :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books"
-            v-on:open-photo="maximizeImage">
-        </TaxonsDescriptorsTab>
+            @open-photo="maximizeImage">
+        </TaxonsCharactersTab>
         <CharactersTab v-if="selectedTab === 2"
-            :init-descriptions="descriptions"
+            :init-characters="charactersHierarchy"
             :show-left-menu="showLeftMenu"
-            v-on:open-photo="maximizeImage" v-on:change-descriptions="changeDescriptions">
+            @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
         <extra-fields-panel :showFields="showFields" :extraFields="extraFields"
@@ -81,7 +82,7 @@ import { Character, Dataset, Field, Taxon, TexExporter } from "./bunga"; // esli
 import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails, Hierarchy } from "./bunga";
 import { ObservableMap } from "./observablemap";
 import TaxonsTab from "./components/TaxonsTab.vue";
-import TaxonsDescriptorsTab from "./components/TaxonsDescriptorsTab.vue";
+import TaxonsCharactersTab from "./components/TaxonsCharactersTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
@@ -94,7 +95,7 @@ import download from "./download";
 export default Vue.extend({
     name: "App",
     components: {
-        TaxonsTab, TaxonsDescriptorsTab, CharactersTab, WordsDictionary, ExtraFieldsPanel
+        TaxonsTab, TaxonsCharactersTab, CharactersTab, WordsDictionary, ExtraFieldsPanel
     },
     data() {
         return {
@@ -109,14 +110,14 @@ export default Vue.extend({
             showBigImage: false,
             tabs: [
                 "Taxons",
-                "Taxons Descriptors",
-                "Descriptors",
+                "Taxons Characters",
+                "Characters",
                 "Dictionary"
             ],
             extraFields: new Array<Field>(),
             books: standardBooks,
-            items: new Hierarchy<Taxon>("myt-", new ObservableMap()),
-            descriptions: new Hierarchy<Character>("myd-", new ObservableMap()),
+            taxonsHierarchy: new Hierarchy<Taxon>("myt-", new ObservableMap()),
+            charactersHierarchy: new Hierarchy<Character>("myd-", new ObservableMap()),
             dictionaryEntries: {},
             latexProgressText: "",
         };
@@ -135,20 +136,20 @@ export default Vue.extend({
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
                 for (const taxon of savedDataset?.taxons) {
-                    this.items.setItem(taxon);
+                    this.taxonsHierarchy.setItem(taxon);
                 }
-                for (const character of savedDataset?.descriptors) {
-                    this.descriptions.setItem(character);
+                for (const character of savedDataset?.characters) {
+                    this.charactersHierarchy.setItem(character);
                 }
                 this.extraFields = savedDataset?.extraFields ?? [];
                 this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
             });
         },
-        changeDescriptions(descriptions: Hierarchy<Character>) {
-            this.descriptions = descriptions;
+        changeCharactersHierarchy(charactershierarchy: Hierarchy<Character>) {
+            this.charactersHierarchy = charactershierarchy;
         },
-        changeItems(items: Hierarchy<Taxon>) {
-            this.items = items;
+        changeTaxonsHierarchy(taxonsHierarchy: Hierarchy<Taxon>) {
+            this.taxonsHierarchy = taxonsHierarchy;
         },
         selectTaxon(id: string) {
             this.selectedTaxon = id;
@@ -184,22 +185,22 @@ export default Vue.extend({
             this.bigImageIndex = 0;
         },
         saveData() {
-            const taxons = [...this.items.topLevelItems], descriptors = [...this.descriptions.topLevelItems];
-            for (const taxon of this.items.allItems) {
+            const taxons = [...this.taxonsHierarchy.topLevelItems], descriptors = [...this.charactersHierarchy.topLevelItems];
+            for (const taxon of this.taxonsHierarchy.allItems) {
                 if (typeof taxon.parentId !== "undefined") {
                     taxons.push(taxon);
                 }
             }
-            for (const description of this.descriptions.allItems) {
+            for (const description of this.charactersHierarchy.allItems) {
                 if (typeof description.parentId !== "undefined") {
                     descriptors.push(description);
                 }
             }
-            DB.store({ id: this.selectedBase, taxons: taxons, descriptors: descriptors, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
+            DB.store({ id: this.selectedBase, taxons: taxons, characters: descriptors, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
         },
         resetData() {
-            this.items.clear();
-            this.descriptions.clear();
+            this.taxonsHierarchy.clear();
+            this.charactersHierarchy.clear();
         },
         importFile() {
             document.getElementById("import-data")?.click();
@@ -212,13 +213,13 @@ export default Vue.extend({
             const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
 
-            for (const item of this.items.allItems) {
+            for (const item of this.taxonsHierarchy.allItems) {
                 const newDetail = item.detail.replace(re, replacement);
-                this.items.setItem(Object.assign({}, item, { detail: newDetail }));
+                this.taxonsHierarchy.setItem(Object.assign({}, item, { detail: newDetail }));
             }
-            for (const description of this.descriptions.allItems) {
+            for (const description of this.charactersHierarchy.allItems) {
                 const newDetail = description.detail.replace(re, replacement);
-                this.descriptions.setItem(Object.assign({}, description, { detail: newDetail }));
+                this.charactersHierarchy.setItem(Object.assign({}, description, { detail: newDetail }));
             }
         },
         async fileRead(file: File): Promise<Dataset | null> {
@@ -241,7 +242,7 @@ export default Vue.extend({
             for (const item of Object.values(result?.taxons ?? {})) {
                 resultsByName[item.name] = item;
             }
-            for (const item of this.items.allItems) {
+            for (const item of this.taxonsHierarchy.allItems) {
                 const newInfo: any = resultsByName[item.name], anyItem: any = item;
                 if (typeof newInfo !== "undefined") {
                     for (const prop of propertiesToMerge) {
@@ -263,14 +264,14 @@ export default Vue.extend({
             if (typeof result.extraFields !== "undefined") {
                 this.extraFields = result.extraFields;
             }
-            if (typeof result.descriptors !== "undefined") {
-                for (const description of Object.values(result.descriptors)) {
-                    this.descriptions.setItem(description);
+            if (typeof result.characters !== "undefined") {
+                for (const character of Object.values(result.characters)) {
+                    this.charactersHierarchy.setItem(character);
                 }
             }
             if (typeof result.taxons !== "undefined") {
                 for (const item of Object.values(result.taxons)) {
-                    this.items.setItem(item);
+                    this.taxonsHierarchy.setItem(item);
                 }
             }
             if (typeof result.dictionaryEntries !== "undefined") {
@@ -284,7 +285,7 @@ export default Vue.extend({
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
-                        highlightTaxonsDetails(fileReader.result, this.items.toObject());
+                        highlightTaxonsDetails(fileReader.result, this.taxonsHierarchy.toObject());
                     }
                     resolve(null);
                 };
@@ -314,7 +315,7 @@ export default Vue.extend({
             const references = [];
             const div = document.createElement("div");
             const startsWithLetter = /^[^\W\d_]+.*/;
-            for (const item of this.items.allItems) {
+            for (const item of this.taxonsHierarchy.allItems) {
                 div.innerHTML = item.detail;
                 const words = div.innerText.split(/[\s\t,;:=/."'-()]/) ?? [];
                 for (const word of words) {
@@ -336,11 +337,11 @@ export default Vue.extend({
             download(csv, "csv");
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.items.toObject());
+            const zipTxt = await exportZipFolder(this.taxonsHierarchy.toObject());
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new TexExporter([...this.items.allItems]);
+            const taxonToTex = new TexExporter([...this.taxonsHierarchy.allItems]);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
                 download(tex, "zip", true);
@@ -349,8 +350,8 @@ export default Vue.extend({
         jsonExport() {
             const json = JSON.stringify(encodeDataset({
                 id: this.selectedBase, 
-                taxons: this.items.toObject(), 
-                descriptors: this.descriptions.toObject(), 
+                taxons: this.taxonsHierarchy.toObject(), 
+                characters: this.charactersHierarchy.toObject(), 
                 extraFields: this.extraFields,
                 dictionaryEntries: this.dictionaryEntries,
                 books: standardBooks,
@@ -359,8 +360,8 @@ export default Vue.extend({
         },
         exportSDD() {
             const xml = saveSDD({
-                items: this.items,
-                descriptors: this.descriptions,
+                items: this.taxonsHierarchy,
+                descriptors: this.charactersHierarchy,
                 extraFields: this.extraFields,
             });
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");

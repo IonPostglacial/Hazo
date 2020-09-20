@@ -80,7 +80,7 @@ export interface DictionaryEntry {
 export interface Dataset {
 	id: string;
 	taxons: Record<string, Taxon>;
-	descriptors: Record<string, Character>;
+	characters: Record<string, Character>;
 	books: Book[];
 	extraFields: Field[];
 	dictionaryEntries: Record<string, DictionaryEntry>;

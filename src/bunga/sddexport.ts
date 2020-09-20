@@ -90,7 +90,7 @@ export function datasetToSdd(dataset:Dataset, extraFields:Array<Field>): sdd_Dat
 		taxons.push(sddData.taxon);
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
 	}
-	for (const character of Object.values(dataset.descriptors)) {
+	for (const character of Object.values(dataset.characters)) {
 		const sddData = characterToSdd(character, extraFields, mediaObjects);
 		characters.push(sddData.character);
 		states = states.concat(sddData.states);

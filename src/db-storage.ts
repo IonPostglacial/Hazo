@@ -1,10 +1,19 @@
-import { Character, Dataset, HierarchicalItem, Taxon } from "./bunga/datatypes";
-import { standardBooks }from "./bunga/stdcontent";
+import { Book, Character, DictionaryEntry, Field, HierarchicalItem, Taxon } from "./bunga/datatypes";
+import { standardBooks } from "./bunga/stdcontent";
 
 const DB_NAME = "Datasets";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
-type DatasetDB = Omit<Dataset, "taxons" | "descriptors"> & { taxons: Taxon[], descriptors: Character[] };
+interface DatasetDBv3 {
+	id: string;
+    taxons: Taxon[];
+    descriptors: Character[];
+	books: Book[];
+	extraFields: Field[];
+	dictionaryEntries: Record<string, DictionaryEntry>;
+}
+
+type DatasetDBv4 = Omit<DatasetDBv3, "descriptors"> & { characters: Character[]; };
 
 function createStore(db: IDBDatabase) {
     if (!db.objectStoreNames.contains("Datasets")) {
@@ -15,6 +24,17 @@ function createStore(db: IDBDatabase) {
 async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     createStore(db);
     
+    if (oldVersion === 3) {
+        const datasetIds = await dbList();
+
+        for (const datasetId of datasetIds) {
+            const dataset = await dbLoad(datasetId) as unknown as DatasetDBv3;
+            const characters = dataset.descriptors;
+            delete (dataset as any).descriptors;
+
+            dbStore(Object.assign(dataset, { characters }));
+        }
+    }
     if (oldVersion === 2) {
         const datasetIds = await dbList();
 
@@ -60,7 +80,7 @@ async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     }
 }
 
-function dbStore(dataset: DatasetDB) {
+function dbStore(dataset: DatasetDBv4) {
     const rq = indexedDB.open(DB_NAME, DB_VERSION);
     
     rq.onupgradeneeded = function (event) {
@@ -123,7 +143,7 @@ function dbList(): Promise<string[]> {
     });
 }
 
-function dbLoad(id: string): Promise<DatasetDB> {
+function dbLoad(id: string): Promise<DatasetDBv4> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {
