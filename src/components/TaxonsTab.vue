@@ -3,7 +3,7 @@
         :v-if="typeof selectedItem !== 'undefined'"
         :showLeftMenu="showLeftMenu"
         :extra-fields="extraFields" :books="books"
-        :item="selectedItem" :items="items" :descriptions="descriptions"
+        :taxon="selectedItem" :taxonsHierarchy="items" :descriptions="descriptions"
         @add-taxon="addItem"
         @delete-taxon="deleteItem"
         @open-photo="openPhoto" @taxon-selected="selectTaxon">

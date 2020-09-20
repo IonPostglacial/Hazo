@@ -1,5 +1,5 @@
 <template>
-    <TaxonsPanel :showLeftMenu="showLeftMenu" :item="selectedItem" :items="items" :descriptions="descriptions" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
+    <TaxonsPanel :showLeftMenu="showLeftMenu" :taxon="selectedItem" :taxonsHierarchy="items" :descriptions="descriptions" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
         :extra-fields="extraFields" :books="books">
     </TaxonsPanel>
 </template>
