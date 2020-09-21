@@ -85,13 +85,18 @@ export class ItemPropertyField extends HTMLElement {
         return root;
     }
 
+    private getRoot(): Element|null {
+        return this.shadowRoot?.getElementById("root") ?? null;
+    }
+
     set icon(iconUrl: string) {
         if (this.#icon === iconUrl) return;
 
         this.#icon = iconUrl;
 
-        if (this.shadowRoot?.firstChild instanceof Element) {
-            this.refreshIcon(this.shadowRoot?.firstChild);
+        const root = this.getRoot();
+        if (root) {
+            this.refreshIcon(root);
         }
     }
 
@@ -100,8 +105,9 @@ export class ItemPropertyField extends HTMLElement {
 
         this.#value = newValue;
 
-        if (this.shadowRoot?.firstChild instanceof Element) {
-            this.refreshValue(this.shadowRoot?.firstChild);
+        const root = this.getRoot();
+        if (root) {
+            this.refreshValue(root);
         }
     }
 
