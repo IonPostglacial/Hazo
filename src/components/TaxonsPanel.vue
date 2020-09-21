@@ -129,7 +129,7 @@ export default Vue.extend({
 
             for (const item of this.characters.allItems) {
                 const descriptor = { ...item, warning: false };
-                const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor.id === descriptor.id);
+                const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor?.id === descriptor.id);
                 const itemDescriptorStateIds = selectedDescription?.states.map(s => s.id) ?? [];
                 const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemDescriptorStateIds.includes(s.id) }, s));
 

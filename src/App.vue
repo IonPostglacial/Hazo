@@ -91,6 +91,7 @@ import Vue from "vue";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
+import cacheAssets from "./cache-assets";
 
 export default Vue.extend({
     name: "App",
@@ -135,15 +136,22 @@ export default Vue.extend({
         loadBase(id?: string) {
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
+                const photos: string[] = [];
                 for (const taxon of savedDataset?.taxons) {
+                    photos.push(...taxon.photos);
                     this.taxonsHierarchy.setItem(taxon);
                 }
                 for (const character of savedDataset?.characters) {
+                    photos.push(...character.photos);
                     this.charactersHierarchy.setItem(character);
                 }
-                this.extraFields = savedDataset?.extraFields ?? [];
-                this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
-            });
+                cacheAssets(photos)
+                    .then(() => {
+                        console.log("All photos cached.")
+                    });
+                    this.extraFields = savedDataset?.extraFields ?? [];
+                    this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
+                });
         },
         changeCharactersHierarchy(charactershierarchy: Hierarchy<Character>) {
             this.charactersHierarchy = charactershierarchy;
