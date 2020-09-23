@@ -1,6 +1,7 @@
 <template>
-    <TaxonsPanel :showLeftMenu="showLeftMenu" :taxon="selectedItem" :taxonsHierarchy="taxonsHierarchy" :characters="characters" @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" 
-        :extra-fields="extraFields" :books="books">
+    <TaxonsPanel :showLeftMenu="showLeftMenu" :taxon="selectedItem" :taxonsHierarchy="taxonsHierarchy" :characters="characters"
+        :extra-fields="extraFields" :books="books"
+        @open-photo="openPhoto" @taxon-selected="selectTaxon" @taxon-state-selected="addItemState" >
     </TaxonsPanel>
 </template>
 
@@ -8,7 +9,6 @@
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import TaxonsPanel from "./TaxonsPanel.vue";
 import { Book, Character, Field, Hierarchy, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
-import { ObservableMap } from "../observablemap";
 
 interface Description { descriptor: Character, states: State[] }
 
@@ -29,16 +29,7 @@ export default Vue.extend({
             taxonsHierarchy: this.initTaxons,
             selectedItemDescriptorId: "",
             itemDescriptorSearch: "",
-            selectedItemDescriptorTree: {} as Hierarchy<Character>
         };
-    },
-    mounted() {
-        this.onStateSelection();
-    },
-    watch: {
-        selectedTaxon() {
-            this.onStateSelection();
-        }
     },
     computed: {
         selectedItem(): Taxon|undefined {
@@ -60,23 +51,6 @@ export default Vue.extend({
             e.stopPropagation();
             const selectedItemDescriptorPhotos = this.characters.getItemById(this.selectedItemDescriptorId)?.photos ?? [];
             this.$emit("open-photo", {index: e.detail.index, photos: selectedItemDescriptorPhotos });
-        },
-        onStateSelection() {
-            if (typeof this.selectedItem === "undefined") return;
-
-            const itemStatesIds: string[] = [];
-            const selectedItemIdDescriptions = this.selectedItem.descriptions ?? [];
-            const dependencyTree = new Hierarchy<Character>("", new ObservableMap());
-            for (const description of selectedItemIdDescriptions) {
-                for (const state of description?.states ?? []) {
-                    itemStatesIds.push(state.id);
-                }
-            }
-            for (const descriptor of this.characters.allItems) {
-                dependencyTree.setItem(Object.assign({}, descriptor));
-                descriptor.hidden = descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 );
-            }
-            this.selectedItemDescriptorTree = dependencyTree;
         },
         addItemState({ selected, item }: { selected: boolean, item: State }) {
             if (!this.selectedItem || !this.selectedItem.descriptions) {
@@ -100,8 +74,7 @@ export default Vue.extend({
                     selectedDescription.states.splice(stateIndex, 1);
                 }
             }
-            this.taxonsHierarchy.setItem(Object.assign({}, this.selectedItem));
-            this.onStateSelection();
+            this.taxonsHierarchy.setItem(this.selectedItem);
         },
     }
 });
