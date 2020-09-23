@@ -17,7 +17,6 @@ export default async function cacheAssets(assets: string[]) {
         for (const urlChunk of popChunks(assets, 50)) {
             try {
                 await cache.addAll(urlChunk);
-                console.log("chunk added");
                 await sleep(10_000);
             } catch(err) {
                 console.warn("error when syncing assets", err);
