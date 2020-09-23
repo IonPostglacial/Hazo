@@ -134,7 +134,7 @@ export default Vue.extend({
             this.selectedCharacterState?.photos.splice(e.detail.index, 1);
         },
         addCharacter({ value, parentId }: { value: string, parentId: string }) {
-            const newDescription = this.charactersHierarchy.addItem({
+            const newDescription = this.charactersHierarchy.setItem({
                 ...createHierarchicalItem<Character>({
                     ...createDetailData({ id: "", name: value }),
                     type: "character",

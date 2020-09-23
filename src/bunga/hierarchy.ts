@@ -1,4 +1,5 @@
 import { HierarchicalItem } from "./datatypes";
+import clone from "../clone";
 
 interface IMap<T> {
     get(key: string): T|undefined;
@@ -8,7 +9,6 @@ interface IMap<T> {
     [Symbol.iterator](): Iterator<[string, T]>;
     values(): Iterable<T>;
     clear(): void;
-    clone(): IMap<T>;
     toObject(): any;
 }
 
@@ -43,9 +43,10 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
     }
 
-    addItem(item: Omit<T, "id"> & { id?: string }): T {
-        let newId = item.id; 
-        if (typeof newId === "undefined" || newId === null || newId === "") {
+    setItem(item: T): T {
+        let newId = item.id;
+        const isNewEntry = !this.items.has(newId);
+        if (item.id === "") {
             let nextId = this.itemsOrder.length;
             while (this.items.has(this.idPrefix + nextId)) {
                 nextId++;
@@ -56,7 +57,9 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         this.items.set(newId, newItem);
 
         if (typeof newItem.parentId === "undefined") {
-            this.itemsOrder.push(newId);
+            if (isNewEntry) {
+                this.itemsOrder.push(newId);
+            }
         } else {
             const parent = this.items.get(newItem.parentId);
             if (typeof parent === "undefined") {
@@ -78,36 +81,6 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
 
     getItemById(id: string): T|undefined {
         return this.items.get(id);
-    }
-
-    setItem(item: T): void {
-        if(!item.id) {
-            console.warn(`Hierarchy: Trying to set an item with no id: ${item.name}`);
-            return;
-        }
-        if(typeof item.childrenOrder === "undefined") {
-            item.childrenOrder = Object.keys(item.children);
-        }
-        const emptyChildIndex = item.childrenOrder.indexOf("");
-        if (emptyChildIndex >= 0) {
-            console.warn(`Cannot import child with no id: ${item.name} > ${item.children[""]?.name}`)
-            item.childrenOrder.splice(emptyChildIndex, 1);
-            delete item.children[""];
-        }
-        if (this.items.has(item.id)) {
-            this.items.set(item.id, item);
-        
-            if (typeof item.parentId !== "undefined") {
-                const parent = this.items.get(item.parentId);
-                if (typeof parent === "undefined") {
-                    console.error(`Trying to set an item to a parent that doesn't exist: ${item.parentId}`);
-                } else {
-                    parent.children[item.id] = item;
-                }
-            }
-        } else {
-            this.addItem(item);
-        }
     }
 
     removeItem(item: T): void {
@@ -168,7 +141,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     clone(): Hierarchy<T> {
-        return new Hierarchy<T>(this.idPrefix, this.items.clone(), this.itemsOrder.slice());
+        return new Hierarchy<T>(this.idPrefix, clone(this.items), this.itemsOrder.slice());
     }
 
     toObject(): any {

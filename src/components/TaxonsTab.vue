@@ -44,7 +44,7 @@ export default Vue.extend({
             this.$emit("taxon-selected", id);
         },
         addItem({ value, parentId } : {value: string, parentId: string }) {
-            this.taxonsHierarchy.addItem({
+            this.taxonsHierarchy.setItem({
                 ...createDetailData({ id: "", name: value, photos: [], }),
                 type: "taxon",
                 hidden: false,
