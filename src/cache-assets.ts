@@ -1,22 +1,30 @@
-// all urls will be added to cache
-export default function cacheAssets(assets: string[]) {
-    return new Promise( function (resolve, reject) {
-      // open cache
-      caches.open("assets")
-        .then(cache => {
-          // the API does all the magic for us
-          cache.addAll(assets)
-            .then(() => {
-              console.log("all assets added to cache")
-              resolve()
-            })
-            .catch(err => {
-              console.log("error when syncing assets", err)
-              reject()
-            })
-        }).catch(err => {
-          console.log("error when opening cache", err)
-          reject()
-        })
-    });
+function* popChunks<T>(array: T[], chunkSize: number): Generator<T[]> {
+    const chunksNumber = Math.ceil(array.length / chunkSize);
+	const initialLength = array.length;
+    
+    for (let i = 0; i < chunksNumber; i++) {
+        yield array.splice(Math.max(0, initialLength - (i + 1) * chunkSize));
+    }
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export default async function cacheAssets(assets: string[]) {
+    try {
+        const cache = await caches.open("assets");
+        for (const urlChunk of popChunks(assets, 50)) {
+            try {
+                await cache.addAll(urlChunk);
+                console.log("chunk added");
+                await sleep(10_000);
+            } catch(err) {
+                console.warn("error when syncing assets", err);
+            }
+        }
+        console.log("all assets added to cache");
+    } catch(err) {
+        console.error("error when opening cache", err);
+    }
 }
