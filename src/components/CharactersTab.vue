@@ -72,7 +72,7 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { addNewCharacter, Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
 import { createDetailData } from '@/bunga/DetailData';
 import { createHierarchicalItem } from '@/bunga/HierarchicalItem';
 
@@ -108,6 +108,7 @@ export default Vue.extend({
             }
         },
         selectCharacter(id: string) {
+            console.log(this.charactersHierarchy.getItemById(id));
             this.selectedCharacterId = id;
         },
         addCharacterPhoto(e: {detail: {value: string}}) {
