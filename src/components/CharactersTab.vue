@@ -26,6 +26,15 @@
                 <textarea v-model="selectedCharacter.detail"></textarea><br/>
 
                 <div v-if="selectedCharacter.parentId">
+                    <label>Only Applicable If</label>
+                    <ul class="indented">
+                        <li class="medium-padding" v-for="state in charactersHierarchy.getItemById(selectedCharacter.parentId).states" :key="state.id">
+                            <label>
+                            <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
+                            {{ state.name }}
+                            </label>
+                        </li>
+                    </ul>
                     <label>Inapplicable If</label>
                     <ul class="indented">
                         <li class="medium-padding" v-for="state in charactersHierarchy.getItemById(selectedCharacter.parentId).states" :key="state.id">
@@ -72,9 +81,7 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
-import { createDetailData } from '@/bunga/DetailData';
-import { createHierarchicalItem } from '@/bunga/HierarchicalItem';
+import { createCharacter, createDetailData, Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -135,29 +142,22 @@ export default Vue.extend({
             this.selectedCharacterState?.photos.splice(e.detail.index, 1);
         },
         addCharacter({ value, parentId }: { value: string, parentId: string }) {
-            const newDescription = this.charactersHierarchy.setItem({
-                ...createHierarchicalItem<Character>({
+            const newCharacter = this.charactersHierarchy.setItem(
+                createCharacter({
                     ...createDetailData({ id: "", name: value }),
-                    type: "character",
                     parentId: parentId,
                     childrenIds: [],
-                }),
-                states: [],
-                inapplicableStates: []
-            });
+                    states: [],
+                })
+            );
             const parentDescription = this.charactersHierarchy.getItemById(parentId);
             if(typeof parentDescription !== "undefined") {
-                newDescription.inapplicableStates = [...parentDescription.states];
                 const newState = {
-                    id: "s-auto-" + newDescription.id,
-                    descriptorId: parentId, name: newDescription.name, photos: []
+                    id: "s-auto-" + newCharacter.id,
+                    descriptorId: parentId, name: newCharacter.name, photos: []
                 };
                 parentDescription.states = [...parentDescription.states, newState];
-                for (const child of Object.values(parentDescription.children)) {
-                    if (child.id !== newDescription.id) {
-                        child.inapplicableStates = [...child.inapplicableStates, newState];
-                    }
-                }
+                newCharacter.requiredStates = [newState];
             }
             this.$emit("change-characters", this.charactersHierarchy);
         },

@@ -53,14 +53,15 @@ export default Vue.extend({
             this.$emit("open-photo", {index: e.detail.index, photos: selectedItemDescriptorPhotos });
         },
         addItemState({ selected, item }: { selected: boolean, item: State }) {
+            console.log("add taxon state");
             if (!this.selectedItem || !this.selectedItem.descriptions) {
                 console.warn("Cannot add item states : no item selected.");
                 return;
             }
-
-            let selectedDescription = this.selectedItem?.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId);
+            let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === item.descriptorId);
+            console.log(selectedDescription?.states);
             if (typeof selectedDescription === "undefined") {
-                selectedDescription = { descriptor: Object.assign({}, this.characters.getItemById(this.selectedItemDescriptorId)), states: [] };
+                selectedDescription = { descriptor: Object.assign({}, this.characters.getItemById(item.descriptorId)), states: [] };
                 this.selectedItem.descriptions.push(selectedDescription);
             }
             const stateIndex = selectedDescription.states.findIndex((s: State) => s.id === item.id);
@@ -74,6 +75,7 @@ export default Vue.extend({
                     selectedDescription.states.splice(stateIndex, 1);
                 }
             }
+            console.log(selectedDescription?.states);
             this.taxonsHierarchy.setItem(this.selectedItem);
         },
     }

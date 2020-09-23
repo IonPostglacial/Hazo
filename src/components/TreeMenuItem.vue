@@ -98,9 +98,7 @@ export default Vue.extend({
             return {
                 *[Symbol.iterator]() {
                     for (const childId of childrenOrder) {
-                        if (!children[childId].hidden) {
-                            yield children[childId];
-                        }
+                        yield children[childId];
                     }
                 }
             }

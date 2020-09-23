@@ -70,7 +70,6 @@ function detailDataFromSdd(id: string, representation: Representation, extraFiel
 
 function characterFromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: Record<string, State>): Character {
     return createCharacter({
-        type: "character",
         parentId: character.parentId,
         childrenIds: character.childrenIds,
         states: character.states?.map(s => statesById[s.id]),

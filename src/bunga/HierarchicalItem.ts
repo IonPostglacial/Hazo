@@ -14,6 +14,24 @@ export function createHierarchicalItem<T>(init : HierarchicalItemInit): Hierarch
 	}, createDetailData(init));
 }
 
+export function repairPotentialCorruption(item: HierarchicalItem<any>) {
+	item.topLevel = typeof item.parentId === "undefined";
+	const childrenOrder = new Set<any>();
+
+	// Ensure each children has an order
+	for (const childId of item.childrenOrder) {
+		if (typeof item.children[childId] !== "undefined") {
+			childrenOrder.add(childId);
+		}
+	}
+	for (const childId of Object.keys(item.children)) {
+		if (!childrenOrder.has(childId)) {
+			childrenOrder.add(childId);
+		}
+	}
+	item.childrenOrder = [...childrenOrder];
+}
+
 export function hydrateChildren<T extends HierarchicalItem<T>>(item: HierarchicalItem<T>, hierarchyById: Record<string, T>) {
 	for (const id of item.childrenOrder) {
 		const child = hierarchyById[id];

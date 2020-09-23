@@ -23,7 +23,7 @@ export default Vue.extend({
     name: "SquareTreeViewer",
     props: {
         editable: Boolean,
-        rootItems: Object as PropType<Array<HierarchicalItem<any> & { selected?: boolean }>>,
+        rootItems: Object as PropType<Iterable<HierarchicalItem<any> & { selected?: boolean }>>,
     },
     data() {
         return {
@@ -35,15 +35,16 @@ export default Vue.extend({
     },
     computed: {
         itemsToDisplay(): Iterable<HierarchicalItem<any>> {
+            console.log("display!");
             if (!this.currentItems) return [];
             const shouldDisplayItem = (item: HierarchicalItem<any> & { selected?: boolean }) => {
                 if (!this.editable && item.selected === false) {
                     return false;
                 }
                 if (this.menuFilter !== "") {
-                    return !item.hidden && item.name.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
+                    return item.name.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
                 } else {
-                    return !item.hidden && (this.isRoot ? item.topLevel : !item.topLevel);
+                    return this.isRoot ? item.topLevel : !item.topLevel;
                 }
             };
             const currentItems = this.currentItems;

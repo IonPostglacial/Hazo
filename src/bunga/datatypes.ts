@@ -54,6 +54,7 @@ export interface HierarchicalItem<T> extends DetailData {
 export interface Character extends HierarchicalItem<Character> {
 	states: State[];
 	inapplicableStates: State[];
+	requiredStates: State[];
 }
 
 export interface Description {

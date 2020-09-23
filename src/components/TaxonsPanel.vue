@@ -125,14 +125,19 @@ export default Vue.extend({
                 }
             }
             const dependencyHierarchy: Hierarchy<Character & { warning?: boolean, selected?: boolean }> = this.characters.clone();
+            const nonApplicableCharacters: Character[] = [];
 
             for (const descriptor of dependencyHierarchy.allItems) {
                 const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor?.id === descriptor.id);
                 const itemDescriptorStateIds = selectedDescription?.states.map(s => s.id) ?? [];
-                const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemDescriptorStateIds.includes(s.id) }, s));
+                const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemStatesIds.includes(s.id) }, s));
 
-                if (descriptor.inapplicableStates.some(s => itemStatesIds.findIndex(id => id === s.id) >= 0 )) {
-                    descriptor.hidden = true;
+                const taxonHasAllRequiredStates = descriptor.requiredStates.every(requiredState => itemStatesIds.includes(requiredState.id));
+                const taxonHasSomeInapplicableState = descriptor.inapplicableStates.some(inapplicableState => itemStatesIds.includes(inapplicableState.id));
+
+                if (!taxonHasAllRequiredStates || taxonHasSomeInapplicableState) {
+                    nonApplicableCharacters.push(descriptor);
+                    continue;
                 }
                 if (itemDescriptorStateIds.length === 0) {
                     descriptor.warning = true;
@@ -142,6 +147,9 @@ export default Vue.extend({
                     descriptor.children[state.id] = state as unknown as Character;
                 }
                 dependencyHierarchy.setItem(descriptor);
+            }
+            for (const nonApplicableCharacter of nonApplicableCharacters) {
+                dependencyHierarchy.removeItem(nonApplicableCharacter);
             }
             return dependencyHierarchy.allItems;
         },

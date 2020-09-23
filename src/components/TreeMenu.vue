@@ -82,7 +82,7 @@ export default Vue.extend({
                 return {
                     *[Symbol.iterator]() {
                         for (const item of self.items.allItems) {
-                            if (!item.hidden && self.nameFields.
+                            if (self.nameFields.
                                     map(field => (item as any)[field.propertyName]).
                                     some(name => name?.toUpperCase().includes(self.menuFilter?.toUpperCase()) ?? false)) {
                                 yield item;

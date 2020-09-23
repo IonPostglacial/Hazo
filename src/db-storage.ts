@@ -2,7 +2,7 @@ import { Book, Character, DictionaryEntry, Field, HierarchicalItem, Taxon } from
 import { standardBooks } from "./bunga/stdcontent";
 
 const DB_NAME = "Datasets";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 interface DatasetDBv3 {
 	id: string;
@@ -24,6 +24,19 @@ function createStore(db: IDBDatabase) {
 async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     createStore(db);
     
+    if (oldVersion === 4) {
+        const datasetIds = await dbList();
+
+        for (const datasetId of datasetIds) {
+            const dataset = await dbLoad(datasetId);
+            const characters = dataset.characters;
+
+            for (const character of characters) {
+                character.requiredStates = [];
+            }
+            dbStore(Object.assign(dataset, { characters }));
+        }
+    }
     if (oldVersion === 3) {
         const datasetIds = await dbList();
 

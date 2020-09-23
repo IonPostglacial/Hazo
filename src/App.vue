@@ -79,7 +79,7 @@
 <script lang="ts">
 import { standardBooks } from "./bunga/stdcontent";
 import { Character, Dataset, Field, Taxon, TexExporter } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails, Hierarchy } from "./bunga";
+import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails, Hierarchy, repairPotentialCorruption } from "./bunga";
 import { ObservableMap } from "./observablemap";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsCharactersTab from "./components/TaxonsCharactersTab.vue";
@@ -139,15 +139,17 @@ export default Vue.extend({
                 const photos: string[] = [];
                 for (const taxon of savedDataset?.taxons) {
                     photos.push(...taxon.photos);
+                    repairPotentialCorruption(taxon);
                     this.taxonsHierarchy.setItem(taxon);
                 }
                 for (const character of savedDataset?.characters) {
                     photos.push(...character.photos);
+                    repairPotentialCorruption(character);
                     this.charactersHierarchy.setItem(character);
                 }
                 cacheAssets(photos)
                     .then(() => {
-                        console.log("All photos cached.")
+                        console.log("All photos cached.");
                     });
                     this.extraFields = savedDataset?.extraFields ?? [];
                     this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
