@@ -128,7 +128,7 @@ export default Vue.extend({
             const dependencyHierarchy = new Hierarchy<Character & { warning?: boolean, selected?: boolean }>("", new ObservableMap());
 
             for (const item of this.characters.allItems) {
-                const descriptor = { ...item, warning: false };
+                const descriptor = { ...item, childrenOrder: [...item.childrenOrder], children: {...item.children}, warning: false };
                 const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor?.id === descriptor.id);
                 const itemDescriptorStateIds = selectedDescription?.states.map(s => s.id) ?? [];
                 const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemDescriptorStateIds.includes(s.id) }, s));
@@ -138,8 +138,10 @@ export default Vue.extend({
                 }
                 if (itemDescriptorStateIds.length === 0) {
                     descriptor.warning = true;
-                } else {
-                    Object.assign(descriptor.children, descriptorStates);
+                }
+                for (const state of descriptorStates) {
+                    descriptor.childrenOrder.push(state.id);
+                    descriptor.children[state.id] = state as unknown as Character;
                 }
                 dependencyHierarchy.setItem(descriptor);
             }

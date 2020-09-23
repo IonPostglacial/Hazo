@@ -9,7 +9,7 @@
             <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
                     :style="item.photos.length > 0 ? 'background-image: url(' + item.photos[0] + ')' : ''"
                     @click="openItem(item)">
-                <div :title="item.name" :class="'thin-border medium-padding text-ellipsed ' + (item.selected ? 'background-color-1' : 'white-background')">{{ item.name }}</div>
+                <div :title="item.name" :class="'thin-border medium-padding text-ellipsed ' + (item.selected ? 'background-color-1' : 'white-background') + (isClickable(item) ? ' text-underlined' : '')">{{ item.name }}</div>
             </component>
         </div>
     </div>

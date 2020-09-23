@@ -53,31 +53,33 @@ export class AddItem extends HTMLElement {
             const e = new CustomEvent("add-item", { detail: text });
             this.dispatchEvent(e);
         };
-        const addAction = () => {
-            if (this.isMultiline) {
-                const namesToAdd = multiLineInput.value.split("\n").map(name => name.trim());
-                for (const name of namesToAdd) {
-                    if (name !== "") {
-                        addItem(name);
-                    }
+        const addSingleItem = () => {
+            addItem(singleLineInput.value);
+            singleLineInput.value = "";
+        };
+        const addMultipleItems = () => {
+            const namesToAdd = multiLineInput.value.split("\n").map(name => name.trim());
+            for (const name of namesToAdd) {
+                if (name !== "") {
+                    addItem(name);
                 }
-                multiLineInput.value = "";
-                this.isMultiline = false;
+            }
+            multiLineInput.value = "";
+            this.isMultiline = false;
+        };
+        addButton.onclick = () => {
+            if (this.isMultiline) {
+                addMultipleItems();
             } else {
-                addItem(singleLineInput.value);
-                singleLineInput.value = "";
+                addSingleItem();
             }
         };
-
-        addButton.onclick = addAction;
-
         multilineButton.onclick = () => {
             this.isMultiline = !this.isMultiline;
         };
-
         singleLineInput.onkeydown = (e) => {
             if (e.key === "Enter") {
-                addItem(singleLineInput.value);
+                addSingleItem();
             }
         };
     }

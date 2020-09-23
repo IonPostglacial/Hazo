@@ -425,6 +425,10 @@ div.invisible {
     align-items: center;    
 }
 
+.text-underlined {
+    text-decoration: underline;
+}
+
 .start-aligned {
     justify-content: flex-start;
     align-items: flex-start;
