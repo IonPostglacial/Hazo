@@ -8,6 +8,7 @@ interface IMap<T> {
     [Symbol.iterator](): Iterator<[string, T]>;
     values(): Iterable<T>;
     clear(): void;
+    clone(): IMap<T>;
     toObject(): any;
 }
 
@@ -16,10 +17,10 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     private items: IMap<T>;
     private itemsOrder: string[];
 
-    constructor(idPrefix: string, items: IMap<T>) {
+    constructor(idPrefix: string, items: IMap<T>, itemsOrder: string[] = []) {
         this.idPrefix = idPrefix;
         this.items = items;
-        this.itemsOrder = [];
+        this.itemsOrder = itemsOrder;
         for (const item of items.values()) {
             if (item.topLevel) {
                 this.itemsOrder.push(item.id);
@@ -164,6 +165,10 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     clear() {
         this.items.clear();
         this.itemsOrder = [];
+    }
+
+    clone(): Hierarchy<T> {
+        return new Hierarchy<T>(this.idPrefix, this.items.clone(), this.itemsOrder.slice());
     }
 
     toObject(): any {

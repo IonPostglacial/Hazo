@@ -1,4 +1,5 @@
 import Vue from "vue";
+import clone from "./clone";
 
 export class ObservableMap<T> {
     r = {} as Record<string, T>;
@@ -39,6 +40,16 @@ export class ObservableMap<T> {
         for (const key of Object.keys(this.r)) {
             Vue.delete(this.r, key);
         }
+    }
+
+    clone(): ObservableMap<T> {
+        return ObservableMap.fromObject(clone(this.r));
+    }
+
+    static fromObject<T>(object: Record<string, T>) {
+        const m = new ObservableMap<T>();
+        m.r = object;
+        return m;
     }
 
     toObject(): any {

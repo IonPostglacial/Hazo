@@ -101,7 +101,6 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Character, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
-import { ObservableMap } from '@/observablemap';
 
 export default Vue.extend({
     name: "TaxonsPanel",
@@ -125,10 +124,9 @@ export default Vue.extend({
                     itemStatesIds.push(state.id);
                 }
             }
-            const dependencyHierarchy = new Hierarchy<Character & { warning?: boolean, selected?: boolean }>("", new ObservableMap());
+            const dependencyHierarchy: Hierarchy<Character & { warning?: boolean, selected?: boolean }> = this.characters.clone();
 
-            for (const item of this.characters.allItems) {
-                const descriptor = { ...item, childrenOrder: [...item.childrenOrder], children: {...item.children}, warning: false };
+            for (const descriptor of dependencyHierarchy.allItems) {
                 const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor?.id === descriptor.id);
                 const itemDescriptorStateIds = selectedDescription?.states.map(s => s.id) ?? [];
                 const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemDescriptorStateIds.includes(s.id) }, s));
