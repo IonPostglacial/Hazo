@@ -15,7 +15,7 @@ function taxonCharacterStates(taxon: Taxon, character: Character): State[] {
 
 	for (const [stateId, selected] of Object.entries(taxon.statesSelection)) {
 		const state = character.states.find(state => state.id === stateId);
-		if (typeof state !== "undefined") {
+		if (typeof state !== "undefined" && selected) {
 			states.push(state);
 		}
 	}

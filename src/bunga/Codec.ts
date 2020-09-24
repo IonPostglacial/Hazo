@@ -97,11 +97,6 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, characters: R
 	}
 	const item = decodeHierarchicalItem(encodedTaxon);
 	const statesSelection: Record<string, boolean> = {};
-    for (const character of Object.values(characters)) {
-        for (const state of character.states) {
-            statesSelection[state.id] = false;
-        }
-    }
     for (const description of encodedTaxon.descriptions) {
         for (const stateId of description.statesIds) {
             statesSelection[stateId] = true;

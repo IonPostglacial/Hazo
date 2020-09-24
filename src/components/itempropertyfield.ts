@@ -112,23 +112,17 @@ export class ItemPropertyField extends HTMLElement {
     }
 
     set editable(isEditable) {
-        if (this.#editable === isEditable) return;
-
         this.#editable = isEditable;
 
-        if (this.shadowRoot?.firstChild instanceof Element) {
-            this.shadowRoot!.innerHTML = "";
-            this.shadowRoot!.appendChild(this.makeRootElement());
-        }
+        this.shadowRoot!.innerHTML = "";
+        this.shadowRoot!.appendChild(this.makeRootElement());
     }
 
     connectedCallback() {
         this.property =  this.getAttribute("property") ?? "";
-        this.#editable = this.getAttribute("editable") === "true";
-        this.#value    = this.getAttribute("value") ?? "";
-        this.#icon     = this.getAttribute("icon") ?? "";
-
-        this.shadowRoot!.appendChild(this.makeRootElement());
+        this.editable = this.getAttribute("editable") === "true";
+        this.value    = this.getAttribute("value") ?? "";
+        this.icon     = this.getAttribute("icon") ?? "";
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {

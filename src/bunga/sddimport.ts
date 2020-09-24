@@ -80,11 +80,6 @@ function characterFromSdd(character: sdd_Character, photosByRef: Record<string, 
 
 function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>, descriptors: Record<string, Character>): Taxon {
     const statesSelection: Record<string, boolean> = {};
-    for (const descriptor of Object.values(descriptors)) {
-        for (const state of descriptor.states) {
-            statesSelection[state.id] = false;
-        }
-    }
     for (const categorical of taxon.categoricals) {
         for (const stateRef of categorical.stateRefs) {
             statesSelection[stateRef.ref] = true;

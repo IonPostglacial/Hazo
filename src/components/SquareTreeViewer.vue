@@ -36,7 +36,7 @@ export default Vue.extend({
         }
     },
     watch: {
-        rootItems(oldRootItems: Hierarchy<ItemType>, newRootItems: Hierarchy<ItemType>) {
+        rootItems(newRootItems: Hierarchy<ItemType>) {
             const currentlyOpenItem = newRootItems.getItemById(this.breadCrumbs[this.breadCrumbs.length - 1].id);
             if (typeof currentlyOpenItem !== "undefined") {
                 this.currentItems = Object.values(currentlyOpenItem.children);
@@ -45,7 +45,6 @@ export default Vue.extend({
     },
     computed: {
         itemsToDisplay(): Iterable<HierarchicalItem<any>> {
-            console.log("display!");
             if (!this.currentItems) return [];
             const shouldDisplayItem = (item: HierarchicalItem<any> & { selected?: boolean }) => {
                 if (!this.editable && item.selected === false) {
@@ -57,7 +56,6 @@ export default Vue.extend({
                     return this.isRoot ? item.topLevel : !item.topLevel;
                 }
             };
-            console.log(this.currentItems.filter(shouldDisplayItem));
             return this.currentItems.filter(shouldDisplayItem);
         },
     },
@@ -78,7 +76,7 @@ export default Vue.extend({
                 this.currentItems = Object.values(item.children);
             }
             if (this.isSelectable(item)) {
-                this.$emit("item-selected", { selected: !item.selected, item });
+                this.$emit("item-selection-toggled", { item });
             }
         },
         backToTop() {

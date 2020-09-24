@@ -63,7 +63,7 @@ export interface Description {
 }
 
 export interface Taxon extends HierarchicalItem<Taxon> {
-	statesSelection: Record<string, boolean>;
+	statesSelection: Record<string, boolean|undefined>;
     bookInfoByIds:Record<string, BookInfo>;
 }
 

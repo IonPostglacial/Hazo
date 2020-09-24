@@ -25,20 +25,15 @@
         <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
     </div>
     <div :class="'horizontal-flexbox start-align flex-grow-1 height-main-panel ' + (showBigImage ? 'invisible' : '')">
-        <TaxonsTab v-if="selectedTab === 0"
-            :init-taxons="taxonsHierarchy" :characters="charactersHierarchy" @taxon-selected="selectTaxon" 
-            :selected-taxon="selectedTaxon"
-            :show-left-menu="showLeftMenu"
-            :extra-fields="extraFields" :books="books" 
-            @open-photo="maximizeImage" @change-taxons="changeTaxonsHierarchy">
-        </TaxonsTab>
-        <TaxonsCharactersTab v-if="selectedTab === 1"
-            :init-taxons="taxonsHierarchy" :characters="charactersHierarchy" @taxon-selected="selectTaxon"
+        <TaxonsTab v-if="selectedTab === 0 || selectedTab === 1"
+            :editable="selectedTab === 0"
+            :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
             :selected-taxon="selectedTaxon"
             :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books"
+            @taxon-selected="selectTaxon" @add-taxon="addTaxon" @remove-taxon="removeTaxon"
             @open-photo="maximizeImage">
-        </TaxonsCharactersTab>
+        </TaxonsTab>
         <CharactersTab v-if="selectedTab === 2"
             :init-characters="charactersHierarchy"
             :show-left-menu="showLeftMenu"
@@ -82,7 +77,6 @@ import { Character, Dataset, Field, Taxon, TexExporter } from "./bunga"; // esli
 import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails, Hierarchy, repairPotentialCorruption } from "./bunga";
 import { ObservableMap } from "./observablemap";
 import TaxonsTab from "./components/TaxonsTab.vue";
-import TaxonsCharactersTab from "./components/TaxonsCharactersTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
@@ -96,7 +90,7 @@ import cacheAssets from "./cache-assets";
 export default Vue.extend({
     name: "App",
     components: {
-        TaxonsTab, TaxonsCharactersTab, CharactersTab, WordsDictionary, ExtraFieldsPanel
+        TaxonsTab, CharactersTab, WordsDictionary, ExtraFieldsPanel
     },
     data() {
         return {
@@ -105,7 +99,7 @@ export default Vue.extend({
             showLeftMenu: true,
             showFields: false,
             selectedTab: 0,
-            selectedTaxon: "",
+            selectedTaxonId: "",
             bigImages: [""],
             bigImageIndex: 0,
             showBigImage: false,
@@ -127,6 +121,11 @@ export default Vue.extend({
         DB.list().then(dbIds => this.databaseIds = dbIds);
         this.loadBase();
     },
+    computed: {
+        selectedTaxon(): Taxon|undefined {
+            return this.taxonsHierarchy.getItemById(this.selectedTaxonId);
+        }
+    },
     watch: {
         selectedBase(val) {
             this.loadBase(val);
@@ -147,7 +146,7 @@ export default Vue.extend({
                     repairPotentialCorruption(character);
                     this.charactersHierarchy.setItem(character);
                 }
-                cacheAssets(photos)
+                cacheAssets([]) //(photos)
                     .then(() => {
                         console.log("All photos cached.");
                     });
@@ -162,7 +161,14 @@ export default Vue.extend({
             this.taxonsHierarchy = taxonsHierarchy;
         },
         selectTaxon(id: string) {
-            this.selectedTaxon = id;
+            console.log("taxon selected app");
+            this.selectedTaxonId = id;
+        },
+        addTaxon(taxon: Taxon) {
+            this.taxonsHierarchy.setItem(taxon);
+        },
+        removeTaxon(taxon: Taxon) {
+            this.taxonsHierarchy.removeItem(taxon);
         },
         editExtraFields() {
             this.showFields = !this.showFields;
