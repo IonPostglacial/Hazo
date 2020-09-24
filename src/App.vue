@@ -146,7 +146,7 @@ export default Vue.extend({
                     repairPotentialCorruption(character);
                     this.charactersHierarchy.setItem(character);
                 }
-                cacheAssets([]) //(photos)
+                cacheAssets(photos)
                     .then(() => {
                         console.log("All photos cached.");
                     });
