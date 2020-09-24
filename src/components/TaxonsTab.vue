@@ -50,7 +50,7 @@ export default Vue.extend({
                 hidden: false,
                 childrenOrder: [],
                 bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
-                topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, descriptions: [], extra: {}
+                topLevel: typeof parentId === "undefined", parentId: parentId, children: {}, statesSelection: {}, extra: {}
             });
             this.$emit("change-taxons", this.taxonsHierarchy);
         },

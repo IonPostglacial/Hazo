@@ -351,7 +351,7 @@ export default Vue.extend({
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new TexExporter([...this.taxonsHierarchy.allItems]);
+            const taxonToTex = new TexExporter([...this.taxonsHierarchy.allItems], this.charactersHierarchy.allItems);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
                 download(tex, "zip", true);

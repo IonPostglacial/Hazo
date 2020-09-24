@@ -117,19 +117,16 @@ export default Vue.extend({
     computed: {
         itemDescriptorTree() {
             const itemStatesIds: string[] = [];
-            const selectedItemIdDescriptions = this.taxon.descriptions ?? [];
 
-            for (const description of selectedItemIdDescriptions) {
-                for (const state of description?.states ?? []) {
-                    itemStatesIds.push(state.id);
+            for (const [stateId, selected] of Object.entries(this.taxon.statesSelection)) {
+                if (selected) {
+                    itemStatesIds.push(stateId);
                 }
             }
             const dependencyHierarchy: Hierarchy<Character & { warning?: boolean, selected?: boolean }> = this.characters.clone();
             const nonApplicableCharacters: Character[] = [];
 
             for (const descriptor of dependencyHierarchy.allItems) {
-                const selectedDescription = selectedItemIdDescriptions.find(d => d.descriptor?.id === descriptor.id);
-                const itemDescriptorStateIds = selectedDescription?.states.map(s => s.id) ?? [];
                 const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: itemStatesIds.includes(s.id) }, s));
 
                 const taxonHasAllRequiredStates = descriptor.requiredStates.every(requiredState => itemStatesIds.includes(requiredState.id));
@@ -138,9 +135,6 @@ export default Vue.extend({
                 if (!taxonHasAllRequiredStates || taxonHasSomeInapplicableState) {
                     nonApplicableCharacters.push(descriptor);
                     continue;
-                }
-                if (itemDescriptorStateIds.length === 0) {
-                    descriptor.warning = true;
                 }
                 for (const state of descriptorStates) {
                     descriptor.childrenOrder.push(state.id);
@@ -151,7 +145,7 @@ export default Vue.extend({
             for (const nonApplicableCharacter of nonApplicableCharacters) {
                 dependencyHierarchy.removeItem(nonApplicableCharacter);
             }
-            return dependencyHierarchy.allItems;
+            return dependencyHierarchy;
         },
     },
     methods: {

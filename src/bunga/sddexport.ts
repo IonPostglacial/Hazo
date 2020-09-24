@@ -1,5 +1,7 @@
 import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
 import { Character, Dataset, DetailData, Field, State, Taxon } from "./datatypes";
+import { taxonDescriptions } from "./Taxon";
+import { Hierarchy } from "./hierarchy";
 
 interface SddStateData {
     state: sdd_State;
@@ -61,15 +63,15 @@ function characterToSdd(character: Character, extraFields: Field[], mediaObjects
 	};
 }
 
-function taxonToSdd(taxon: Taxon, extraFields: Field[], mediaObjects: MediaObject[]): SddTaxonData {
+function taxonToSdd(taxon: Taxon, characters: Character[], extraFields: Field[], mediaObjects: MediaObject[]): SddTaxonData {
     const sddTaxon: sdd_Taxon = {
         id: taxon.id,
         hid: taxon.id,
         parentId: taxon.parentId,
         ...detailDataToSdd(taxon, extraFields),
         childrenIds: taxon.childrenOrder.slice(),
-        categoricals: taxon.descriptions.map(d => ({
-            ref: d.descriptor.id,
+        categoricals: taxonDescriptions(taxon, characters).map(d => ({
+            ref: d.character.id,
             stateRefs: d.states.map(s => ({ ref: s.id }))
         })),
     };
@@ -86,7 +88,7 @@ export function datasetToSdd(dataset:Dataset, extraFields:Array<Field>): sdd_Dat
 		mediaObjects: sdd_MediaObject[] = [];
 
 	for (const taxon of Object.values(dataset.taxons)) {
-		const sddData = taxonToSdd(taxon, extraFields, mediaObjects);
+		const sddData = taxonToSdd(taxon, Object.values(dataset.characters), extraFields, mediaObjects);
 		taxons.push(sddData.taxon);
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
 	}

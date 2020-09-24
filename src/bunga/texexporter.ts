@@ -1,15 +1,18 @@
 import JSZip from "jszip";
-import { Character, State, Taxon } from "./datatypes";
+import { Character, Description, Taxon } from "./datatypes";
 import { generateFileName } from "./generatefilename";
+import { taxonDescriptions } from "./Taxon";
 
 export class TexExporter {
     taxons: Taxon[];
+    characters: Iterable<Character>;
     photos: string[];
     pictureNameByUrl: Map<string, string>;
     progressListeners: ((progress: number, progressMax: number) => void)[];
 
-    constructor(taxons: Taxon[]) {
+    constructor(taxons: Taxon[], characters: Iterable<Character>) {
         this.taxons = taxons;
+        this.characters = characters;
         this.progressListeners = [];
         this.pictureNameByUrl = new Map();
         this.photos = [];
@@ -37,8 +40,8 @@ export class TexExporter {
     }
 
     private _generateTex(): string {
-        const descriptionTemplate = (description: { descriptor: Character, states: State[] }) => `
-            \\item ${description.descriptor.name}: ${description.states.map(s => s.name).join(" ")}
+        const descriptionTemplate = (description: Description) => `
+            \\item ${description.character.name}: ${description.states.map(s => s.name).join(" ")}
         `;
 
         const taxonTemplate = (taxon: Taxon) => `
@@ -55,10 +58,7 @@ export class TexExporter {
             \\end{block}
             \\begin{block}{Description}
             \\begin{itemize}
-            ${taxon.descriptions.map(descriptionTemplate).join("\n")}
-            ::foreach descriptions::
-                
-            ::end::
+            ${taxonDescriptions(taxon, this.characters).map(descriptionTemplate).join("\n")}
             \\end{itemize}
             \\end{block}
         \\end{frame}

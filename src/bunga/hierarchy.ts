@@ -17,14 +17,18 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     private items: IMap<T>;
     private itemsOrder: string[];
 
-    constructor(idPrefix: string, items: IMap<T>, itemsOrder: string[] = []) {
+    constructor(idPrefix: string, items: IMap<T>, itemsOrder: string[]|undefined = undefined) {
         this.idPrefix = idPrefix;
         this.items = items;
-        this.itemsOrder = itemsOrder;
-        for (const item of items.values()) {
-            if (item.topLevel) {
-                this.itemsOrder.push(item.id);
+        if (typeof itemsOrder === "undefined") {
+            this.itemsOrder = [];
+            for (const item of items.values()) {
+                if (item.topLevel) {
+                    this.itemsOrder.push(item.id);
+                }
             }
+        } else {
+            this.itemsOrder = itemsOrder;
         }
     }
 
@@ -45,7 +49,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
 
     setItem(item: T): T {
         let newId = item.id;
-        const isNewEntry = !this.items.has(newId);
+        const isNewEntry = !this.itemsOrder.includes(newId);
         if (item.id === "") {
             let nextId = this.itemsOrder.length;
             while (this.items.has(this.idPrefix + nextId)) {

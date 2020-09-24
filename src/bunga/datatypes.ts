@@ -58,12 +58,12 @@ export interface Character extends HierarchicalItem<Character> {
 }
 
 export interface Description {
-    descriptor: Character;
+    character: Character;
     states: State[];
 }
 
 export interface Taxon extends HierarchicalItem<Taxon> {
-	descriptions: Description[];
+	statesSelection: Record<string, boolean>;
     bookInfoByIds:Record<string, BookInfo>;
 }
 

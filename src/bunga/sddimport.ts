@@ -78,22 +78,22 @@ function characterFromSdd(character: sdd_Character, photosByRef: Record<string, 
     });
 }
 
-
-function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>, descriptors: Record<string, Character>,
-    statesById: Record<string, State>): Taxon {
-    const descriptions = new Map<string, Description>();
+function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>, descriptors: Record<string, Character>): Taxon {
+    const statesSelection: Record<string, boolean> = {};
+    for (const descriptor of Object.values(descriptors)) {
+        for (const state of descriptor.states) {
+            statesSelection[state.id] = false;
+        }
+    }
     for (const categorical of taxon.categoricals) {
-        const description:Description = {
-            descriptor: descriptors[categorical.ref],
-            states: categorical.stateRefs?.map(s => statesById[s.ref]) ?? []
-        };
-        descriptions.set(categorical.ref, description);
+        for (const stateRef of categorical.stateRefs) {
+            statesSelection[stateRef.ref] = true;
+        }
     }
     return createTaxon({
-        type: "taxon",
         parentId: taxon.parentId,
         childrenIds: taxon.childrenIds,
-        descriptions: [...descriptions.values()],
+        statesSelection: statesSelection,
         ...detailDataFromSdd(taxon.id, taxon, extraFields, photosByRef)
     });
 }
@@ -111,7 +111,7 @@ function extractItemsById(sddContent: sdd_Dataset, descriptors: Record<string, C
 	const itemsById: Record<string, Taxon> = {};
 
 	for (const taxon of sddContent.taxons) {
-		itemsById[taxon.id] = taxonFromSdd(taxon, extraFields, photosByRef, descriptors, statesById);
+		itemsById[taxon.id] = taxonFromSdd(taxon, extraFields, photosByRef, descriptors);
 	}
 	return itemsById;
 }

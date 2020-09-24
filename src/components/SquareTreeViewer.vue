@@ -17,20 +17,30 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Hierarchy, HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
+
+type ItemType = HierarchicalItem<any> & { selected?: boolean };
 
 export default Vue.extend({
     name: "SquareTreeViewer",
     props: {
         editable: Boolean,
-        rootItems: Object as PropType<Iterable<HierarchicalItem<any> & { selected?: boolean }>>,
+        rootItems: Object as PropType<Hierarchy<ItemType>>,
     },
     data() {
         return {
             isRoot: true,
-            currentItems: this.rootItems,
+            currentItems: [...this.rootItems.topLevelItems],
             breadCrumbs: [] as HierarchicalItem<any>[],
             menuFilter: "",
+        }
+    },
+    watch: {
+        rootItems(oldRootItems: Hierarchy<ItemType>, newRootItems: Hierarchy<ItemType>) {
+            const currentlyOpenItem = newRootItems.getItemById(this.breadCrumbs[this.breadCrumbs.length - 1].id);
+            if (typeof currentlyOpenItem !== "undefined") {
+                this.currentItems = Object.values(currentlyOpenItem.children);
+            }
         }
     },
     computed: {
@@ -47,16 +57,8 @@ export default Vue.extend({
                     return this.isRoot ? item.topLevel : !item.topLevel;
                 }
             };
-            const currentItems = this.currentItems;
-            return {
-                *[Symbol.iterator]() {
-                    for(const item of currentItems) {
-                        if (shouldDisplayItem(item)) {
-                            yield item;
-                        }
-                    }
-                }
-            }
+            console.log(this.currentItems.filter(shouldDisplayItem));
+            return this.currentItems.filter(shouldDisplayItem);
         },
     },
     methods: {
@@ -76,13 +78,12 @@ export default Vue.extend({
                 this.currentItems = Object.values(item.children);
             }
             if (this.isSelectable(item)) {
-                item.selected = !item.selected;
-                this.$emit("item-selected", { selected: item.selected, item });
+                this.$emit("item-selected", { selected: !item.selected, item });
             }
         },
         backToTop() {
             this.isRoot = true;
-            this.currentItems = this.rootItems;
+            this.currentItems = [...this.rootItems.topLevelItems];
             this.breadCrumbs = [];
         },
         goToBreadCrumb(breadCrumb: HierarchicalItem<any>) {

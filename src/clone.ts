@@ -1,6 +1,9 @@
 export default function clone<T>(value: T): T {
     switch (typeof value) {
         case "object":
+            if (value === null) {
+                return value;
+            }
             if (typeof (value as any).clone === "function") {
                 return (value as any).clone();
             }

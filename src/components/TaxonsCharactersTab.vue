@@ -9,6 +9,7 @@
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import TaxonsPanel from "./TaxonsPanel.vue";
 import { Book, Character, Field, Hierarchy, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import clone from "../clone";
 
 interface Description { descriptor: Character, states: State[] }
 
@@ -43,9 +44,8 @@ export default Vue.extend({
         selectItemDescriptorId(id: string) {
             this.selectedItemDescriptorId = id;
         },
-        isStateChecked(stateId: string) {
-            const selectedItemDescriptorStates = this.selectedItem?.descriptions.find((d: Description) => d.descriptor.id === this.selectedItemDescriptorId)?.states ?? [];
-            return selectedItemDescriptorStates.map((s: State) => s.id).includes(stateId)
+        isStateChecked(stateId: string): boolean {
+            return this.selectedItem?.statesSelection[stateId] ?? false;
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
@@ -53,30 +53,10 @@ export default Vue.extend({
             this.$emit("open-photo", {index: e.detail.index, photos: selectedItemDescriptorPhotos });
         },
         addItemState({ selected, item }: { selected: boolean, item: State }) {
-            console.log("add taxon state");
-            if (!this.selectedItem || !this.selectedItem.descriptions) {
-                console.warn("Cannot add item states : no item selected.");
-                return;
+            if (typeof this.selectedItem !== "undefined") {
+                this.selectedItem.statesSelection[item.id] = selected;
+                this.taxonsHierarchy.setItem(clone(this.selectedItem));
             }
-            let selectedDescription = this.selectedItem.descriptions.find((d: Description) => d.descriptor.id === item.descriptorId);
-            console.log(selectedDescription?.states);
-            if (typeof selectedDescription === "undefined") {
-                selectedDescription = { descriptor: Object.assign({}, this.characters.getItemById(item.descriptorId)), states: [] };
-                this.selectedItem.descriptions.push(selectedDescription);
-            }
-            const stateIndex = selectedDescription.states.findIndex((s: State) => s.id === item.id);
-
-            if (selected) {
-                if (stateIndex < 0) {
-                    selectedDescription.states.push(item);
-                }
-            } else {
-                if (stateIndex >= 0) {
-                    selectedDescription.states.splice(stateIndex, 1);
-                }
-            }
-            console.log(selectedDescription?.states);
-            this.taxonsHierarchy.setItem(this.selectedItem);
         },
     }
 });

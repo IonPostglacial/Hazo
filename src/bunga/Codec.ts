@@ -3,7 +3,7 @@ import { standardBooks } from "./stdcontent";
 import { createDataset } from "./Dataset";
 import { createDetailData } from './DetailData';
 import { createHierarchicalItem, hydrateChildren } from './HierarchicalItem';
-import { createTaxon } from './Taxon';
+import { createTaxon, taxonDescriptions } from './Taxon';
 import { createCharacter } from './Character';
 
 interface EncodedDataset {
@@ -41,10 +41,10 @@ function encodeDescription(descriptorId: string, statesIds: string[]) {
 	return { descriptorId, statesIds };
 }
 
-function encodeTaxon(taxon: Taxon) {
+function encodeTaxon(taxon: Taxon, characters: Iterable<Character>) {
 	return {
 		bookInfoByIds: taxon.bookInfoByIds,
-		descriptions: taxon.descriptions.map(d => encodeDescription(d.descriptor.id, d.states.map(s => s.id))),
+		descriptions: taxonDescriptions(taxon, characters).map(d => encodeDescription(d.character.id, d.states.map(s => s.id))),
 		...encodeHierarchicalItem(taxon),
 	};
 }
@@ -66,10 +66,11 @@ function getAllStates(dataset: Dataset): State[] {
 }
 
 export function encodeDataset(dataset: Dataset): EncodedDataset {
+	const characters = Object.values(dataset.characters);
 	return {
 		id: dataset.id,
-		taxons: Object.values(dataset.taxons).map(taxon => encodeTaxon(taxon)),
-		characters: Object.values(dataset.characters).map(character => encodeCharacter(character)),
+		taxons: Object.values(dataset.taxons).map(taxon => encodeTaxon(taxon, characters)),
+		characters: characters.map(character => encodeCharacter(character)),
 		states: getAllStates(dataset),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
@@ -81,27 +82,35 @@ function decodeHierarchicalItem<T>(item: ReturnType<typeof encodeHierarchicalIte
 	return createHierarchicalItem({...item, childrenIds: item.children});
 }
 
-function decodeTaxon(taxon: ReturnType<typeof encodeTaxon>, descriptions: Record<string, Character>, states: Record<string, State>, books: Book[]): Taxon {
-	const bookInfoByIds = (typeof taxon.bookInfoByIds !== "undefined") ? taxon.bookInfoByIds : {};
+function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, characters: Record<string, Character>, states: Record<string, State>, books: Book[]): Taxon {
+	const bookInfoByIds = (typeof encodedTaxon.bookInfoByIds !== "undefined") ? encodedTaxon.bookInfoByIds : {};
 
 	if (Object.keys(bookInfoByIds).length === 0) {
 		for (const book of standardBooks) {
 			const info:BookInfo = {
-				fasc: (book.id === "fmc") ? "" + taxon.fasc : "",
-				page: (book.id === "fmc") ? taxon.page : undefined,
+				fasc: (book.id === "fmc") ? "" + encodedTaxon.fasc : "",
+				page: (book.id === "fmc") ? encodedTaxon.page : undefined,
 				detail: ""
 			};
 			bookInfoByIds[book.id] = info;
 		}
 	}
-	const item = decodeHierarchicalItem(taxon);
+	const item = decodeHierarchicalItem(encodedTaxon);
+	const statesSelection: Record<string, boolean> = {};
+    for (const character of Object.values(characters)) {
+        for (const state of character.states) {
+            statesSelection[state.id] = false;
+        }
+    }
+    for (const description of encodedTaxon.descriptions) {
+        for (const stateId of description.statesIds) {
+            statesSelection[stateId] = true;
+        }
+    }
 	return createTaxon({
 		...item,
 		childrenIds: item.childrenOrder,
-		descriptions: taxon.descriptions.map(function(d) { return {
-			descriptor: descriptions[d.descriptorId],
-			states: d.statesIds.map(id => states[id]),
-		}}),
+		statesSelection: statesSelection,
 		bookInfoByIds,
 	});
 }
