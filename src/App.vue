@@ -45,15 +45,15 @@
         </extra-fields-panel>
     </div>
     <section class="medium-margin horizontal-flexbox space-between thin-border">
-        <div>
+        <div class="button-group">
             <button type="button" v-on:click="importFile">Import</button>
             <button type="button" v-on:click="jsonExport">Export</button>
             <button type="button" v-on:click="exportSDD">Export SDD</button>
             <button type="button" v-on:click="mergeFile">Merge</button>
-            <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
-            <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
         </div>
-        <div>
+        <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
+        <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
+        <div class="button-group">
             <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
             <select v-model="selectedBase">
                 <option v-for="databaseId in databaseIds" :key="databaseId" :value="databaseId">Database #{{ databaseId }}</option>
@@ -61,7 +61,7 @@
             <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
         </div>
-        <div>
+        <div class="button-group">
             <button type="button" v-on:click="globalReplace">Text Replace</button>
             <button type="button" v-on:click="exportStats">Stats</button>
             <button type="button" v-on:click="emptyZip">Folder Hierarchy</button>

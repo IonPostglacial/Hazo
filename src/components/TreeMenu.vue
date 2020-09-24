@@ -1,16 +1,16 @@
 <template>
     <div class="vertical-flexbox">
         <div class="vertical-flexbox stick-to-top white-background thin-border">
-            <div class="thin-margin horizontal-flexbox space-between">
+            <div class="thin-margin horizontal-flexbox space-between center-items">
                 <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-                <div class="horizontal-flexbox">
+                <div class="horizontal-flexbox button-group">
                     <button type="button" v-on:click="openAll">Open All</button>
                     <button type="button" v-on:click="closeAll">Close All</button>
                 </div>
             </div>
-            <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between">
-                <li class="flex-grow-1 no-list-style" v-for="(nameField, fieldNum) in nameFields" :key="nameField.propertyName">
-                    <label :class="'full-width button ' + (visibleColumns[fieldNum] ? 'background-color-1' : '')">
+            <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between button-group">
+                <li :class="'flex-grow-1 button no-list-style ' + (visibleColumns[fieldNum] ? 'background-color-1' : '')" v-for="(nameField, fieldNum) in nameFields" :key="nameField.propertyName">
+                    <label class="full-width)">
                         <input type="checkbox" class="invisible" v-model="visibleColumns[fieldNum]">{{ nameField.label }}
                     </label>
                 </li>

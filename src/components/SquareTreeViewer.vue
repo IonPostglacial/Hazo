@@ -1,7 +1,7 @@
 <template>
     <div class="vertical-flexbox">
         <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-        <div class="horizontal-flexbox flex-wrap">
+        <div class="horizontal-flexbox flex-wrap button-group">
             <button v-if="currentItems !== rootItems" type="button" @click="backToTop">Top</button>
             <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name }}</button>
         </div>
@@ -37,6 +37,7 @@ export default Vue.extend({
     },
     watch: {
         rootItems(newRootItems: Hierarchy<ItemType>) {
+            if (this.breadCrumbs.length - 1 < 0) return;
             const currentlyOpenItem = newRootItems.getItemById(this.breadCrumbs[this.breadCrumbs.length - 1].id);
             if (typeof currentlyOpenItem !== "undefined") {
                 this.currentItems = Object.values(currentlyOpenItem.children);

@@ -1,3 +1,8 @@
+@font-face {
+    font-family: "SourceSans";
+    src: url("fonts/Source_Sans_Pro/SourceSansPro-Regular.ttf");
+}
+
 html {
     box-sizing: border-box;
 }
@@ -7,7 +12,7 @@ html {
 }
 
 body {
-	padding: 0  ;
+	padding: 0;
 	margin: 0;
 }
 
@@ -19,21 +24,47 @@ button,
 select,
 .selector-label,
 .button {
-	display: inline-block;
-	min-height: 28px;
-	padding: 4px 8px;
-	margin: 2px;
-	border: none;
-	background-color: #f7f7f7;
-	border-radius: 0;
-	box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    min-height: 28px;
+    padding: 4px 8px;
+    margin: 2px;
+    background-color: #f7f7f7;
+    border-radius: 4px;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
     font-size: 14px;
     line-height: 18px;
-	color: black;
-    border: 1px solid #ddd;
+    color: black;
+    border: 2px solid #0000001c;
     transition: background-color 0.3s;
     white-space: nowrap;
     user-select: none;
+}
+
+.button-group button,
+.button-group select,
+.button-group selector-label,
+.button-group .button {
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+    border-left-width: 0;
+}
+
+.button-group button:first-child,
+.button-group select:first-child,
+.button-group selector-label:first-child,
+.button-group .button:first-child {
+    margin-left: 2px;
+    border-radius: 8px 0 0 8px;
+    border-left-width: 2px;
+}
+
+.button-group button:last-child,
+.button-group select:last-child,
+.button-group selector-label:last-child,
+.button-group .button:last-child {
+    margin-right: 2px;
+    border-radius: 0 8px 8px 0;
 }
 
 button:hover,
@@ -61,8 +92,6 @@ select:active,
 }
 
 select {
-    -moz-appearance: none;
-    -webkit-appearance: none;
     appearance: none;
     background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
     background-repeat: no-repeat, repeat;
@@ -80,17 +109,37 @@ ul {
     margin: 0;
 }
 
+input[type="search"],
+input[type="text"] {
+    margin: 2px;
+    font-size: 14px;
+    height: 28px;
+    line-height: 28px;
+    padding: 2px 4px;
+    border: 2px solid #0000001c;
+    transition: border 0.3s;
+}
+
+input[type="search"] {
+    border-radius: 14px;
+    padding: 2px 14px;
+}
+
+input[type="text"] {
+    border-radius: 8px;
+    min-width: 50px;
+}
+
+input[type="search"]:focus,
+input[type="text"]:focus {
+    border: 2px solid #2571d4;
+}
+
 #app {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "SourceSans";
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-}
-
-input[type="text"]:read-only {
-    border: none;
-    font-size: 1em;
-    padding: 8px;
 }
 
 .italic {
