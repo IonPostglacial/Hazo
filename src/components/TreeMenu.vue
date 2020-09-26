@@ -61,10 +61,10 @@ export default Vue.extend({
     components:  { TreeMenuItem },
     data() {
         const initOpenItems: string[] = [];
-        let itemId = this.items.getItemById(this.selectedItem)?.parentId;
+        let itemId = this.items.itemWithId(this.selectedItem)?.parentId;
         while (typeof itemId !== "undefined") {
             initOpenItems.push(itemId);
-            itemId = this.items.getItemById(itemId)?.parentId;
+            itemId = this.items.itemWithId(itemId)?.parentId;
         }
         return {
             menuFilter: "",
@@ -117,10 +117,10 @@ export default Vue.extend({
             this.$emit("delete-item", e);
         },
         moveItemUp(item: HierarchicalItem<any>) {
-            this.items.moveItemUp(item);
+            this.items.moveUp(item);
         },
         moveItemDown(item: HierarchicalItem<any>) {
-            this.items.moveItemDown(item);
+            this.items.moveDown(item);
         },
         buttonClicked(e: string) {
             this.$emit("button-click", e);

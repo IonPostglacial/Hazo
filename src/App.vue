@@ -123,7 +123,7 @@ export default Vue.extend({
     },
     computed: {
         selectedTaxon(): Taxon|undefined {
-            return this.taxonsHierarchy.getItemById(this.selectedTaxonId);
+            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
         }
     },
     watch: {
@@ -139,12 +139,12 @@ export default Vue.extend({
                 for (const taxon of savedDataset?.taxons) {
                     photos.push(...taxon.photos);
                     repairPotentialCorruption(taxon);
-                    this.taxonsHierarchy.setItem(taxon);
+                    this.taxonsHierarchy.add(taxon);
                 }
                 for (const character of savedDataset?.characters) {
                     photos.push(...character.photos);
                     repairPotentialCorruption(character);
-                    this.charactersHierarchy.setItem(character);
+                    this.charactersHierarchy.add(character);
                 }
                 cacheAssets(photos)
                     .then(() => {
@@ -165,10 +165,10 @@ export default Vue.extend({
             this.selectedTaxonId = id;
         },
         addTaxon(taxon: Taxon) {
-            this.taxonsHierarchy.setItem(taxon);
+            this.taxonsHierarchy.add(taxon);
         },
         removeTaxon(taxon: Taxon) {
-            this.taxonsHierarchy.removeItem(taxon);
+            this.taxonsHierarchy.remove(taxon);
         },
         editExtraFields() {
             this.showFields = !this.showFields;
@@ -231,11 +231,11 @@ export default Vue.extend({
 
             for (const item of this.taxonsHierarchy.allItems) {
                 const newDetail = item.detail.replace(re, replacement);
-                this.taxonsHierarchy.setItem(Object.assign({}, item, { detail: newDetail }));
+                this.taxonsHierarchy.add(Object.assign({}, item, { detail: newDetail }));
             }
             for (const description of this.charactersHierarchy.allItems) {
                 const newDetail = description.detail.replace(re, replacement);
-                this.charactersHierarchy.setItem(Object.assign({}, description, { detail: newDetail }));
+                this.charactersHierarchy.add(Object.assign({}, description, { detail: newDetail }));
             }
         },
         async fileRead(file: File): Promise<Dataset | null> {
@@ -282,12 +282,12 @@ export default Vue.extend({
             }
             if (typeof result.characters !== "undefined") {
                 for (const character of Object.values(result.characters)) {
-                    this.charactersHierarchy.setItem(character);
+                    this.charactersHierarchy.add(character);
                 }
             }
             if (typeof result.taxons !== "undefined") {
                 for (const item of Object.values(result.taxons)) {
-                    this.taxonsHierarchy.setItem(item);
+                    this.taxonsHierarchy.add(item);
                 }
             }
             if (typeof result.dictionaryEntries !== "undefined") {

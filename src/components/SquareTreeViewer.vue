@@ -38,7 +38,7 @@ export default Vue.extend({
     watch: {
         rootItems(newRootItems: Hierarchy<ItemType>) {
             if (this.breadCrumbs.length - 1 < 0) return;
-            const currentlyOpenItem = newRootItems.getItemById(this.breadCrumbs[this.breadCrumbs.length - 1].id);
+            const currentlyOpenItem = newRootItems.itemWithId(this.breadCrumbs[this.breadCrumbs.length - 1].id);
             if (typeof currentlyOpenItem !== "undefined") {
                 this.currentItems = Object.values(currentlyOpenItem.children);
             }

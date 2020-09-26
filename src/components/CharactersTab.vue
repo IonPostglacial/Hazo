@@ -88,7 +88,7 @@ export default Vue.extend({
     components: { TreeMenu },
     computed: {
         selectedCharacter(): Character|undefined {
-            return this.charactersHierarchy.getItemById(this.selectedCharacterId);
+            return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
         },
         selectedCharacterState(): State|undefined {
             return this.selectedCharacter?.states?.find(s => s.id === this.selectedState);
@@ -115,7 +115,7 @@ export default Vue.extend({
             }
         },
         selectCharacter(id: string) {
-            console.log(this.charactersHierarchy.getItemById(id));
+            console.log(this.charactersHierarchy.itemWithId(id));
             this.selectedCharacterId = id;
         },
         addCharacterPhoto(e: {detail: {value: string}}) {
@@ -142,7 +142,7 @@ export default Vue.extend({
             this.selectedCharacterState?.photos.splice(e.detail.index, 1);
         },
         addCharacter({ value, parentId }: { value: string, parentId: string }) {
-            const newCharacter = this.charactersHierarchy.setItem(
+            const newCharacter = this.charactersHierarchy.add(
                 createCharacter({
                     ...createDetailData({ id: "", name: value }),
                     parentId: parentId,
@@ -150,7 +150,7 @@ export default Vue.extend({
                     states: [],
                 })
             );
-            const parentDescription = this.charactersHierarchy.getItemById(parentId);
+            const parentDescription = this.charactersHierarchy.itemWithId(parentId);
             if(typeof parentDescription !== "undefined") {
                 const newState = {
                     id: "s-auto-" + newCharacter.id,
@@ -162,9 +162,9 @@ export default Vue.extend({
             this.$emit("change-characters", this.charactersHierarchy);
         },
         deleteCharacter({ itemId }: { itemId: string}) {
-            const descriptionToDelete = this.charactersHierarchy.getItemById(itemId);
+            const descriptionToDelete = this.charactersHierarchy.itemWithId(itemId);
             if (typeof descriptionToDelete !== "undefined") {
-                this.charactersHierarchy.removeItem(descriptionToDelete);
+                this.charactersHierarchy.remove(descriptionToDelete);
             } else {
                 console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`, this.charactersHierarchy);
             }

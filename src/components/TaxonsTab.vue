@@ -82,7 +82,6 @@
                     <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
                     <div v-if="!editable" class="limited-width" v-html="selectedTaxon.detail"></div>
                 </collapsible-panel>
-
                 <collapsible-panel label="Description">
                     <SquareTreeViewer class="large-max-width" :editable="!editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle"></SquareTreeViewer>
                 </collapsible-panel>
@@ -127,18 +126,17 @@ export default Vue.extend({
         itemDescriptorTree() {
             const dependencyHierarchy: Hierarchy<Character & { warning?: boolean, selected?: boolean }> = clone(this.characters);
 
-            for (const descriptor of dependencyHierarchy.allItems) {
-                const taxonLacksRequiredStates = !descriptor.requiredStates.every(requiredState => this.selectedTaxon.statesSelection[requiredState.id] ?? false);
-                const taxonHasSomeInapplicableState = descriptor.inapplicableStates.some(inapplicableState => this.selectedTaxon.statesSelection[inapplicableState.id] ?? false);
+            for (const character of dependencyHierarchy.allItems) {
+                const taxonLacksRequiredStates = !character.requiredStates.every(requiredState => this.selectedTaxon.statesSelection[requiredState.id] ?? false);
+                const taxonHasSomeInapplicableState = character.inapplicableStates.some(inapplicableState => this.selectedTaxon.statesSelection[inapplicableState.id] ?? false);
 
                 if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
-                    dependencyHierarchy.removeItem(descriptor);
+                    dependencyHierarchy.remove(character);
                 } else {
-                    const descriptorStates = descriptor.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.selectedTaxon.statesSelection[s.id] ?? false }, s));
+                    const descriptorStates = character.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.selectedTaxon.statesSelection[s.id] ?? false }, s));
                     
                     for (const state of descriptorStates) {
-                        descriptor.childrenOrder.push(state.id);
-                        descriptor.children[state.id] = state as unknown as Character;
+                        dependencyHierarchy.add(state as unknown as Character);
                     }
                 }
             }
@@ -158,7 +156,7 @@ export default Vue.extend({
             }));
         },
         removeTaxon(e: { itemId: string }) {
-            this.$emit("remove-taxon", this.taxonsHierarchy.getItemById(e.itemId));
+            this.$emit("remove-taxon", this.taxonsHierarchy.itemWithId(e.itemId));
         },
         setProperty({ detail }: { detail: { property: string, value: string } }) {
             (this.selectedTaxon as any)[detail.property] = detail.value;

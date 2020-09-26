@@ -47,7 +47,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
     }
 
-    setItem(item: T): T {
+    add(item: T): T {
         let newId = item.id;
         const isNewEntry = !this.itemsOrder.includes(newId);
         if (item.id === "") {
@@ -83,11 +83,11 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return newItem;
     }
 
-    getItemById(id: string): T|undefined {
+    itemWithId(id: string): T|undefined {
         return this.items.get(id);
     }
 
-    removeItem(item: T): void {
+    remove(item: T): void {
         this.items.delete(item.id);
         const order = this.itemsOrder.indexOf(item.id);
 
@@ -107,7 +107,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
     }
 
-    moveItemUp(item: T): void {
+    moveUp(item: T): void {
         let orders: Array<string>;
         if (typeof item.parentId === "undefined") {
             orders = this.itemsOrder
@@ -120,10 +120,10 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             orders[order - 1] = orders[order];
             orders[order] = tmp;
         }
-        this.setItem({...item});
+        this.add({...item});
     }
 
-    moveItemDown(item: T): void {
+    moveDown(item: T): void {
         let orders: Array<string>;
         if (typeof item.parentId === "undefined") {
             orders = this.itemsOrder
@@ -136,7 +136,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             orders[order + 1] = orders[order];
             orders[order] = tmp;
         }
-        this.setItem({...item});
+        this.add({...item});
     }
 
     clear() {
