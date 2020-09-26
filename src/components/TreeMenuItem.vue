@@ -6,7 +6,7 @@
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
             <label :class="'medium-line-height blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items' + (selected ? ' background-color-1': '')" v-on:click="select">
-                <div v-if="isFirstColumn" class="min-width-small margin-right-medium">{{ prettyId }}</div>
+                <div v-if="isFirstColumn" class="min-width-small">{{ prettyId }}</div>
                 <div :class="'flex-grow-1 nowrap ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
                 <slot></slot>
             </label>

@@ -1,7 +1,7 @@
 const templateEditable = document.createElement("template");
 const templateNonEditable = document.createElement("template");
 const template = (inner: string) => `<link rel="stylesheet" href="style.css" />
-    <div id="root">
+    <div id="root" class="nowrap">
         <label class="item-property"><slot></slot></label>
         ${inner}
     </div>`;

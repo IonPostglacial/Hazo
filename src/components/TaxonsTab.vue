@@ -19,10 +19,13 @@
                 <div class="horizontal-flexbox start-align relative">
                     <collapsible-panel label="Properties" 
                             v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
-                        <div class="scroll large-max-width">
-                            <label class="item-property">NS</label>
-                            <div class="inline-block medium-padding medium-margin" v-if="!editable"><i>{{ selectedTaxon.name }}</i> {{ selectedTaxon.author }}</div><br/>
+                        <div class="scroll">
+                            <div v-if="!editable">
+                                <label class="item-property">NS</label>
+                                <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name }}</i> {{ selectedTaxon.author }}</div>
+                            </div>
                             <div v-if="editable">
+                                <label class="item-property">NS</label>
                                 <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name" /><br>
                                 <label class="item-property">Author</label>
                                 <input type="text" v-model="selectedTaxon.author" />

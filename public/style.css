@@ -127,7 +127,7 @@ input[type="search"] {
 
 input[type="text"] {
     border-radius: 8px;
-    min-width: 50px;
+    width: 120px;
 }
 
 input[type="search"]:focus,
@@ -318,6 +318,7 @@ div.invisible {
 .scroll {
     overflow-x: hidden;
     overflow-y: auto;
+    margin-right: 8px;
 }
 
 .warning-color {
@@ -469,10 +470,6 @@ div.invisible {
     font-size: 28px;
 }
 
-.margin-right-medium {
-    margin-right: 8px;
-}
-
 .min-width-small {
     min-width: 32px;
 }
@@ -547,7 +544,6 @@ div.invisible {
     display: inline-block;
     padding: 8px;
     width: 100px;
-    vertical-align: top;
 }
 
 .selector {
