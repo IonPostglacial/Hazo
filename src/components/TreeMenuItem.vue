@@ -6,7 +6,7 @@
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
             <label :class="'medium-line-height blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items' + (selected ? ' background-color-1': '')" v-on:click="select">
-                <div v-if="showIds" class="min-width-small margin-right-medium">{{ prettyId }}</div>
+                <div v-if="isFirstColumn" class="min-width-small margin-right-medium">{{ prettyId }}</div>
                 <div :class="'flex-grow-1 nowrap ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
                 <slot></slot>
             </label>
@@ -16,10 +16,10 @@
             <div v-if="editable" class="close" @click="deleteItem"></div>
         </div>
         <div class="horizontal-flexbox start-aligned">
-            <div class="indentation-width"></div>
+            <div v-if="isFirstColumn" class="indentation-width"></div>
             <div v-if="open" class="flex-grow-1">
                 <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
-                    :show-ids="showIds"
+                    :is-first-column="isFirstColumn"
                     :init-open="initOpen"
                     :space-for-add="spaceForAdd"
                     :selected-item="selectedItem"
@@ -52,7 +52,7 @@ export default Vue.extend({
         nameField: Object as PropType<{ label: string, propertyName: string }>,
         editable: Boolean,
         spaceForAdd: Boolean,
-        showIds: Boolean,
+        isFirstColumn: Boolean,
         selectedItem: String,
         initOpen: Boolean,
         initOpenItems: Array as PropType<Array<string>>,
@@ -83,7 +83,7 @@ export default Vue.extend({
             return this.buttons?.filter((button) => button.for === this.item.type);
         },
         hasArrows() {
-            return Object.keys(this.item.children ?? {}).length > 0 || this.editable;
+            return this.isFirstColumn && Object.keys(this.item.children ?? {}).length > 0 || this.editable;
         },
         itemName() {
             const name = (this.item as any)[this.nameField.propertyName ?? "name"];

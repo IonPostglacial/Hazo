@@ -9,18 +9,16 @@
                 </div>
             </div>
             <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between button-group">
-                <li :class="'flex-grow-1 button no-list-style ' + (visibleColumns[fieldNum] ? 'background-color-1' : '')" v-for="(nameField, fieldNum) in nameFields" :key="nameField.propertyName">
-                    <label class="full-width)">
-                        <input type="checkbox" class="invisible" v-model="visibleColumns[fieldNum]">{{ nameField.label }}
-                    </label>
+                <li :class="'flex-grow-1 button no-list-style ' + (visibleColumns[nameField.propertyName] ? 'background-color-1' : '')" v-for="nameField in nameFields" :key="nameField.propertyName" @click="toggleColumnVisibility(nameField.propertyName)">
+                    {{ nameField.label }}
                 </li>
             </ul>
         </div>
         <div class="horizontal-flexbox">
-            <ul v-for="(nameField, fieldNum) in (nameFields || ['name']).filter((e, i) => visibleColumns[i])" :key="nameField.propertyName"
+            <ul v-for="(nameField, fieldNum) in (nameFields || ['name']).filter((e, i) => visibleColumns[e.propertyName])" :key="nameField.propertyName"
                 :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item"   
-                    :show-ids="fieldNum === 0"
+                    :is-first-column="fieldNum === 0"
                     :space-for-add="editable && fieldNum > 0"
                     :editable="editable && fieldNum === 0" :buttons="buttons"
                     :name-field="nameField"
@@ -70,7 +68,7 @@ export default Vue.extend({
         return {
             menuFilter: "",
             itemsBus: new MenuEventHub(),
-            visibleColumns: (this.nameFields ?? ["name"]).map(() => true),
+            visibleColumns: Object.fromEntries(this.nameFields.map((e) => [e.propertyName, true])),
             initOpenItems: initOpenItems,
         };
     },
@@ -96,6 +94,9 @@ export default Vue.extend({
         },
     },
     methods: {
+        toggleColumnVisibility(propertName: string) {
+            this.visibleColumns[propertName] = !this.visibleColumns[propertName];
+        },
         selectItem(id: string) {
             this.$emit("select-item", id);
         },
