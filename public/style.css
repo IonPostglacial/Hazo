@@ -110,14 +110,23 @@ ul {
 }
 
 input[type="search"],
-input[type="text"] {
+input[type="text"],
+.input-text {
     margin: 2px;
-    font-size: 14px;
+    font-family: inherit;
+    font-size: inherit;
     height: 28px;
     line-height: 28px;
     padding: 2px 4px;
     border: 2px solid #0000001c;
     transition: border 0.3s;
+    outline: none;
+}
+
+input[type="search"]:focus,
+input[type="text"]:focus,
+.input-text:focus {
+    border: 2px solid #2571d4;
 }
 
 input[type="search"] {
@@ -128,11 +137,6 @@ input[type="search"] {
 input[type="text"] {
     border-radius: 8px;
     width: 120px;
-}
-
-input[type="search"]:focus,
-input[type="text"]:focus {
-    border: 2px solid #2571d4;
 }
 
 #app {
@@ -375,7 +379,7 @@ div.invisible {
 .move-up,
 .move-down {
     width: 18px;
-	height: 18px;
+    height: 18px;
 }
 
 .move-up,
@@ -383,6 +387,8 @@ div.invisible {
     user-select: none;
     opacity: 0.3;
     line-height: 18px;
+    padding: 0 3px;
+    font-size: 17px;
 }
 
 .move-up:hover,

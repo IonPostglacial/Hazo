@@ -2,7 +2,7 @@ const template = document.createElement("template");
 template.innerHTML = `<link rel="stylesheet" href="style.css" />
     <div class="horizontal-flexbox">
         <input type="text" id="single-line-input" class="flex-grow-1" placeholder="Add an item" />
-        <textarea type="text" id="multi-line-input" class="flex-grow-1 invisible" placeholder="Add multiple items"></textarea>
+        <textarea type="text" id="multi-line-input" class="flex-grow-1 input-text invisible" rows="1" placeholder="Add multiple items"></textarea>
         <button id="multiline-button" title="Activate multiline mode">¶</button>
         <button id="add-button" title="Add an item" class="background-color-1">Add</button>
     </div>`;

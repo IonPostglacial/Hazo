@@ -5,8 +5,10 @@
                 <div class="white-background stick-to-top horizontal-flexbox">
                     <input type="file" class="invisible" name="csvFileChooser" id="csvFileChooser" v-on:change="uploadCSV">
                     <input type="search" v-model="entriesFilter" class="flex-grow-1" name="searchEntries" id="searchEntries" placeholder="Filter">
-                    <button type="button" class="background-color-1" v-on:click="importCSV">Import CSV</button>
-                    <button type="button" class="background-color-1" v-on:click="exportCSV">Export CSV</button>
+                    <div class="button-group">
+                        <button type="button" v-on:click="importCSV">Import CSV</button>
+                        <button type="button" v-on:click="exportCSV">Export CSV</button>
+                    </div>
                 </div>
                 <table class="white-background medium-padding">
                     <tr class="stick-to-top white-background"><th></th><th>名词</th><th>Name</th><th>Nom</th></tr>
