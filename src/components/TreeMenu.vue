@@ -14,13 +14,14 @@
                 </li>
             </ul>
         </div>
-        <div class="horizontal-flexbox">
-            <ul v-for="(nameField, fieldNum) in (nameFields || ['name']).filter((e, i) => visibleColumns[e.propertyName])" :key="nameField.propertyName"
+        <div class="horizontal-flexbox big-padding-right">
+            <ul v-for="(nameField, fieldNum) in columnsToDisplay" :key="nameField.propertyName"
                 :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus" :item="item"   
                     :is-first-column="fieldNum === 0"
+                    :is-last-column="fieldNum === columnsToDisplay.length - 1"
                     :space-for-add="editable && fieldNum > 0"
-                    :editable="editable && fieldNum === 0" :buttons="buttons"
+                    :editable="editable" :buttons="buttons"
                     :name-field="nameField"
                     :selected-item="selectedItem"
                     :init-open="initOpen"
@@ -73,6 +74,9 @@ export default Vue.extend({
         };
     },
     computed: {
+        columnsToDisplay(): { label: string, propertyName: string }[] {
+            return this.nameFields.filter(nameField => this.visibleColumns[nameField.propertyName])
+        },
         itemsToDisplay(): Iterable<HierarchicalItem<any>> {
             if (!this.items) return [];
             if (this.menuFilter !== "") {

@@ -245,6 +245,10 @@ div.invisible {
     padding: 4px;
 }
 
+.big-padding-right {
+    padding-right: 12px;
+}
+
 .small-margin {
     margin: 2px;
 }

@@ -11,15 +11,16 @@
                 <slot></slot>
             </label>
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
-            <div v-if="editable" @click="moveUp" class="move-up">🡡</div>
-            <div v-if="editable" @click="moveDown" class="move-down">🡣</div>
-            <div v-if="editable" class="close" @click="deleteItem"></div>
+            <div v-if="editable && isLastColumn" @click="moveUp" class="move-up">🡡</div>
+            <div v-if="editable && isLastColumn" @click="moveDown" class="move-down">🡣</div>
+            <div v-if="editable && isLastColumn" class="close" @click="deleteItem"></div>
         </div>
         <div class="horizontal-flexbox start-aligned">
             <div v-if="isFirstColumn" class="indentation-width"></div>
             <div v-if="open" class="flex-grow-1">
                 <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                     :is-first-column="isFirstColumn"
+                    :is-last-column="isLastColumn"
                     :init-open="initOpen"
                     :space-for-add="spaceForAdd"
                     :selected-item="selectedItem"
@@ -53,6 +54,7 @@ export default Vue.extend({
         editable: Boolean,
         spaceForAdd: Boolean,
         isFirstColumn: Boolean,
+        isLastColumn: Boolean,
         selectedItem: String,
         initOpen: Boolean,
         initOpenItems: Array as PropType<Array<string>>,
@@ -83,7 +85,7 @@ export default Vue.extend({
             return this.buttons?.filter((button) => button.for === this.item.type);
         },
         hasArrows() {
-            return this.isFirstColumn && Object.keys(this.item.children ?? {}).length > 0 || this.editable;
+            return this.isFirstColumn && (Object.keys(this.item.children ?? {}).length > 0 || this.editable);
         },
         itemName() {
             const name = (this.item as any)[this.nameField.propertyName ?? "name"];
