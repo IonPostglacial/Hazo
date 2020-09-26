@@ -165,7 +165,7 @@ export default Vue.extend({
             this.selectedTaxon.extra[detail.property] = detail.value;
         },
         pushToChildren({ detail: property }: { detail: string }) {
-            for (const child of Object.values(this.selectedTaxon.children)) {
+            for (const child of this.taxonsHierarchy.childrenOf(this.selectedTaxon)) {
                 const anyChild: any = child, anyItem: any = this.selectedTaxon;
                 anyChild[property] = anyItem[property];
             }

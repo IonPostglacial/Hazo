@@ -2,7 +2,7 @@ import { Book, BookInfo, Character, Dataset, DetailData, DictionaryEntry, Field,
 import { standardBooks } from "./stdcontent";
 import { createDataset } from "./Dataset";
 import { createDetailData } from './DetailData';
-import { createHierarchicalItem, hydrateChildren } from './HierarchicalItem';
+import { createHierarchicalItem } from './HierarchicalItem';
 import { createTaxon, taxonDescriptions } from './Taxon';
 import { createCharacter } from './Character';
 
@@ -23,9 +23,8 @@ interface AlreadyEncodedDataset extends Omit<EncodedDataset, "characters"> {
 
 function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>) {
 	const children = new Set<string>();
-	const order = item.childrenOrder ?? Object.values(item.children);
 
-	for (const childId of order) {
+	for (const childId of item.childrenOrder ?? []) {
 		children.add(childId);
 	}
 	return {
@@ -104,7 +103,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, characters: R
     }
 	return createTaxon({
 		...item,
-		childrenIds: item.childrenOrder,
+		childrenIds: item.childrenOrder ?? [],
 		statesSelection: statesSelection,
 		bookInfoByIds,
 	});
@@ -114,7 +113,7 @@ function decodeCharacter(character: ReturnType<typeof encodeCharacter>, states: 
 	const item = decodeHierarchicalItem(character);
 	return createCharacter({
 		...item,
-		childrenIds: item.childrenOrder,
+		childrenIds: item.childrenOrder ?? [],
 		states: character.states.map(id => states[id]),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states[id]) ?? [],
 		
@@ -135,12 +134,6 @@ export function decodeDataset(dataset: AlreadyEncodedDataset): Dataset {
 	}
 	for (const taxon of dataset.taxons) {
 		taxons[taxon.id] = decodeTaxon(taxon, characters, states, books);
-	}
-	for (const descriptor of Object.values(characters)) {
-		hydrateChildren(descriptor, characters);
-	}
-	for (const taxon of Object.values(taxons)) {
-		hydrateChildren(taxon, taxons);
 	}
 	return createDataset(
 		dataset.id,

@@ -40,7 +40,7 @@ export default Vue.extend({
             if (this.breadCrumbs.length - 1 < 0) return;
             const currentlyOpenItem = newRootItems.itemWithId(this.breadCrumbs[this.breadCrumbs.length - 1].id);
             if (typeof currentlyOpenItem !== "undefined") {
-                this.currentItems = Object.values(currentlyOpenItem.children);
+                this.currentItems = [...this.rootItems.childrenOf(currentlyOpenItem)];
             }
         }
     },
@@ -68,13 +68,13 @@ export default Vue.extend({
             return this.editable && typeof item.selected !== "undefined";
         },
         hasChildren(item: HierarchicalItem<any>): boolean {
-            return item.children && Object.keys(item.children).length > 0;
+            return this.rootItems.hasChildren(item);
         },
         openItem(item: HierarchicalItem<any> & { selected?: boolean }) {
             this.isRoot = false;
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
-                this.currentItems = Object.values(item.children);
+                this.currentItems = [...this.rootItems.childrenOf(item)];
             }
             if (this.isSelectable(item)) {
                 this.$emit("item-selection-toggled", { item });
@@ -88,7 +88,7 @@ export default Vue.extend({
         goToBreadCrumb(breadCrumb: HierarchicalItem<any>) {
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
-            this.currentItems = Object.values(breadCrumb.children);
+            this.currentItems = [...this.rootItems.childrenOf(breadCrumb)];
         }
     },
 });

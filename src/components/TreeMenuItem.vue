@@ -25,7 +25,7 @@
                     :space-for-add="spaceForAdd"
                     :selected-item="selectedItem"
                     :init-open-items="initOpenItems"
-                    :name-field="nameField" :item="child" :buttons="buttons" 
+                    :name-field="nameField" :items-hierarchy="itemsHierarchy" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
                 <li v-if="editable || spaceForAdd" :class="spaceForAdd ? 'visibility-hidden' : ''">
@@ -41,6 +41,7 @@ import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-va
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "../menu-event-hub"; // eslint-disable-line no-unused-vars
+import { Hierarchy } from '@/bunga/hierarchy'; // eslint-disable-line no-unused-vars
 
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
@@ -49,6 +50,7 @@ export default Vue.extend({
     props: {
         itemBus: Object as PropType<MenuEventHub>,
         item: Object as PropType<HierarchicalItem<any>>,
+        itemsHierarchy: Object as PropType<Hierarchy<any>>,
         buttons: Array as PropType<Array<Button>>,
         nameField: Object as PropType<{ label: string, propertyName: string }>,
         editable: Boolean,
@@ -65,7 +67,7 @@ export default Vue.extend({
         };
     },
     mounted() {
-        this.itemBus.onOpenAll(() => this.open = Object.keys(this.item.children).length > 0);
+        this.itemBus.onOpenAll(() => this.open = this.itemsHierarchy.hasChildren(this.item));
         this.itemBus.onCloseAll(() => this.open = false);
         this.itemBus.onToggle((id: string) =>  { if (id === this.item.id) { this.open = !this.open } });
     }, 
@@ -85,7 +87,7 @@ export default Vue.extend({
             return this.buttons?.filter((button) => button.for === this.item.type);
         },
         hasArrows() {
-            return this.isFirstColumn && (Object.keys(this.item.children ?? {}).length > 0 || this.editable);
+            return this.isFirstColumn && (this.itemsHierarchy.hasChildren(this.item) || this.editable);
         },
         itemName() {
             const name = (this.item as any)[this.nameField.propertyName ?? "name"];
@@ -96,16 +98,7 @@ export default Vue.extend({
             }
         },
         childrenToDisplay() {
-            const children = this.item.children, childrenOrder = this.item.childrenOrder;
-            return {
-                *[Symbol.iterator]() {
-                    for (const childId of childrenOrder) {
-                        if (typeof children[childId] !== "undefined") {
-                            yield children[childId];
-                        }
-                    }
-                }
-            }
+            return this.itemsHierarchy.childrenOf(this.item)
         },
     },
     methods: {

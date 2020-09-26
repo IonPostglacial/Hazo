@@ -69,9 +69,8 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             if (typeof parent === "undefined") {
                 console.warn(`Added item "${newItem.name}" with an invalid parent id: ${newItem.parentId}`);
             } else {
-                parent.children = { ...parent.children, [newId]: newItem };
                 if(typeof parent.childrenOrder === "undefined") {
-                    parent.childrenOrder = Object.keys(parent.children);
+                    parent.childrenOrder = [newId];
                 } else {
                     const order = parent.childrenOrder.indexOf(newId);
                     if (order === -1) {
@@ -87,6 +86,24 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return this.items.get(id);
     }
 
+    hasChildren(item: T): boolean {
+        return typeof item.childrenOrder !== "undefined" && item.childrenOrder.length > 0;
+    }
+
+    childrenOf(item: T): Iterable<T> {
+        const self = this;
+        return {
+            *[Symbol.iterator]() {
+                for (const childId of item.childrenOrder ?? []) {
+                    const child = self.items.get(childId);
+                    if (typeof child !== "undefined") {
+                        yield child;
+                    }
+                }
+            }
+        }
+    }
+
     remove(item: T): void {
         this.items.delete(item.id);
         const order = this.itemsOrder.indexOf(item.id);
@@ -98,11 +115,9 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             if (typeof parent === "undefined") {
                 console.error(`Trying to remove an item with a parent that doesn't exist: ${item.parentId}`);
             } else {
+                if (typeof parent.childrenOrder === "undefined") return;
                 const childOrder = parent.childrenOrder.indexOf(item.id);
                 parent.childrenOrder.splice(childOrder, 1);
-                const newChildren = { ...parent.children };
-                delete newChildren[item.id];
-                parent.children = newChildren;
             }
         }
     }

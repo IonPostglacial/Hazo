@@ -5,7 +5,6 @@ import { createDataset } from "./Dataset";
 import { createDetailData } from "./DetailData";
 import { createCharacter } from "./Character";
 import { createTaxon } from "./Taxon";
-import { hydrateChildren } from "./HierarchicalItem";
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {
@@ -132,18 +131,8 @@ function extractPhotosByRef(sddContent: sdd_Dataset) {
 export function datasetFromSdd(dataset: sdd_Dataset, extraFields: Field[]): Dataset {
 	const photosByRef = extractPhotosByRef(dataset);
 	const statesById = extractStatesById(dataset, photosByRef);
-
 	const descriptors = extractDescriptorsById(dataset, statesById, photosByRef);
-
-	for (const descriptor of Object.values(descriptors)) {
-		hydrateChildren(descriptor, descriptors);
-	}
-
 	const taxons = extractItemsById(dataset, descriptors, extraFields, statesById, photosByRef);
-
-	for (const item of Object.values(taxons)) {
-		hydrateChildren(item, taxons);
-	}
 
 	return createDataset("0", taxons, descriptors);
 }
