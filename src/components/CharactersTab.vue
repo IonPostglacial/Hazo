@@ -28,7 +28,7 @@
                 <div v-if="selectedCharacter.parentId">
                     <label>Only Applicable If</label>
                     <ul class="indented">
-                        <li class="medium-padding" v-for="state in charactersHierarchy.getItemById(selectedCharacter.parentId).states" :key="state.id">
+                        <li class="medium-padding" v-for="state in charactersHierarchy.itemWithId(selectedCharacter.parentId).states" :key="state.id">
                             <label>
                             <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
                             {{ state.name }}
@@ -37,7 +37,7 @@
                     </ul>
                     <label>Inapplicable If</label>
                     <ul class="indented">
-                        <li class="medium-padding" v-for="state in charactersHierarchy.getItemById(selectedCharacter.parentId).states" :key="state.id">
+                        <li class="medium-padding" v-for="state in charactersHierarchy.itemWithId(selectedCharacter.parentId).states" :key="state.id">
                             <label>
                             <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
                             {{ state.name }}
