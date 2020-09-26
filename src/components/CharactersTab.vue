@@ -30,7 +30,7 @@
                     <ul class="indented">
                         <li class="medium-padding" v-for="state in charactersHierarchy.itemWithId(selectedCharacter.parentId).states" :key="state.id">
                             <label>
-                            <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
+                            <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
                             {{ state.name }}
                             </label>
                         </li>
@@ -39,7 +39,7 @@
                     <ul class="indented">
                         <li class="medium-padding" v-for="state in charactersHierarchy.itemWithId(selectedCharacter.parentId).states" :key="state.id">
                             <label>
-                            <input type="checkbox" v-on:change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
+                            <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
                             {{ state.name }}
                             </label>
                         </li>
@@ -112,6 +112,14 @@ export default Vue.extend({
             } else {
                 const i = this.selectedCharacter!.inapplicableStates.findIndex(s => s.id === state.id);
                 this.selectedCharacter!.inapplicableStates.splice(i, 1);
+            }
+        },
+        setRequiredState(state: State, selected: boolean) {
+            if (selected) {
+                this.selectedCharacter!.requiredStates.push(state);
+            } else {
+                const i = this.selectedCharacter!.requiredStates.findIndex(s => s.id === state.id);
+                this.selectedCharacter!.requiredStates.splice(i, 1);
             }
         },
         selectCharacter(id: string) {
