@@ -1,6 +1,6 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1">
-        <nav v-if="showLeftMenu" class="scroll medium-margin thin-border white-background">
+        <nav v-if="showLeftMenu" class="scroll thin-border white-background">
             <TreeMenu :editable="editable" :items="taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @select-item="selectTaxon" @add-item="addTaxon" @delete-item="removeTaxon">

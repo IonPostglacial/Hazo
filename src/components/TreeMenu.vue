@@ -16,7 +16,7 @@
         </div>
         <div class="horizontal-flexbox big-padding-right">
             <ul v-for="(nameField, fieldNum) in columnsToDisplay" :key="nameField.propertyName"
-                :class="'menu medium-padding ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
+                :class="'menu medium-padding flex-grow-1 ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
                     :item="item" :items-hierarchy="items"   
                     :is-first-column="fieldNum === 0"

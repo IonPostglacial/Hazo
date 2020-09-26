@@ -34,7 +34,7 @@ select,
     font-size: 14px;
     line-height: 18px;
     color: black;
-    border: 2px solid #0000001c;
+    border: 1px solid #0000001c;
     transition: background-color 0.3s;
     white-space: nowrap;
     user-select: none;
@@ -192,6 +192,10 @@ input[type="text"]:focus {
 
 .min-width-s {
     min-width: 200px;
+}
+
+.background-gradient-1 {
+    background: linear-gradient(0deg, rgb(219, 219, 219) 5%, rgb(221, 221, 221) 22%);
 }
 
 .background-color-1 {

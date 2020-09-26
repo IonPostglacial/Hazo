@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="vertical-flexbox lightgrey-background height-full">
-    <nav class="horizontal-flexbox space-between thin-border">
+    <nav class="horizontal-flexbox space-between thin-border background-gradient-1">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
         </div>
@@ -44,7 +44,7 @@
             @add-extra-field="addExtraField" @delete-extra-field="deleteExtraField">
         </extra-fields-panel>
     </div>
-    <section class="medium-margin horizontal-flexbox space-between thin-border">
+    <section class="horizontal-flexbox space-between thin-border background-gradient-1">
         <div class="button-group">
             <button type="button" v-on:click="importFile">Import</button>
             <button type="button" v-on:click="jsonExport">Export</button>
