@@ -37,6 +37,8 @@
         <CharactersTab v-if="selectedTab === 2"
             :init-characters="charactersHierarchy"
             :show-left-menu="showLeftMenu"
+            :selected-character="selectedCharacter"
+            @remove-state="removeState" @character-selected="selectCharacter"
             @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
         </CharactersTab>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
@@ -86,6 +88,7 @@ import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
 import cacheAssets from "./cache-assets";
+import { State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "App",
@@ -100,6 +103,7 @@ export default Vue.extend({
             showFields: false,
             selectedTab: 0,
             selectedTaxonId: "",
+            selectedCharacterId: "",
             bigImages: [""],
             bigImageIndex: 0,
             showBigImage: false,
@@ -124,6 +128,9 @@ export default Vue.extend({
     computed: {
         selectedTaxon(): Taxon|undefined {
             return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+        },
+        selectedCharacter(): Character|undefined {
+            return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
         }
     },
     watch: {
@@ -144,6 +151,14 @@ export default Vue.extend({
                 for (const character of savedDataset?.characters) {
                     photos.push(...character.photos);
                     repairPotentialCorruption(character);
+                    const statesIds = new Set(), uniqueStates = [];
+                    for (const state of character.states) {
+                        if (!statesIds.has(state.id)) {
+                            uniqueStates.push(state);
+                        }
+                        statesIds.add(state.id);
+                    }
+                    character.states = uniqueStates;
                     this.charactersHierarchy.add(character);
                 }
                 cacheAssets(photos)
@@ -161,14 +176,43 @@ export default Vue.extend({
             this.taxonsHierarchy = taxonsHierarchy;
         },
         selectTaxon(id: string) {
-            console.log("taxon selected app");
             this.selectedTaxonId = id;
+        },
+        selectCharacter(id: string) {
+            this.selectedCharacterId = id;
         },
         addTaxon(taxon: Taxon) {
             this.taxonsHierarchy.add(taxon);
         },
         removeTaxon(taxon: Taxon) {
             this.taxonsHierarchy.remove(taxon);
+        },
+        removeState(e: { state: State, character: Character }) {
+            function removeStateFromArray(array: State[], state: State) {
+                const index = array.findIndex(s => s.id === state.id);
+                if (index >= 0) {
+                    array.splice(index, 1);
+                }
+            }
+
+            removeStateFromArray(e.character.states, e.state);
+            removeStateFromArray(e.character.inapplicableStates, e.state);
+            removeStateFromArray(e.character.requiredStates, e.state);
+            if (e.character.inherentState?.id === e.state.id) {
+                e.character.inherentState = undefined;
+            }
+
+            function removeStateFromSelection(stateSelection: Record<string, boolean|undefined>, state: State) {
+                for (const stateId in stateSelection) {
+                    if (stateId === state.id) {
+                        delete stateSelection[stateId];
+                    }
+                }
+            }
+
+            for (const taxon of this.taxonsHierarchy.allItems) {
+                removeStateFromSelection(taxon.statesSelection, e.state);
+            }
         },
         editExtraFields() {
             this.showFields = !this.showFields;

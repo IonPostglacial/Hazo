@@ -3,7 +3,7 @@
         <nav v-if="showLeftMenu" class="scroll thin-border white-background">
             <TreeMenu editable :items="charactersHierarchy" name="description"
                 :name-fields="[{ label: 'Name', propertyName: 'name'}, { label: '中文名', propertyName: 'nameCN'}]"
-                @select-item="selectCharacter" :selected-item="selectedCharacterId"
+                @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
                 @add-item="addCharacter"
                 @delete-item="deleteCharacter">
             </TreeMenu>
@@ -31,8 +31,8 @@
                         <ul class="indented no-list-style">
                             <li class="medium-padding" v-for="state in parentStates" :key="state.id">
                                 <label>
-                                <input type="radio" :checked="selectedCharacter.inherentState ? selectedCharacter.inherentState.id === state.id : false" name="inherent-state" @change="setInherentState(state)" />
-                                {{ state.name }}
+                                    <input type="radio" :checked="selectedCharacter.inherentState ? selectedCharacter.inherentState.id === state.id : false" name="inherent-state" @change="setInherentState(state)" />
+                                    {{ state.name }}
                                 </label>
                             </li>
                         </ul>
@@ -42,8 +42,8 @@
                         <ul class="indented no-list-style">
                             <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                 <label>
-                                <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
-                                {{ state.name }}
+                                    <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
+                                    {{ state.name }}
                                 </label>
                             </li>
                         </ul>
@@ -77,11 +77,12 @@
                 <collapsible-panel label="States">
                     <div class="scroll thin-border medium-margin medium-padding white-background">
                         <ul class="no-list-style medium-padding medium-margin">
-                            <li class="medium-padding" v-for="state in selectedCharacter.states || []" :key="state.id">
-                                <label class="blue-hover medium-padding nowrap">
+                            <li v-for="state in selectedCharacter.states || []" :key="state.id" class="horizontal-flexbox flex-centered">
+                                <label class="blue-hover medium-padding rounded nowrap horizontal-flexbox flex-centered">
                                     <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
-                                    <input type="text" v-model="state.name" />
+                                    <input type="text" class="flex-grow-1" v-model="state.name" />
                                 </label>
+                                <div class="close" @click="removeState(state)"></div>
                             </li>
                             <li>
                                 <add-item v-on:add-item="addState"></add-item>
@@ -103,9 +104,6 @@ export default Vue.extend({
     name: "CharactersTab",
     components: { TreeMenu },
     computed: {
-        selectedCharacter(): Character|undefined {
-            return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
-        },
         selectedCharacterState(): State|undefined {
             return this.selectedCharacter?.states?.find(s => s.id === this.selectedState);
         },
@@ -125,13 +123,13 @@ export default Vue.extend({
     data() {
         return {
             charactersHierarchy: this.initCharacters,
-            selectedCharacterId: "",
             selectedState: "",
         };
     },
     props: {
         showLeftMenu: Boolean,
         initCharacters: Hierarchy as PropType<Hierarchy<Character>>,
+        selectedCharacter: Object as PropType<Character|undefined>,
     },
     methods: {
         setInapplicableState(state: State, selected: boolean) {
@@ -165,7 +163,7 @@ export default Vue.extend({
             this.charactersHierarchy.add(clone(this.selectedCharacter!));
         },
         selectCharacter(id: string) {
-            this.selectedCharacterId = id;
+            this.$emit("character-selected", id);
         },
         addCharacterPhoto(e: {detail: {value: string}}) {
             this.selectedCharacter!.photos.push(e.detail.value);
@@ -218,14 +216,17 @@ export default Vue.extend({
                 console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`, this.charactersHierarchy);
             }
         },
-        addState({detail} : {detail: string}) {
+        addState(e: {detail: string}) {
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
             this.selectedCharacter.states.push({
                 id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
                 descriptorId: this.selectedCharacter.id,
-                name: detail,
+                name: e.detail,
                 photos: []
             });
+        },
+        removeState(state: State) {
+            this.$emit("remove-state", { state, character: this.selectedCharacter });
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
