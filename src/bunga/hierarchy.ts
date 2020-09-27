@@ -105,12 +105,20 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     remove(item: T): void {
+        if (typeof item.childrenOrder !== "undefined") {
+            for (const childId of item.childrenOrder) {
+                const child = this.itemWithId(childId);
+                if (typeof child !== "undefined") {
+                    this.remove(child);
+                }
+            }
+        }
         this.items.delete(item.id);
         const order = this.itemsOrder.indexOf(item.id);
-
-        if (typeof item.parentId === "undefined") {
+        if (order >= 0) {
             this.itemsOrder.splice(order, 1);
-        } else {
+        }
+        if (typeof item.parentId !== "undefined") {
             const parent = this.items.get(item.parentId);
             if (typeof parent === "undefined") {
                 console.error(`Trying to remove an item with a parent that doesn't exist: ${item.parentId}`);
