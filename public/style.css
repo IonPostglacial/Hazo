@@ -257,6 +257,10 @@ div.invisible {
     padding-right: 12px;
 }
 
+.rounded {
+    border-radius: 8px;
+}
+
 .small-margin {
     margin: 2px;
 }
