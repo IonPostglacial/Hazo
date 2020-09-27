@@ -19,7 +19,7 @@
                 <div class="horizontal-flexbox start-align relative">
                     <collapsible-panel label="Properties" 
                             v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
-                        <div class="scroll">
+                        <div class="scroll large-max-width">
                             <div v-if="!editable">
                                 <label class="item-property">NS</label>
                                 <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name }}</i> {{ selectedTaxon.author }}</div>
@@ -86,7 +86,7 @@
                     <div v-if="!editable" class="limited-width" v-html="selectedTaxon.detail"></div>
                 </collapsible-panel>
                 <collapsible-panel label="Description">
-                    <SquareTreeViewer class="large-max-width" :editable="!editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle"></SquareTreeViewer>
+                    <SquareTreeViewer class="large-max-width" :editable="!editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                 </collapsible-panel>
             </div>
         </section>
@@ -127,7 +127,7 @@ export default Vue.extend({
     },
     computed: {
         itemDescriptorTree() {
-            const dependencyHierarchy: Hierarchy<Character & { warning?: boolean, selected?: boolean }> = clone(this.characters);
+            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.characters);
 
             for (const character of dependencyHierarchy.allItems) {
                 const taxonLacksRequiredStates = !character.requiredStates.every(requiredState => this.selectedTaxon.statesSelection[requiredState.id] ?? false);
@@ -136,10 +136,16 @@ export default Vue.extend({
                 if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
                     dependencyHierarchy.remove(character);
                 } else {
-                    const descriptorStates = character.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.selectedTaxon.statesSelection[s.id] ?? false }, s));
+                    const characterStates = character.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.selectedTaxon.statesSelection[s.id] ?? false }, s));
+                    const characterChildren = [...dependencyHierarchy.childrenOf(character)];
                     
-                    for (const state of descriptorStates) {
-                        dependencyHierarchy.add(state as unknown as Character);
+                    for (const state of characterStates) {
+                        const inherentCharacter = characterChildren.find(characterChild => characterChild.inherentState?.id === state.id);
+                        if(typeof inherentCharacter === "undefined") {
+                            dependencyHierarchy.add(state as unknown as Character);
+                        } else {
+                            inherentCharacter.selected = state.selected;
+                        }
                     }
                 }
             }
@@ -148,7 +154,6 @@ export default Vue.extend({
     },
     methods: {
         selectTaxon(id: string) {
-            console.log("taxon selected panel");
             this.$emit("taxon-selected", id);
         },
         addTaxon(e: {value: string, parentId: string }) {
@@ -173,11 +178,19 @@ export default Vue.extend({
                 anyChild[property] = anyItem[property];
             }
         },
-        taxonStateToggle(e: { item: State }) {
-            if (typeof this.selectedTaxon !== "undefined") {
-                const selected = !this.selectedTaxon.statesSelection[e.item.id];
-                const newStateSelection = { ...this.selectedTaxon.statesSelection, [e.item.id]: selected };
+        taxonStateToggle(e: { item: State|Character }) {
+            const isCharacter = (e.item as Character).type === "character";
+            const stateToAddId = isCharacter ? (e.item as Character).inherentState?.id : e.item.id;
+
+            if (typeof this.selectedTaxon !== "undefined" && typeof stateToAddId !== "undefined") {
+                const selected = !this.selectedTaxon.statesSelection[stateToAddId];
+                const newStateSelection = { ...this.selectedTaxon.statesSelection, [stateToAddId]: selected };
                 this.$emit("add-taxon", { ...this.selectedTaxon, statesSelection: newStateSelection });
+            }
+        },
+        openCharacter(e: { item: Character }) {
+            if (typeof e.item.inherentState !== "undefined" && !this.selectedTaxon.statesSelection[e.item.inherentState.id]) {
+                this.taxonStateToggle({ item: e.item.inherentState });
             }
         },
         addItemPhoto(e: {detail: { value: string }}) {

@@ -65,7 +65,7 @@ export default Vue.extend({
             return this.hasChildren(item) || this.isSelectable(item);
         },
         isSelectable(item: HierarchicalItem<any> & { selected?: boolean }): boolean {
-            return this.editable && typeof item.selected !== "undefined";
+            return this.editable && !this.rootItems.hasChildren(item);
         },
         hasChildren(item: HierarchicalItem<any>): boolean {
             return this.rootItems.hasChildren(item);
@@ -75,6 +75,7 @@ export default Vue.extend({
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...this.rootItems.childrenOf(item)];
+                this.$emit("item-open", { item });
             }
             if (this.isSelectable(item)) {
                 this.$emit("item-selection-toggled", { item });

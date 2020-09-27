@@ -8,7 +8,7 @@
                 @delete-item="deleteCharacter">
             </TreeMenu>
         </nav>
-        <section v-if="typeof selectedCharacter !== 'undefined'" class="vertical-flexbox flex-grow-1">
+        <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll vertical-flexbox flex-grow-1">
             <picture-box editable="true"
                     @add-photo="addCharacterPhoto"
                     @set-photo="setCharacterPhoto"
@@ -17,35 +17,50 @@
                 <picture-frame v-for="(photo, index) in selectedCharacter.photos" :key="index"
                     :url="photo" :index="index" editable="true"></picture-frame>
             </picture-box>
-            <ul class="thin-border medium-margin medium-padding white-background flex-grow-1 scroll">
+            <collapsible-panel label="Identification">
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameEN" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameCN" /></div>
-
                 <label class="item-property">Detail</label>
-                <textarea v-model="selectedCharacter.detail"></textarea><br/>
-
-                <div v-if="selectedCharacter.parentId">
-                    <label>Only Applicable If</label>
-                    <ul class="indented">
-                        <li class="medium-padding" v-for="state in charactersHierarchy.itemWithId(selectedCharacter.parentId).states" :key="state.id">
-                            <label>
-                            <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
-                            {{ state.name }}
-                            </label>
-                        </li>
-                    </ul>
-                    <label>Inapplicable If</label>
-                    <ul class="indented">
-                        <li class="medium-padding" v-for="state in charactersHierarchy.itemWithId(selectedCharacter.parentId).states" :key="state.id">
-                            <label>
-                            <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
-                            {{ state.name }}
-                            </label>
-                        </li>
-                    </ul>
+                <textarea class="input-text" v-model="selectedCharacter.detail"></textarea> 
+            </collapsible-panel>
+            <collapsible-panel v-if="selectedCharacter.parentId" label="Dependencies">
+                <div class="horizontal-flexbox">
+                    <section class="medium-margin medium-padding thin-border flex-grow-1">
+                        <label>Inherent State</label>
+                        <ul class="indented no-list-style">
+                            <li class="medium-padding" v-for="state in parentStates" :key="state.id">
+                                <label>
+                                <input type="radio" :checked="selectedCharacter.inherentState ? selectedCharacter.inherentState.id === state.id : false" name="inherent-state" @change="setInherentState(state)" />
+                                {{ state.name }}
+                                </label>
+                            </li>
+                        </ul>
+                    </section>
+                    <section class="medium-margin medium-padding thin-border flex-grow-1">
+                        <label>Only Applicable If</label>
+                        <ul class="indented no-list-style">
+                            <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
+                                <label>
+                                <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
+                                {{ state.name }}
+                                </label>
+                            </li>
+                        </ul>
+                    </section>
+                    <section class="medium-margin medium-padding thin-border flex-grow-1">
+                        <label>Inapplicable If</label>
+                        <ul class="indented no-list-style">
+                            <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
+                                <label>
+                                <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
+                                {{ state.name }}
+                                </label>
+                            </li>
+                        </ul>
+                    </section>
                 </div>
-            </ul>
+            </collapsible-panel>
         </section>
         <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll">
             <div class="relative" style="height: 98%">
@@ -82,6 +97,7 @@
 import TreeMenu from "./TreeMenu.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createCharacter, createDetailData, Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import clone from '@/clone';
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -92,6 +108,18 @@ export default Vue.extend({
         },
         selectedCharacterState(): State|undefined {
             return this.selectedCharacter?.states?.find(s => s.id === this.selectedState);
+        },
+        parentStates(): State[] {
+            const parentId = this.selectedCharacter?.parentId;
+            if (typeof parentId === "undefined")
+                return[];
+            const parent = this.charactersHierarchy.itemWithId(parentId);
+            if (typeof parent === "undefined")
+                return[];
+            return parent.states;
+        },
+        parentStatesExceptInherent(): State[] {
+            return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
         },
     },
     data() {
@@ -113,6 +141,7 @@ export default Vue.extend({
                 const i = this.selectedCharacter!.inapplicableStates.findIndex(s => s.id === state.id);
                 this.selectedCharacter!.inapplicableStates.splice(i, 1);
             }
+            this.charactersHierarchy.add(clone(this.selectedCharacter!));
         },
         setRequiredState(state: State, selected: boolean) {
             if (selected) {
@@ -121,9 +150,21 @@ export default Vue.extend({
                 const i = this.selectedCharacter!.requiredStates.findIndex(s => s.id === state.id);
                 this.selectedCharacter!.requiredStates.splice(i, 1);
             }
+            this.charactersHierarchy.add(clone(this.selectedCharacter!));
+        },
+        setInherentState(state: State) {
+            this.selectedCharacter!.inherentState = state;
+            const requiredStateIndex = this.selectedCharacter!.requiredStates.findIndex(s => s.id === state.id);
+            if (requiredStateIndex >= 0) {
+                this.selectedCharacter!.requiredStates.splice(requiredStateIndex, 1);
+            }
+            const inapplicableStateIndex = this.selectedCharacter!.inapplicableStates.findIndex(s => s.id === state.id);
+            if (inapplicableStateIndex >= 0) {
+                this.selectedCharacter!.inapplicableStates.splice(inapplicableStateIndex, 1);
+            }
+            this.charactersHierarchy.add(clone(this.selectedCharacter!));
         },
         selectCharacter(id: string) {
-            console.log(this.charactersHierarchy.itemWithId(id));
             this.selectedCharacterId = id;
         },
         addCharacterPhoto(e: {detail: {value: string}}) {
@@ -165,7 +206,7 @@ export default Vue.extend({
                     descriptorId: parentId, name: newCharacter.name, photos: []
                 };
                 parentDescription.states = [...parentDescription.states, newState];
-                newCharacter.requiredStates = [newState];
+                newCharacter.inherentState = newState;
             }
             this.$emit("change-characters", this.charactersHierarchy);
         },
