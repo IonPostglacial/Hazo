@@ -64,21 +64,23 @@
         </section>
         <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll">
             <div class="relative vertical-flexbox">
-                <picture-box v-if="selectedCharacterState"
-                        class="scroll"
-                        editable="true"
-                        @add-photo="addStatePhoto"
-                        @set-photo="setStatePhoto"
-                        @delete-photo="deleteStatePhoto"
-                        @open-photo="openStatePhoto">
-                    <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="index"      
-                        :url="photo" :index="index" :editable="true"></picture-frame>
-                </picture-box>
-                <collapsible-panel v-if="selectedCharacterState" label="Description">
-                    <label>
-                        <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
-                    </label>
-                </collapsible-panel>
+                <div v-if="selectedCharacterState" class="stick-to-top medium-padding medium-margin white-background">
+                    <picture-box
+                            class="scroll"
+                            editable="true"
+                            @add-photo="addStatePhoto"
+                            @set-photo="setStatePhoto"
+                            @delete-photo="deleteStatePhoto"
+                            @open-photo="openStatePhoto">
+                        <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="index"      
+                            :url="photo" :index="index" :editable="true"></picture-frame>
+                    </picture-box>
+                    <collapsible-panel label="Description">
+                        <label>
+                            <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
+                        </label>
+                    </collapsible-panel>
+                </div>
                 <collapsible-panel label="States">
                     <div class="scroll thin-border medium-margin medium-padding white-background">
                         <ul class="no-list-style medium-padding medium-margin">
