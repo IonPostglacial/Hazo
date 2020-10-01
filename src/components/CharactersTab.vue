@@ -63,7 +63,7 @@
             </collapsible-panel>
         </section>
         <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll">
-            <div class="relative" style="height: 98%">
+            <div class="relative vertical-flexbox">
                 <picture-box v-if="selectedCharacterState"
                         class="scroll"
                         editable="true"
@@ -74,6 +74,11 @@
                     <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="index"      
                         :url="photo" :index="index" :editable="true"></picture-frame>
                 </picture-box>
+                <collapsible-panel v-if="selectedCharacterState" label="Description">
+                    <label>
+                        <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
+                    </label>
+                </collapsible-panel>
                 <collapsible-panel label="States">
                     <div class="scroll thin-border medium-margin medium-padding white-background">
                         <ul class="no-list-style medium-padding medium-margin">

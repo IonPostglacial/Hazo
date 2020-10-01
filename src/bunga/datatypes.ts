@@ -19,7 +19,8 @@ export interface Field {
 export interface State {
     id: string;
     descriptorId: string;
-    name: string;
+	name: string;
+	description?: string;
     photos: string[];
 }
 
