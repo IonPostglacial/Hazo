@@ -41,7 +41,10 @@
             @remove-state="removeState" @character-selected="selectCharacter"
             @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
         </CharactersTab>
-        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
+        <CharactersTree v-if="selectedTab === 3"
+            :characters="charactersHierarchy">
+        </CharactersTree>
+        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 4"></WordsDictionary>
         <extra-fields-panel :showFields="showFields" :extraFields="extraFields"
             @add-extra-field="addExtraField" @delete-extra-field="deleteExtraField">
         </extra-fields-panel>
@@ -80,6 +83,7 @@ import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails, 
 import { ObservableMap } from "./observablemap";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
+import CharactersTree from "./components/CharactersTree.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
 import DB from "./db-storage";
@@ -93,7 +97,7 @@ import { State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
 export default Vue.extend({
     name: "App",
     components: {
-        TaxonsTab, CharactersTab, WordsDictionary, ExtraFieldsPanel
+        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, ExtraFieldsPanel
     },
     data() {
         return {
@@ -111,7 +115,8 @@ export default Vue.extend({
                 "Taxons",
                 "Taxons Characters",
                 "Characters",
-                "Dictionary"
+                "Characters Tree",
+                "Dictionary",
             ],
             extraFields: new Array<Field>(),
             books: standardBooks,
