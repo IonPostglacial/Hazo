@@ -5,13 +5,14 @@ import { createDataset } from "./Dataset";
 import { createDetailData } from "./DetailData";
 import { createCharacter } from "./Character";
 import { createTaxon } from "./Taxon";
+import { picturesFromPhotos } from './pictures';
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {
         id: state.id,
         descriptorId: state.characterId,
         name: state.label,
-        photos: state.mediaObjectsRefs?.map(m => photosByRef[m.ref]),
+        photos: picturesFromPhotos(state.mediaObjectsRefs?.map(m => photosByRef[m.ref])),
     };
 }
 

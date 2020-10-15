@@ -1,4 +1,5 @@
-import { DetailData } from "./datatypes";
+import { DetailData, Picture } from "./datatypes";
+import { picturesFromPhotos } from './pictures';
 
 export interface DetailDataInit {
 	id: string;
@@ -15,7 +16,7 @@ export interface DetailDataInit {
 	fasc?: number;
 	page?: number;
 	detail?: string;
-	photos?: Array<string>;
+	photos?: Picture[]|string[];
 	extra?: Record<string, any>;
 }
 
@@ -35,7 +36,7 @@ export function createDetailData(init: DetailDataInit): DetailData {
 		fasc: init.fasc,
 		page: init.page,
 		detail: init.detail ?? "",
-		photos: init.photos ?? [],
+		photos: picturesFromPhotos(init.photos ?? []),
 		extra: init.extra ?? {},
 	}
 }

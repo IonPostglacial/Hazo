@@ -91,8 +91,7 @@ import Vue from "vue";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
-import cacheAssets from "./cache-assets";
-import { State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
+import { Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "App",
@@ -147,14 +146,11 @@ export default Vue.extend({
         loadBase(id?: string) {
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
-                const photos: string[] = [];
                 for (const taxon of savedDataset?.taxons) {
-                    photos.push(...taxon.photos);
                     repairPotentialCorruption(taxon);
                     this.taxonsHierarchy.add(taxon);
                 }
                 for (const character of savedDataset?.characters) {
-                    photos.push(...character.photos);
                     repairPotentialCorruption(character);
                     const statesIds = new Set(), uniqueStates = [];
                     for (const state of character.states) {
@@ -166,13 +162,7 @@ export default Vue.extend({
                     character.states = uniqueStates;
                     this.charactersHierarchy.add(character);
                 }
-                cacheAssets(photos)
-                    .then(() => {
-                        console.log("All photos cached.");
-                    });
-                    this.extraFields = savedDataset?.extraFields ?? [];
-                    this.dictionaryEntries = savedDataset?.dictionaryEntries ?? {};
-                });
+            });
         },
         changeCharactersHierarchy(charactershierarchy: Hierarchy<Character>) {
             this.charactersHierarchy = charactershierarchy;

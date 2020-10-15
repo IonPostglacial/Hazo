@@ -13,8 +13,8 @@
                         @add-photo="addItemPhoto"
                         @set-photo="setItemPhoto" 
                         @delete-photo="deleteItemPhoto">
-                    <picture-frame v-for="(photo, index) in selectedTaxon.photos" :key="index"
-                        :index="index" :editable="editable" :url="photo"></picture-frame>
+                    <picture-frame v-for="(photo, index) in selectedTaxon.photos" :key="photo.id"
+                        :index="index" :editable="editable" :url="photoUrl(photo)"></picture-frame>
                 </picture-box>
                 <div class="horizontal-flexbox start-align relative">
                     <collapsible-panel label="Properties" 
@@ -100,12 +100,13 @@ import TreeMenu from "./TreeMenu.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Book, Character, Picture, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/clone';
 import { createDetailData } from '@/bunga/DetailData';
 import { createTaxon } from '@/bunga/Taxon';
+import { pictureUrl } from '@/bunga/pictures';
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -153,6 +154,9 @@ export default Vue.extend({
         },
     },
     methods: {
+        photoUrl(photo: Picture) {
+            return pictureUrl(photo);
+        },
         selectTaxon(id: string) {
             this.$emit("taxon-selected", id);
         },
@@ -194,10 +198,11 @@ export default Vue.extend({
             }
         },
         addItemPhoto(e: {detail: { value: string }}) {
-            this.selectedTaxon.photos.push(e.detail.value);
+            const numberOfPhotos = this.selectedTaxon.photos.length;
+            this.selectedTaxon.photos.push({ id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value });
         },
         setItemPhoto(e: {detail: {index: number, value: string}}) {
-            this.selectedTaxon.photos[e.detail.index] = e.detail.value;
+            this.selectedTaxon.photos[e.detail.index].url = e.detail.value;
         },
         deleteItemPhoto(e: {detail: { index: number }}) {
             this.selectedTaxon.photos.splice(e.detail.index, 1);

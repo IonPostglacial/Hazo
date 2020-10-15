@@ -12,18 +12,18 @@ function sleep(ms: number) {
 }
 
 export default async function cacheAssets(assets: string[]) {
-    try {
-        const cache = await caches.open("assets");
-        for (const urlChunk of popChunks(assets, 50)) {
-            try {
-                await cache.addAll(urlChunk);
-                await sleep(10_000);
-            } catch(err) {
-                console.warn("error when syncing assets", err);
-            }
-        }
-        console.log("all assets added to cache");
-    } catch(err) {
-        console.error("error when opening cache", err);
-    }
+    // try {
+    //     const cache = await caches.open("assets");
+    //     for (const urlChunk of popChunks(assets, 50)) {
+    //         try {
+    //             await cache.addAll(urlChunk);
+    //             await sleep(10_000);
+    //         } catch(err) {
+    //             console.warn("error when syncing assets", err);
+    //         }
+    //     }
+    //     console.log("all assets added to cache");
+    // } catch(err) {
+    //     console.error("error when opening cache", err);
+    // }
 }

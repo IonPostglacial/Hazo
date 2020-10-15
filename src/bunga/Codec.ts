@@ -1,4 +1,4 @@
-import { Book, BookInfo, Character, Dataset, DetailData, DictionaryEntry, Field, HierarchicalItem, State, Taxon } from "./datatypes";
+import { Book, BookInfo, Character, Dataset, DetailData, DictionaryEntry, Field, HierarchicalItem, Picture, State, Taxon } from "./datatypes";
 import { standardBooks } from "./stdcontent";
 import { createDataset } from "./Dataset";
 import { createDetailData } from './DetailData';
@@ -16,9 +16,12 @@ interface EncodedDataset {
 	dictionaryEntries: DictionaryEntry[]|Record<string, DictionaryEntry>;
 }
 
+type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { photos: string[]|Picture[] };
+type EncodedHierarchicalItem = Omit<ReturnType<typeof encodeHierarchicalItem>, "photos"> & { photos: string[]|Picture[] };
+
 interface AlreadyEncodedDataset extends Omit<EncodedDataset, "characters"> {
-	descriptors?: ReturnType<typeof encodeCharacter>[]; // Legacy name of characters
-	characters?: ReturnType<typeof encodeCharacter>[];
+	descriptors?: EncodedCharacter[]; // Legacy name of characters
+	characters?:  EncodedCharacter[];
 }
 
 function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>) {
@@ -77,7 +80,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	};
 }
 
-function decodeHierarchicalItem<T>(item: ReturnType<typeof encodeHierarchicalItem>): HierarchicalItem<T> {
+function decodeHierarchicalItem<T>(item: EncodedHierarchicalItem): HierarchicalItem<T> {
 	return createHierarchicalItem({...item, childrenIds: item.children});
 }
 
@@ -109,7 +112,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, characters: R
 	});
 }
 
-function decodeCharacter(character: ReturnType<typeof encodeCharacter>, states: Record<string, State>): Character {
+function decodeCharacter(character: EncodedCharacter, states: Record<string, State>): Character {
 	const item = decodeHierarchicalItem(character);
 	return createCharacter({
 		...item,

@@ -3,6 +3,12 @@ export interface Book {
     label: string;
 }
 
+export interface Picture {
+	id: string;
+	url: string;
+	label: string;
+}
+
 export interface BookInfo {
     fasc: string;
     page: number|undefined;
@@ -21,7 +27,7 @@ export interface State {
     descriptorId: string;
 	name: string;
 	description?: string;
-    photos: string[];
+    photos: Picture[];
 }
 
 export interface DetailData {
@@ -39,7 +45,7 @@ export interface DetailData {
 	fasc: number|undefined;
 	page: number|undefined;
 	detail : string;
-	photos: string[];
+	photos: Picture[];
 	extra: Record<string, any>;
 }
 

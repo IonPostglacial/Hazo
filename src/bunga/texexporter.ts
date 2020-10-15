@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { Character, Description, Taxon } from "./datatypes";
+import { Character, Description, Picture, Taxon } from "./datatypes";
 import { generateFileName } from "./generatefilename";
 import { taxonDescriptions } from "./Taxon";
 
@@ -19,14 +19,14 @@ export class TexExporter {
         for (const taxon of taxons) {
             if (taxon.photos.length > 0) {
                 const photo = taxon.photos[0];
-                this.pictureNameByUrl.set(photo, generateFileName(taxon.name) + ".jpg");
-                this.photos.push(photo);
+                this.pictureNameByUrl.set(photo.url, generateFileName(taxon.name) + ".jpg");
+                this.photos.push(photo.url);
             }
         }
     }
 
-    picture(urls: string[]) {
-        return this.pictureNameByUrl.get(urls[0]);
+    picture(pictures: Picture[]) {
+        return this.pictureNameByUrl.get(pictures[0].url);
     }
 
     onProgress(listener: (progress: number, progressMax: number) => void) {

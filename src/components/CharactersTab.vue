@@ -14,8 +14,8 @@
                     @set-photo="setCharacterPhoto"
                     @delete-photo="deleteCharacterPhoto"
                     @open-photo="openDescriptionPhoto">
-                <picture-frame v-for="(photo, index) in selectedCharacter.photos" :key="index"
-                    :url="photo" :index="index" editable="true"></picture-frame>
+                <picture-frame v-for="(photo, index) in selectedCharacter.photos" :key="photo.id"
+                    :url="photoUrl(photo)" :index="index" editable="true"></picture-frame>
             </picture-box>
             <collapsible-panel label="Identification">
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name" /></div>
@@ -72,8 +72,8 @@
                             @set-photo="setStatePhoto"
                             @delete-photo="deleteStatePhoto"
                             @open-photo="openStatePhoto">
-                        <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="index"      
-                            :url="photo" :index="index" :editable="true"></picture-frame>
+                        <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="photo.id"      
+                            :url="photoUrl(photo)" :index="index" :editable="true"></picture-frame>
                     </picture-box>
                     <collapsible-panel label="Description">
                         <label>
@@ -104,8 +104,9 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { createCharacter, createDetailData, Character, Hierarchy, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import { createCharacter, createDetailData, Character, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
 import clone from '@/clone';
+import { pictureUrl } from '@/bunga/pictures';
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -139,6 +140,9 @@ export default Vue.extend({
         selectedCharacter: Object as PropType<Character|undefined>,
     },
     methods: {
+        photoUrl(photo: Picture) {
+            return pictureUrl(photo);
+        },
         setInapplicableState(state: State, selected: boolean) {
             if (selected) {
                 this.selectedCharacter!.inapplicableStates.push(state);
@@ -173,10 +177,15 @@ export default Vue.extend({
             this.$emit("character-selected", id);
         },
         addCharacterPhoto(e: {detail: {value: string}}) {
-            this.selectedCharacter!.photos.push(e.detail.value);
+            const numberOfPhotos = this.selectedCharacter!.photos.length;
+            this.selectedCharacter!.photos.push({
+                id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
+                url: e.detail.value,
+                label: `${this.selectedCharacter!.name} #${numberOfPhotos}`,
+            });
         },
         setCharacterPhoto(e: {detail: {index: number, value: string}}) {
-            this.selectedCharacter!.photos[e.detail.index] = e.detail.value;
+            this.selectedCharacter!.photos[e.detail.index].url = e.detail.value;
         },
         deleteCharacterPhoto(e: {detail: {index: number}}) {
             this.selectedCharacter!.photos.splice(e.detail.index, 1);
@@ -185,11 +194,16 @@ export default Vue.extend({
             if (this.selectedCharacterState && typeof this.selectedCharacterState?.photos === "undefined") {
                 this.selectedCharacterState.photos = [];
             }
-            this.selectedCharacterState?.photos.push(e.detail.value);
+            const numberOfPhotos = this.selectedCharacterState!.photos.length;
+            this.selectedCharacterState!.photos.push({
+                id: `${this.selectedCharacterState!.id}-${numberOfPhotos}`,
+                url: e.detail.value,
+                label: e.detail.value,
+            });
         },
         setStatePhoto(e: {detail: {index: number, value: string}}) {
             if (this.selectedCharacterState) {
-                this.selectedCharacterState.photos[e.detail.index] = e.detail.value;
+                this.selectedCharacterState.photos[e.detail.index].url = e.detail.value;
             }
         },
         deleteStatePhoto(e: {detail: {index: number}}) {

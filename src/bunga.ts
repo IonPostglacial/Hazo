@@ -13,3 +13,4 @@ export * from "./bunga/stdcontent";
 export * from "./bunga/sddimport";
 export * from "./bunga/sddexport";
 export * from "./bunga/hierarchy";
+export * from "./bunga/pictures";
