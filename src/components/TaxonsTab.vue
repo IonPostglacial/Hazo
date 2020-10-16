@@ -14,7 +14,7 @@
                         @set-photo="setItemPhoto" 
                         @delete-photo="deleteItemPhoto">
                     <picture-frame v-for="(photo, index) in selectedTaxon.photos" :key="photo.id"
-                        :index="index" :editable="editable" :url="photoUrl(photo)"></picture-frame>
+                        :index="index" :editable="editable" :pictureid="photo.id" :url="photo.url" :label="photo.label"></picture-frame>
                 </picture-box>
                 <div class="horizontal-flexbox start-align relative">
                     <collapsible-panel label="Properties" 
@@ -106,7 +106,7 @@ import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/clone';
 import { createDetailData } from '@/bunga/DetailData';
 import { createTaxon } from '@/bunga/Taxon';
-import { pictureUrl } from '@/bunga/pictures';
+import { CachablePicture } from '@/bunga/picture'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -154,9 +154,6 @@ export default Vue.extend({
         },
     },
     methods: {
-        photoUrl(photo: Picture) {
-            return pictureUrl(photo);
-        },
         selectTaxon(id: string) {
             this.$emit("taxon-selected", id);
         },

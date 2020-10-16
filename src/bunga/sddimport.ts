@@ -5,7 +5,7 @@ import { createDataset } from "./Dataset";
 import { createDetailData } from "./DetailData";
 import { createCharacter } from "./Character";
 import { createTaxon } from "./Taxon";
-import { picturesFromPhotos } from './pictures';
+import { picturesFromPhotos } from './picture';
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {

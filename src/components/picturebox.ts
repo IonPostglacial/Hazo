@@ -1,4 +1,6 @@
+import { CachablePicture } from '@/bunga/picture';
 import { AddItem } from "./additem";
+import { ItemPicture } from "./ItemPicture";
 
 const frameTemplate = document.createElement("template");
 const frameTemplateEditable = document.createElement("template");
@@ -10,14 +12,14 @@ const makeFrameTemplate = (innerHTML: string) => `<link rel="stylesheet" href="s
     </div>`;
 frameTemplate.innerHTML = makeFrameTemplate(`
     <a id="open-photo" class="small-margin thin-border" href="#1">
-        <img class="medium-max-width medium-max-height">
+        <item-picture></item-picture>
     </a>`);
 frameTemplateEditable.innerHTML = makeFrameTemplate(`
     <div id="delete-photo" class="close absolute-top-right"></div>
     <a id="open-photo" class="small-margin thin-border" href="#1">
-        <img class="medium-max-width medium-max-height">
+        <item-picture></item-picture>
     </a>
-    <input id="set-photo" type="text" :value="photo" />`);
+    <input id="set-photo" type="text" />`);
 boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     <collapsible-panel id="container" label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
         <slot></slot>
@@ -28,35 +30,42 @@ boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
 
 class PictureFrame extends HTMLElement {
     editable = false;
-    #url = "";
+    #picture: CachablePicture|undefined = undefined;
     index = 0;
 
-    static get observedAttributes() { return ["url", "index"]; }
+    static get observedAttributes() { return ["pictureid", "url", "label", "index"]; }
 
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
     }
 
-    get url() { return this.#url; }
+    get picture() { return this.#picture; }
 
-    private refreshUrl() {
-        const image = this.shadowRoot?.querySelector("img");
+    private refreshPicture() {
+        const image = this.shadowRoot?.querySelector("item-picture") as ItemPicture|null;
 
-        if (image instanceof HTMLImageElement) {
-            image.src = this.#url ?? "";
+        if (typeof this.picture !== "undefined" && image !== null) {
+            const newImage = document.createElement("item-picture") as ItemPicture;
+            newImage.setAttribute("pictureid", this.picture.id);
+            newImage.setAttribute("url", this.picture.url);
+            newImage.setAttribute("label", this.picture.label);
+            image.replaceWith(newImage);
         }
     }
 
-    set url(newUrl) {
-        this.#url = newUrl;
-        this.refreshUrl();
+    set picture(newPicture: CachablePicture|undefined) {
+        this.#picture = newPicture;
+        this.refreshPicture();
     }
 
     connectedCallback() {
         this.editable = this.getAttribute("editable") === "true";
-        this.#url = this.getAttribute("url") ?? "";
         this.index = parseInt(this.getAttribute("index") ?? "0");
+        const id = this.getAttribute("pictureid") ?? "";
+        const url = this.getAttribute("url") ?? "";
+        const label = this.getAttribute("label") ?? "";
+        this.#picture = new CachablePicture({ id, url, label });
 
         if (this.editable) {
             this.shadowRoot!.appendChild(frameTemplateEditable.content.cloneNode(true));
@@ -66,7 +75,7 @@ class PictureFrame extends HTMLElement {
             }
             const setPhoto = this.shadowRoot!.getElementById("set-photo");
             if (setPhoto instanceof HTMLInputElement) {
-                setPhoto.value = this.url;
+                setPhoto.value = this.picture?.url ?? "";
                 setPhoto.onchange = () => {
                     const e = new CustomEvent("set-photo", {
                         bubbles: true, 
@@ -82,17 +91,31 @@ class PictureFrame extends HTMLElement {
             const e = new CustomEvent("open-photo", { bubbles: true, detail: { index: this.index } });
             this.dispatchEvent(e);
         }
-        this.refreshUrl();
+        this.refreshPicture();
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+        const picture = {
+            id: this.picture?.id ?? "",
+            url: this.picture?.url ?? "",
+            label: this.picture?.label ?? ""
+        };
         switch (name) {
+        case "pictureid":
+            picture.id = newValue;
+            break;
         case "url":
-            this.url = newValue;
+            picture.url = newValue;
+            break;
+        case "label":
+            picture.label = newValue;
             break;
         case "index":
             this.index = parseInt(newValue);
             break;
+        }
+        if (name !== "index") {
+            this.picture = new CachablePicture(picture);
         }
     }
 }

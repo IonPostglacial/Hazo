@@ -92,6 +92,7 @@ import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
 import { Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
+import { CachablePicture, picturesFromPhotos } from './bunga/picture';
 
 export default Vue.extend({
     name: "App",
@@ -123,6 +124,7 @@ export default Vue.extend({
             charactersHierarchy: new Hierarchy<Character>("myd-", new ObservableMap()),
             dictionaryEntries: {},
             latexProgressText: "",
+            pictureCache: new Map<string, CachablePicture>(),
         };
     },
     mounted() {
@@ -148,13 +150,22 @@ export default Vue.extend({
                 this.resetData();
                 for (const taxon of savedDataset?.taxons) {
                     repairPotentialCorruption(taxon);
+                    for (const photo of taxon.photos) {
+                        this.pictureCache.set(photo.id, new CachablePicture(photo));
+                    }
                     this.taxonsHierarchy.add(taxon);
                 }
                 for (const character of savedDataset?.characters) {
                     repairPotentialCorruption(character);
+                    for (const photo of character.photos) {
+                        this.pictureCache.set(photo.id, new CachablePicture(photo));
+                    }
                     const statesIds = new Set(), uniqueStates = [];
                     for (const state of character.states) {
                         if (!statesIds.has(state.id)) {
+                            for (const photo of picturesFromPhotos(state.photos)) {
+                                this.pictureCache.set(photo.id, new CachablePicture(photo));
+                            }
                             uniqueStates.push(state);
                         }
                         statesIds.add(state.id);

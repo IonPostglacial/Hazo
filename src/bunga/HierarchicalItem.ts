@@ -1,6 +1,6 @@
 import { HierarchicalItem } from "./datatypes";
 import { createDetailData, DetailDataInit } from "./DetailData";
-import { picturesFromPhotos } from './pictures';
+import { picturesFromPhotos } from './picture';
 
 export interface HierarchicalItemInit extends DetailDataInit { type: string, parentId: string|undefined, childrenIds: readonly string[] }
 

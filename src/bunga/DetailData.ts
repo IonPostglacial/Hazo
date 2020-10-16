@@ -1,5 +1,5 @@
 import { DetailData, Picture } from "./datatypes";
-import { picturesFromPhotos } from './pictures';
+import { picturesFromPhotos } from './picture';
 
 export interface DetailDataInit {
 	id: string;

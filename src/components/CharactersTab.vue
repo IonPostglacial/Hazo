@@ -15,7 +15,7 @@
                     @delete-photo="deleteCharacterPhoto"
                     @open-photo="openDescriptionPhoto">
                 <picture-frame v-for="(photo, index) in selectedCharacter.photos" :key="photo.id"
-                    :url="photoUrl(photo)" :index="index" editable="true"></picture-frame>
+                    :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" editable="true"></picture-frame>
             </picture-box>
             <collapsible-panel label="Identification">
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name" /></div>
@@ -73,7 +73,7 @@
                             @delete-photo="deleteStatePhoto"
                             @open-photo="openStatePhoto">
                         <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="photo.id"      
-                            :url="photoUrl(photo)" :index="index" :editable="true"></picture-frame>
+                            :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true"></picture-frame>
                     </picture-box>
                     <collapsible-panel label="Description">
                         <label>
@@ -106,7 +106,6 @@ import TreeMenu from "./TreeMenu.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createCharacter, createDetailData, Character, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
 import clone from '@/clone';
-import { pictureUrl } from '@/bunga/pictures';
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -140,9 +139,6 @@ export default Vue.extend({
         selectedCharacter: Object as PropType<Character|undefined>,
     },
     methods: {
-        photoUrl(photo: Picture) {
-            return pictureUrl(photo);
-        },
         setInapplicableState(state: State, selected: boolean) {
             if (selected) {
                 this.selectedCharacter!.inapplicableStates.push(state);
