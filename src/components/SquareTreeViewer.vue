@@ -6,10 +6,16 @@
             <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name }}</button>
         </div>
         <div class="horizontal-flexbox flex-wrap relative">
-            <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
-                    :style="item.photos.length > 0 ? 'background-image: url(' + item.photos[0] + ')' : ''"
-                    @click="openItem(item)">
-                <div :title="item.name" :class="'thin-border medium-padding text-ellipsed ' + (item.selected ? 'background-color-1' : 'white-background') + (isClickable(item) ? ' text-underlined' : '')">{{ item.name }}</div>
+            <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin" @click="openItem(item)">
+                <div :title="item.name" :class="'thin-border medium-padding text-ellipsed ' + (item.selected ? 'background-color-1' : 'white-background') + (isClickable(item) ? ' text-underlined' : '')">
+                    {{ item.name }}
+                </div>
+                <item-picture v-if="item.photos.length > 0"
+                    img-class="full-width height-full"
+                    :id="item.photos[0].id"
+                    :url="item.photos[0].url"
+                    :label="item.photos[0].label">
+                </item-picture>
             </component>
         </div>
     </div>

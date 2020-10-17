@@ -19,7 +19,7 @@ frameTemplateEditable.innerHTML = makeFrameTemplate(`
     <a id="open-photo" class="small-margin thin-border" href="#1">
         <item-picture></item-picture>
     </a>
-    <input id="set-photo" type="text" />`);
+    <input id="set-photo" type="text" class="no-fixed-width" />`);
 boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     <collapsible-panel id="container" label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
         <slot></slot>
@@ -50,6 +50,7 @@ class PictureFrame extends HTMLElement {
             newImage.setAttribute("pictureid", this.picture.id);
             newImage.setAttribute("url", this.picture.url);
             newImage.setAttribute("label", this.picture.label);
+            newImage.setAttribute("img-class", "medium-max-width medium-max-height");
             image.replaceWith(newImage);
         }
     }

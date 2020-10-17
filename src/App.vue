@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="vertical-flexbox lightgrey-background height-full">
+    <div id="app" class="vertical-flexbox lightgrey-background height-full">
     <nav class="horizontal-flexbox space-between thin-border background-gradient-1">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
@@ -19,7 +19,8 @@
     <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
         <div class="horizontal-flexbox cented-aligned">
             <button v-if="bigImageIndex > 0" class="background-color-1 font-size-28" v-on:click="bigImageIndex--">🡄</button>
-            <img class="max-width-screen max-height-screen" :src="bigImages[bigImageIndex]">    
+            <item-picture img-class="max-width-screen max-height-screen" :id="bigImage.id" :url="bigImage.url" :label="bigImage.label">
+            </item-picture>
             <button v-if="bigImageIndex < bigImages.length - 1" class="background-color-1 font-size-28" v-on:click="bigImageIndex++">🡆</button>
         </div>
         <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
@@ -108,7 +109,7 @@ export default Vue.extend({
             selectedTab: 0,
             selectedTaxonId: "",
             selectedCharacterId: "",
-            bigImages: [""],
+            bigImages: [{id: "", url: "", label: ""}],
             bigImageIndex: 0,
             showBigImage: false,
             tabs: [
@@ -137,6 +138,9 @@ export default Vue.extend({
         },
         selectedCharacter(): Character|undefined {
             return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
+        },
+        bigImage(): Picture {
+            return this.bigImages[this.bigImageIndex];
         }
     },
     watch: {
@@ -240,7 +244,7 @@ export default Vue.extend({
         toggleLeftMenu() {
             this.showLeftMenu = !this.showLeftMenu;
         },
-        maximizeImage({ photos, index }: { photos: string[], index: number }) {
+        maximizeImage({ photos, index }: { photos: Picture[], index: number }) {
             this.showBigImage = true;
             this.bigImages = photos;
             this.bigImageIndex = index;

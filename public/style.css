@@ -85,6 +85,10 @@ select:hover,
     width: 100%;
 }
 
+.height-full {
+    height: 100%;
+}
+
 button:active,
 select:active,
 .button:active {
@@ -139,6 +143,10 @@ input[type="text"] {
     width: 120px;
 }
 
+input[type="text"].no-fixed-width {
+    width: inherit;
+}
+
 #app {
     font-family: "SourceSans";
     height: 100vh;
@@ -148,10 +156,6 @@ input[type="text"] {
 
 .italic {
     font-style: italic;
-}
-
-.height-full {
-    height: 100%;
 }
 
 .height-main-panel {
@@ -356,8 +360,7 @@ div.invisible {
 
 .medium-square {
     width: 200px;
-    padding-bottom: 200px;
-    position: relative;
+    /* padding-bottom: 200px; */
 }
 
 .text-ellipsed {

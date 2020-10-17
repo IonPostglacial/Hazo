@@ -18,14 +18,15 @@ export class ItemPicture extends HTMLElement {
         if (typeof this.#picture === "undefined") return;
 
         let innerHTML = `<link rel="stylesheet" href="style.css" />`;
+        const classes = this.getAttribute("img-class") ?? "";
 
         if (this.#picture.type === "bitmap") {
             const url = URL.createObjectURL(await this.#picture.getContent());
-            innerHTML += `<img src="${url}" class="medium-max-width medium-max-height">`;
+            innerHTML += `<img src="${url}" class="${classes}">`;
         } else {
             const content = await this.#picture.getContent();
             if (typeof content === "string") {
-                innerHTML += `<div class="medium-max-width medium-max-height">${content}</div>`;
+                innerHTML += `<div class="${classes}">${content}</div>`;
             }
         }
         this.shadowRoot!.innerHTML = innerHTML;
