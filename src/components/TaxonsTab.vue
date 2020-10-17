@@ -106,7 +106,6 @@ import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/clone';
 import { createDetailData } from '@/bunga/DetailData';
 import { createTaxon } from '@/bunga/Taxon';
-import { CachablePicture } from '@/bunga/picture'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "TaxonsTab",

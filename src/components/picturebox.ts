@@ -1,6 +1,5 @@
-import { CachablePicture } from '@/bunga/picture';
+import { Picture } from '@/bunga';
 import { AddItem } from "./additem";
-import { ItemPicture } from "./ItemPicture";
 
 const frameTemplate = document.createElement("template");
 const frameTemplateEditable = document.createElement("template");
@@ -12,12 +11,12 @@ const makeFrameTemplate = (innerHTML: string) => `<link rel="stylesheet" href="s
     </div>`;
 frameTemplate.innerHTML = makeFrameTemplate(`
     <a id="open-photo" class="small-margin thin-border" href="#1">
-        <item-picture></item-picture>
+        <img class="medium-max-width medium-max-height" src="">
     </a>`);
 frameTemplateEditable.innerHTML = makeFrameTemplate(`
     <div id="delete-photo" class="close absolute-top-right"></div>
     <a id="open-photo" class="small-margin thin-border" href="#1">
-        <item-picture></item-picture>
+        <img class="medium-max-width medium-max-height" src="">
     </a>
     <input id="set-photo" type="text" class="no-fixed-width" />`);
 boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
@@ -30,7 +29,7 @@ boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
 
 class PictureFrame extends HTMLElement {
     editable = false;
-    #picture: CachablePicture|undefined = undefined;
+    #picture: Picture|undefined = undefined;
     index = 0;
 
     static get observedAttributes() { return ["pictureid", "url", "label", "index"]; }
@@ -43,19 +42,15 @@ class PictureFrame extends HTMLElement {
     get picture() { return this.#picture; }
 
     private refreshPicture() {
-        const image = this.shadowRoot?.querySelector("item-picture") as ItemPicture|null;
+        const image = this.shadowRoot?.querySelector("img");
 
-        if (typeof this.picture !== "undefined" && image !== null) {
-            const newImage = document.createElement("item-picture") as ItemPicture;
-            newImage.setAttribute("pictureid", this.picture.id);
-            newImage.setAttribute("url", this.picture.url);
-            newImage.setAttribute("label", this.picture.label);
-            newImage.setAttribute("img-class", "medium-max-width medium-max-height");
-            image.replaceWith(newImage);
+        if (typeof image !== "undefined" && image !== null) {
+            image.src = this.picture?.url ?? "";
+            image.alt = this.picture?.label ?? "";
         }
     }
 
-    set picture(newPicture: CachablePicture|undefined) {
+    set picture(newPicture: Picture|undefined) {
         this.#picture = newPicture;
         this.refreshPicture();
     }
@@ -66,7 +61,7 @@ class PictureFrame extends HTMLElement {
         const id = this.getAttribute("pictureid") ?? "";
         const url = this.getAttribute("url") ?? "";
         const label = this.getAttribute("label") ?? "";
-        this.#picture = new CachablePicture({ id, url, label });
+        this.#picture = { id, url, label };
 
         if (this.editable) {
             this.shadowRoot!.appendChild(frameTemplateEditable.content.cloneNode(true));
@@ -116,7 +111,7 @@ class PictureFrame extends HTMLElement {
             break;
         }
         if (name !== "index") {
-            this.picture = new CachablePicture(picture);
+            this.picture = picture;
         }
     }
 }

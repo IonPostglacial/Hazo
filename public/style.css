@@ -360,7 +360,7 @@ div.invisible {
 
 .medium-square {
     width: 200px;
-    /* padding-bottom: 200px; */
+    padding-bottom: 200px;
 }
 
 .text-ellipsed {

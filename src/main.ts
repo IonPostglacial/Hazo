@@ -10,9 +10,4 @@ new Vue({
     render: h => h(App),
 }).$mount("#app");
 
-navigator.serviceWorker.getRegistration("./")
-    .then(registration => {
-        if (typeof registration !== "undefined") {
-            registration.unregister();
-        }
-    });
+navigator.serviceWorker.register("img-caching-service-worker.js", { scope: "./" });

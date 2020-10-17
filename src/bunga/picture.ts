@@ -7,7 +7,7 @@ const DB_VERSION = 1;
 
 export type PictureType = "bitmap" | "vector" | "none";
 
-export class CachablePicture {
+export class StorablePicture {
     #picture: Picture;
     #cache: string|Blob|undefined;
 
