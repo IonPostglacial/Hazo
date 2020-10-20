@@ -5,6 +5,7 @@ export interface DetailDataInit {
 	id: string;
 	name?: string;
 	author?: string;
+	nameEN?: string;
 	nameCN?: string;
 	name2?: string;
 	vernacularName?: string;
@@ -25,6 +26,7 @@ export function createDetailData(init: DetailDataInit): DetailData {
 		id: init.id,
 		name: init.name ?? "",
 		author: init.author ?? "",
+		nameEN: init.nameCN ?? "",
 		nameCN: init.nameCN ?? "",
 		name2: init.name2 ?? "",
 		vernacularName: init.vernacularName ?? "",

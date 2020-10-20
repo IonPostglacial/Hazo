@@ -104,6 +104,21 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
     }
 
+    getLeaves(item: T): Iterable<T> {
+        const self = this;
+        return {
+            *[Symbol.iterator]() {
+                if (!self.hasChildren(item)) {
+                    yield item;
+                } else {
+                    for (const child of self.childrenOf(item)) {
+                        yield* self.getLeaves(child);
+                    }
+                }
+            }
+        }
+    }
+
     remove(item: T): void {
         if (typeof item.childrenOrder !== "undefined") {
             for (const childId of item.childrenOrder) {

@@ -63,24 +63,7 @@
             </collapsible-panel>
         </section>
         <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll">
-            <div class="relative vertical-flexbox">
-                <div v-if="selectedCharacterState" class="stick-to-top medium-padding medium-margin white-background">
-                    <picture-box
-                            class="scroll"
-                            editable="true"
-                            @add-photo="addStatePhoto"
-                            @set-photo="setStatePhoto"
-                            @delete-photo="deleteStatePhoto"
-                            @open-photo="openStatePhoto">
-                        <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="photo.id"      
-                            :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true"></picture-frame>
-                    </picture-box>
-                    <collapsible-panel label="Description">
-                        <label>
-                            <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
-                        </label>
-                    </collapsible-panel>
-                </div>
+            <div class="relative horizontal-flexbox">
                 <collapsible-panel label="States">
                     <div class="scroll thin-border medium-margin medium-padding white-background">
                         <ul class="no-list-style medium-padding medium-margin">
@@ -97,6 +80,28 @@
                         </ul>
                     </div>
                 </collapsible-panel>
+                <div v-if="selectedCharacterState" class="stick-to-top medium-padding medium-margin white-background">
+                    <picture-box
+                            class="scroll"
+                            editable="true"
+                            @add-photo="addStatePhoto"
+                            @set-photo="setStatePhoto"
+                            @delete-photo="deleteStatePhoto"
+                            @open-photo="openStatePhoto">
+                        <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="photo.id"      
+                            :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true">
+                        </picture-frame>
+                    </picture-box>
+                    <collapsible-panel label="Detail">
+                        <div class="form-grid">
+                            <label>FR</label><input type="text" v-model="selectedCharacterState.name"/>
+                            <label>EN</label><input type="text" v-model="selectedCharacterState.nameEN"/>
+                            <label>CN</label><input type="text" v-model="selectedCharacterState.nameCN"/>
+                            <label>Description</label>
+                            <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
+                        </div>
+                    </collapsible-panel>
+                </div>
             </div>
         </section>
     </div>
@@ -218,7 +223,7 @@ export default Vue.extend({
             if(typeof parentDescription !== "undefined") {
                 const newState = {
                     id: "s-auto-" + newCharacter.id,
-                    descriptorId: parentId, name: newCharacter.name, photos: []
+                    descriptorId: parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []
                 };
                 parentDescription.states = [...parentDescription.states, newState];
                 newCharacter.inherentState = newState;
@@ -239,6 +244,8 @@ export default Vue.extend({
                 id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
                 descriptorId: this.selectedCharacter.id,
                 name: e.detail,
+                nameEN: "",
+                nameCN: "",
                 photos: []
             });
         },

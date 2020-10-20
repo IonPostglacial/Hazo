@@ -22,22 +22,24 @@ export interface Field {
     icon: string;
 }
 
-export interface State {
-    id: string;
-    descriptorId: string;
+export interface BasicInfo {
+	id: string;
 	name: string;
-	description?: string;
-    photos: Picture[];
+	nameEN: string;
+	nameCN: string;
+	photos: Picture[];
 }
 
-export interface DetailData {
-    id: string;
-	name: string;
+export interface State extends BasicInfo {
+    descriptorId: string;
+	description?: string;
+}
+
+export interface DetailData extends BasicInfo {
 	author: string;
-	nameCN: string;
-	name2: string;
 	vernacularName: string;
 	vernacularName2: string;
+	name2: string;
 	meaning: string;
 	herbariumPicture: string;
 	website: string;
@@ -45,7 +47,6 @@ export interface DetailData {
 	fasc: number|undefined;
 	page: number|undefined;
 	detail : string;
-	photos: Picture[];
 	extra: Record<string, any>;
 }
 
@@ -54,7 +55,7 @@ export interface HierarchicalItem<T> extends DetailData {
 	parentId: string|undefined;
 	topLevel: boolean;
 	hidden: boolean;
-    childrenOrder: string[]|undefined;
+	childrenOrder: string[]|undefined;
 }
 
 export interface Character extends HierarchicalItem<Character> {

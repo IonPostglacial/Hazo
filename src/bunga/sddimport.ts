@@ -12,6 +12,8 @@ function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): Sta
         id: state.id,
         descriptorId: state.characterId,
         name: state.label,
+        nameEN: "",
+        nameCN: "",
         photos: picturesFromPhotos(state.mediaObjectsRefs?.map(m => photosByRef[m.ref])),
     };
 }

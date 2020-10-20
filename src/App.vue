@@ -1,6 +1,6 @@
 <template>
     <div id="app" class="vertical-flexbox lightgrey-background height-full">
-    <nav class="horizontal-flexbox space-between thin-border background-gradient-1">
+    <nav class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
         </div>
@@ -34,22 +34,26 @@
             @taxon-selected="selectTaxon" @add-taxon="addTaxon" @remove-taxon="removeTaxon"
             @open-photo="maximizeImage">
         </TaxonsTab>
-        <CharactersTab v-if="selectedTab === 2"
+        <taxon-presentation v-if="selectedTab === 2"
+            @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
+            :selected-taxon="selectedTaxon" :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy.allItems">
+        </taxon-presentation>
+        <CharactersTab v-if="selectedTab === 3"
             :init-characters="charactersHierarchy"
             :show-left-menu="showLeftMenu"
             :selected-character="selectedCharacter"
             @remove-state="removeState" @character-selected="selectCharacter"
             @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
         </CharactersTab>
-        <CharactersTree v-if="selectedTab === 3"
+        <CharactersTree v-if="selectedTab === 4"
             :characters="charactersHierarchy">
         </CharactersTree>
-        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 4"></WordsDictionary>
+        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 5"></WordsDictionary>
         <extra-fields-panel :showFields="showFields" :extraFields="extraFields"
             @add-extra-field="addExtraField" @delete-extra-field="deleteExtraField">
         </extra-fields-panel>
     </div>
-    <section class="horizontal-flexbox space-between thin-border background-gradient-1">
+    <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="button-group">
             <button type="button" v-on:click="importFile">Import</button>
             <button type="button" v-on:click="jsonExport">Export</button>
@@ -67,10 +71,11 @@
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
         </div>
         <div class="button-group">
-            <button type="button" v-on:click="globalReplace">Text Replace</button>
-            <button type="button" v-on:click="exportStats">Stats</button>
-            <button type="button" v-on:click="emptyZip">Folder Hierarchy</button>
-            <button type="button" v-on:click="texExport">Latex{{latexProgressText}}</button>
+            <button type="button" @click="globalReplace">Text Replace</button>
+            <button type="button" @click="exportStats">Stats</button>
+            <button type="button" @click="emptyZip">Folder Hierarchy</button>
+            <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
+            <button type="button" class="no-print background-color-1" @click="print">Print</button>
         </div>
     </section>
   </div>
@@ -86,17 +91,19 @@ import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
+import TaxonPresentation from "./components/TaxonPresentation.vue";
 import DB from "./db-storage";
 import Vue from "vue";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
 import { Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
+import { picturesFromPhotos } from './bunga/picture';
 
 export default Vue.extend({
     name: "App",
     components: {
-        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, ExtraFieldsPanel
+        TaxonsTab, CharactersTab, CharactersTree, TaxonPresentation, WordsDictionary, ExtraFieldsPanel
     },
     data() {
         return {
@@ -113,6 +120,7 @@ export default Vue.extend({
             tabs: [
                 "Taxons",
                 "Taxons Characters",
+                "Presentation",
                 "Characters",
                 "Characters Tree",
                 "Dictionary",
@@ -158,6 +166,7 @@ export default Vue.extend({
                     const statesIds = new Set(), uniqueStates = [];
                     for (const state of character.states) {
                         if (!statesIds.has(state.id)) {
+                            state.photos = picturesFromPhotos(state.photos);
                             uniqueStates.push(state);
                         }
                         statesIds.add(state.id);
@@ -166,6 +175,9 @@ export default Vue.extend({
                     this.charactersHierarchy.add(character);
                 }
             });
+        },
+        print() {
+            window.print()
         },
         changeCharactersHierarchy(charactershierarchy: Hierarchy<Character>) {
             this.charactersHierarchy = charactershierarchy;

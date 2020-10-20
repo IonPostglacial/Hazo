@@ -1,7 +1,6 @@
 import { createHierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
 
 import { BookInfo, Character, Description, State, Taxon } from "./datatypes";
-import { Hierarchy } from './hierarchy';
 
 interface TaxonInit extends Omit<HierarchicalItemInit, "type"> { statesSelection?: Record<string, boolean>, bookInfoByIds?: Record<string, BookInfo> }
 

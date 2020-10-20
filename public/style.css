@@ -143,6 +143,16 @@ input[type="text"] {
     width: 120px;
 }
 
+.form-grid {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+.form-grid input[type="text"],
 input[type="text"].no-fixed-width {
     width: inherit;
 }
@@ -295,6 +305,10 @@ div.invisible {
     max-width: 400px;
 }
 
+.spaced {
+    margin: 0 1ch;
+}
+
 .left-arrow {
     display: inline-block;
     width: 8px;
@@ -321,6 +335,10 @@ div.invisible {
 
 .medium-max-width {
     max-width: 300px;
+}
+
+.small-height {
+    height: 32px;
 }
 
 .medium-max-height {
