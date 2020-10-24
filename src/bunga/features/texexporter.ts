@@ -1,7 +1,7 @@
 import JSZip from "jszip";
-import { Character, Description, Picture, Taxon } from "./datatypes";
-import { generateFileName } from "./generatefilename";
-import { taxonDescriptions } from "./Taxon";
+import { Character, Description, Picture, Taxon } from "../datatypes";
+import generateFileName from "./generatefilename";
+import { taxonDescriptions } from "../Taxon";
 
 export class TexExporter {
     taxons: Taxon[];

@@ -407,7 +407,7 @@ export default Vue.extend({
             download(csv, "csv");
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.taxonsHierarchy.toObject());
+            const zipTxt = await exportZipFolder(this.taxonsHierarchy);
             download(zipTxt, "zip", true);
         },
         texExport() {
