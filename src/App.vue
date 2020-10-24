@@ -42,7 +42,7 @@
             :init-characters="charactersHierarchy"
             :show-left-menu="showLeftMenu"
             :selected-character="selectedCharacter"
-            @remove-state="removeState" @character-selected="selectCharacter"
+            @add-state="addState" @remove-state="removeState" @character-selected="selectCharacter"
             @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
         </CharactersTab>
         <CharactersTree v-if="selectedTab === 4"
@@ -196,6 +196,9 @@ export default Vue.extend({
         },
         removeTaxon(taxon: Taxon) {
             this.taxonsHierarchy.remove(taxon);
+        },
+        addState(e: { state: State, character: Character }) {
+            this.charactersHierarchy.itemWithId(e.character.id)!.states.push(e.state);
         },
         removeState(e: { state: State, character: Character }) {
             function removeStateFromArray(array: State[], state: State) {

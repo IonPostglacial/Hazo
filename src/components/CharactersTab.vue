@@ -210,43 +210,47 @@ export default Vue.extend({
         deleteStatePhoto(e: {detail: {index: number}}) {
             this.selectedCharacterState?.photos.splice(e.detail.index, 1);
         },
-        addCharacter({ value, parentId }: { value: string, parentId: string }) {
+        addCharacter(e: { value: string, parentId: string }) {
             const newCharacter = this.charactersHierarchy.add(
                 createCharacter({
-                    ...createDetailData({ id: "", name: value }),
-                    parentId: parentId,
+                    ...createDetailData({ id: "", name: e.value }),
+                    parentId: e.parentId,
                     childrenIds: [],
                     states: [],
                 })
             );
-            const parentDescription = this.charactersHierarchy.itemWithId(parentId);
+            const parentDescription = this.charactersHierarchy.itemWithId(e.parentId);
             if(typeof parentDescription !== "undefined") {
                 const newState = {
                     id: "s-auto-" + newCharacter.id,
-                    descriptorId: parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []
+                    descriptorId: e.parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []
                 };
                 parentDescription.states = [...parentDescription.states, newState];
                 newCharacter.inherentState = newState;
             }
             this.$emit("change-characters", this.charactersHierarchy);
         },
-        deleteCharacter({ itemId }: { itemId: string}) {
-            const descriptionToDelete = this.charactersHierarchy.itemWithId(itemId);
+        deleteCharacter(e: { itemId: string}) {
+            const descriptionToDelete = this.charactersHierarchy.itemWithId(e.itemId);
             if (typeof descriptionToDelete !== "undefined") {
                 this.charactersHierarchy.remove(descriptionToDelete);
             } else {
-                console.warn(`Trying to delete item with id ${itemId} which doesn't exist.`, this.charactersHierarchy);
+                console.warn(`Trying to delete item with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }
         },
         addState(e: {detail: string}) {
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
-            this.selectedCharacter.states.push({
-                id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
-                descriptorId: this.selectedCharacter.id,
-                name: e.detail,
-                nameEN: "",
-                nameCN: "",
-                photos: []
+
+            this.$emit("add-state", {
+                character: this.selectedCharacter,
+                state: {
+                    id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
+                    descriptorId: this.selectedCharacter.id,
+                    name: e.detail,
+                    nameEN: "",
+                    nameCN: "",
+                    photos: []
+                }
             });
         },
         removeState(state: State) {
