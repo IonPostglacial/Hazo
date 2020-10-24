@@ -28,7 +28,7 @@
         <TaxonsTab v-if="selectedTab === 0 || selectedTab === 1"
             :editable="selectedTab === 0"
             :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
-            :selected-taxon="selectedTaxon"
+            :selected-taxon-id="selectedTaxonId"
             :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books"
             @taxon-selected="selectTaxon" @add-taxon="addTaxon" @remove-taxon="removeTaxon"
@@ -36,12 +36,12 @@
         </TaxonsTab>
         <taxon-presentation v-if="selectedTab === 2"
             @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-            :selected-taxon="selectedTaxon" :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy.allItems">
+            :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy.allItems">
         </taxon-presentation>
         <CharactersTab v-if="selectedTab === 3"
             :init-characters="charactersHierarchy"
             :show-left-menu="showLeftMenu"
-            :selected-character="selectedCharacter"
+            :selected-character-id="selectedCharacterId"
             @add-state="addState" @remove-state="removeState" @character-selected="selectCharacter"
             @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
         </CharactersTab>

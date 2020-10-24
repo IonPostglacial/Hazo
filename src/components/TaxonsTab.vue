@@ -106,6 +106,7 @@ import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/clone';
 import { createDetailData } from '@/bunga/DetailData';
 import { createTaxon } from '@/bunga/Taxon';
+import { ObservableMap } from '@/observablemap';
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -115,7 +116,7 @@ export default Vue.extend({
         characters: Hierarchy as PropType<Hierarchy<Character>>,
         taxonsHierarchy: Hierarchy as PropType<Hierarchy<Taxon>>,
         extraFields: Array,
-        selectedTaxon: Object as PropType<Taxon>,
+        selectedTaxonId: String,
         editable: Boolean,
         books: Array as PropType<Array<Book>>,
     },
@@ -126,17 +127,23 @@ export default Vue.extend({
         }
     },
     computed: {
-        itemDescriptorTree() {
+        selectedTaxon(): Taxon|undefined {
+            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+        },
+        itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
+            if (typeof this.selectedTaxon === "undefined") return new Hierarchy<Character & { selected?: boolean }>("c", new ObservableMap());
+            const selectedTaxon = this.selectedTaxon;
+
             const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.characters);
 
             for (const character of dependencyHierarchy.allItems) {
-                const taxonLacksRequiredStates = !character.requiredStates.every(requiredState => this.selectedTaxon.statesSelection[requiredState.id] ?? false);
-                const taxonHasSomeInapplicableState = character.inapplicableStates.some(inapplicableState => this.selectedTaxon.statesSelection[inapplicableState.id] ?? false);
+                const taxonLacksRequiredStates = !character.requiredStates.every(requiredState => selectedTaxon.statesSelection[requiredState.id] ?? false);
+                const taxonHasSomeInapplicableState = character.inapplicableStates.some(inapplicableState => selectedTaxon.statesSelection[inapplicableState.id] ?? false);
 
                 if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
                     dependencyHierarchy.remove(character);
                 } else {
-                    const characterStates = character.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.selectedTaxon.statesSelection[s.id] ?? false }, s));
+                    const characterStates = character.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: selectedTaxon.statesSelection[s.id] ?? false }, s));
                     const characterChildren = [...dependencyHierarchy.childrenOf(character)];
                     
                     for (const state of characterStates) {
@@ -166,16 +173,16 @@ export default Vue.extend({
         removeTaxon(e: { itemId: string }) {
             this.$emit("remove-taxon", this.taxonsHierarchy.itemWithId(e.itemId));
         },
-        setProperty({ detail }: { detail: { property: string, value: string } }) {
-            (this.selectedTaxon as any)[detail.property] = detail.value;
+        setProperty(e: { detail: { property: string, value: string } }) {
+            (this.selectedTaxon as any)[e.detail.property] = e.detail.value;
         },
-        setExtraProperty({ detail }: { detail: { property: string, value: string } }) {
-            this.selectedTaxon.extra[detail.property] = detail.value;
+        setExtraProperty(e: { detail: { property: string, value: string } }) {
+            this.selectedTaxon!.extra[e.detail.property] = e.detail.value;
         },
-        pushToChildren({ detail: property }: { detail: string }) {
+        pushToChildren(e: { detail: string }) {
             for (const child of this.taxonsHierarchy.childrenOf(this.selectedTaxon)) {
                 const anyChild: any = child, anyItem: any = this.selectedTaxon;
-                anyChild[property] = anyItem[property];
+                anyChild[e.detail] = anyItem[e.detail];
             }
         },
         taxonStateToggle(e: { item: State|Character }) {
@@ -189,23 +196,27 @@ export default Vue.extend({
             }
         },
         openCharacter(e: { item: Character }) {
-            if (typeof e.item.inherentState !== "undefined" && !this.selectedTaxon.statesSelection[e.item.inherentState.id]) {
+            if (e.item.inherentState && this.selectedTaxon && !this.selectedTaxon.statesSelection[e.item.inherentState.id]) {
                 this.taxonStateToggle({ item: e.item.inherentState });
             }
         },
         addItemPhoto(e: {detail: { value: string }}) {
+            if (typeof this.selectedTaxon === "undefined") {
+                console.warn("Trying to add a photo but no taxon selected.");
+                return;
+            }
             const numberOfPhotos = this.selectedTaxon.photos.length;
             this.selectedTaxon.photos.push({ id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value });
         },
         setItemPhoto(e: {detail: {index: number, value: string}}) {
-            this.selectedTaxon.photos[e.detail.index].url = e.detail.value;
+            this.selectedTaxon!.photos[e.detail.index].url = e.detail.value;
         },
         deleteItemPhoto(e: {detail: { index: number }}) {
-            this.selectedTaxon.photos.splice(e.detail.index, 1);
+            this.selectedTaxon!.photos.splice(e.detail.index, 1);
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedTaxon.photos});
+            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedTaxon!.photos});
         },
     }
 });

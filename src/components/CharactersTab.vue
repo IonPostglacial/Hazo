@@ -116,6 +116,9 @@ export default Vue.extend({
     name: "CharactersTab",
     components: { TreeMenu },
     computed: {
+        selectedCharacter(): Character|undefined {
+            return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
+        },
         selectedCharacterState(): State|undefined {
             return this.selectedCharacter?.states?.find(s => s.id === this.selectedState);
         },
@@ -141,7 +144,7 @@ export default Vue.extend({
     props: {
         showLeftMenu: Boolean,
         initCharacters: Hierarchy as PropType<Hierarchy<Character>>,
-        selectedCharacter: Object as PropType<Character|undefined>,
+        selectedCharacterId: String,
     },
     methods: {
         setInapplicableState(state: State, selected: boolean) {

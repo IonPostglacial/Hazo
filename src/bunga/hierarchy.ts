@@ -86,11 +86,12 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return this.items.get(id);
     }
 
-    hasChildren(item: T): boolean {
-        return typeof item.childrenOrder !== "undefined" && item.childrenOrder.length > 0;
+    hasChildren(item: T|undefined): boolean {
+        return typeof item?.childrenOrder !== "undefined" && item.childrenOrder.length > 0;
     }
 
-    childrenOf(item: T): Iterable<T> {
+    childrenOf(item: T|undefined): Iterable<T> {
+        if (typeof item === "undefined") return [];
         const self = this;
         return {
             *[Symbol.iterator]() {
@@ -104,7 +105,8 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
     }
 
-    getLeaves(item: T): Iterable<T> {
+    getLeaves(item: T|undefined): Iterable<T> {
+        if (typeof item === "undefined") return [];
         const self = this;
         return {
             *[Symbol.iterator]() {

@@ -44,7 +44,7 @@ export default Vue.extend({
     components: { TreeMenu },
     props: {
         showLeftMenu: Boolean,
-        selectedTaxon: Object as PropType<Taxon>,
+        selectedTaxonId: String,
         taxonsHierarchy: Object as PropType<Hierarchy<Taxon>>,
         characters: Object as PropType<Iterable<Character>>,
     },
@@ -54,6 +54,9 @@ export default Vue.extend({
         }
     },
     computed: {
+        selectedTaxon(): Taxon|undefined {
+            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+        },
         itemsToDisplay(): Iterable<Taxon> {
             return this.taxonsHierarchy.getLeaves(this.selectedTaxon);
         },
