@@ -1,9 +1,14 @@
 <?php
+include_once("config.php");
 
 function debugMode(): void {
     ini_set("display_errors", 1);
     ini_set("display_startup_errors", 1);
     error_reporting(E_ALL);
+}
+
+if (DEBUG_MODE_ENABLED) {
+    debugMode();
 }
 
 function isClientConnected(): bool {
@@ -60,8 +65,7 @@ function getClientIdentity(): string {
 }
 
 function getClientPersonalDirectory(): string {
-    $root = $_SERVER["DOCUMENT_ROOT"];
-    return "$root/Bunga/hub/private/" . getClientIdentity();
+    return PRIVATE_FOLDER. "/" . getClientIdentity();
 }
 
 function getClientPersonalFilePath(string $fileName): string {
@@ -69,20 +73,17 @@ function getClientPersonalFilePath(string $fileName): string {
 }
 
 function getClientPersonalDB(): string {
-    $root = $_SERVER["DOCUMENT_ROOT"];
-    return "$root/Bunga/hub/private/" . getClientIdentity() . "/db.sq3";
+    return PRIVATE_FOLDER . "/" . getClientIdentity() . "/db.sq3";
 }
 
 function getAccountsDbHandle(): PDO {
-    $root = $_SERVER["DOCUMENT_ROOT"];
-    $pdo = new PDO("sqlite:$root/Bunga/hub/private/accounts.sq3");
+    $pdo = new PDO("sqlite:" . PRIVATE_FOLDER . "/accounts.sq3");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     return $pdo;
 }
 
 function getDataDbHandle(): PDO {
-    $root = $_SERVER["DOCUMENT_ROOT"];
-    $pdo = new PDO("sqlite:$root/Bunga/hub/private/data.sq3");
+    $pdo = new PDO("sqlite:" . PRIVATE_FOLDER . "/data.sq3");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     return $pdo;
 }

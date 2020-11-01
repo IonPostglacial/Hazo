@@ -1,7 +1,13 @@
 <?php
-$personalFiles = glob(getClientPersonalDirectory() . "/*");
+include_once("lib/FileSharing.php");
+
+$personalDirectory = getClientPersonalDirectory();
+if (!file_exists($personalDirectory)) {
+    mkdir($personalDirectory);
+}
+$personalFiles = glob("$personalDirectory/*");
 $pdo = getDataDbHandle();
-$sharingsByFilePath = getShareLinksByFilePaths($pdo, $personalFiles);
+$sharingsByFilePath = FileSharing::getLinkIdsForFilePaths($pdo, $personalFiles);
 ?>
 
 <section class="medium-padding">
@@ -32,7 +38,7 @@ $sharingsByFilePath = getShareLinksByFilePaths($pdo, $personalFiles);
                     const fileListItem = document.querySelector(`.file-list-item[data-file="${fileToShare}"]`);
                     fileListItem.dataset.state = "shared";
                     const downloadLink = fileListItem.querySelector(".unshare-block a");
-                    downloadLink.href = `shared?linkid=${json.linkid}`;
+                    downloadLink.href = `shared.php?linkid=${json.linkid}`;
                 });
             };
             for (const button of unshareButtons) {
@@ -50,7 +56,7 @@ $sharingsByFilePath = getShareLinksByFilePaths($pdo, $personalFiles);
         });
     </script>
     <h1>Home of <?php echo getClientIdentity(); ?></h1>
-    <a href="index.html">Go to Bunga</a>
+    <a href="../index.html">Go to Bunga</a>
     <h2>Your list of databases</h2>
     <form method="POST">
     <ul>
@@ -84,18 +90,6 @@ $sharingsByFilePath = getShareLinksByFilePaths($pdo, $personalFiles);
 </section>
 
 <?php
-define("MAX_DATASET_SIZE", 5000000);
-
-function getShareLinksByFilePaths(PDO $pdo, array $files): array {
-    $shareLinksByFilePaths = [];
-    $in  = str_repeat('?,', count($files) - 1) . '?';
-    $statement = $pdo->prepare("SELECT shareLink, filePath FROM FileSharing WHERE filePath IN ($in)");
-    $statement->execute($files);
-    while ($row = $statement->fetch()) {
-        $shareLinksByFilePaths[$row["filePath"]] = $row["shareLink"];
-    }
-    return $shareLinksByFilePaths;
-}
 
 function isFormValid(): bool {
     return !empty($_FILES) && !empty($_FILES["db-file-upload"]) && $_FILES["db-file-upload"]["type"] == "application/json";
@@ -103,7 +97,7 @@ function isFormValid(): bool {
 
 function isJson(string $string): bool {
     json_decode($string);
-    return (json_last_error() == JSON_ERROR_NONE);
+    return (json_last_error() === JSON_ERROR_NONE);
 }
 
 function handleForm(): void {
@@ -114,10 +108,6 @@ function handleForm(): void {
         
         if (file_exists($target_file)) {
             echo "file already exists.";
-            return;
-        }
-        if ($uploadedFile["size"] > MAX_DATASET_SIZE) {
-            echo "file too big";
             return;
         }
         

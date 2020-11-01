@@ -10,7 +10,8 @@
 <div class="centered readable-max-width">
 <?php
 include_once("lib/tools.php");
-include_once("lib/credentials.php");
+include_once("lib/Credentials.php");
+include_once("lib/FileSharing.php");
 
 ensureClientConnection();
 

@@ -1,16 +1,6 @@
 <?php
 include_once("../lib/tools.php");
-
-function createFileSharingTableIfNeeded(PDO $pdo) {
-    $sql = <<<SQL
-        CREATE TABLE IF NOT EXISTS FileSharing (
-            shareLink VARCHAR(48) NOT NULL,
-            filePath TEXT NOT NULL,
-            PRIMARY KEY (sharelink)
-        )
-    SQL;
-    $pdo->query($sql);
-}
+include_once("../lib/FileSharing.php");
 
 function handleRequest() {
     ensureClientConnection();
@@ -29,21 +19,17 @@ function handleRequest() {
     }
     $pdo = getDataDbHandle();
 
-    createFileSharingTableIfNeeded($pdo);
-
-    $shareLinkId = bin2hex(random_bytes(48));
     $action = "share";
     if (!empty($_POST["action"])) {
         $action = $_POST["action"];
     }
     switch ($action) {
         case "share":
-            $statement = $pdo->prepare("INSERT INTO FileSharing (sharelink, filePath) VALUES (?, ?)");
-            $statement->execute([$shareLinkId, $fileFullName]);
-            return replyJson(["status" => "ok", "linkid" => $shareLinkId]);
+            $shareLink = FileSharing::generate($fileFullName);
+            $shareLink->share($pdo);
+            return replyJson(["status" => "ok", "linkid" => $shareLink->linkId]);
         case "unshare":
-            $statement = $pdo->prepare("DELETE FROM FileSharing WHERE filePath = ?");
-            $statement->execute([$fileFullName]);
+            FileSharing::unsharePath($pdo, $fileFullName);
             return replyJson(["status" => "ok"]);
         default:
             return replyJson(["status" => "ko", "message" => "action '$action' doesn't exist"]);

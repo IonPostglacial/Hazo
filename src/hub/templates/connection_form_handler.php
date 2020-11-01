@@ -12,12 +12,10 @@ function handleConnectionForm() {
     $pdo = getAccountsDbHandle();
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    createCredentialsTableIfNeeded($pdo);
-
     if (isConnectionFormValid()) {
         $credentials = getSubmittedCredentials();
         
-        if (isValidCredentials($pdo, $credentials)) {
+        if ($credentials->isValid($pdo)) {
             authenticateClient($credentials->login);
         } else {
             flagClientWrongPassword();
