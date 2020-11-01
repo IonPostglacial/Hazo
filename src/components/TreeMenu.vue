@@ -2,7 +2,7 @@
     <div class="vertical-flexbox">
         <div class="vertical-flexbox stick-to-top white-background thin-border">
             <div class="thin-margin horizontal-flexbox space-between center-items">
-                <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
+                <input class="flex-grow-1" type="search" @input="updateSearchFilter" :value="visibleFilter" placeholder="Filter" />
                 <div class="horizontal-flexbox button-group">
                     <button type="button" v-on:click="openAll">Open All</button>
                     <button type="button" v-on:click="closeAll">Close All</button>
@@ -48,6 +48,7 @@ import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-va
 import { Button } from "../Button"; // eslint-disable-line no-unused-vars
 import { CombinedVueInstance } from 'vue/types/vue';  // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
+import debounce from "../debounce";
 
 export default Vue.extend({
     name: "TreeMenu",
@@ -69,6 +70,7 @@ export default Vue.extend({
         }
         return {
             menuFilter: "",
+            visibleFilter: "",
             itemsBus: new MenuEventHub(),
             visibleColumns: Object.fromEntries(this.nameFields.map((e) => [e.propertyName, true])),
             initOpenItems: initOpenItems,
@@ -99,6 +101,13 @@ export default Vue.extend({
         },
     },
     methods: {
+        updateSearchFilterDebounced: debounce(500, function (this: any) {
+            this.menuFilter = this.visibleFilter;
+        }),
+        updateSearchFilter(e: any) {
+            this.visibleFilter = e.target.value;
+            this.updateSearchFilterDebounced();
+        },
         toggleColumnVisibility(propertName: string) {
             this.visibleColumns[propertName] = !this.visibleColumns[propertName];
         },
