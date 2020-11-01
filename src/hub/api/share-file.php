@@ -1,6 +1,6 @@
 <?php
-include_once("../lib/tools.php");
-include_once("../lib/FileSharing.php");
+include_once("../common/tools.php");
+include_once("../common/FileSharing.php");
 
 function handleRequest() {
     ensureClientConnection();

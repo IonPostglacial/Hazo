@@ -1,5 +1,5 @@
 <?php
-include_once("lib/tools.php");
+include_once("common/tools.php");
 
 ensureClientConnection();
 

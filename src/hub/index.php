@@ -9,18 +9,23 @@
 <body>
 <div class="centered readable-max-width">
 <?php
-include_once("lib/tools.php");
-include_once("lib/Credentials.php");
-include_once("lib/FileSharing.php");
+include_once("common/tools.php");
+include_once("common/Credentials.php");
+include_once("common/FileSharing.php");
+include_once("connection/ConnectionFormHandler.php");
+include_once("connection/template.php");
+include_once("home/HomeFormHandler.php");
+include_once("home/template.php");
 
 ensureClientConnection();
 
-include("templates/connection_form_handler.php");
+$connectionForm = new ConnectionFormHandler();
+$connectionForm->execute();
 
 if (!isClientAuthenticated()) {
-    include("templates/connection_form.php");
+    connectionForm($connectionForm);
 } else {
-    include("templates/personal_home.php");
+    personalHome(new HomeFormHandler());
 }
 ?>
 </div>

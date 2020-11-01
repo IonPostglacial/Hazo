@@ -37,21 +37,6 @@ function authenticateClient(string $clientLogin): void {
     $_SESSION["Identity"] = $clientLogin;
 }
 
-function flagClientWrongPassword(): void {
-    if (!isset($_SESSION["WrongPasswordAttempts"])) {
-        $_SESSION["WrongPasswordAttempts"] = 0;
-    }
-    $_SESSION["WrongPasswordAttempts"] += 1;
-}
-
-function getClientWrongPasswordAttempts(): int {
-    if (isset($_SESSION["WrongPasswordAttempts"])) {
-        return $_SESSION["WrongPasswordAttempts"];
-    } else {
-        return 0;
-    }
-}
-
 function getClientIdentity(): string {
     if (isClientAuthenticated()) {
         if (isset($_SESSION["Identity"])) {
