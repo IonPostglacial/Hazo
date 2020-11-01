@@ -1,8 +1,8 @@
 <?php
 
 class Credentials {
-    public string $login;
-    public string $password;
+    public $login;
+    public $password;
 
     static function createTableIfNeeded(PDO $pdo) {
         $sql = <<<SQL

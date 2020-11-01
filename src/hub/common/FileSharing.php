@@ -1,8 +1,8 @@
 <?php
 
 class FileSharing {
-    public string $linkId;
-    public string $filePath;
+    public $linkId;
+    public $filePath;
 
     static function createTableIfNeeded(PDO $pdo) {
         $sql = <<<SQL
