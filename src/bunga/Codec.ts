@@ -6,7 +6,7 @@ import { createHierarchicalItem } from './HierarchicalItem';
 import { createTaxon, taxonDescriptions } from './Taxon';
 import { createCharacter } from './Character';
 
-interface EncodedDataset {
+export interface EncodedDataset {
 	id: string
 	taxons: ReturnType<typeof encodeTaxon>[];
 	characters: ReturnType<typeof encodeCharacter>[];
@@ -55,6 +55,7 @@ function encodeCharacter(character: Character) {
 	return {
 		states: character.states.map(s => s.id),
 		inapplicableStatesIds: character.inapplicableStates.map(s => s.id),
+		requiredStatesIds: character.requiredStates.map(s => s.id),
 		...encodeHierarchicalItem(character),
 	};
 }
@@ -119,7 +120,7 @@ function decodeCharacter(character: EncodedCharacter, states: Record<string, Sta
 		childrenIds: item.childrenOrder ?? [],
 		states: character.states.map(id => states[id]),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states[id]) ?? [],
-		
+		requiredStates: character.requiredStatesIds?.map(id => states[id]) ?? [],
 	});
 }
 
@@ -132,8 +133,8 @@ export function decodeDataset(dataset: AlreadyEncodedDataset): Dataset {
 	for (const state of dataset.states) {
 		states[state.id] = state;
 	}
-	for (const descriptor of (dataset.characters ?? dataset.descriptors ?? [])) {
-		characters[descriptor.id] = decodeCharacter(descriptor, states);
+	for (const character of (dataset.characters ?? dataset.descriptors ?? [])) {
+		characters[character.id] = decodeCharacter(character, states);
 	}
 	for (const taxon of dataset.taxons) {
 		taxons[taxon.id] = decodeTaxon(taxon, characters, states, books);

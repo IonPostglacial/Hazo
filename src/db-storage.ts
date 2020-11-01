@@ -1,19 +1,18 @@
-import { Book, Character, DictionaryEntry, Field, HierarchicalItem, Taxon } from "./bunga/datatypes";
-import { standardBooks } from "./bunga/stdcontent";
+import { encodeDataset, EncodedDataset } from "./bunga/Codec";
+import { createDataset } from "./bunga/Dataset";
+import { Book, Character, DictionaryEntry, Field, Taxon } from "./bunga/datatypes";
 
 const DB_NAME = "Datasets";
 const DB_VERSION = 5;
 
-interface DatasetDBv3 {
+interface DatasetDBv4 {
 	id: string;
     taxons: Taxon[];
-    descriptors: Character[];
+    characters: Character[];
 	books: Book[];
 	extraFields: Field[];
 	dictionaryEntries: Record<string, DictionaryEntry>;
 }
-
-type DatasetDBv4 = Omit<DatasetDBv3, "descriptors"> & { characters: Character[]; };
 
 function createStore(db: IDBDatabase) {
     if (!db.objectStoreNames.contains("Datasets")) {
@@ -23,77 +22,21 @@ function createStore(db: IDBDatabase) {
 
 async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     createStore(db);
-    
     if (oldVersion === 4) {
         const datasetIds = await dbList();
 
         for (const datasetId of datasetIds) {
-            const dataset = await dbLoad(datasetId);
-            const characters = dataset.characters;
-
-            for (const character of characters) {
-                character.requiredStates = [];
-            }
-            dbStore(Object.assign(dataset, { characters }));
-        }
-    }
-    if (oldVersion === 3) {
-        const datasetIds = await dbList();
-
-        for (const datasetId of datasetIds) {
-            const dataset = await dbLoad(datasetId) as unknown as DatasetDBv3;
-            const characters = dataset.descriptors;
-            delete (dataset as any).descriptors;
-
-            dbStore(Object.assign(dataset, { characters }));
-        }
-    }
-    if (oldVersion === 2) {
-        const datasetIds = await dbList();
-
-        for (const datasetId of datasetIds) {
-            const dataset: any = await dbLoad(datasetId);
-            dataset.taxons = Object.values(dataset.taxons).filter(item => typeof (item as HierarchicalItem<any>).parentId === "undefined");
-            dataset.descriptors = Object.values(dataset.descriptors).filter(item => typeof (item as HierarchicalItem<any>).parentId === "undefined");
-            dbStore(dataset);
-        }
-    }
-    if (oldVersion === 1) {
-        const datasetIds = await dbList();
-
-        for (const datasetId of datasetIds) {
-            const dataset: any = await dbLoad(datasetId);
-
-            for (const t of Object.values(dataset.items)) {
-                const taxon:any = t;
-                const extraProperties = Object.keys(taxon).filter(k => k.startsWith("extra-"));
-                if (typeof taxon.extra === "undefined") {
-                    taxon.extra = {};
-                }
-                if (typeof taxon.bookInfoByIds === "undefined") {
-                    taxon.bookInfoByIds = Object.fromEntries(standardBooks.map(
-                        b => [b.id, {
-                            fasc: b.id === "fmc" ? taxon.fasc : "",
-                            page: b.id === "fmc" ? taxon.page : null,
-                            detail: ""
-                        }]
-                    ));
-                    delete taxon.fasc;
-                    delete taxon.page;
-                }
-                for (const extraProp of extraProperties) {
-                    const [,propName] = extraProp.split("-");
-                    taxon.extra[propName] = taxon[extraProp];
-                    delete taxon[extraProp];
-                }
-            }
-
-            dbStore(dataset);
+            const dbDataset = await dbLoad(datasetId) as unknown as DatasetDBv4;
+            const dataset = createDataset(datasetId,
+                Object.fromEntries(dbDataset.taxons.map(t => [t.id, t])),
+                Object.fromEntries(dbDataset.characters.map(c => [c.id, c])),
+                dbDataset.books, dbDataset.extraFields, dbDataset.dictionaryEntries);
+            dbStore(encodeDataset(dataset));
         }
     }
 }
 
-function dbStore(dataset: DatasetDBv4) {
+function dbStore(dataset: EncodedDataset) {
     const rq = indexedDB.open(DB_NAME, DB_VERSION);
     
     rq.onupgradeneeded = function (event) {
@@ -156,7 +99,7 @@ function dbList(): Promise<string[]> {
     });
 }
 
-function dbLoad(id: string): Promise<DatasetDBv4> {
+function dbLoad(id: string): Promise<EncodedDataset> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {

@@ -1,101 +1,114 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1">
-        <nav v-if="showLeftMenu" class="scroll thin-border white-background">
+        <nav v-if="showLeftMenu" class="scroll thin-border white-background no-print">
             <TreeMenu :editable="editable" :items="taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @select-item="selectTaxon" @add-item="addTaxon" @delete-item="removeTaxon">
             </TreeMenu>
         </nav>
-        <section v-if="typeof selectedTaxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox">
-            <div class="vertical-flexbox scroll">
-                <picture-box :editable="editable"
-                        @open-photo="openPhoto"
-                        @add-photo="addItemPhoto"
-                        @set-photo="setItemPhoto" 
-                        @delete-photo="deleteItemPhoto">
-                    <picture-frame v-for="(photo, index) in selectedTaxon.photos" :key="photo.id"
-                        :index="index" :editable="editable" :pictureid="photo.id" :url="photo.url" :label="photo.label"></picture-frame>
-                </picture-box>
-                <div class="horizontal-flexbox start-align relative">
-                    <collapsible-panel label="Properties" 
-                            v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
-                        <div class="scroll large-max-width">
-                            <div v-if="!editable">
-                                <label class="item-property">NS</label>
-                                <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name }}</i> {{ selectedTaxon.author }}</div>
+        <div v-if="typeof selectedTaxon !== 'undefined'" class="vertical-flexbox flex-grow-1">
+            <div class="horizontal-flexbox no-print">
+                <span class="medium-margin">Mode:</span>
+                <label class="medium-margin horizontal-flexbox">View<input type="radio" name="view-mode" value="view-item" v-model="mode"></label>
+                <label class="medium-margin horizontal-flexbox">Edition<input type="radio" name="view-mode" value="edit-item" v-model="mode"></label>
+                <label class="medium-margin horizontal-flexbox">Presentation<input type="radio" name="view-mode" value="present-item" v-model="mode"></label>
+            </div>
+            <taxon-presentation v-if="mode === 'present-item'"
+                @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
+                :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="taxonsHierarchy" :characters="characters.allItems">
+            </taxon-presentation>
+            <section v-if="mode !== 'present-item'" class="flex-grow-1 horizontal-flexbox scroll">
+                <div class="vertical-flexbox scroll">
+                    <picture-box :editable="editable"
+                            @open-photo="openPhoto"
+                            @add-photo="addItemPhoto"
+                            @set-photo="setItemPhoto" 
+                            @delete-photo="deleteItemPhoto">
+                        <picture-frame v-for="(photo, index) in selectedTaxon.photos" :key="photo.id"
+                            :index="index" :editable="editable" :pictureid="photo.id" :url="photo.url" :label="photo.label"></picture-frame>
+                    </picture-box>
+                    <div class="horizontal-flexbox start-align relative">
+                        <collapsible-panel label="Properties" 
+                                v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
+                            <div class="scroll large-max-width">
+                                <div v-if="!editable">
+                                    <label class="item-property">NS</label>
+                                    <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name }}</i> {{ selectedTaxon.author }}</div>
+                                </div>
+                                <div v-if="editable">
+                                    <label class="item-property">NS</label>
+                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name" /><br>
+                                    <label class="item-property">Author</label>
+                                    <input type="text" v-model="selectedTaxon.author" />
+                                </div>
+                                <item-property-field property="name2" :value="selectedTaxon.name2" :editable="editable">
+                                    Synonymous</item-property-field>
+                                <item-property-field property="nameCN" :value="selectedTaxon.nameCN" :editable="editable">
+                                    中文名</item-property-field>
+                                <item-property-field property="vernacularName" :value="selectedTaxon.vernacularName" :editable="editable">
+                                    NV</item-property-field>
+                                <item-property-field property="vernacularName2" :value="selectedTaxon.vernacularName2" :editable="editable">
+                                    NV 2</item-property-field>
+
+                                <label class="item-property">Website</label>
+                                <input v-if="editable" type="text" v-model="selectedTaxon.website" />
+                                <a v-if="!editable" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a><br/>
+
+                                <label class="item-property">Meaning</label>
+                                <textarea :readonly="!editable"  v-model="selectedTaxon.meaning"></textarea><br/>
+
+                                <item-property-field property="noHerbier" :value="selectedTaxon.noHerbier" :editable="editable">
+                                    N° Herbier</item-property-field>
+                                <item-property-field property="herbariumPicture" :value="selectedTaxon.herbariumPicture" :editable="editable">
+                                    Herbarium Picture</item-property-field>
+                                <div v-for="extraField in extraFields" :key="extraField.id">
+                                    <item-property-field :property="extraField.id" :icon="extraField.icon" :value="selectedTaxon.extra[extraField.id]" :editable="editable">
+                                        {{ extraField.label }}</item-property-field>
+                                </div>
                             </div>
-                            <div v-if="editable">
-                                <label class="item-property">NS</label>
-                                <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name" /><br>
-                                <label class="item-property">Author</label>
-                                <input type="text" v-model="selectedTaxon.author" />
-                            </div>
-                            <item-property-field property="name2" :value="selectedTaxon.name2" :editable="editable">
-                                Synonymous</item-property-field>
-                            <item-property-field property="nameCN" :value="selectedTaxon.nameCN" :editable="editable">
-                                中文名</item-property-field>
-                            <item-property-field property="vernacularName" :value="selectedTaxon.vernacularName" :editable="editable">
-                                NV</item-property-field>
-                            <item-property-field property="vernacularName2" :value="selectedTaxon.vernacularName2" :editable="editable">
-                                NV 2</item-property-field>
-
-                            <label class="item-property">Website</label>
-                            <input v-if="editable" type="text" v-model="selectedTaxon.website" />
-                            <a v-if="!editable" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a><br/>
-
-                            <label class="item-property">Meaning</label>
-                            <textarea :readonly="!editable"  v-model="selectedTaxon.meaning"></textarea><br/>
-
-                            <item-property-field property="noHerbier" :value="selectedTaxon.noHerbier" :editable="editable">
-                                N° Herbier</item-property-field>
-                            <item-property-field property="herbariumPicture" :value="selectedTaxon.herbariumPicture" :editable="editable">
-                                Herbarium Picture</item-property-field>
-                            <div v-for="extraField in extraFields" :key="extraField.id">
-                                <item-property-field :property="extraField.id" :icon="extraField.icon" :value="selectedTaxon.extra[extraField.id]" :editable="editable">
-                                    {{ extraField.label }}</item-property-field>
+                        </collapsible-panel>
+                    </div>
+                </div>
+                <div class="vertical-flexbox scroll flex-grow-1">
+                    <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
+                        <div v-if="selectedTaxon.bookInfoByIds">
+                            <div v-if="selectedTaxon.bookInfoByIds[book.id]">
+                                <label class="medium-margin">
+                                    book:&nbsp;
+                                    <input v-if="editable" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].fasc" />
+                                    <div class="inline-block medium-padding medium-margin" v-if="!editable">
+                                        {{ selectedTaxon.bookInfoByIds[book.id].fasc }}
+                                    </div>
+                                </label>
+                                <label class="medium-margin">
+                                    page:&nbsp;
+                                    <input v-if="editable" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].page" />
+                                    <div class="inline-block medium-padding medium-margin" v-if="!editable">
+                                        {{ selectedTaxon.bookInfoByIds[book.id].page }}
+                                    </div>
+                                </label>
+                                <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
+                                <div v-if="!editable" class="limited-width" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
                             </div>
                         </div>
                     </collapsible-panel>
+                    <collapsible-panel label="Additional Text" id="item-detail">
+                        <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
+                        <div v-if="!editable" class="limited-width" v-html="selectedTaxon.detail"></div>
+                    </collapsible-panel>
+                    <collapsible-panel label="Description">
+                        <SquareTreeViewer class="large-max-width" :editable="editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                    </collapsible-panel>
                 </div>
-            </div>
-            <div class="vertical-flexbox scroll flex-grow-1">
-                <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
-                    <div v-if="selectedTaxon.bookInfoByIds">
-                        <div v-if="selectedTaxon.bookInfoByIds[book.id]">
-                            <label class="medium-margin">
-                                book:&nbsp;
-                                <input v-if="editable" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].fasc" />
-                                <div class="inline-block medium-padding medium-margin" v-if="!editable">
-                                    {{ selectedTaxon.bookInfoByIds[book.id].fasc }}
-                                </div>
-                            </label>
-                            <label class="medium-margin">
-                                page:&nbsp;
-                                <input v-if="editable" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].page" />
-                                <div class="inline-block medium-padding medium-margin" v-if="!editable">
-                                    {{ selectedTaxon.bookInfoByIds[book.id].page }}
-                                </div>
-                            </label>
-                            <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
-                            <div v-if="!editable" class="limited-width" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
-                        </div>
-                    </div>
-                </collapsible-panel>
-                <collapsible-panel label="Additional Text" id="item-detail">
-                    <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
-                    <div v-if="!editable" class="limited-width" v-html="selectedTaxon.detail"></div>
-                </collapsible-panel>
-                <collapsible-panel label="Description">
-                    <SquareTreeViewer class="large-max-width" :editable="!editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
-                </collapsible-panel>
-            </div>
-        </section>
+            </section>
+        </div>
     </div>
 </template>
 
 <script lang="ts">
 import SquareTreeViewer from "./SquareTreeViewer.vue";
 import TreeMenu from "./TreeMenu.vue";
+import TaxonPresentation from "./TaxonPresentation.vue";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
@@ -110,23 +123,26 @@ import { ObservableMap } from '@/observablemap';
 
 export default Vue.extend({
     name: "TaxonsTab",
-    components: { SquareTreeViewer, ckeditor: CKEditor.component, TreeMenu },
+    components: { SquareTreeViewer, ckeditor: CKEditor.component, TreeMenu, TaxonPresentation },
     props: {
         showLeftMenu: Boolean,
         characters: Hierarchy as PropType<Hierarchy<Character>>,
         taxonsHierarchy: Hierarchy as PropType<Hierarchy<Taxon>>,
         extraFields: Array,
         selectedTaxonId: String,
-        editable: Boolean,
         books: Array as PropType<Array<Book>>,
     },
     data() {
         return {
+            mode: "view-item",
             editor: ClassicEditor,
             editorConfig: {}
         }
     },
     computed: {
+        editable(): boolean {
+            return this.mode === "edit-item";
+        },
         selectedTaxon(): Taxon|undefined {
             return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
         },
@@ -136,7 +152,10 @@ export default Vue.extend({
 
             const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.characters);
 
-            for (const character of dependencyHierarchy.allItems) {
+            for (const character of this.characters.allItems) {
+                if (typeof character.requiredStates === "undefined") {
+                    console.log(character)
+                }
                 const taxonLacksRequiredStates = !character.requiredStates.every(requiredState => selectedTaxon.statesSelection[requiredState.id] ?? false);
                 const taxonHasSomeInapplicableState = character.inapplicableStates.some(inapplicableState => selectedTaxon.statesSelection[inapplicableState.id] ?? false);
 

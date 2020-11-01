@@ -33,7 +33,14 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     get allItems(): Iterable<T> {
-        return this.items.values();
+        const self = this;
+        return {
+            *[Symbol.iterator]() {
+                for (const item of self.topLevelItems) {
+                    yield* self.getOrderedChildrenTree(item);
+                }
+            }
+        }
     }
 
     get topLevelItems(): Iterable<T> {
@@ -100,6 +107,19 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
                     if (typeof child !== "undefined") {
                         yield child;
                     }
+                }
+            }
+        }
+    }
+
+    getOrderedChildrenTree(item: T|undefined): Iterable<T> {
+        if (typeof item === "undefined") return [];
+        const self = this;
+        return {
+            *[Symbol.iterator]() {
+                yield item;
+                for (const child of self.childrenOf(item)) {
+                    yield* self.getOrderedChildrenTree(child);
                 }
             }
         }

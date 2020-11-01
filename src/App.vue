@@ -25,8 +25,7 @@
         <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
     </div>
     <div :class="'horizontal-flexbox start-align flex-grow-1 height-main-panel ' + (showBigImage ? 'invisible' : '')">
-        <TaxonsTab v-if="selectedTab === 0 || selectedTab === 1"
-            :editable="selectedTab === 0"
+        <TaxonsTab v-if="selectedTab === 0"
             :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
             :selected-taxon-id="selectedTaxonId"
             :show-left-menu="showLeftMenu"
@@ -34,21 +33,17 @@
             @taxon-selected="selectTaxon" @add-taxon="addTaxon" @remove-taxon="removeTaxon"
             @open-photo="maximizeImage">
         </TaxonsTab>
-        <taxon-presentation v-if="selectedTab === 2"
-            @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-            :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy.allItems">
-        </taxon-presentation>
-        <CharactersTab v-if="selectedTab === 3"
+        <CharactersTab v-if="selectedTab === 1"
             :init-characters="charactersHierarchy"
             :show-left-menu="showLeftMenu"
             :selected-character-id="selectedCharacterId"
             @add-state="addState" @remove-state="removeState" @character-selected="selectCharacter"
             @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
         </CharactersTab>
-        <CharactersTree v-if="selectedTab === 4"
+        <CharactersTree v-if="selectedTab === 2"
             :characters="charactersHierarchy">
         </CharactersTree>
-        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 5"></WordsDictionary>
+        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
         <extra-fields-panel :showFields="showFields" :extraFields="extraFields"
             @add-extra-field="addExtraField" @delete-extra-field="deleteExtraField">
         </extra-fields-panel>
@@ -91,7 +86,6 @@ import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
-import TaxonPresentation from "./components/TaxonPresentation.vue";
 import DB from "./db-storage";
 import Vue from "vue";
 import { loadSDD } from "./sdd-load";
@@ -103,7 +97,7 @@ import { picturesFromPhotos } from './bunga/picture';
 export default Vue.extend({
     name: "App",
     components: {
-        TaxonsTab, CharactersTab, CharactersTree, TaxonPresentation, WordsDictionary, ExtraFieldsPanel
+        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, ExtraFieldsPanel
     },
     data() {
         return {
@@ -119,8 +113,6 @@ export default Vue.extend({
             showBigImage: false,
             tabs: [
                 "Taxons",
-                "Taxons Characters",
-                "Presentation",
                 "Characters",
                 "Characters Tree",
                 "Dictionary",
@@ -157,11 +149,12 @@ export default Vue.extend({
         loadBase(id?: string) {
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
-                for (const taxon of savedDataset?.taxons ?? []) {
+                const dataset = decodeDataset(savedDataset);
+                for (const taxon of Object.values(dataset?.taxons ?? {})) {
                     repairPotentialCorruption(taxon);
                     this.taxonsHierarchy.add(taxon);
                 }
-                for (const character of savedDataset?.characters ?? []) {
+                for (const character of Object.values(dataset?.characters ?? {})) {
                     repairPotentialCorruption(character);
                     const statesIds = new Set(), uniqueStates = [];
                     for (const state of character.states) {
@@ -258,18 +251,15 @@ export default Vue.extend({
             this.bigImageIndex = 0;
         },
         saveData() {
-            const taxons = [...this.taxonsHierarchy.topLevelItems], descriptors = [...this.charactersHierarchy.topLevelItems];
+            const taxons: Record<string, Taxon> = {};
+            const characters: Record<string, Character> = {};
             for (const taxon of this.taxonsHierarchy.allItems) {
-                if (typeof taxon.parentId !== "undefined") {
-                    taxons.push(taxon);
-                }
+                taxons[taxon.id] = taxon;
             }
-            for (const description of this.charactersHierarchy.allItems) {
-                if (typeof description.parentId !== "undefined") {
-                    descriptors.push(description);
-                }
+            for (const character of this.charactersHierarchy.allItems) {
+                characters[character.id] = character;
             }
-            DB.store({ id: this.selectedBase, taxons: taxons, characters: descriptors, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks });
+            DB.store(encodeDataset({ id: this.selectedBase, taxons: taxons, characters: characters, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks }));
         },
         resetData() {
             this.taxonsHierarchy.clear();
