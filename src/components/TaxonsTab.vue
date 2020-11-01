@@ -6,18 +6,36 @@
                 @select-item="selectTaxon" @add-item="addTaxon" @delete-item="removeTaxon">
             </TreeMenu>
         </nav>
-        <div v-if="typeof selectedTaxon !== 'undefined'" class="vertical-flexbox flex-grow-1">
-            <div class="horizontal-flexbox no-print">
-                <span class="medium-margin">Mode:</span>
-                <label class="medium-margin horizontal-flexbox">View<input type="radio" name="view-mode" value="view-item" v-model="mode"></label>
-                <label class="medium-margin horizontal-flexbox">Edition<input type="radio" name="view-mode" value="edit-item" v-model="mode"></label>
-                <label class="medium-margin horizontal-flexbox">Presentation<input type="radio" name="view-mode" value="present-item" v-model="mode"></label>
+        <div class="vertical-flexbox flex-grow-1">
+            <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
+                <div class="horizontal-flexbox">
+                    <span class="medium-margin">Mode:</span>
+                    <div>
+                        <div class="selector">
+                            <input type="radio" class="selector-radio" id="view-mode-view" name="view-mode" value="view-item" v-model="mode" />
+                            <label for="view-mode-view" class="selector-label">View</label>
+                        </div>
+                        <div class="selector">
+                            <input type="radio" class="selector-radio" id="view-mode-edit" name="view-mode" value="edit-item" v-model="mode" />
+                            <label for="view-mode-edit" class="selector-label">Edition</label>
+                        </div>
+                        <div class="selector">
+                            <input type="radio" class="selector-radio" id="view-mode-present" name="view-mode" value="present-item" v-model="mode" />
+                            <label for="view-mode-present" class="selector-label">Presentation</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" @click="emptyZip">Folder Hierarchy</button>
+                    <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
+                    <button type="button" @click="exportStats">Statistics</button>
+                </div>
             </div>
             <taxon-presentation v-if="mode === 'present-item'"
                 @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
                 :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="taxonsHierarchy" :characters="characters.allItems">
             </taxon-presentation>
-            <section v-if="mode !== 'present-item'" class="flex-grow-1 horizontal-flexbox scroll">
+            <section v-if="mode !== 'present-item' && typeof selectedTaxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox scroll">
                 <div class="vertical-flexbox scroll">
                     <picture-box :editable="editable"
                             @open-photo="openPhoto"
@@ -88,7 +106,7 @@
                                     </div>
                                 </label>
                                 <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
-                                <div v-if="!editable" class="limited-width" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
+                                <div v-if="!editable" class="limited-width medium-padding" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
                             </div>
                         </div>
                     </collapsible-panel>
@@ -113,13 +131,15 @@ import TaxonPresentation from "./TaxonPresentation.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, Picture, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Book, Character, Picture, State, Taxon, TexExporter, exportZipFolder } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/clone';
 import { createDetailData } from '@/bunga/DetailData';
 import { createTaxon } from '@/bunga/Taxon';
 import { ObservableMap } from '@/observablemap';
+import download from "../download";
+import exportStatistics from "../bunga/features/exportstats";
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -136,7 +156,8 @@ export default Vue.extend({
         return {
             mode: "view-item",
             editor: ClassicEditor,
-            editorConfig: {}
+            editorConfig: {},
+            latexProgressText: "",
         }
     },
     computed: {
@@ -236,6 +257,21 @@ export default Vue.extend({
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
             this.$emit("open-photo", {index: e.detail.index, photos: this.selectedTaxon!.photos});
+        },
+        async emptyZip() {
+            const zipTxt = await exportZipFolder(this.taxonsHierarchy);
+            download(zipTxt, "zip", true);
+        },
+        texExport() {
+            const taxonToTex = new TexExporter([...this.taxonsHierarchy.allItems], this.characters.allItems);
+            taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
+            taxonToTex.export().then(tex => {
+                download(tex, "zip", true);
+            });
+        },
+        exportStats() {
+            const csv = exportStatistics(this.taxonsHierarchy);
+            download(csv, "csv");
         },
     }
 });

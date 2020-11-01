@@ -66,10 +66,7 @@
             <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
         </div>
         <div class="button-group">
-            <button type="button" @click="globalReplace">Text Replace</button>
-            <button type="button" @click="exportStats">Stats</button>
-            <button type="button" @click="emptyZip">Folder Hierarchy</button>
-            <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
+            <button type="button" @click="globalReplace">Replace Text</button>
             <button type="button" class="no-print background-color-1" @click="print">Print</button>
         </div>
     </section>
@@ -78,8 +75,8 @@
 
 <script lang="ts">
 import { standardBooks } from "./bunga/stdcontent";
-import { Character, Dataset, Field, Taxon, TexExporter } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, exportZipFolder, highlightTaxonsDetails, Hierarchy, repairPotentialCorruption } from "./bunga";
+import { Character, Dataset, Field, Taxon } from "./bunga"; // eslint-disable-line no-unused-vars
+import { encodeDataset, decodeDataset, highlightTaxonsDetails, Hierarchy, repairPotentialCorruption } from "./bunga";
 import { ObservableMap } from "./observablemap";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
@@ -122,7 +119,6 @@ export default Vue.extend({
             taxonsHierarchy: new Hierarchy<Taxon>("myt-", new ObservableMap()),
             charactersHierarchy: new Hierarchy<Character>("myd-", new ObservableMap()),
             dictionaryEntries: {},
-            latexProgressText: "",
         };
     },
     mounted() {
@@ -372,42 +368,6 @@ export default Vue.extend({
                     reject(fileReader.error);
                 }
                 fileReader.readAsText(file);
-            });
-        },
-        exportStats() {
-            const references = [];
-            const div = document.createElement("div");
-            const startsWithLetter = /^[^\W\d_]+.*/;
-            for (const item of this.taxonsHierarchy.allItems) {
-                div.innerHTML = item.detail;
-                const words = div.innerText.split(/[\s\t,;:=/."'-()]/) ?? [];
-                for (const word of words) {
-                    const trimmedWord = word.trim();
-                    if (startsWithLetter.test(trimmedWord)) {
-                        references.push({ word: trimmedWord, origin: item.id });
-                    }
-                }
-            }
-            let csv = "\uFEFFword,origin\n";
-            for (const { word, origin } of references) {
-                let escapedWord = word;
-                if (escapedWord.includes(",") || escapedWord.includes("\n")) {
-                    escapedWord = escapedWord.replace('"', '""');
-                    escapedWord = `"${escapedWord}"`;
-                }
-                csv += escapedWord + "," + origin + "\n";
-            }
-            download(csv, "csv");
-        },
-        async emptyZip() {
-            const zipTxt = await exportZipFolder(this.taxonsHierarchy);
-            download(zipTxt, "zip", true);
-        },
-        texExport() {
-            const taxonToTex = new TexExporter([...this.taxonsHierarchy.allItems], this.charactersHierarchy.allItems);
-            taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
-            taxonToTex.export().then(tex => {
-                download(tex, "zip", true);
             });
         },
         jsonExport() {
