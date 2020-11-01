@@ -65,12 +65,14 @@
         <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll">
             <div class="relative horizontal-flexbox">
                 <collapsible-panel label="States">
-                    <div class="scroll thin-border medium-margin medium-padding white-background">
+                    <div class="scroll medium-padding white-background">
                         <ul class="no-list-style medium-padding medium-margin">
                             <li v-for="state in selectedCharacter.states || []" :key="state.id" class="horizontal-flexbox flex-centered">
                                 <label class="blue-hover medium-padding rounded nowrap horizontal-flexbox flex-centered">
                                     <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
                                     <input type="text" class="flex-grow-1" v-model="state.name" />
+                                    <input type="text" class="flex-grow-1" v-model="state.nameEN" />
+                                    <input type="text" class="flex-grow-1" v-model="state.nameCN" />
                                 </label>
                                 <div class="close" @click="removeState(state)"></div>
                             </li>
@@ -94,9 +96,6 @@
                     </picture-box>
                     <collapsible-panel label="Detail">
                         <div class="form-grid">
-                            <label>FR</label><input type="text" v-model="selectedCharacterState.name"/>
-                            <label>EN</label><input type="text" v-model="selectedCharacterState.nameEN"/>
-                            <label>CN</label><input type="text" v-model="selectedCharacterState.nameCN"/>
                             <label>Description</label>
                             <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
                         </div>
