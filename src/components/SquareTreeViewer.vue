@@ -9,7 +9,13 @@
             <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
                     :style="item.photos.length > 0 ? 'background-image: url(' + item.photos[0].url + ')' : ''"
                     @click="openItem(item)">
-                <div :title="item.name" :class="'thin-border medium-padding text-ellipsed ' + (item.selected ? 'background-color-1' : 'white-background') + (isClickable(item) ? ' text-underlined' : '')">{{ item.name }}</div>
+                <div v-for="field in nameFieldsForItem(item)" :key="field"
+                        :title="item[field]"
+                        :class="'thin-border medium-padding text-ellipsed ' +
+                            (item.selected ? 'background-color-1' : 'white-background') +
+                            (isClickable(item) ? ' text-underlined' : '')">
+                    {{ item[field] }}
+                </div>
             </component>
         </div>
     </div>
@@ -26,6 +32,7 @@ export default Vue.extend({
     props: {
         editable: Boolean,
         rootItems: Object as PropType<Hierarchy<ItemType>>,
+        nameFields: Array as PropType<Array<string>>,
     },
     data() {
         return {
@@ -61,6 +68,9 @@ export default Vue.extend({
         },
     },
     methods: {
+        nameFieldsForItem(item: any): Iterable<string> {
+            return this.nameFields.filter(field => typeof item[field] !== "undefined" && item[field] !== null && item[field] !== "");
+        },
         isClickable(item: HierarchicalItem<any>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },

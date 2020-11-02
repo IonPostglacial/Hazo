@@ -115,7 +115,7 @@
                         <div v-if="!editable" class="limited-width" v-html="selectedTaxon.detail"></div>
                     </collapsible-panel>
                     <collapsible-panel label="Description">
-                        <SquareTreeViewer class="large-max-width" :editable="editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                        <SquareTreeViewer class="large-max-width" :name-fields="['name', 'nameEN', 'nameCN']" :editable="editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                     </collapsible-panel>
                 </div>
             </section>
