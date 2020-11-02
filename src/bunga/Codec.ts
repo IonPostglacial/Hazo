@@ -53,9 +53,9 @@ function encodeTaxon(taxon: Taxon, characters: Iterable<Character>) {
 
 function encodeCharacter(character: Character) {
 	return {
-		states: character.states.map(s => s.id),
-		inapplicableStatesIds: character.inapplicableStates.map(s => s.id),
-		requiredStatesIds: character.requiredStates.map(s => s.id),
+		states: character.states.filter(s => typeof s !== "undefined").map(s => s.id),
+		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
+		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		...encodeHierarchicalItem(character),
 	};
 }
