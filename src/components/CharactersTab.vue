@@ -66,14 +66,20 @@
             <div class="relative horizontal-flexbox">
                 <collapsible-panel label="States">
                     <div class="scroll medium-padding white-background">
-                        <ul class="no-list-style medium-padding medium-margin">
-                            <li v-for="state in selectedCharacter.states || []" :key="state.id" class="horizontal-flexbox flex-centered">
-                                <label class="blue-hover medium-padding rounded nowrap horizontal-flexbox flex-centered">
+                        <ul class="no-list-style medium-padding medium-margin grid-3">
+                            <li v-for="state in selectedCharacter.states || []" :key="state.id" class="display-contents">
+                                <label class="blue-hover medium-padding rounded nowrap horizontal-flexbox">
                                     <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
-                                    <input type="text" class="flex-grow-1" v-model="state.name" />
-                                    <input type="text" class="flex-grow-1" v-model="state.nameEN" />
-                                    <input type="text" class="flex-grow-1" v-model="state.nameCN" />
+                                    <div class="form-grid">
+                                        <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name" />
+                                        <div>EN</div><input type="text" class="flex-grow-1" v-model="state.nameEN" />
+                                        <div>CN</div><input type="text" class="flex-grow-1" v-model="state.nameCN" />
+                                    </div>
                                 </label>
+                                <div v-if="state.photos.length === 0">&nbsp;</div>
+                                <div v-for="photo in state.photos" :key="photo.id">
+                                    <img :src="photo.url" class="small-max-height">
+                                </div>
                                 <div class="close" @click="removeState(state)"></div>
                             </li>
                             <li>
@@ -82,7 +88,7 @@
                         </ul>
                     </div>
                 </collapsible-panel>
-                <div v-if="selectedCharacterState" class="stick-to-top medium-padding medium-margin white-background">
+                <div v-if="selectedCharacterState" class="stick-to-top thin-border medium-padding medium-margin white-background">
                     <picture-box
                             class="scroll"
                             editable="true"
@@ -94,12 +100,10 @@
                             :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true">
                         </picture-frame>
                     </picture-box>
-                    <collapsible-panel label="Detail">
-                        <div class="form-grid">
-                            <label>Description</label>
-                            <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
-                        </div>
-                    </collapsible-panel>
+                    <div class="form-grid">
+                        <label>Description</label>
+                        <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
+                    </div>
                 </div>
             </div>
         </section>
