@@ -14,19 +14,23 @@ export default Vue.extend({
         characters: Object as PropType<Hierarchy<Character>>,
     },
     mounted() {
-        type D3Hierarchy = { name: string, children: D3Hierarchy[]|undefined };
-        function hierarchyToD3(hierarchy: Hierarchy<any>, h: HierarchicalItem<any>): D3Hierarchy {
-            return { name: h.name, children: [...hierarchy.childrenOf(h)].map(child => hierarchyToD3(hierarchy, child)) };
+        type D3Hierarchy = { name: string, children: D3Hierarchy[]|null, _children?: D3Hierarchy };
+        type D3HierarchyNode = d3.HierarchyNode<any> & {_children?: any };
+        function hierarchyToD3(hierarchy: Hierarchy<any>, h: Character): D3Hierarchy {
+            return { name: h.name, children: [...hierarchy.childrenOf(h), ...(h.states?.map(s => ({ name: s.name, children: [] })) ?? [])].map(child => hierarchyToD3(hierarchy, child)) };
         }
 
         const treeData: D3Hierarchy = { name: "Characters", children: [...this.characters.topLevelItems].map(ch => hierarchyToD3(this.characters, ch)) };
 
         console.log(treeData);
 
+        const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = this.$el.clientHeight;
+        console.log("bounds", MAX_WIDTH, MAX_HEIGHT);
+
         // Set the dimensions and margins of the diagram
         const margin = {top: 20, right: 90, bottom: 30, left: 90},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            width = MAX_WIDTH - margin.left - margin.right,
+            height = MAX_HEIGHT - margin.top - margin.bottom;
 
         // append the svg object to the body of the page
         // appends a "group" element to "svg"
@@ -51,16 +55,16 @@ export default Vue.extend({
 
         update(root);
 
-        // Collapse the node and all it"s children
-        function collapse(d: d3.HierarchyNode<any> & {_children?: any }) {
+        //Collapse the node and all it"s children
+        function collapse(d: any) {
             if(d.children) {
-                d._children = d.children
-                d._children.forEach(collapse)
-                d.children = undefined
+                d._children = d.children;
+                d._children.forEach(collapse);
+                d.children = null;
             }
         }
 
-        function update(source: d3.HierarchyNode<any> & {x0?: number, y0?: number, x?: number, y?: number }) {
+        function update(source: D3HierarchyNode & {x0?: number, y0?: number, x?: number, y?: number }) {
 
             // Assigns the x and y position for the nodes
             const treeData = treemap(root);
@@ -90,17 +94,17 @@ export default Vue.extend({
             nodeEnter.append("circle")
                 .attr("class", "node")
                 .attr("r", 1e-6)
-                .style("fill", function(d: d3.HierarchyPointNode<any> & { _children?: number }) {
+                .style("fill", function(d: D3HierarchyNode) {
                     return d._children ? "lightsteelblue" : "#fff";
                 });
 
             // Add labels for the nodes
             nodeEnter.append("text")
                 .attr("dy", ".35em")
-                .attr("x", function(d: d3.HierarchyPointNode<any> & { _children?: number }) {
+                .attr("x", function(d: D3HierarchyNode) {
                     return d.children || d._children ? -13 : 13;
                 })
-                .attr("text-anchor", function(d: d3.HierarchyPointNode<any> & { _children?: number }) {
+                .attr("text-anchor", function(d: D3HierarchyNode) {
                     return d.children || d._children ? "end" : "start";
                 })
                 .text(function(d: d3.HierarchyPointNode<any>) { return d.data.name; });
@@ -189,8 +193,8 @@ export default Vue.extend({
             }
 
             // Toggle children on click.
-            function click(d: any) {
-                if (d.children) {
+            function click(e: any, d: any) {
+                if (d.children !== null) {
                     d._children = d.children;
                     d.children = null;
                 } else {
