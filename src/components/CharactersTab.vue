@@ -77,8 +77,8 @@
                                     </div>
                                 </label>
                                 <div v-if="state.photos.length === 0">&nbsp;</div>
-                                <div v-for="photo in state.photos" :key="photo.id">
-                                    <img :src="photo.url" class="small-max-height">
+                                <div v-if="state.photos.length > 0">
+                                    <img :src="state.photos[0].url" class="small-max-height">
                                 </div>
                                 <div class="close" @click="removeState(state)"></div>
                             </li>
