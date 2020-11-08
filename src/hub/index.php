@@ -9,24 +9,12 @@
 <body>
 <div class="centered readable-max-width">
 <?php
-include_once("common/tools.php");
-include_once("common/Credentials.php");
-include_once("common/FileSharing.php");
-include_once("connection/ConnectionFormHandler.php");
-include_once("connection/template.php");
-include_once("home/HomeFormHandler.php");
-include_once("home/template.php");
+require_once("libs/common/tools.php");
+require_once("libs/common/with_authentication.php");
 
-ensureClientConnection();
-
-$connectionForm = new ConnectionFormHandler();
-$connectionForm->execute();
-
-if (!isClientAuthenticated()) {
-    connectionForm($connectionForm);
-} else {
-    personalHome(new HomeFormHandler());
-}
+with_authentication(function (Client $client) {
+    home_template($client);
+});
 ?>
 </div>
 </html>

@@ -6,8 +6,7 @@ abstract class FormHandler {
 
     private $hasErrors = false;
 
-    protected abstract function validatePost(array $postArguments): array;
-    protected abstract function validateGet(array $getArguments): array;
+    protected abstract function validate(int $method, array $arguments): array;
     protected abstract function onSubmit(int $method, array $arguments): void;
     protected abstract function onError(int $method): void;
 
@@ -22,11 +21,10 @@ abstract class FormHandler {
     function execute(): void {
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $method = FormHandler::POST;
-            $arguments = $this->validatePost($_POST);
         } else {
             $method = FormHandler::GET;
-            $arguments = $this->validateGet($_GET);
         }
+        $arguments = $this->validate($method, $_POST);
         if ($this->hasErrors) {
             $this->onError($method);
         } else {

@@ -1,15 +1,17 @@
 <?php
-include_once("common/FileSharing.php");
+require_once("libs/common/tools.php");
+require_once("libs/common/FileSharing.php");
 
-function personalHome(HomeFormHandler $form) {
-    $personalDirectory = getClientPersonalDirectory();
+function databases_template(DatabasesFormHandler $form, Client $client) {
+    $personalDirectory = $client->getPersonalDirectory();
+
     if (!file_exists($personalDirectory)) {
         mkdir($personalDirectory);
     }
     $personalFiles = glob("$personalDirectory/*");
     $pdo = getDataDbHandle();
     $sharingsByFilePath = FileSharing::getLinkIdsForFilePaths($pdo, $personalFiles);
-?>
+    ?>
     <section class="medium-padding">
         <style>
             .file-list-item[data-state="shared"] .share-block {
@@ -54,8 +56,7 @@ function personalHome(HomeFormHandler $form) {
                 };
             });
         </script>
-        <h1>Home of <?php echo getClientIdentity(); ?></h1>
-        <a href="../index.html">Go to Bunga</a>
+        <a href="./">Back to home</a>
         <h2>Your list of databases</h2>
         <form method="POST">
         <ul>

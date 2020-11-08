@@ -1,19 +1,20 @@
 <?php
-include_once("common/FormHandler.php");
+require_once("libs/common/FormHandler.php");
+require_once("libs/common/Credentials.php");
 
 class ConnectionFormHandler extends FormHandler {
     private $isValidPassword = false;
+    private $client;
+
+    function __construct(Client $client) {
+        $this->client = $client;
+    }
 
     function isPasswordWrong() {
         return !$this->isValidPassword;
     }
 
-    protected function validateGet(array $arguments): array {
-        $this->invalidate();
-        return [];
-    }
-
-    protected function validatePost(array $arguments): array {
+    protected function validate(int $method, array $arguments): array {
         if (!empty($_POST) && !empty($_POST["connection-login"]) && !empty($_POST["connection-password"])) {
             return ["credentials" => new Credentials($_POST["connection-login"], $_POST["connection-password"])];
         } else {
@@ -30,7 +31,7 @@ class ConnectionFormHandler extends FormHandler {
         $this->isValidPassword = $credentials->isValid($pdo);
             
         if ($this->isValidPassword) {
-            authenticateClient($credentials->login);
+            $this->client->authenticate($credentials->login);
         }
     }
 

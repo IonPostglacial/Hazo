@@ -1,4 +1,4 @@
-<?php function connectionForm(ConnectionFormHandler $form) { ?>
+<?php function connection_template(ConnectionFormHandler $form) { ?>
     <section class="medium-padding">
         <h1>Connect to your account</h1>
         <form class="form-grid" method="POST">

@@ -1,13 +1,14 @@
 <?php
-include_once("common/FormHandler.php");
+include_once("libs/common/FormHandler.php");
 
-class HomeFormHandler extends FormHandler {
-    protected function validateGet(array $arguments): array {
-        $this->invalidate();
-        return [];
+class DatabasesFormHandler extends FormHandler {
+    private $client;
+
+    function __construct(Client $client) {
+        $this->client = $client;
     }
 
-    protected function validatePost(array $arguments): array {
+    protected function validate(int $method, array $arguments): array {
         if(!empty($_FILES) && !empty($_FILES["db-file-upload"]) && $_FILES["db-file-upload"]["type"] === "application/json") {
             return ["uploadedFile" => $_FILES["db-file-upload"]];
         } else {
@@ -22,9 +23,9 @@ class HomeFormHandler extends FormHandler {
     }
 
     protected function onSubmit(int $method, array $arguments): void {
-        $target_dir = getClientPersonalDirectory() . "/";
+        $target_dir = $this->client->getPersonalDirectory();
         $uploadedFile = $arguments["uploadedFile"];
-        $target_file = $target_dir . basename($uploadedFile["name"]);
+        $target_file = $target_dir . "/" . basename($uploadedFile["name"]);
         
         if (file_exists($target_file)) {
             echo "file already exists.";

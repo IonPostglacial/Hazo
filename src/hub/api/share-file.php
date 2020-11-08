@@ -1,20 +1,22 @@
 <?php
 include_once("../common/tools.php");
 include_once("../common/FileSharing.php");
+include_once("../common/Client.php");
 
 function handleRequest() {
-    ensureClientConnection();
+    $client = Client::getCurrent();
+    $client->ensureConnection();
     
     if (empty($_POST["file"])) {
         return replyJson(["status" => "ko", "message" => "file argument is mandatory"]);
     }
     $fileName = $_POST["file"];
-    $fileFullName = getClientPersonalFilePath($fileName);
+    $fileFullName = $client->getPersonalFilePath($fileName);
     if (!file_exists($fileFullName)) {
         return replyJson(["status" => "ko", "message" => "file '$fileName' doesn't exist"]);
     }
-    ensureClientConnection();
-    if (!isClientAuthenticated()) {
+    $client->ensureConnection();
+    if (!$client->isAuthenticated()) {
         return replyForbidden();
     }
     $pdo = getDataDbHandle();
