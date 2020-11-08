@@ -54,14 +54,7 @@ export default Vue.extend({
             return this.hierarchy.filter(parent => this.isParentSelected[parent.id]);
         },
         hierarchy(): Taxon[] {
-            const hierarchy: Taxon[] = [];
-            let it: Taxon|undefined = this.selectedTaxon;
-
-            while(typeof it?.parentId !== "undefined") {
-                const parent = this.taxonsHierarchy.itemWithId(it.parentId);
-                hierarchy.unshift(parent!);
-                it = parent;
-            }
+            const hierarchy = this.taxonsHierarchy.parentsOf(this.selectedTaxon)
             hierarchy.forEach(parent =>  {
                 if (typeof this.isParentSelected[parent.id] === "undefined")
                     Vue.set(this.isParentSelected, parent.id, true);

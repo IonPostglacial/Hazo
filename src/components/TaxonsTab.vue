@@ -17,18 +17,33 @@
                         </div>
                         <div class="selector">
                             <input type="radio" class="selector-radio" id="view-mode-edit" name="view-mode" value="edit-item" v-model="mode" />
-                            <label for="view-mode-edit" class="selector-label">Edition</label>
+                            <label for="view-mode-edit" class="selector-label">Edit</label>
                         </div>
                         <div class="selector">
                             <input type="radio" class="selector-radio" id="view-mode-present" name="view-mode" value="present-item" v-model="mode" />
-                            <label for="view-mode-present" class="selector-label">Presentation</label>
+                            <label for="view-mode-present" class="selector-label">Print</label>
                         </div>
                     </div>
                 </div>
+                <div v-if="selectedTaxon" class="relative">
+                    <div v-if="selectingParent">
+                        <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
+                        <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
+                            <TreeMenu :items="taxonsHierarchy"
+                                :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
+                                @select-item="changeSelectedTaxonParent">
+                            </TreeMenu>
+                        </div>
+                    </div>
+                    <div v-if="!selectingParent" class="button-group">
+                        <button type="button" v-for="parent in taxonsHierarchy.parentsOf(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name }}</button>
+                        <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name }}</button>
+                    </div>
+                </div>
                 <div class="button-group">
-                    <button type="button" @click="emptyZip">Folder Hierarchy</button>
+                    <button type="button" @click="emptyZip">Folders</button>
                     <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
-                    <button type="button" @click="exportStats">Statistics</button>
+                    <button type="button" @click="exportStats">Stats</button>
                 </div>
             </div>
             <taxon-presentation v-if="mode === 'present-item'"
@@ -158,6 +173,7 @@ export default Vue.extend({
             editor: ClassicEditor,
             editorConfig: {},
             latexProgressText: "",
+            selectingParent: false,
         }
     },
     computed: {
@@ -200,6 +216,16 @@ export default Vue.extend({
         },
     },
     methods: {
+        openSelectParentDropdown() {
+            this.selectingParent = true;
+        },
+        closeSelectParentDropdown() {
+            this.selectingParent = false;
+        },
+        changeSelectedTaxonParent(id: string) {
+            this.$emit("taxon-parent-changed", { taxon: this.selectedTaxon, newParentId: id });
+            this.selectingParent = false;
+        },
         selectTaxon(id: string) {
             this.$emit("taxon-selected", id);
         },

@@ -349,6 +349,10 @@ div.invisible {
     max-height: 200px;
 }
 
+.big-max-height {
+    max-height: 600px;
+}
+
 .scroll {
     overflow-x: hidden;
     overflow-y: auto;
@@ -460,6 +464,10 @@ div.invisible {
 .fixed-right {
     position: fixed;
     right: 0;
+}
+
+.absolute {
+    position: absolute;
 }
 
 .absolute-top-right {

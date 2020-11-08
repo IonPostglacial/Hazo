@@ -112,6 +112,19 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
     }
 
+    parentsOf(item: T|undefined): T[] {
+        if (typeof item === "undefined") return [];
+        const hierarchy: T[] = [];
+        let it: T|undefined = item;
+
+        while(typeof it?.parentId !== "undefined") {
+            const parent = this.itemWithId(it.parentId);
+            hierarchy.unshift(parent!);
+            it = parent;
+        }
+        return hierarchy;
+    }
+
     getOrderedChildrenTree(item: T|undefined): Iterable<T> {
         if (typeof item === "undefined") return [];
         const self = this;

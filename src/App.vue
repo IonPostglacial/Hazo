@@ -30,6 +30,7 @@
             :selected-taxon-id="selectedTaxonId"
             :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books"
+            @taxon-parent-changed="changeTaxonParent"
             @taxon-selected="selectTaxon" @add-taxon="addTaxon" @remove-taxon="removeTaxon"
             @open-photo="maximizeImage">
         </TaxonsTab>
@@ -173,6 +174,18 @@ export default Vue.extend({
         },
         changeTaxonsHierarchy(taxonsHierarchy: Hierarchy<Taxon>) {
             this.taxonsHierarchy = taxonsHierarchy;
+        },
+        changeTaxonParent(e: { taxon: Taxon, newParentId: string }) {
+            if (e.taxon.id === e.newParentId) return;
+
+            const childrenTree = [...this.taxonsHierarchy.getOrderedChildrenTree(e.taxon)];
+
+            this.taxonsHierarchy.remove(e.taxon);
+            e.taxon.parentId = e.newParentId;
+            this.addTaxon(e.taxon);
+            for (const child of childrenTree) {
+                this.addTaxon(child);
+            }
         },
         selectTaxon(id: string) {
             this.selectedTaxonId = id;

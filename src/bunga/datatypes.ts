@@ -33,6 +33,7 @@ export interface BasicInfo {
 export interface State extends BasicInfo {
     descriptorId: string;
 	description?: string;
+	color?: string;
 }
 
 export interface DetailData extends BasicInfo {

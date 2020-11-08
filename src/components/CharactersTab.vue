@@ -101,6 +101,8 @@
                         </picture-frame>
                     </picture-box>
                     <div class="form-grid">
+                        <label>Color</label>
+                        <input type="color" v-model="selectedCharacterState.color">
                         <label>Description</label>
                         <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
                     </div>

@@ -7,6 +7,7 @@
 import type { Character, HierarchicalItem, Hierarchy } from "@/bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
+import { State } from '@/bunga/datatypes'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTree",
@@ -14,21 +15,15 @@ export default Vue.extend({
         characters: Object as PropType<Hierarchy<Character>>,
     },
     mounted() {
-        type D3Hierarchy = { name: string, children: D3Hierarchy[]|null, _children?: D3Hierarchy };
-        type D3HierarchyNode = d3.HierarchyNode<any> & {_children?: any };
-        function hierarchyToD3(hierarchy: Hierarchy<any>, h: Character): D3Hierarchy {
-            return { name: h.name, children: [...hierarchy.childrenOf(h), ...(h.states?.map(s => ({ name: s.name, children: [] })) ?? [])].map(child => hierarchyToD3(hierarchy, child)) };
+        type D3Hierarchy = { name: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
+        type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
+        function hierarchyToD3(hierarchy: Hierarchy<any>, h: any): D3Hierarchy {
+            return { name: h.name, color: h.color, children: [...hierarchy.childrenOf(h), ...(h.states?.map((s: State) => ({ name: s.name, children: [], color: s.color })) ?? [])].map(child => hierarchyToD3(hierarchy, child)) };
         }
-
         const treeData: D3Hierarchy = { name: "Characters", children: [...this.characters.topLevelItems].map(ch => hierarchyToD3(this.characters, ch)) };
-
-        console.log(treeData);
-
         const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = this.$el.clientHeight;
-        console.log("bounds", MAX_WIDTH, MAX_HEIGHT);
 
-        // Set the dimensions and margins of the diagram
-        const margin = {top: 20, right: 90, bottom: 30, left: 90},
+        const margin = { top: 20, right: 90, bottom: 30, left: 90 },
             width = MAX_WIDTH - margin.left - margin.right,
             height = MAX_HEIGHT - margin.top - margin.bottom;
 
@@ -43,19 +38,16 @@ export default Vue.extend({
                 + margin.left + "," + margin.top + ")");
         let i = 0;
         const duration = 750,
-            root: d3.HierarchyNode<any> & { x0?: number, y0?: number } = d3.hierarchy(treeData, function(d) { return d.children; }),
+            root: D3HierarchyNode & { x0?: number, y0?: number } = d3.hierarchy(treeData, function(d) { return d.children; }),
             treemap = d3.tree().size([height, width]);
 
-        // Assigns parent, children, height, depth
         root.x0 = height / 2;
         root.y0 = 0;
 
-        // Collapse after the second level
         root.children?.forEach(collapse);
 
         update(root);
 
-        //Collapse the node and all it"s children
         function collapse(d: any) {
             if(d.children) {
                 d._children = d.children;
@@ -64,7 +56,11 @@ export default Vue.extend({
             }
         }
 
-        function update(source: D3HierarchyNode & {x0?: number, y0?: number, x?: number, y?: number }) {
+        function getColor(d: D3HierarchyNode): string {
+            return d.data.color ? d.data.color : d._children ? "lightsteelblue" : "#fff";
+        }
+
+        function update(source: D3HierarchyNode & { x0?: number, y0?: number, x?: number, y?: number }) {
 
             // Assigns the x and y position for the nodes
             const treeData = treemap(root);
@@ -95,7 +91,7 @@ export default Vue.extend({
                 .attr("class", "node")
                 .attr("r", 1e-6)
                 .style("fill", function(d: D3HierarchyNode) {
-                    return d._children ? "lightsteelblue" : "#fff";
+                    return getColor(d);
                 });
 
             // Add labels for the nodes
@@ -123,7 +119,7 @@ export default Vue.extend({
             nodeUpdate.select("circle.node")
                 .attr("r", 10)
                 .style("fill", function(d: d3.HierarchyPointNode<any> & { _children?: number }) {
-                    return d._children ? "lightsteelblue" : "#fff";
+                    return getColor(d);
                 })
                 .attr("cursor", "pointer");
 
