@@ -4,13 +4,11 @@
         <div class="medium-margin">
             <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
         </div>
-        <div class="medium-margin">
-            <div class="selector" v-for="(tab, index) in tabs" :key="index">
-                <input v-model="selectedTab" :id="'tab-radio-' + index" class="selector-radio" name="tab-radio" :value="index" type="radio" />
-                <label class="selector-label" :for="'tab-radio-' + index">
-                    {{ tab }}
-                </label>
-            </div>
+        <div class="button-group medium-margin">
+            <button type="button" :class="{ 'selected-tab': selectedTab === 0 }" @click="selectedTab = 0">Taxons</button>
+            <button type="button" :class="{ 'selected-tab': selectedTab === 1 }" @click="selectedTab = 1">Characters</button>
+            <button type="button" :class="{ 'selected-tab': selectedTab === 2 }" @click="selectedTab = 2">Characters Tree</button>
+            <button type="button" :class="{ 'selected-tab': selectedTab === 3 }" @click="selectedTab = 3">Dictionary</button>
         </div>
         <div class="medium-margin">
             <button type="button" v-on:click="editExtraFields">Extra Fields</button>
@@ -109,12 +107,6 @@ export default Vue.extend({
             bigImages: [{id: "", url: "", label: ""}],
             bigImageIndex: 0,
             showBigImage: false,
-            tabs: [
-                "Taxons",
-                "Characters",
-                "Characters Tree",
-                "Dictionary",
-            ],
             extraFields: new Array<Field>(),
             books: standardBooks,
             taxonsHierarchy: new Hierarchy<Taxon>("myt-", new ObservableMap()),

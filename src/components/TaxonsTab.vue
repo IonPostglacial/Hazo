@@ -10,19 +10,10 @@
             <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
                 <div class="horizontal-flexbox">
                     <span class="medium-margin">Mode:</span>
-                    <div>
-                        <div class="selector">
-                            <input type="radio" class="selector-radio" id="view-mode-view" name="view-mode" value="view-item" v-model="mode" />
-                            <label for="view-mode-view" class="selector-label">View</label>
-                        </div>
-                        <div class="selector">
-                            <input type="radio" class="selector-radio" id="view-mode-edit" name="view-mode" value="edit-item" v-model="mode" />
-                            <label for="view-mode-edit" class="selector-label">Edit</label>
-                        </div>
-                        <div class="selector">
-                            <input type="radio" class="selector-radio" id="view-mode-present" name="view-mode" value="present-item" v-model="mode" />
-                            <label for="view-mode-present" class="selector-label">Print</label>
-                        </div>
+                    <div class="button-group">
+                        <button type="button" :class="{ 'selected-tab': mode === 'view-item' }" @click="mode = 'view-item'">View</button>
+                        <button type="button" :class="{ 'selected-tab': mode === 'edit-item' }" @click="mode = 'edit-item'">Edit</button>
+                        <button type="button" :class="{ 'selected-tab': mode === 'present-item' }" @click="mode = 'present-item'">Print</button>
                     </div>
                 </div>
                 <div v-if="selectedTaxon" class="relative">

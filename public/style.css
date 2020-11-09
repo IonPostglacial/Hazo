@@ -80,6 +80,19 @@ select:hover,
     background-color: #287ae6;
 }
 
+button:active,
+select:active,
+.button:active {
+	background-color: #bbb;
+}
+
+button.selected-tab,
+.button.selected-tab {
+	box-shadow: inset 0px 0px 2px rgba(0, 0, 0, 0.2);
+	border-bottom: 3px solid #287ae6;
+	background-color: #eee;
+}
+
 .full-width {
     display: inline-block;
     width: 100%;
@@ -87,12 +100,6 @@ select:hover,
 
 .height-full {
     height: 100%;
-}
-
-button:active,
-select:active,
-.button:active {
-	background-color: #bbb;
 }
 
 select {
@@ -616,30 +623,4 @@ div.invisible {
 
 .indented {
     margin-left: 42px;
-}
-
-.selector-label {
-    margin-left: 0;
-    margin-right: 0;
-    border-radius: 0;
-    border-left-width: 0;
-}
-
-.selector:first-of-type .selector-label {
-    border-left-width: 1px;
-    border-radius: 5px 0 0 5px;
-}
-
-.selector:last-of-type .selector-label {
-    border-radius: 0 5px 5px 0;
-}
-
-.selector-radio:checked + .selector-label {
-	box-shadow: inset 0px 0px 2px rgba(0, 0, 0, 0.2);
-	border-bottom: 3px solid #287ae6;
-	background-color: #eee;
-}
-
-.selector-radio {
-    display: none;
 }
