@@ -9,14 +9,14 @@
                 </div>
             </div>
             <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between button-group">
-                <li :class="'flex-grow-1 button no-list-style ' + (visibleColumns[nameField.propertyName] ? 'background-color-1' : '')" v-for="nameField in nameFields" :key="nameField.propertyName" @click="toggleColumnVisibility(nameField.propertyName)">
+                <li v-for="nameField in nameFields" :key="nameField.propertyName" :class="['flex-grow-1', 'button', 'no-list-style', { 'background-color-1': visibleColumns[nameField.propertyName] }]" @click="toggleColumnVisibility(nameField.propertyName)">
                     {{ nameField.label }}
                 </li>
             </ul>
         </div>
         <div class="horizontal-flexbox big-padding-right">
             <ul v-for="(nameField, fieldNum) in columnsToDisplay" :key="nameField.propertyName"
-                :class="'menu flex-grow-1 ' + (fieldNum !== 0 ? 'thin-border-left' : '')">
+                :class="['menu', 'flex-grow-1', { 'thin-border-left': fieldNum !== 0 }]">
                 <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
                     :item="item" :items-hierarchy="items"   
                     :is-first-column="fieldNum === 0"

@@ -11,9 +11,7 @@
                     @click="openItem(item)">
                 <div v-for="field in nameFieldsForItem(item)" :key="field"
                         :title="item[field]"
-                        :class="'thin-border medium-padding text-ellipsed ' +
-                            (item.selected ? 'background-color-1' : 'white-background') +
-                            (isClickable(item) ? ' text-underlined' : '')">
+                        :class="['thin-border', 'medium-padding', 'text-ellipsed', item.selected ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
                     {{ item[field] }}
                 </div>
             </component>

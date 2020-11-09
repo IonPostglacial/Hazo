@@ -14,9 +14,9 @@
                     Icon:&nbsp;
                 <input type="text" v-model="field.icon">
                 </label>
-                <div class="close" style="width: 42px;" v-on:click="deleteExtraField(field.id)">&nbsp;</div>
+                <div class="close" style="width: 42px;" @click="deleteExtraField(field.id)">&nbsp;</div>
             </li>
-            <add-item v-on:add-item="addExtraField"></add-item>
+            <add-item @add-item="addExtraField"></add-item>
         </ul>
     </div>
 </template>

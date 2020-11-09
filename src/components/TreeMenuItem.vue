@@ -5,9 +5,9 @@
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
-            <label :class="'medium-line-height blue-hover flex-grow-1 medium-padding horizontal-flexbox center-items' + (selected ? ' background-color-1': '')" v-on:click="select">
+            <label :class="['medium-line-height', 'blue-hover', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', { 'background-color-1': selected }]" v-on:click="select">
                 <div v-if="isFirstColumn" class="min-width-small">{{ prettyId }}</div>
-                <div :class="'flex-grow-1 nowrap ' + (item.warning ? 'warning-color' : '')">{{ itemName }}</div>
+                <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName }}</div>
                 <slot></slot>
             </label>
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
@@ -28,7 +28,7 @@
                     :name-field="nameField" :items-hierarchy="itemsHierarchy" :item="child" :buttons="buttons" 
                     v-on="$listeners" :parent-id="item.id">
                 </TreeMenuItem>
-                <li v-if="editable || spaceForAdd" :class="spaceForAdd ? 'visibility-hidden' : ''">
+                <li v-if="editable || spaceForAdd" :class="{ 'visibility-hidden': spaceForAdd }">
                     <add-item v-on:add-item="addItem"></add-item>
                 </li>
             </div>

@@ -2,7 +2,7 @@
     <div id="app" class="vertical-flexbox lightgrey-background height-full">
     <nav class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="medium-margin">
-            <button type="button" v-on:click="toggleLeftMenu">Left Menu</button>
+            <button type="button" @click="toggleLeftMenu">Left Menu</button>
         </div>
         <div class="button-group medium-margin">
             <button type="button" :class="{ 'selected-tab': selectedTab === 0 }" @click="selectedTab = 0">Taxons</button>
@@ -11,18 +11,18 @@
             <button type="button" :class="{ 'selected-tab': selectedTab === 3 }" @click="selectedTab = 3">Dictionary</button>
         </div>
         <div class="medium-margin">
-            <button type="button" v-on:click="editExtraFields">Extra Fields</button>
+            <button type="button" @click="editExtraFields">Extra Fields</button>
         </div>
     </nav>
     <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
         <div class="horizontal-flexbox cented-aligned">
-            <button v-if="bigImageIndex > 0" class="background-color-1 font-size-28" v-on:click="bigImageIndex--">🡄</button>
+            <button v-if="bigImageIndex > 0" class="background-color-1 font-size-28" @click="bigImageIndex--">🡄</button>
             <img class="max-width-screen max-height-screen" :src="bigImage.url" :alt="bigImage.label">
-            <button v-if="bigImageIndex < bigImages.length - 1" class="background-color-1 font-size-28" v-on:click="bigImageIndex++">🡆</button>
+            <button v-if="bigImageIndex < bigImages.length - 1" class="background-color-1 font-size-28" @click="bigImageIndex++">🡆</button>
         </div>
-        <button class="background-color-1" v-on:click="minimizeImage">Minimize</button>
+        <button class="background-color-1" @click="minimizeImage">Minimize</button>
     </div>
-    <div :class="'horizontal-flexbox start-align flex-grow-1 height-main-panel ' + (showBigImage ? 'invisible' : '')">
+    <div :class="['horizontal-flexbox', 'start-align', 'flex-grow-1', 'height-main-panel', { invisible: showBigImage }]">
         <TaxonsTab v-if="selectedTab === 0"
             :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
             :selected-taxon-id="selectedTaxonId"
@@ -49,20 +49,20 @@
     </div>
     <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="button-group">
-            <button type="button" v-on:click="importFile">Import</button>
-            <button type="button" v-on:click="jsonExport">Export</button>
-            <button type="button" v-on:click="exportSDD">Export SDD</button>
-            <button type="button" v-on:click="mergeFile">Merge</button>
+            <button type="button" @click="importFile">Import</button>
+            <button type="button" @click="jsonExport">Export</button>
+            <button type="button" @click="exportSDD">Export SDD</button>
+            <button type="button" @click="mergeFile">Merge</button>
         </div>
-        <input class="invisible" v-on:change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
-        <input class="invisible" v-on:change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
+        <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
+        <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
         <div class="button-group">
-            <button type="button" class="background-color-ok" v-on:click="saveData">Save</button>
+            <button type="button" class="background-color-ok" @click="saveData">Save</button>
             <select v-model="selectedBase">
                 <option v-for="databaseId in databaseIds" :key="databaseId" :value="databaseId">Database #{{ databaseId }}</option>
             </select>
-            <button type="button" class="background-color-1" v-on:click="createNewDatabase">New DB</button>
-            <button type="button" class="background-color-ko" v-on:click="resetData">Reset</button>
+            <button type="button" class="background-color-1" @click="createNewDatabase">New DB</button>
+            <button type="button" class="background-color-ko" @click="resetData">Reset</button>
         </div>
         <div class="button-group">
             <button type="button" @click="globalReplace">Replace Text</button>
