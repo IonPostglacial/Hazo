@@ -26,7 +26,7 @@ export function createDetailData(init: DetailDataInit): DetailData {
 		id: init.id,
 		name: init.name ?? "",
 		author: init.author ?? "",
-		nameEN: init.nameCN ?? "",
+		nameEN: init.nameEN ?? "",
 		nameCN: init.nameCN ?? "",
 		name2: init.name2 ?? "",
 		vernacularName: init.vernacularName ?? "",
