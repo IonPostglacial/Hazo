@@ -122,7 +122,7 @@ export default Vue.extend({
     components: { TreeMenu },
     computed: {
         selectedCharacter(): Character|undefined {
-            return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
+            return this.charactersHierarchy?.itemWithId(this.selectedCharacterId);
         },
         selectedCharacterState(): State|undefined {
             return this.selectedCharacter?.states?.find(s => s.id === this.selectedState);
@@ -131,7 +131,7 @@ export default Vue.extend({
             const parentId = this.selectedCharacter?.parentId;
             if (typeof parentId === "undefined")
                 return[];
-            const parent = this.charactersHierarchy.itemWithId(parentId);
+            const parent = this.charactersHierarchy?.itemWithId(parentId);
             if (typeof parent === "undefined")
                 return[];
             return parent.states;
@@ -159,7 +159,7 @@ export default Vue.extend({
                 const i = this.selectedCharacter!.inapplicableStates.findIndex(s => s.id === state.id);
                 this.selectedCharacter!.inapplicableStates.splice(i, 1);
             }
-            this.charactersHierarchy.add(clone(this.selectedCharacter!));
+            this.charactersHierarchy?.add(clone(this.selectedCharacter!));
         },
         setRequiredState(state: State, selected: boolean) {
             if (selected) {
@@ -168,7 +168,7 @@ export default Vue.extend({
                 const i = this.selectedCharacter!.requiredStates.findIndex(s => s.id === state.id);
                 this.selectedCharacter!.requiredStates.splice(i, 1);
             }
-            this.charactersHierarchy.add(clone(this.selectedCharacter!));
+            this.charactersHierarchy?.add(clone(this.selectedCharacter!));
         },
         setInherentState(state: State) {
             this.selectedCharacter!.inherentState = state;
@@ -180,7 +180,7 @@ export default Vue.extend({
             if (inapplicableStateIndex >= 0) {
                 this.selectedCharacter!.inapplicableStates.splice(inapplicableStateIndex, 1);
             }
-            this.charactersHierarchy.add(clone(this.selectedCharacter!));
+            this.charactersHierarchy?.add(clone(this.selectedCharacter!));
         },
         selectCharacter(id: string) {
             this.$emit("character-selected", id);
@@ -219,7 +219,7 @@ export default Vue.extend({
             this.selectedCharacterState?.photos.splice(e.detail.index, 1);
         },
         addCharacter(e: { value: string, parentId: string }) {
-            const newCharacter = this.charactersHierarchy.add(
+            const newCharacter = this.charactersHierarchy!.add(
                 createCharacter({
                     ...createDetailData({ id: "", name: e.value }),
                     parentId: e.parentId,
@@ -227,7 +227,7 @@ export default Vue.extend({
                     states: [],
                 })
             );
-            const parentDescription = this.charactersHierarchy.itemWithId(e.parentId);
+            const parentDescription = this.charactersHierarchy?.itemWithId(e.parentId);
             if(typeof parentDescription !== "undefined") {
                 const newState = {
                     id: "s-auto-" + newCharacter.id,
@@ -239,9 +239,9 @@ export default Vue.extend({
             this.$emit("change-characters", this.charactersHierarchy);
         },
         deleteCharacter(e: { itemId: string}) {
-            const descriptionToDelete = this.charactersHierarchy.itemWithId(e.itemId);
+            const descriptionToDelete = this.charactersHierarchy?.itemWithId(e.itemId);
             if (typeof descriptionToDelete !== "undefined") {
-                this.charactersHierarchy.remove(descriptionToDelete);
+                this.charactersHierarchy?.remove(descriptionToDelete);
             } else {
                 console.warn(`Trying to delete item with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }

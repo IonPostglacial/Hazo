@@ -172,15 +172,15 @@ export default Vue.extend({
             return this.mode === "edit-item";
         },
         selectedTaxon(): Taxon|undefined {
-            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+            return this.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
         },
         itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
             if (typeof this.selectedTaxon === "undefined") return new Hierarchy<Character & { selected?: boolean }>("c", new ObservableMap());
             const selectedTaxon = this.selectedTaxon;
 
-            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.characters);
+            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.characters!);
 
-            for (const character of this.characters.allItems) {
+            for (const character of this.characters!.allItems) {
                 if (typeof character.requiredStates === "undefined") {
                     console.log(character)
                 }
@@ -223,12 +223,12 @@ export default Vue.extend({
         addTaxon(e: {value: string, parentId: string }) {
             this.$emit("add-taxon", createTaxon({
                 ...createDetailData({ id: "", name: e.value, photos: [], }),
-                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
+                bookInfoByIds: Object.fromEntries(this.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId, childrenIds: []
             }));
         },
         removeTaxon(e: { itemId: string }) {
-            this.$emit("remove-taxon", this.taxonsHierarchy.itemWithId(e.itemId));
+            this.$emit("remove-taxon", this.taxonsHierarchy?.itemWithId(e.itemId));
         },
         setProperty(e: { detail: { property: string, value: string } }) {
             (this.selectedTaxon as any)[e.detail.property] = e.detail.value;
@@ -237,7 +237,7 @@ export default Vue.extend({
             this.selectedTaxon!.extra[e.detail.property] = e.detail.value;
         },
         pushToChildren(e: { detail: string }) {
-            for (const child of this.taxonsHierarchy.childrenOf(this.selectedTaxon)) {
+            for (const child of this.taxonsHierarchy!.childrenOf(this.selectedTaxon)) {
                 const anyChild: any = child, anyItem: any = this.selectedTaxon;
                 anyChild[e.detail] = anyItem[e.detail];
             }
@@ -276,18 +276,18 @@ export default Vue.extend({
             this.$emit("open-photo", {index: e.detail.index, photos: this.selectedTaxon!.photos});
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.taxonsHierarchy);
+            const zipTxt = await exportZipFolder(this.taxonsHierarchy!);
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new TexExporter([...this.taxonsHierarchy.allItems], this.characters.allItems);
+            const taxonToTex = new TexExporter([...this.taxonsHierarchy!.allItems], this.characters!.allItems);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
                 download(tex, "zip", true);
             });
         },
         exportStats() {
-            const csv = exportStatistics(this.taxonsHierarchy);
+            const csv = exportStatistics(this.taxonsHierarchy!);
             download(csv, "csv");
         },
     }

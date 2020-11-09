@@ -89,7 +89,8 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return newItem;
     }
 
-    itemWithId(id: string): T|undefined {
+    itemWithId(id: string|undefined): T|undefined {
+        if (typeof id === "undefined") return undefined;
         return this.items.get(id);
     }
 

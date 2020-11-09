@@ -45,16 +45,16 @@ export default Vue.extend({
     },
     computed: {
         selectedTaxon(): Taxon|undefined {
-            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+            return this.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
         },
         itemsToDisplay(): Iterable<Taxon> {
-            return this.taxonsHierarchy.getLeaves(this.selectedTaxon);
+            return this.taxonsHierarchy?.getLeaves(this.selectedTaxon) ?? [];
         },
         hierarchyToDisplay(): Taxon[] {
             return this.hierarchy.filter(parent => this.isParentSelected[parent.id]);
         },
         hierarchy(): Taxon[] {
-            const hierarchy = this.taxonsHierarchy.parentsOf(this.selectedTaxon)
+            const hierarchy = this.taxonsHierarchy?.parentsOf(this.selectedTaxon) ?? [];
             hierarchy.forEach(parent =>  {
                 if (typeof this.isParentSelected[parent.id] === "undefined")
                     Vue.set(this.isParentSelected, parent.id, true);
@@ -64,7 +64,7 @@ export default Vue.extend({
     },
     methods: {
         descriptions(taxon: Taxon): Description[] {
-            return taxonDescriptions(taxon, this.characters);
+            return taxonDescriptions(taxon, this.characters!);
         },
     }
 })

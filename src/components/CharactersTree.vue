@@ -20,7 +20,7 @@ export default Vue.extend({
         function hierarchyToD3(hierarchy: Hierarchy<any>, h: any): D3Hierarchy {
             return { name: h.name, color: h.color, children: [...hierarchy.childrenOf(h), ...(h.states?.map((s: State) => ({ name: s.name, children: [], color: s.color })) ?? [])].map(child => hierarchyToD3(hierarchy, child)) };
         }
-        const treeData: D3Hierarchy = { name: "Characters", children: [...this.characters.topLevelItems].map(ch => hierarchyToD3(this.characters, ch)) };
+        const treeData: D3Hierarchy = { name: "Characters", children: [...this.characters!.topLevelItems].map(ch => hierarchyToD3(this.characters!, ch)) };
         const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = this.$el.clientHeight;
 
         const margin = { top: 20, right: 90, bottom: 30, left: 90 },

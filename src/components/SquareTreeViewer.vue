@@ -35,7 +35,7 @@ export default Vue.extend({
     data() {
         return {
             isRoot: true,
-            currentItems: [...this.rootItems.topLevelItems],
+            currentItems: [...this.rootItems!.topLevelItems],
             breadCrumbs: [] as HierarchicalItem<any>[],
             menuFilter: "",
         }
@@ -45,7 +45,7 @@ export default Vue.extend({
             if (this.breadCrumbs.length - 1 < 0) return;
             const currentlyOpenItem = newRootItems.itemWithId(this.breadCrumbs[this.breadCrumbs.length - 1].id);
             if (typeof currentlyOpenItem !== "undefined") {
-                this.currentItems = [...this.rootItems.childrenOf(currentlyOpenItem)];
+                this.currentItems = [...this.rootItems!.childrenOf(currentlyOpenItem)];
             }
         }
     },
@@ -67,22 +67,22 @@ export default Vue.extend({
     },
     methods: {
         nameFieldsForItem(item: any): Iterable<string> {
-            return this.nameFields.filter(field => typeof item[field] !== "undefined" && item[field] !== null && item[field] !== "");
+            return this.nameFields?.filter(field => typeof item[field] !== "undefined" && item[field] !== null && item[field] !== "") ?? [];
         },
         isClickable(item: HierarchicalItem<any>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
         isSelectable(item: HierarchicalItem<any> & { selected?: boolean }): boolean {
-            return this.editable && !this.rootItems.hasChildren(item);
+            return this.editable && !this.rootItems!.hasChildren(item);
         },
         hasChildren(item: HierarchicalItem<any>): boolean {
-            return this.rootItems.hasChildren(item);
+            return this.rootItems?.hasChildren(item) ?? false;
         },
         openItem(item: HierarchicalItem<any> & { selected?: boolean }) {
             this.isRoot = false;
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
-                this.currentItems = [...this.rootItems.childrenOf(item)];
+                this.currentItems = [...this.rootItems!.childrenOf(item)];
                 this.$emit("item-open", { item });
             }
             if (this.isSelectable(item)) {
@@ -91,13 +91,13 @@ export default Vue.extend({
         },
         backToTop() {
             this.isRoot = true;
-            this.currentItems = [...this.rootItems.topLevelItems];
+            this.currentItems = [...this.rootItems!.topLevelItems];
             this.breadCrumbs = [];
         },
         goToBreadCrumb(breadCrumb: HierarchicalItem<any>) {
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
-            this.currentItems = [...this.rootItems.childrenOf(breadCrumb)];
+            this.currentItems = [...this.rootItems!.childrenOf(breadCrumb)];
         }
     },
 });

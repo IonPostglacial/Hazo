@@ -42,7 +42,7 @@
         <CharactersTree v-if="selectedTab === 2"
             :characters="charactersHierarchy">
         </CharactersTree>
-        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
+        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3" @dictionary-entry-added="addDictionaryEntry"></WordsDictionary>
         <extra-fields-panel :showFields="showFields" :extraFields="extraFields"
             @add-extra-field="addExtraField" @delete-extra-field="deleteExtraField">
         </extra-fields-panel>
@@ -87,7 +87,7 @@ import Vue from "vue";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
-import { Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
+import { DictionaryEntry, Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
 import { picturesFromPhotos } from './bunga/picture';
 
 export default Vue.extend({
@@ -111,7 +111,7 @@ export default Vue.extend({
             books: standardBooks,
             taxonsHierarchy: new Hierarchy<Taxon>("t", new ObservableMap()),
             charactersHierarchy: new Hierarchy<Character>("d", new ObservableMap()),
-            dictionaryEntries: {},
+            dictionaryEntries: {} as Record<string, DictionaryEntry>,
         };
     },
     mounted() {
@@ -220,6 +220,9 @@ export default Vue.extend({
             for (const taxon of this.taxonsHierarchy.allItems) {
                 removeStateFromSelection(taxon.statesSelection, e.state);
             }
+        },
+        addDictionaryEntry(entry: DictionaryEntry) {
+            Vue.set(this.dictionaryEntries, entry.id, entry);
         },
         editExtraFields() {
             this.showFields = !this.showFields;

@@ -63,59 +63,59 @@ export default Vue.extend({
     },
     data() {
         return {
-            open: this.initOpenItems.includes(this.item.id) || this.initOpen,
+            open: this.initOpenItems?.includes(this.item!.id) ?? this.initOpen,
         };
     },
     mounted() {
-        this.itemBus.onOpenAll(() => this.open = this.itemsHierarchy.hasChildren(this.item));
-        this.itemBus.onCloseAll(() => this.open = false);
-        this.itemBus.onToggle((id: string) =>  { if (id === this.item.id) { this.open = !this.open } });
+        this.itemBus?.onOpenAll(() => this.open = (this.itemsHierarchy?.hasChildren(this.item)) ?? false);
+        this.itemBus?.onCloseAll(() => this.open = false);
+        this.itemBus?.onToggle((id: string) =>  { if (id === this.item!.id) { this.open = !this.open } });
     }, 
     computed: {
-        selected() {
-            return this.selectedItem === this.item.id;
+        selected(): boolean {
+            return this.selectedItem === this.item?.id;
         },
-        prettyId() {
+        prettyId(): string {
             for (const prefix of knownPrefixes) {
-                if (this.item.id.startsWith(prefix)) {
+                if (this.item?.id.startsWith(prefix)) {
                     return this.item.id.substring(prefix.length);
                 }
             }
-            return this.item.id;
+            return this.item?.id ?? "";
         },
-        itemButtons() {
-            return this.buttons?.filter((button) => button.for === this.item.type);
+        itemButtons(): Button[]|undefined {
+            return this.buttons?.filter((button) => button.for === this.item?.type);
         },
-        hasArrows() {
-            return this.isFirstColumn && (this.itemsHierarchy.hasChildren(this.item) || this.editable);
+        hasArrows(): boolean {
+            return this.isFirstColumn && (this.itemsHierarchy!.hasChildren(this.item) || this.editable);
         },
-        itemName() {
-            const name = (this.item as any)[this.nameField.propertyName ?? "name"];
+        itemName(): string {
+            const name = (this.item as any)[this.nameField!.propertyName ?? "name"];
             if (typeof name === "undefined" || name === null || name === "") {
                 return "_";
             } else {
                 return name;
             }
         },
-        childrenToDisplay() {
-            return this.itemsHierarchy.childrenOf(this.item)
+        childrenToDisplay(): Iterable<any> {
+            return this.itemsHierarchy?.childrenOf(this.item) ?? []
         },
     },
     methods: {
         select() {
-            this.$emit("selected", this.item.id);
+            this.$emit("selected", this.item?.id);
         },
         toggleOpen() {
-            this.itemBus.emitToggle(this.item.id);
+            this.itemBus?.emitToggle(this.item!.id);
         },
         addItem({detail}: {detail: string}) {
-            this.$emit("add-item", { value: detail, parentId: this.item.id });
+            this.$emit("add-item", { value: detail, parentId: this.item?.id });
         },
         deleteItem() {
-            this.$emit("delete-item", { parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
+            this.$emit("delete-item", { parentId: this.item?.parentId, id: this.item?.id, itemId: this.item?.id });
         },
         buttonClicked(buttonId: string) {
-            this.$emit("button-click", { buttonId, parentId: this.item.parentId, id: this.item.id, itemId: this.item.id });
+            this.$emit("button-click", { buttonId, parentId: this.item?.parentId, id: this.item?.id, itemId: this.item?.id });
         },
         moveUp() {
             console.log("up");

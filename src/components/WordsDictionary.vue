@@ -113,7 +113,7 @@ export default Vue.extend({
         },
         addEntry(e: { detail: string }) {
             const id = Date.now();
-            Vue.set(this.entries, id, { id, nameCN: e.detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
+            this.$emit("dictionary-entry-added", { id: id.toString(), nameCN: e.detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
         },
         uploadCSV(e: InputEvent) {
             const target = e.target as HTMLInputElement;
@@ -124,7 +124,7 @@ export default Vue.extend({
                     const csv = parseCSV(fileReader.result);
                     for (const [id, [nameCN, nameEN, defCN, defEN]] of csv.entries()) {
                         if (id > 0) {
-                            Vue.set(this.entries, id, { id, nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" });
+                            this.entries[id] = { id: id.toString(), nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" };
                         }
                     }
                 }
