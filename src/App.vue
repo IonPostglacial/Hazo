@@ -109,8 +109,8 @@ export default Vue.extend({
             showBigImage: false,
             extraFields: new Array<Field>(),
             books: standardBooks,
-            taxonsHierarchy: new Hierarchy<Taxon>("myt-", new ObservableMap()),
-            charactersHierarchy: new Hierarchy<Character>("myd-", new ObservableMap()),
+            taxonsHierarchy: new Hierarchy<Taxon>("t", new ObservableMap()),
+            charactersHierarchy: new Hierarchy<Character>("d", new ObservableMap()),
             dictionaryEntries: {},
         };
     },
