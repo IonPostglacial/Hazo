@@ -50,9 +50,9 @@
     <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="button-group">
             <button type="button" @click="importFile">Import</button>
+            <button type="button" @click="mergeFile">Merge</button>
             <button type="button" @click="jsonExport">Export</button>
             <button type="button" @click="exportSDD">Export SDD</button>
-            <button type="button" @click="mergeFile">Merge</button>
         </div>
         <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
         <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
@@ -65,6 +65,8 @@
             <button type="button" class="background-color-ko" @click="resetData">Reset</button>
         </div>
         <div class="button-group">
+            <button type="button" @click="copyItem">Copy</button>
+            <button type="button" @click="pasteItem">Paste</button>
             <button type="button" @click="globalReplace">Replace Text</button>
             <button type="button" class="no-print background-color-1" @click="print">Print</button>
         </div>
@@ -87,8 +89,10 @@ import Vue from "vue";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
-import { DictionaryEntry, Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
+import { DictionaryEntry, HierarchicalItem, Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
 import { picturesFromPhotos } from './bunga/picture';
+import clone from './clone';
+
 
 export default Vue.extend({
     name: "App",
@@ -109,6 +113,7 @@ export default Vue.extend({
             showBigImage: false,
             extraFields: new Array<Field>(),
             books: standardBooks,
+            copiedItem: undefined as HierarchicalItem<Taxon|Character>|undefined,
             taxonsHierarchy: new Hierarchy<Taxon>("t", new ObservableMap()),
             charactersHierarchy: new Hierarchy<Character>("d", new ObservableMap()),
             dictionaryEntries: {} as Record<string, DictionaryEntry>,
@@ -124,6 +129,16 @@ export default Vue.extend({
         },
         selectedCharacter(): Character|undefined {
             return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
+        },
+        selectedItem(): HierarchicalItem<Taxon|Character>|undefined {
+            switch(this.selectedTab) {
+                case 0:
+                    return this.selectedTaxon;
+                case 1:
+                    return this.selectedCharacter;
+                default:
+                    return undefined;
+            }
         },
         bigImage(): Picture {
             return this.bigImages[this.bigImageIndex];
@@ -157,6 +172,28 @@ export default Vue.extend({
                     this.charactersHierarchy.add(character);
                 }
             });
+        },
+        copyItem() {
+            if (typeof this.selectedItem !== "undefined") {
+                this.copiedItem = clone(this.selectedItem);
+                this.copiedItem.id = "";
+            } else {
+                console.log("Nothing to copy here.");
+                alert("Nothing to copy here.");
+            }
+        },
+        pasteItem() {
+            if (typeof this.selectedItem !== "undefined" && typeof this.copiedItem !== "undefined") {
+                if (this.selectedItem.type === this.copiedItem.type) {
+                    const id = this.selectedItem.id;
+                    Object.assign(this.selectedItem, this.copiedItem);
+                    this.selectedItem.id = id;
+                } else {
+                    alert(`You cannot copy a ${this.copiedItem.type} into a ${this.selectedItem.type}`);
+                }
+            } else {
+                alert("Nothing to paste here.");
+            }
         },
         print() {
             window.print()
