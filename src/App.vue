@@ -28,23 +28,21 @@
             :selected-taxon-id="selectedTaxonId"
             :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books"
-            @taxon-parent-changed="changeTaxonParent"
-            @taxon-selected="selectTaxon" @add-taxon="addTaxon" @remove-taxon="removeTaxon"
+            @taxon-selected="selectTaxon"
             @open-photo="maximizeImage">
         </TaxonsTab>
         <CharactersTab v-if="selectedTab === 1"
-            :init-characters="charactersHierarchy"
+            :characters-hierarchy="charactersHierarchy"
             :show-left-menu="showLeftMenu"
             :selected-character-id="selectedCharacterId"
-            @add-state="addState" @remove-state="removeState" @character-selected="selectCharacter"
-            @open-photo="maximizeImage" @change-characters="changeCharactersHierarchy">
+            @character-selected="selectCharacter"
+            @open-photo="maximizeImage">
         </CharactersTab>
         <CharactersTree v-if="selectedTab === 2"
             :characters="charactersHierarchy">
         </CharactersTree>
-        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3" @dictionary-entry-added="addDictionaryEntry"></WordsDictionary>
-        <extra-fields-panel :showFields="showFields" :extraFields="extraFields"
-            @add-extra-field="addExtraField" @delete-extra-field="deleteExtraField">
+        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
+        <extra-fields-panel :showFields="showFields" :extraFields="extraFields">
         </extra-fields-panel>
     </div>
     <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
@@ -77,8 +75,7 @@
 <script lang="ts">
 import { standardBooks } from "./bunga/stdcontent";
 import { Character, Dataset, Field, Taxon } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, highlightTaxonsDetails, Hierarchy, repairPotentialCorruption } from "./bunga";
-import { ObservableMap } from "./observablemap";
+import { encodeDataset, decodeDataset, Hierarchy, highlightTaxonsDetails, repairPotentialCorruption } from "./bunga"; // eslint-disable-line no-unused-vars
 import TaxonsTab from "./components/TaxonsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
@@ -86,15 +83,15 @@ import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
 import DB from "./db-storage";
 import Vue from "vue";
+import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
-import { DictionaryEntry, HierarchicalItem, Picture, State } from './bunga/datatypes'; // eslint-disable-line no-unused-vars
-import { picturesFromPhotos } from './bunga/picture';
-import clone from './clone';
+import { DictionaryEntry, HierarchicalItem, Picture, State } from "./bunga/datatypes"; // eslint-disable-line no-unused-vars
+import clone from "./clone";
+import { BungaVue } from "./store";
 
-
-export default Vue.extend({
+export default BungaVue.extend({
     name: "App",
     components: {
         TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, ExtraFieldsPanel
@@ -111,12 +108,7 @@ export default Vue.extend({
             bigImages: [{id: "", url: "", label: ""}],
             bigImageIndex: 0,
             showBigImage: false,
-            extraFields: new Array<Field>(),
-            books: standardBooks,
             copiedItem: undefined as HierarchicalItem<Taxon|Character>|undefined,
-            taxonsHierarchy: new Hierarchy<Taxon>("t", new ObservableMap()),
-            charactersHierarchy: new Hierarchy<Character>("d", new ObservableMap()),
-            dictionaryEntries: {} as Record<string, DictionaryEntry>,
         };
     },
     mounted() {
@@ -124,6 +116,7 @@ export default Vue.extend({
         this.loadBase();
     },
     computed: {
+        ...mapState(["extraFields", "books", "taxonsHierarchy", "charactersHierarchy", "dictionaryEntries"]),
         selectedTaxon(): Taxon|undefined {
             return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
         },
@@ -154,23 +147,13 @@ export default Vue.extend({
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
                 const dataset = decodeDataset(savedDataset);
-                for (const taxon of Object.values(dataset?.taxons ?? {})) {
-                    repairPotentialCorruption(taxon);
-                    this.taxonsHierarchy.add(taxon);
-                }
-                for (const character of Object.values(dataset?.characters ?? {})) {
-                    repairPotentialCorruption(character);
-                    const statesIds = new Set(), uniqueStates = [];
-                    for (const state of character.states) {
-                        if (!statesIds.has(state.id)) {
-                            state.photos = picturesFromPhotos(state.photos);
-                            uniqueStates.push(state);
-                        }
-                        statesIds.add(state.id);
-                    }
-                    character.states = uniqueStates;
-                    this.charactersHierarchy.add(character);
-                }
+                const taxons = Object.values(dataset?.taxons ?? {}),
+                    characters = Object.values(dataset?.characters ?? {});
+                taxons.forEach(repairPotentialCorruption);
+                characters.forEach(repairPotentialCorruption);
+
+                this.$store.commit("addTaxons", taxons);
+                this.$store.commit("addCharacters", characters);
             });
         },
         copyItem() {
@@ -201,77 +184,15 @@ export default Vue.extend({
         changeCharactersHierarchy(charactershierarchy: Hierarchy<Character>) {
             this.charactersHierarchy = charactershierarchy;
         },
-        changeTaxonsHierarchy(taxonsHierarchy: Hierarchy<Taxon>) {
-            this.taxonsHierarchy = taxonsHierarchy;
-        },
-        changeTaxonParent(e: { taxon: Taxon, newParentId: string }) {
-            if (e.taxon.id === e.newParentId) return;
-
-            const childrenTree = [...this.taxonsHierarchy.getOrderedChildrenTree(e.taxon)];
-
-            this.taxonsHierarchy.remove(e.taxon);
-            e.taxon.parentId = e.newParentId;
-            this.addTaxon(e.taxon);
-            for (const child of childrenTree) {
-                this.addTaxon(child);
-            }
-        },
         selectTaxon(id: string) {
             this.selectedTaxonId = id;
         },
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
         },
-        addTaxon(taxon: Taxon) {
-            this.taxonsHierarchy.add(taxon);
-        },
-        removeTaxon(taxon: Taxon) {
-            this.taxonsHierarchy.remove(taxon);
-        },
-        addState(e: { state: State, character: Character }) {
-            this.charactersHierarchy.itemWithId(e.character.id)!.states.push(e.state);
-        },
-        removeState(e: { state: State, character: Character }) {
-            function removeStateFromArray(array: State[], state: State) {
-                const index = array.findIndex(s => s.id === state.id);
-                if (index >= 0) {
-                    array.splice(index, 1);
-                }
-            }
-
-            removeStateFromArray(e.character.states, e.state);
-            removeStateFromArray(e.character.inapplicableStates, e.state);
-            removeStateFromArray(e.character.requiredStates, e.state);
-            if (e.character.inherentState?.id === e.state.id) {
-                e.character.inherentState = undefined;
-            }
-
-            function removeStateFromSelection(stateSelection: Record<string, boolean|undefined>, state: State) {
-                for (const stateId in stateSelection) {
-                    if (stateId === state.id) {
-                        delete stateSelection[stateId];
-                    }
-                }
-            }
-
-            for (const taxon of this.taxonsHierarchy.allItems) {
-                removeStateFromSelection(taxon.statesSelection, e.state);
-            }
-        },
-        addDictionaryEntry(entry: DictionaryEntry) {
-            Vue.set(this.dictionaryEntries, entry.id, entry);
-        },
+        /* */
         editExtraFields() {
             this.showFields = !this.showFields;
-        },
-        addExtraField({detail} : {detail: string}) {
-            this.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
-        },
-        deleteExtraField(id:string) {
-            const i = this.extraFields.findIndex(f => f.id === id);
-            if (i >= 0) {
-                this.extraFields.splice(i, 1);
-            }
         },
         createNewDatabase() {
             const newDatabaseId = "" + this.databaseIds.length;

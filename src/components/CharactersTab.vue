@@ -115,7 +115,6 @@
 import TreeMenu from "./TreeMenu.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createCharacter, createDetailData, Character, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
-import clone from '@/clone';
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -142,114 +141,91 @@ export default Vue.extend({
     },
     data() {
         return {
-            charactersHierarchy: this.initCharacters,
             selectedState: "",
         };
     },
     props: {
         showLeftMenu: Boolean,
-        initCharacters: Hierarchy as PropType<Hierarchy<Character>>,
+        charactersHierarchy: Object as PropType<Hierarchy<Character>>,
         selectedCharacterId: String,
     },
     methods: {
         setInapplicableState(state: State, selected: boolean) {
-            if (selected) {
-                this.selectedCharacter!.inapplicableStates.push(state);
-            } else {
-                const i = this.selectedCharacter!.inapplicableStates.findIndex(s => s.id === state.id);
-                this.selectedCharacter!.inapplicableStates.splice(i, 1);
-            }
-            this.charactersHierarchy?.add(clone(this.selectedCharacter!));
+            this.$store.commit("setInapplicableState", { state, selected });
         },
         setRequiredState(state: State, selected: boolean) {
-            if (selected) {
-                this.selectedCharacter!.requiredStates.push(state);
-            } else {
-                const i = this.selectedCharacter!.requiredStates.findIndex(s => s.id === state.id);
-                this.selectedCharacter!.requiredStates.splice(i, 1);
-            }
-            this.charactersHierarchy?.add(clone(this.selectedCharacter!));
+            this.$store.commit("setRequiredState", { state, selected });
         },
         setInherentState(state: State) {
-            this.selectedCharacter!.inherentState = state;
-            const requiredStateIndex = this.selectedCharacter!.requiredStates.findIndex(s => s.id === state.id);
-            if (requiredStateIndex >= 0) {
-                this.selectedCharacter!.requiredStates.splice(requiredStateIndex, 1);
-            }
-            const inapplicableStateIndex = this.selectedCharacter!.inapplicableStates.findIndex(s => s.id === state.id);
-            if (inapplicableStateIndex >= 0) {
-                this.selectedCharacter!.inapplicableStates.splice(inapplicableStateIndex, 1);
-            }
-            this.charactersHierarchy?.add(clone(this.selectedCharacter!));
+            this.$store.commit("setInherentState", { state });
         },
         selectCharacter(id: string) {
             this.$emit("character-selected", id);
         },
         addCharacterPhoto(e: {detail: {value: string}}) {
             const numberOfPhotos = this.selectedCharacter!.photos.length;
-            this.selectedCharacter!.photos.push({
-                id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
-                url: e.detail.value,
-                label: `${this.selectedCharacter!.name} #${numberOfPhotos}`,
+            this.$store.commit("addCharacterPicture", {
+                character: this.selectedCharacter,
+                picture: {
+                    id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
+                    url: e.detail.value,
+                    label: `${this.selectedCharacter!.name} #${numberOfPhotos}`,
+                }
             });
         },
         setCharacterPhoto(e: {detail: {index: number, value: string}}) {
-            this.selectedCharacter!.photos[e.detail.index].url = e.detail.value;
+            this.$store.commit("setCharacterPicture", {
+                character: this.selectedCharacter,
+                index: e.detail.index,
+                picture: { ...this.selectedCharacter?.photos[e.detail.index], url: e.detail.value }
+            });
         },
         deleteCharacterPhoto(e: {detail: {index: number}}) {
-            this.selectedCharacter!.photos.splice(e.detail.index, 1);
+            this.$store.commit("removeCharacterPicture", { character: this.selectedCharacter, index: e.detail.index });
         },
         addStatePhoto(e: {detail: {value: string}}) {
-            if (this.selectedCharacterState && typeof this.selectedCharacterState?.photos === "undefined") {
-                this.selectedCharacterState.photos = [];
-            }
             const numberOfPhotos = this.selectedCharacterState!.photos.length;
-            this.selectedCharacterState!.photos.push({
-                id: `${this.selectedCharacterState!.id}-${numberOfPhotos}`,
-                url: e.detail.value,
-                label: e.detail.value,
+            this.$store.commit("addStatePicture", {
+                state: this.selectedCharacterState,
+                picture: {
+                    id: `${this.selectedCharacterState!.id}-${numberOfPhotos}`,
+                    url: e.detail.value,
+                    label: e.detail.value,
+                }
             });
         },
         setStatePhoto(e: {detail: {index: number, value: string}}) {
             if (this.selectedCharacterState) {
-                this.selectedCharacterState.photos[e.detail.index].url = e.detail.value;
+                this.$store.commit("setStatePicture", {
+                    state: this.selectedCharacterState,
+                    index: e.detail.index,
+                    picture: { ...this.selectedCharacterState.photos[e.detail.index], url: e.detail.value },
+                });
             }
         },
         deleteStatePhoto(e: {detail: {index: number}}) {
-            this.selectedCharacterState?.photos.splice(e.detail.index, 1);
+            this.$store.commit("removeStatePicture", { state: this.selectedCharacterState, index: e.detail.index });
         },
         addCharacter(e: { value: string, parentId: string }) {
-            const newCharacter = this.charactersHierarchy!.add(
-                createCharacter({
-                    ...createDetailData({ id: "", name: e.value }),
-                    parentId: e.parentId,
-                    childrenIds: [],
-                    states: [],
-                })
-            );
-            const parentDescription = this.charactersHierarchy?.itemWithId(e.parentId);
-            if(typeof parentDescription !== "undefined") {
-                const newState = {
-                    id: "s-auto-" + newCharacter.id,
-                    descriptorId: e.parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []
-                };
-                parentDescription.states = [...parentDescription.states, newState];
-                newCharacter.inherentState = newState;
-            }
-            this.$emit("change-characters", this.charactersHierarchy);
+            this.$store.commit("addCharacter", createCharacter({
+                ...createDetailData({ id: "", name: e.value }),
+                parentId: e.parentId,
+                childrenIds: [],
+                states: [],
+            }));
         },
         deleteCharacter(e: { itemId: string}) {
-            const descriptionToDelete = this.charactersHierarchy?.itemWithId(e.itemId);
-            if (typeof descriptionToDelete !== "undefined") {
-                this.charactersHierarchy?.remove(descriptionToDelete);
+            const characterToDelete = this.charactersHierarchy?.itemWithId(e.itemId);
+            if (typeof characterToDelete !== "undefined") {
+                this.$store.commit("removeCharacter", characterToDelete);
             } else {
-                console.warn(`Trying to delete item with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
+                console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }
         },
         addState(e: {detail: string}) {
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
 
-            this.$emit("add-state", {
+            this.$store.commit("addState", {
                 character: this.selectedCharacter,
                 state: {
                     id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
@@ -262,7 +238,7 @@ export default Vue.extend({
             });
         },
         removeState(state: State) {
-            this.$emit("remove-state", { state, character: this.selectedCharacter });
+            this.$store.commit("removeState", { state, character: this.selectedCharacter });
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();

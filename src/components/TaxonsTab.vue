@@ -152,8 +152,8 @@ export default Vue.extend({
     components: { SquareTreeViewer, ckeditor: CKEditor.component, TreeMenu, TaxonPresentation },
     props: {
         showLeftMenu: Boolean,
-        characters: Hierarchy as PropType<Hierarchy<Character>>,
-        taxonsHierarchy: Hierarchy as PropType<Hierarchy<Taxon>>,
+        characters: Object as PropType<Hierarchy<Character>>,
+        taxonsHierarchy: Object as PropType<Hierarchy<Taxon>>,
         extraFields: Array,
         selectedTaxonId: String,
         books: Array as PropType<Array<Book>>,
@@ -214,21 +214,21 @@ export default Vue.extend({
             this.selectingParent = false;
         },
         changeSelectedTaxonParent(id: string) {
-            this.$emit("taxon-parent-changed", { taxon: this.selectedTaxon, newParentId: id });
+            this.$store.commit("changeTaxonParent", { taxon: this.selectedTaxon, newParentId: id });
             this.selectingParent = false;
         },
         selectTaxon(id: string) {
             this.$emit("taxon-selected", id);
         },
         addTaxon(e: {value: string, parentId: string }) {
-            this.$emit("add-taxon", createTaxon({
+            this.$store.commit("addTaxon", createTaxon({
                 ...createDetailData({ id: "", name: e.value, photos: [], }),
                 bookInfoByIds: Object.fromEntries(this.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId, childrenIds: []
             }));
         },
         removeTaxon(e: { itemId: string }) {
-            this.$emit("remove-taxon", this.taxonsHierarchy?.itemWithId(e.itemId));
+            this.$store.commit("removeTaxon", this.taxonsHierarchy?.itemWithId(e.itemId));
         },
         setProperty(e: { detail: { property: string, value: string } }) {
             (this.selectedTaxon as any)[e.detail.property] = e.detail.value;
@@ -249,7 +249,7 @@ export default Vue.extend({
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAddId !== "undefined") {
                 const selected = !this.selectedTaxon.statesSelection[stateToAddId];
                 const newStateSelection = { ...this.selectedTaxon.statesSelection, [stateToAddId]: selected };
-                this.$emit("add-taxon", { ...this.selectedTaxon, statesSelection: newStateSelection });
+                this.$store.commit("addTaxon", { ...this.selectedTaxon, statesSelection: newStateSelection });
             }
         },
         openCharacter(e: { item: Character }) {
@@ -263,13 +263,17 @@ export default Vue.extend({
                 return;
             }
             const numberOfPhotos = this.selectedTaxon.photos.length;
-            this.selectedTaxon.photos.push({ id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value });
+            this.$store.commit("addTaxonPicture", { taxon: this.selectedTaxon, picture: { id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value } });
         },
         setItemPhoto(e: {detail: {index: number, value: string}}) {
-            this.selectedTaxon!.photos[e.detail.index].url = e.detail.value;
+            this.$store.commit("setTaxonPicture", {
+                taxon: this.selectedTaxon,
+                index: e.detail.index,
+                picture: { ...this.selectedTaxon!.photos[e.detail.index], url: e.detail.value },
+            });
         },
         deleteItemPhoto(e: {detail: { index: number }}) {
-            this.selectedTaxon!.photos.splice(e.detail.index, 1);
+            this.$store.commit("removeTaxonPicture", { taxon: this.selectedTaxon, index: e.detail.index });
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();

@@ -113,7 +113,7 @@ export default Vue.extend({
         },
         addEntry(e: { detail: string }) {
             const id = Date.now();
-            this.$emit("dictionary-entry-added", { id: id.toString(), nameCN: e.detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
+            this.$store.commit("addDictionaryEntry", { id: id.toString(), nameCN: e.detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
         },
         uploadCSV(e: InputEvent) {
             const target = e.target as HTMLInputElement;

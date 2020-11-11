@@ -14,7 +14,7 @@
                     Icon:&nbsp;
                 <input type="text" v-model="field.icon">
                 </label>
-                <div class="close" style="width: 42px;" @click="deleteExtraField(field.id)">&nbsp;</div>
+                <div class="close" style="width: 42px;" @click="removeExtraField(field.id)">&nbsp;</div>
             </li>
             <add-item @add-item="addExtraField"></add-item>
         </ul>
@@ -28,10 +28,10 @@ export default Vue.extend({
     props: { showFields: Boolean, extraFields: Array },
     methods: {
         addExtraField(e: { detail: string }) {
-            this.$emit("add-extra-field", e);
+            this.$store.commit("addExtraField", e);
         },
-        deleteExtraField(id: string) {
-            this.$emit("delete-extra-field", id);
+        removeExtraField(id: string) {
+            this.$store.commit("removeExtraField", id);
         }
     }
 })
