@@ -1,0 +1,41 @@
+<template>
+    <div v-if="open" class="absolute over-everything medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
+        <header class="horizontal-flexbox medium-padding thin-border">
+            <div class="nowrap no-vertical-overflow">{{ selectedImage.label }}</div><div class="close" @click="close"></div>
+        </header>
+        <div class="horizontal-flexbox cented-aligned">
+            <button v-if="selectedImageIndex > 0" class="background-color-1 font-size-28" @click="selectedImageIndex--">🡄</button>
+            <img class="max-width-screen max-height-screen" :src="selectedImage.url" :alt="selectedImage.label">
+            <button v-if="selectedImageIndex < images.length - 1" class="background-color-1 font-size-28" @click="selectedImageIndex++">🡆</button>
+        </div>
+    </div>
+</template>
+<script lang="ts">
+import { Picture } from "@/bunga/datatypes"; // eslint-disable-line no-unused-vars
+import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+
+
+export default Vue.extend({
+    name: "PopupGalery",
+    props: {
+        images: Array as PropType<Picture[]>,
+        open: Boolean,
+        initSelectedImageIndex: Number,
+    },
+    data() {
+        return {
+            selectedImageIndex: this.initSelectedImageIndex,
+        };
+    },
+    computed: {
+        selectedImage(): Picture {
+            return this.images[this.selectedImageIndex];
+        }
+    },
+    methods: {
+        close() {
+            this.$emit("closed");
+        }
+    }
+})
+</script>

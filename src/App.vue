@@ -14,15 +14,11 @@
             <button type="button" @click="editExtraFields">Extra Fields</button>
         </div>
     </nav>
-    <div v-if="showBigImage" class="medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
-        <div class="horizontal-flexbox cented-aligned">
-            <button v-if="bigImageIndex > 0" class="background-color-1 font-size-28" @click="bigImageIndex--">🡄</button>
-            <img class="max-width-screen max-height-screen" :src="bigImage.url" :alt="bigImage.label">
-            <button v-if="bigImageIndex < bigImages.length - 1" class="background-color-1 font-size-28" @click="bigImageIndex++">🡆</button>
-        </div>
-        <button class="background-color-1" @click="minimizeImage">Minimize</button>
-    </div>
-    <div :class="['horizontal-flexbox', 'start-align', 'flex-grow-1', 'height-main-panel', { invisible: showBigImage }]">
+    <popup-galery :images="bigImages" :init-selected-image-index="bigImageIndex" :open="showBigImage" @closed="showBigImage = false">
+
+    </popup-galery>
+
+    <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
         <TaxonsTab v-if="selectedTab === 0"
             :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
             :selected-taxon-id="selectedTaxonId"
@@ -81,6 +77,7 @@ import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
+import PopupGalery from "./components/PopupGalery.vue";
 import DB from "./db-storage";
 import Vue from "vue";
 import { mapState } from "vuex";
@@ -94,7 +91,7 @@ import { BungaVue } from "./store";
 export default BungaVue.extend({
     name: "App",
     components: {
-        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, ExtraFieldsPanel
+        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, ExtraFieldsPanel, PopupGalery,
     },
     data() {
         return {
@@ -148,12 +145,14 @@ export default BungaVue.extend({
                 this.resetData();
                 const dataset = decodeDataset(savedDataset);
                 const taxons = Object.values(dataset?.taxons ?? {}),
-                    characters = Object.values(dataset?.characters ?? {});
+                    characters = Object.values(dataset?.characters ?? {}),
+                    dictionaryEntries = Object.values(dataset?.dictionaryEntries ?? {});
                 taxons.forEach(repairPotentialCorruption);
                 characters.forEach(repairPotentialCorruption);
 
                 this.$store.commit("addTaxons", taxons);
                 this.$store.commit("addCharacters", characters);
+                this.$store.commit("addDictionaryEntries", dictionaryEntries);
             });
         },
         copyItem() {
@@ -190,7 +189,6 @@ export default BungaVue.extend({
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
         },
-        /* */
         editExtraFields() {
             this.showFields = !this.showFields;
         },

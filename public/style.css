@@ -360,6 +360,11 @@ div.invisible {
     max-height: 600px;
 }
 
+.no-vertical-overflow {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
 .scroll {
     overflow-x: hidden;
     overflow-y: auto;
@@ -475,6 +480,10 @@ div.invisible {
 
 .absolute {
     position: absolute;
+}
+
+.over-everything {
+    z-index: 10000;;
 }
 
 .absolute-top-right {

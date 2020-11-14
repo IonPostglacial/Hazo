@@ -162,6 +162,9 @@ export function createStore() {
             addDictionaryEntry(state, entry: DictionaryEntry) {
                 Vue.set(state.dictionaryEntries, entry.id, entry);
             },
+            addDictionaryEntries(state, entries: Array<DictionaryEntry>) {
+                entries.forEach(e => Vue.set(state.dictionaryEntries, e.id, e));
+            },
             addExtraField(state, {detail} : {detail: string}) {
                 state.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
             },
