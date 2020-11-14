@@ -2,7 +2,7 @@
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll thin-border white-background">
             <TreeMenu editable :items="charactersHierarchy" name="description"
-                :name-fields="[{ label: 'Name', propertyName: 'name'}, { label: '中文名', propertyName: 'nameCN'}]"
+                :name-fields="[{ label: 'Name', propertyName: 'name'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
                 @add-item="addCharacter"
                 @delete-item="deleteCharacter">
@@ -62,50 +62,48 @@
                 </div>
             </collapsible-panel>
         </section>
-        <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll">
-            <div class="relative horizontal-flexbox">
-                <collapsible-panel label="States">
-                    <div class="scroll medium-padding white-background">
-                        <ul class="no-list-style medium-padding medium-margin grid-3">
-                            <li v-for="state in selectedCharacter.states || []" :key="state.id" class="display-contents">
-                                <label class="blue-hover medium-padding rounded nowrap horizontal-flexbox">
-                                    <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
-                                    <div class="form-grid">
-                                        <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name" />
-                                        <div>EN</div><input type="text" class="flex-grow-1" v-model="state.nameEN" />
-                                        <div>CN</div><input type="text" class="flex-grow-1" v-model="state.nameCN" />
-                                    </div>
-                                </label>
-                                <div v-if="state.photos.length === 0">&nbsp;</div>
-                                <div v-if="state.photos.length > 0">
-                                    <img :src="state.photos[0].url" class="small-max-height">
+        <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll relative horizontal-flexbox">
+            <collapsible-panel label="States">
+                <div class="scroll medium-padding white-background">
+                    <ul class="no-list-style medium-padding medium-margin grid-3">
+                        <li v-for="state in selectedCharacter.states || []" :key="state.id" class="display-contents">
+                            <label class="blue-hover medium-padding rounded nowrap horizontal-flexbox">
+                                <input type="radio" v-model="selectedState" :value="state.id" name="selected-state">
+                                <div class="form-grid">
+                                    <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name" />
+                                    <div>EN</div><input type="text" class="flex-grow-1" v-model="state.nameEN" />
+                                    <div>CN</div><input type="text" class="flex-grow-1" v-model="state.nameCN" />
                                 </div>
-                                <div class="close" @click="removeState(state)"></div>
-                            </li>
-                            <li>
-                                <add-item v-on:add-item="addState"></add-item>
-                            </li>
-                        </ul>
-                    </div>
-                </collapsible-panel>
-                <div v-if="selectedCharacterState" class="stick-to-top thin-border medium-padding medium-margin white-background">
-                    <picture-box
-                            class="scroll"
-                            editable="true"
-                            @add-photo="addStatePhoto"
-                            @set-photo="setStatePhoto"
-                            @delete-photo="deleteStatePhoto"
-                            @open-photo="openStatePhoto">
-                        <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="photo.id"      
-                            :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true">
-                        </picture-frame>
-                    </picture-box>
-                    <div class="form-grid">
-                        <label>Color</label>
-                        <input type="color" v-model="selectedCharacterState.color">
-                        <label>Description</label>
-                        <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
-                    </div>
+                            </label>
+                            <div v-if="state.photos.length === 0">&nbsp;</div>
+                            <div v-if="state.photos.length > 0">
+                                <img :src="state.photos[0].url" class="small-max-height">
+                            </div>
+                            <div class="close" @click="removeState(state)"></div>
+                        </li>
+                        <li>
+                            <add-item v-on:add-item="addState"></add-item>
+                        </li>
+                    </ul>
+                </div>
+            </collapsible-panel>
+            <div v-if="selectedCharacterState" class="stick-to-top thin-border medium-padding medium-margin white-background">
+                <picture-box
+                        class="scroll"
+                        editable="true"
+                        @add-photo="addStatePhoto"
+                        @set-photo="setStatePhoto"
+                        @delete-photo="deleteStatePhoto"
+                        @open-photo="openStatePhoto">
+                    <picture-frame v-for="(photo, index) in selectedCharacterState.photos" :key="photo.id"      
+                        :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true">
+                    </picture-frame>
+                </picture-box>
+                <div class="form-grid">
+                    <label>Color</label>
+                    <input type="color" v-model="selectedCharacterState.color">
+                    <label>Description</label>
+                    <textarea v-model="selectedCharacterState.description" class="input-text"></textarea>
                 </div>
             </div>
         </section>
