@@ -1,5 +1,5 @@
 <template>
-    <div v-if="open" class="absolute over-everything medium-margin thin-border white-background flex-grow-1 centered-text max-width-screen">
+    <div v-if="open" class="absolute over-everything full-width medium-margin thin-border white-background flex-grow-1 centered-text">
         <header class="horizontal-flexbox medium-padding thin-border">
             <div class="nowrap no-vertical-overflow">{{ selectedImage.label }}</div><div class="close" @click="close"></div>
         </header>

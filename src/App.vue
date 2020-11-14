@@ -2,7 +2,7 @@
     <div id="app" class="vertical-flexbox lightgrey-background height-full">
     <nav class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="medium-margin">
-            <button type="button" @click="toggleLeftMenu">Left Menu</button>
+            <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
         </div>
         <div class="button-group medium-margin">
             <button type="button" :class="{ 'selected-tab': selectedTab === 0 }" @click="selectedTab = 0">Taxons</button>
@@ -11,13 +11,9 @@
             <button type="button" :class="{ 'selected-tab': selectedTab === 3 }" @click="selectedTab = 3">Dictionary</button>
         </div>
         <div class="medium-margin">
-            <button type="button" @click="editExtraFields">Extra Fields</button>
+            <button type="button" @click="showFields = !showFields">Extra Fields</button>
         </div>
     </nav>
-    <popup-galery :images="bigImages" :init-selected-image-index="bigImageIndex" :open="showBigImage" @closed="showBigImage = false">
-
-    </popup-galery>
-
     <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
         <TaxonsTab v-if="selectedTab === 0"
             :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
@@ -38,6 +34,8 @@
             :characters="charactersHierarchy">
         </CharactersTree>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
+        <popup-galery :images="bigImages" :init-selected-image-index="bigImageIndex" :open="showBigImage" @closed="showBigImage = false">
+        </popup-galery>
         <extra-fields-panel :showFields="showFields" :extraFields="extraFields">
         </extra-fields-panel>
     </div>
@@ -189,16 +187,10 @@ export default BungaVue.extend({
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
         },
-        editExtraFields() {
-            this.showFields = !this.showFields;
-        },
         createNewDatabase() {
             const newDatabaseId = "" + this.databaseIds.length;
             this.databaseIds.push(newDatabaseId);
             this.selectedBase = newDatabaseId;
-        },
-        toggleLeftMenu() {
-            this.showLeftMenu = !this.showLeftMenu;
         },
         maximizeImage({ photos, index }: { photos: Picture[], index: number }) {
             this.showBigImage = true;

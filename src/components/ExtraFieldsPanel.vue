@@ -1,5 +1,5 @@
 <template>
-    <div v-if="showFields" class="height-full medium-margin thin-border white-background medium-padding horizontal-flexbox fixed-right">
+    <div v-if="showFields" class="absolute over-everything full-width medium-margin thin-border white-background medium-padding horizontal-flexbox">
         <ul class="vertical-flexbox scroll">
             <li v-for="field in extraFields" :key="field.id" class="horizontal-flexbox">
                 <label class="nowrap">
