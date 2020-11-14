@@ -1,31 +1,23 @@
 <template>
     <div id="app" class="vertical-flexbox lightgrey-background height-full">
-    <nav class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
-        <div class="medium-margin">
-            <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-        </div>
-        <div class="button-group medium-margin">
+    <nav class="thin-border background-gradient-1 no-print centered-text">
+        <div class="button-group medium-margin inline-block">
             <button type="button" :class="{ 'selected-tab': selectedTab === 0 }" @click="selectedTab = 0">Taxons</button>
             <button type="button" :class="{ 'selected-tab': selectedTab === 1 }" @click="selectedTab = 1">Characters</button>
             <button type="button" :class="{ 'selected-tab': selectedTab === 2 }" @click="selectedTab = 2">Characters Tree</button>
             <button type="button" :class="{ 'selected-tab': selectedTab === 3 }" @click="selectedTab = 3">Dictionary</button>
-        </div>
-        <div class="medium-margin">
-            <button type="button" @click="showFields = !showFields">Extra Fields</button>
         </div>
     </nav>
     <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
         <TaxonsTab v-if="selectedTab === 0"
             :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
             :selected-taxon-id="selectedTaxonId"
-            :show-left-menu="showLeftMenu"
             :extra-fields="extraFields" :books="books"
             @taxon-selected="selectTaxon"
             @open-photo="maximizeImage">
         </TaxonsTab>
         <CharactersTab v-if="selectedTab === 1"
             :characters-hierarchy="charactersHierarchy"
-            :show-left-menu="showLeftMenu"
             :selected-character-id="selectedCharacterId"
             @character-selected="selectCharacter"
             @open-photo="maximizeImage">
@@ -36,8 +28,6 @@
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
         <popup-galery :images="bigImages" :init-selected-image-index="bigImageIndex" :open="showBigImage" @closed="showBigImage = false">
         </popup-galery>
-        <extra-fields-panel :showFields="showFields" :extraFields="extraFields">
-        </extra-fields-panel>
     </div>
     <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="button-group">
@@ -74,7 +64,6 @@ import TaxonsTab from "./components/TaxonsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
-import ExtraFieldsPanel from "./components/ExtraFieldsPanel.vue";
 import PopupGalery from "./components/PopupGalery.vue";
 import DB from "./db-storage";
 import Vue from "vue";
@@ -89,14 +78,12 @@ import { BungaVue } from "./store";
 export default BungaVue.extend({
     name: "App",
     components: {
-        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, ExtraFieldsPanel, PopupGalery,
+        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, PopupGalery,
     },
     data() {
         return {
             databaseIds: ["0"],
             selectedBase: "0",
-            showLeftMenu: true,
-            showFields: false,
             selectedTab: 0,
             selectedTaxonId: "",
             selectedCharacterId: "",

@@ -1,7 +1,7 @@
 <template>
     <div v-if="open" class="absolute over-everything full-width medium-margin thin-border white-background flex-grow-1 centered-text">
         <header class="horizontal-flexbox medium-padding thin-border">
-            <div class="nowrap no-vertical-overflow">{{ selectedImage.label }}</div><div class="close" @click="close"></div>
+            <div class="nowrap no-vertical-overflow flex-grow-1">{{ selectedImage.label }}</div><div class="close" @click="close"></div>
         </header>
         <div class="horizontal-flexbox cented-aligned">
             <button v-if="selectedImageIndex > 0" class="background-color-1 font-size-28" @click="selectedImageIndex--">🡄</button>

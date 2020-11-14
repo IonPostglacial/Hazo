@@ -1,5 +1,8 @@
 <template>
-    <div v-if="showFields" class="absolute over-everything full-width medium-margin thin-border white-background medium-padding horizontal-flexbox">
+    <div v-if="showFields" class="absolute over-everything full-width medium-margin thin-border white-background medium-padding vertical-flexbox">
+        <header class="horizontal-flexbox medium-padding thin-border">
+            <div class="nowrap no-vertical-overflow flex-grow-1">Extra Fields</div><div class="close" @click="close"></div>
+        </header>
         <ul class="vertical-flexbox scroll">
             <li v-for="field in extraFields" :key="field.id" class="horizontal-flexbox">
                 <label class="nowrap">
@@ -32,7 +35,10 @@ export default Vue.extend({
         },
         removeExtraField(id: string) {
             this.$store.commit("removeExtraField", id);
-        }
+        },
+        close() {
+            this.$emit("closed");
+        },
     }
 })
 </script>

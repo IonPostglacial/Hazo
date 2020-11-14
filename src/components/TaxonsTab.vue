@@ -6,9 +6,12 @@
                 @select-item="selectTaxon" @add-item="addTaxon" @delete-item="removeTaxon">
             </TreeMenu>
         </nav>
+        <extra-fields-panel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false">
+        </extra-fields-panel>
         <div class="vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
                 <div class="horizontal-flexbox">
+                    <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                     <span class="medium-margin">Mode:</span>
                     <div class="button-group">
                         <button type="button" :class="{ 'selected-tab': mode === 'view-item' }" @click="mode = 'view-item'">View</button>
@@ -35,6 +38,7 @@
                     <button type="button" @click="emptyZip">Folders</button>
                     <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
                     <button type="button" @click="exportStats">Stats</button>
+                    <button type="button" @click="showFields = !showFields">Extra Fields</button>
                 </div>
             </div>
             <taxon-presentation v-if="mode === 'present-item'"
@@ -133,6 +137,7 @@
 import SquareTreeViewer from "./SquareTreeViewer.vue";
 import TreeMenu from "./TreeMenu.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
+import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
@@ -149,9 +154,8 @@ import exportStatistics from "../bunga/features/exportstats";
 
 export default Vue.extend({
     name: "TaxonsTab",
-    components: { SquareTreeViewer, ckeditor: CKEditor.component, TreeMenu, TaxonPresentation },
+    components: { SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, TreeMenu, TaxonPresentation },
     props: {
-        showLeftMenu: Boolean,
         characters: Object as PropType<Hierarchy<Character>>,
         taxonsHierarchy: Object as PropType<Hierarchy<Taxon>>,
         extraFields: Array,
@@ -160,6 +164,8 @@ export default Vue.extend({
     },
     data() {
         return {
+            showLeftMenu: true,
+            showFields: false,
             mode: "view-item",
             editor: ClassicEditor,
             editorConfig: {},

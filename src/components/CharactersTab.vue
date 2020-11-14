@@ -9,6 +9,10 @@
             </TreeMenu>
         </nav>
         <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll vertical-flexbox flex-grow-1">
+            <div class="horizontal-flexbox medium-padding thin-border">
+                <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
+                <div class="flex-grow-1 medium-padding">{{ selectedCharacter.name }}</div>
+            </div>
             <picture-box editable="true"
                     @add-photo="addCharacterPhoto"
                     @set-photo="setCharacterPhoto"
@@ -140,10 +144,10 @@ export default Vue.extend({
     data() {
         return {
             selectedState: "",
+            showLeftMenu: true,
         };
     },
     props: {
-        showLeftMenu: Boolean,
         charactersHierarchy: Object as PropType<Hierarchy<Character>>,
         selectedCharacterId: String,
     },
