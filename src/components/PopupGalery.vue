@@ -20,11 +20,10 @@ export default Vue.extend({
     props: {
         images: Array as PropType<Picture[]>,
         open: Boolean,
-        initSelectedImageIndex: Number,
     },
     data() {
         return {
-            selectedImageIndex: this.initSelectedImageIndex,
+            selectedImageIndex: 0,
         };
     },
     computed: {

@@ -36,8 +36,10 @@ class PictureFrame extends HTMLElement {
     get editable() { return this.#editable; }
 
     private refreshEditable() {
-        const deletePhoto = this.shadowRoot!.getElementById("delete-photo")!;
-        const setPhoto = this.shadowRoot!.getElementById("set-photo")!;
+        const deletePhoto = this.shadowRoot!.getElementById("delete-photo");
+        const setPhoto = this.shadowRoot!.getElementById("set-photo");
+
+        if (!deletePhoto || !setPhoto) return;
         
         if (this.editable) {
             deletePhoto.classList.remove("invisible");
@@ -148,7 +150,9 @@ class PictureBox extends HTMLElement {
     }
 
     refreshEditable() {
-        const addPhoto = this.shadowRoot!.getElementById("add-photo") as AddItem;
+        const addPhoto = this.shadowRoot!.getElementById("add-photo") as AddItem|null;
+
+        if (!addPhoto) return;
 
         if (this.editable) {
             addPhoto.classList.remove("invisible");

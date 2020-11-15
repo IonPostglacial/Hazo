@@ -13,21 +13,17 @@
             :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
             :selected-taxon-id="selectedTaxonId"
             :extra-fields="extraFields" :books="books"
-            @taxon-selected="selectTaxon"
-            @open-photo="maximizeImage">
+            @taxon-selected="selectTaxon">
         </TaxonsTab>
         <CharactersTab v-if="selectedTab === 1"
             :characters-hierarchy="charactersHierarchy"
             :selected-character-id="selectedCharacterId"
-            @character-selected="selectCharacter"
-            @open-photo="maximizeImage">
+            @character-selected="selectCharacter">
         </CharactersTab>
         <CharactersTree v-if="selectedTab === 2"
             :characters="charactersHierarchy">
         </CharactersTree>
         <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
-        <popup-galery :images="bigImages" :init-selected-image-index="bigImageIndex" :open="showBigImage" @closed="showBigImage = false">
-        </popup-galery>
     </div>
     <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
         <div class="button-group">
@@ -87,9 +83,6 @@ export default BungaVue.extend({
             selectedTab: 0,
             selectedTaxonId: "",
             selectedCharacterId: "",
-            bigImages: [{id: "", url: "", label: ""}],
-            bigImageIndex: 0,
-            showBigImage: false,
             copiedItem: undefined as HierarchicalItem<Taxon|Character>|undefined,
         };
     },
@@ -115,9 +108,6 @@ export default BungaVue.extend({
                     return undefined;
             }
         },
-        bigImage(): Picture {
-            return this.bigImages[this.bigImageIndex];
-        }
     },
     watch: {
         selectedBase(val) {
@@ -178,16 +168,6 @@ export default BungaVue.extend({
             const newDatabaseId = "" + this.databaseIds.length;
             this.databaseIds.push(newDatabaseId);
             this.selectedBase = newDatabaseId;
-        },
-        maximizeImage({ photos, index }: { photos: Picture[], index: number }) {
-            this.showBigImage = true;
-            this.bigImages = photos;
-            this.bigImageIndex = index;
-        },
-        minimizeImage() {
-            this.showBigImage = false;
-            this.bigImages = [];
-            this.bigImageIndex = 0;
         },
         saveData() {
             const taxons: Record<string, Taxon> = {};

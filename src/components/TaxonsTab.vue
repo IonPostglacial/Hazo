@@ -6,8 +6,8 @@
                 @select-item="selectTaxon" @add-item="addTaxon" @delete-item="removeTaxon">
             </TreeMenu>
         </nav>
-        <extra-fields-panel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false">
-        </extra-fields-panel>
+        <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
+        <extra-fields-panel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false"></extra-fields-panel>
         <div class="vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
                 <div class="horizontal-flexbox">
@@ -137,6 +137,7 @@
 <script lang="ts">
 import SquareTreeViewer from "./SquareTreeViewer.vue";
 import TreeMenu from "./TreeMenu.vue";
+import PopupGalery from "./PopupGalery.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 //@ts-ignore
@@ -155,7 +156,7 @@ import exportStatistics from "../bunga/features/exportstats";
 
 export default Vue.extend({
     name: "TaxonsTab",
-    components: { SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, TreeMenu, TaxonPresentation },
+    components: { SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
     props: {
         characters: Object as PropType<Hierarchy<Character>>,
         taxonsHierarchy: Object as PropType<Hierarchy<Taxon>>,
@@ -167,6 +168,8 @@ export default Vue.extend({
         return {
             showLeftMenu: true,
             showFields: false,
+            showBigImage: false,
+            bigImages: [{id: "", url: "", label: ""}],
             mode: "view-item",
             editor: ClassicEditor,
             editorConfig: {},
@@ -284,7 +287,9 @@ export default Vue.extend({
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedTaxon!.photos});
+            console.log("open my photo");
+            this.bigImages = this.selectedTaxon!.photos;
+            this.showBigImage = true;
         },
         async emptyZip() {
             const zipTxt = await exportZipFolder(this.taxonsHierarchy!);

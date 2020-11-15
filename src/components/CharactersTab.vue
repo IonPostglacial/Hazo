@@ -8,6 +8,7 @@
                 @delete-item="deleteCharacter">
             </TreeMenu>
         </nav>
+        <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
         <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox medium-padding thin-border">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
@@ -115,12 +116,13 @@
 </template>
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
+import PopupGalery from "./PopupGalery.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createCharacter, createDetailData, Character, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { TreeMenu },
+    components: { PopupGalery, TreeMenu },
     computed: {
         selectedCharacter(): Character|undefined {
             return this.charactersHierarchy?.itemWithId(this.selectedCharacterId);
@@ -145,6 +147,8 @@ export default Vue.extend({
         return {
             selectedState: "",
             showLeftMenu: true,
+            showBigImage: false,
+            bigImages: [{id: "", url: "", label: ""}],
         };
     },
     props: {
@@ -244,11 +248,13 @@ export default Vue.extend({
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedCharacter!.photos});
+            this.showBigImage = true;
+            this.bigImages = this.selectedCharacter!.photos;
         },
         openStatePhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
-            this.$emit("open-photo", {index: e.detail.index, photos: this.selectedCharacterState?.photos});
+            this.showBigImage = true;
+            this.bigImages = this.selectedCharacterState!.photos;
         },
     }
 });
