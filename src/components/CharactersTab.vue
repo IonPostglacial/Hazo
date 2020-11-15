@@ -13,6 +13,10 @@
             <div class="horizontal-flexbox medium-padding thin-border">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                 <div class="flex-grow-1 medium-padding">{{ selectedCharacter.name }}</div>
+                <div v-if="typeof selectedCharacter !== 'undefined'" class="button-group">
+                    <button type="button" @click="copyItem">Copy</button>
+                    <button type="button" @click="pasteItem">Paste</button>
+                </div>
             </div>
             <picture-box editable="editable"
                     @add-photo="addCharacterPhoto"
@@ -117,13 +121,26 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
+import clone from "../clone";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { createCharacter, createDetailData, Character, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import { mapState } from "vuex";
+import { createCharacter, createDetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
     components: { PopupGalery, TreeMenu },
+    data() {
+        return {
+            selectedState: "",
+            showLeftMenu: true,
+            showBigImage: false,
+            bigImages: [{id: "", url: "", label: ""}],
+            copiedCharacter: undefined as HierarchicalItem<Character>|undefined,
+            selectedCharacterId: "",
+        };
+    },
     computed: {
+        ...mapState(["charactersHierarchy"]),
         selectedCharacter(): Character|undefined {
             return this.charactersHierarchy?.itemWithId(this.selectedCharacterId);
         },
@@ -143,19 +160,20 @@ export default Vue.extend({
             return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
         },
     },
-    data() {
-        return {
-            selectedState: "",
-            showLeftMenu: true,
-            showBigImage: false,
-            bigImages: [{id: "", url: "", label: ""}],
-        };
-    },
-    props: {
-        charactersHierarchy: Object as PropType<Hierarchy<Character>>,
-        selectedCharacterId: String,
-    },
     methods: {
+        copyItem() {
+            this.copiedCharacter = clone(this.selectedCharacter!);
+            this.copiedCharacter.id = "";
+        },
+        pasteItem() {
+            if (typeof this.copiedCharacter !== "undefined") {
+                const id = this.selectedCharacter!.id;
+                Object.assign(this.selectedCharacter, this.copiedCharacter);
+                this.selectedCharacter!.id = id;
+            } else {
+                alert("Nothing to paste here.");
+            }
+        },
         setInapplicableState(state: State, selected: boolean) {
             this.$store.commit("setInapplicableState", { state, selected });
         },
@@ -166,7 +184,7 @@ export default Vue.extend({
             this.$store.commit("setInherentState", { state });
         },
         selectCharacter(id: string) {
-            this.$emit("character-selected", id);
+            this.selectedCharacterId = id;
         },
         addCharacterPhoto(e: {detail: {value: string}}) {
             const numberOfPhotos = this.selectedCharacter!.photos.length;

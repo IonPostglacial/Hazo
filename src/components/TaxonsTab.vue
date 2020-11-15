@@ -34,6 +34,10 @@
                         <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name }}</button>
                     </div>
                 </div>
+                <div v-if="typeof selectedTaxon !== 'undefined'" class="button-group">
+                    <button type="button" @click="copyItem">Copy</button>
+                    <button type="button" @click="pasteItem">Paste</button>
+                </div>
                 <div class="button-group">
                     <button type="button" @click="emptyZip">Folders</button>
                     <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
@@ -43,7 +47,7 @@
             </div>
             <taxon-presentation v-if="mode === 'present-item'"
                 @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-                :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="taxonsHierarchy" :characters="characters.allItems">
+                :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy.allItems">
             </taxon-presentation>
             <section v-if="mode !== 'present-item' && typeof selectedTaxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox scroll">
                 <div class="vertical-flexbox scroll">
@@ -144,8 +148,9 @@ import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, Picture, State, Taxon, TexExporter, exportZipFolder } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Book, Character, HierarchicalItem, Picture, State, Taxon, TexExporter, exportZipFolder } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { mapState } from "vuex";
 import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/clone';
 import { createDetailData } from '@/bunga/DetailData';
@@ -157,50 +162,46 @@ import exportStatistics from "../bunga/features/exportstats";
 export default Vue.extend({
     name: "TaxonsTab",
     components: { SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
-    props: {
-        characters: Object as PropType<Hierarchy<Character>>,
-        taxonsHierarchy: Object as PropType<Hierarchy<Taxon>>,
-        extraFields: Array,
-        selectedTaxonId: String,
-        books: Array as PropType<Array<Book>>,
-    },
     data() {
         return {
             showLeftMenu: true,
             showFields: false,
             showBigImage: false,
-            bigImages: [{id: "", url: "", label: ""}],
+            bigImages: [{ id: "", url: "", label: "" }],
             mode: "view-item",
             editor: ClassicEditor,
             editorConfig: {},
             latexProgressText: "",
             selectingParent: false,
+            copiedTaxon: undefined as HierarchicalItem<Taxon>|undefined,
+            selectedTaxonId: "",
         }
     },
     computed: {
+        ...mapState(["extraFields", "books", "taxonsHierarchy", "charactersHierarchy"]),
         editable(): boolean {
             return this.mode === "edit-item";
         },
         selectedTaxon(): Taxon|undefined {
-            return this.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
+            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
         },
         itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
             if (typeof this.selectedTaxon === "undefined") return new Hierarchy<Character & { selected?: boolean }>("c", new ObservableMap());
             const selectedTaxon = this.selectedTaxon;
 
-            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.characters!);
+            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.charactersHierarchy);
 
-            for (const character of this.characters!.allItems) {
+            for (const character of this.charactersHierarchy.allItems) {
                 if (typeof character.requiredStates === "undefined") {
-                    console.log(character)
+                    console.log(character);
                 }
-                const taxonLacksRequiredStates = !character.requiredStates.every(requiredState => selectedTaxon.statesSelection[requiredState.id] ?? false);
-                const taxonHasSomeInapplicableState = character.inapplicableStates.some(inapplicableState => selectedTaxon.statesSelection[inapplicableState.id] ?? false);
+                const taxonLacksRequiredStates = !character.requiredStates.every((requiredState: State) => selectedTaxon.statesSelection[requiredState.id] ?? false);
+                const taxonHasSomeInapplicableState = character.inapplicableStates.some((inapplicableState: State) => selectedTaxon.statesSelection[inapplicableState.id] ?? false);
 
                 if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
                     dependencyHierarchy.remove(character);
                 } else {
-                    const characterStates = character.states.map(s => Object.assign({ type: "state", parentId: s.descriptorId, selected: selectedTaxon.statesSelection[s.id] ?? false }, s));
+                    const characterStates = character.states.map((s: State) => Object.assign({ type: "state", parentId: s.descriptorId, selected: selectedTaxon.statesSelection[s.id] ?? false }, s));
                     const characterChildren = [...dependencyHierarchy.childrenOf(character)];
                     
                     for (const state of characterStates) {
@@ -217,6 +218,19 @@ export default Vue.extend({
         },
     },
     methods: {
+        copyItem() {
+            this.copiedTaxon = clone(this.selectedTaxon!);
+            this.copiedTaxon.id = "";
+        },
+        pasteItem() {
+            if (typeof this.copiedTaxon !== "undefined") {
+                const id = this.selectedTaxon!.id;
+                Object.assign(this.selectedTaxon, this.copiedTaxon);
+                this.selectedTaxon!.id = id;
+            } else {
+                alert("Nothing to paste here.");
+            }
+        },
         openSelectParentDropdown() {
             this.selectingParent = true;
         },
@@ -228,7 +242,7 @@ export default Vue.extend({
             this.selectingParent = false;
         },
         selectTaxon(id: string) {
-            this.$emit("taxon-selected", id);
+            this.selectedTaxonId = id;
         },
         addTaxon(e: {value: string, parentId: string }) {
             this.$store.commit("addTaxon", createTaxon({
@@ -296,7 +310,7 @@ export default Vue.extend({
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new TexExporter([...this.taxonsHierarchy!.allItems], this.characters!.allItems);
+            const taxonToTex = new TexExporter([...this.taxonsHierarchy!.allItems], this.charactersHierarchy!.allItems);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
                 download(tex, "zip", true);

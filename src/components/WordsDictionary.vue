@@ -55,6 +55,7 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue, { PropType } from "vue";  // eslint-disable-line no-unused-vars
+import { mapState } from "vuex";
 import download from "../download";
 import { DictionaryEntry } from "../bunga";  // eslint-disable-line no-unused-vars
 
@@ -63,30 +64,27 @@ export default Vue.extend({
     components: {
         ckeditor: CKEditor.component,
     },
-    props: {
-        initEntries: Object as PropType<Record<string, DictionaryEntry>>,
-    },
     data() {
         return {
             selectedEntryId: "",
-            entries: this.initEntries ?? {},
             editor: ClassicEditor,
             editorConfig: {},
             entriesFilter: "",
         };
     },
     computed: {
+        ...mapState(["dictionaryEntries"]),
         selectedEntry(): DictionaryEntry {
-            return this.entries[this.selectedEntryId];
+            return this.dictionaryEntries[this.selectedEntryId];
         },
         entriesToDisplay(): Iterable<DictionaryEntry> {
-            return Object.values(this.entries).filter((entry) => {
+            return Object.values(this.dictionaryEntries as Record<string, DictionaryEntry>).filter((entry) => {
                 if (this.entriesFilter !== "") {
                     return ["nameCN", "nameEN", "nameFR"].
                         map(field => (entry as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.entriesFilter?.toUpperCase()) ?? false);
                 } else {
-                    return Object.values(this.entries);
+                    return Object.values(this.dictionaryEntries);
                 }
             });
         },
@@ -106,7 +104,7 @@ export default Vue.extend({
                 }
                 return escapedValue;
             }
-            for (const { nameCN, nameEN, defCN, defEN, nameFR, defFR, url } of Object.values(this.entries)) {
+            for (const { nameCN, nameEN, defCN, defEN, nameFR, defFR, url } of Object.values(this.dictionaryEntries as Record<string, DictionaryEntry>)) {
                 csv += [nameCN, nameEN, defCN, defEN, nameFR, defFR, url].map(escapeValue).join(",") + "\n";
             }
             download(csv, "csv");
@@ -124,7 +122,7 @@ export default Vue.extend({
                     const csv = parseCSV(fileReader.result);
                     for (const [id, [nameCN, nameEN, defCN, defEN]] of csv.entries()) {
                         if (id > 0) {
-                            this.entries[id] = { id: id.toString(), nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" };
+                            this.dictionaryEntries[id] = { id: id.toString(), nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" };
                         }
                     }
                 }

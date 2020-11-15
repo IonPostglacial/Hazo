@@ -14,6 +14,7 @@
 <script lang="ts">
 import type { Character, HierarchicalItem, Hierarchy } from "@/bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { mapState } from "vuex";
 import * as d3 from "d3";
 import { State } from '@/bunga/datatypes'; // eslint-disable-line no-unused-vars
 
@@ -50,7 +51,7 @@ function updateD3(element: Element, treeData: D3Hierarchy) {
     update(root);
 
     function collapse(d: any) {
-        if(d.children) {
+        if (d.children) {
             d._children = d.children;
             d._children.forEach(collapse);
             d.children = null;
@@ -180,7 +181,6 @@ function updateD3(element: Element, treeData: D3Hierarchy) {
 
         // Creates a curved (diagonal) path from parent to the child nodes
         function diagonal(s: any, d: any) {
-
             const path = `M ${s.y} ${s.x}
                     C ${(s.y + d.y) / 2} ${s.x},
                     ${(s.y + d.y) / 2} ${d.x},
@@ -205,9 +205,6 @@ function updateD3(element: Element, treeData: D3Hierarchy) {
 
 export default Vue.extend({
     name: "CharactersTree",
-    props: {
-        characters: Object as PropType<Hierarchy<Character>>,
-    },
     data() {
         const langFR = { name: "FR", field: "name" }, langEN = { name: "EN", field: "nameEN" }, langCN = { name: "CN", field: "nameCN" };
 
@@ -217,6 +214,7 @@ export default Vue.extend({
         };
     },
     computed: {
+        ...mapState(["charactersHierarchy"]),
         selectedLang(): { name: string, field: string } {
             return this.languageList[this.lang];
         },
@@ -232,7 +230,7 @@ export default Vue.extend({
                         ...(h.states?.map((s: any) => ({ name: s[langFieldName], children: [], color: s.color })) ?? [])
                     ].map(child => hierarchyToD3(hierarchy, child)) };
             };
-            return { name: "Characters", children: [...this.characters!.topLevelItems].map(ch => hierarchyToD3(this.characters!, ch)) };
+            return { name: "Characters", children: [...this.charactersHierarchy!.topLevelItems].map(ch => hierarchyToD3(this.charactersHierarchy!, ch)) };
         },
     },
     mounted() {

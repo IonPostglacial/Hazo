@@ -1,66 +1,45 @@
 <template>
     <div id="app" class="vertical-flexbox lightgrey-background height-full">
-    <nav class="thin-border background-gradient-1 no-print centered-text">
-        <div class="button-group medium-margin inline-block">
-            <button type="button" :class="{ 'selected-tab': selectedTab === 0 }" @click="selectedTab = 0">Taxons</button>
-            <button type="button" :class="{ 'selected-tab': selectedTab === 1 }" @click="selectedTab = 1">Characters</button>
-            <button type="button" :class="{ 'selected-tab': selectedTab === 2 }" @click="selectedTab = 2">Characters Tree</button>
-            <button type="button" :class="{ 'selected-tab': selectedTab === 3 }" @click="selectedTab = 3">Dictionary</button>
+        <nav class="thin-border background-gradient-1 no-print centered-text">
+            <div class="button-group medium-margin inline-block">
+                <router-link class="button" to="/taxons">Taxons</router-link>
+                <router-link class="button" to="/characters">Characters</router-link>
+                <router-link class="button" to="/characters-tree">Characters Tree</router-link>
+                <router-link class="button" to="/dictionary">Dictionary</router-link>
+            </div>
+        </nav>
+        <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
+            <router-view></router-view>
         </div>
-    </nav>
-    <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
-        <TaxonsTab v-if="selectedTab === 0"
-            :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy"
-            :selected-taxon-id="selectedTaxonId"
-            :extra-fields="extraFields" :books="books"
-            @taxon-selected="selectTaxon">
-        </TaxonsTab>
-        <CharactersTab v-if="selectedTab === 1"
-            :characters-hierarchy="charactersHierarchy"
-            :selected-character-id="selectedCharacterId"
-            @character-selected="selectCharacter">
-        </CharactersTab>
-        <CharactersTree v-if="selectedTab === 2"
-            :characters="charactersHierarchy">
-        </CharactersTree>
-        <WordsDictionary :init-entries="dictionaryEntries" v-if="selectedTab === 3"></WordsDictionary>
+        <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
+            <div class="button-group">
+                <button type="button" @click="importFile">Import</button>
+                <button type="button" @click="mergeFile">Merge</button>
+                <button type="button" @click="jsonExport">Export</button>
+                <button type="button" @click="exportSDD">Export SDD</button>
+            </div>
+            <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
+            <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
+            <div class="button-group">
+                <button type="button" class="background-color-ok" @click="saveData">Save</button>
+                <select v-model="selectedBase">
+                    <option v-for="databaseId in databaseIds" :key="databaseId" :value="databaseId">Database #{{ databaseId }}</option>
+                </select>
+                <button type="button" class="background-color-1" @click="createNewDatabase">New DB</button>
+                <button type="button" class="background-color-ko" @click="resetData">Reset</button>
+            </div>
+            <div class="button-group">
+                <button type="button" @click="globalReplace">Replace Text</button>
+                <button type="button" class="no-print background-color-1" @click="print">Print</button>
+            </div>
+        </section>
     </div>
-    <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
-        <div class="button-group">
-            <button type="button" @click="importFile">Import</button>
-            <button type="button" @click="mergeFile">Merge</button>
-            <button type="button" @click="jsonExport">Export</button>
-            <button type="button" @click="exportSDD">Export SDD</button>
-        </div>
-        <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
-        <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
-        <div class="button-group">
-            <button type="button" class="background-color-ok" @click="saveData">Save</button>
-            <select v-model="selectedBase">
-                <option v-for="databaseId in databaseIds" :key="databaseId" :value="databaseId">Database #{{ databaseId }}</option>
-            </select>
-            <button type="button" class="background-color-1" @click="createNewDatabase">New DB</button>
-            <button type="button" class="background-color-ko" @click="resetData">Reset</button>
-        </div>
-        <div class="button-group">
-            <button type="button" @click="copyItem">Copy</button>
-            <button type="button" @click="pasteItem">Paste</button>
-            <button type="button" @click="globalReplace">Replace Text</button>
-            <button type="button" class="no-print background-color-1" @click="print">Print</button>
-        </div>
-    </section>
-  </div>
 </template>
 
 <script lang="ts">
 import { standardBooks } from "./bunga/stdcontent";
 import { Character, Dataset, Field, Taxon } from "./bunga"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, Hierarchy, highlightTaxonsDetails, repairPotentialCorruption } from "./bunga"; // eslint-disable-line no-unused-vars
-import TaxonsTab from "./components/TaxonsTab.vue";
-import CharactersTab from "./components/CharactersTab.vue";
-import CharactersTree from "./components/CharactersTree.vue";
-import WordsDictionary from "./components/WordsDictionary.vue";
-import PopupGalery from "./components/PopupGalery.vue";
 import DB from "./db-storage";
 import Vue from "vue";
 import { mapState } from "vuex";
@@ -68,22 +47,14 @@ import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "./download";
 import { DictionaryEntry, HierarchicalItem, Picture, State } from "./bunga/datatypes"; // eslint-disable-line no-unused-vars
-import clone from "./clone";
 import { BungaVue } from "./store";
 
 export default BungaVue.extend({
     name: "App",
-    components: {
-        TaxonsTab, CharactersTab, CharactersTree, WordsDictionary, PopupGalery,
-    },
     data() {
         return {
             databaseIds: ["0"],
             selectedBase: "0",
-            selectedTab: 0,
-            selectedTaxonId: "",
-            selectedCharacterId: "",
-            copiedItem: undefined as HierarchicalItem<Taxon|Character>|undefined,
         };
     },
     mounted() {
@@ -92,22 +63,6 @@ export default BungaVue.extend({
     },
     computed: {
         ...mapState(["extraFields", "books", "taxonsHierarchy", "charactersHierarchy", "dictionaryEntries"]),
-        selectedTaxon(): Taxon|undefined {
-            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
-        },
-        selectedCharacter(): Character|undefined {
-            return this.charactersHierarchy.itemWithId(this.selectedCharacterId);
-        },
-        selectedItem(): HierarchicalItem<Taxon|Character>|undefined {
-            switch(this.selectedTab) {
-                case 0:
-                    return this.selectedTaxon;
-                case 1:
-                    return this.selectedCharacter;
-                default:
-                    return undefined;
-            }
-        },
     },
     watch: {
         selectedBase(val) {
@@ -130,39 +85,11 @@ export default BungaVue.extend({
                 this.$store.commit("addDictionaryEntries", dictionaryEntries);
             });
         },
-        copyItem() {
-            if (typeof this.selectedItem !== "undefined") {
-                this.copiedItem = clone(this.selectedItem);
-                this.copiedItem.id = "";
-            } else {
-                console.log("Nothing to copy here.");
-                alert("Nothing to copy here.");
-            }
-        },
-        pasteItem() {
-            if (typeof this.selectedItem !== "undefined" && typeof this.copiedItem !== "undefined") {
-                if (this.selectedItem.type === this.copiedItem.type) {
-                    const id = this.selectedItem.id;
-                    Object.assign(this.selectedItem, this.copiedItem);
-                    this.selectedItem.id = id;
-                } else {
-                    alert(`You cannot copy a ${this.copiedItem.type} into a ${this.selectedItem.type}`);
-                }
-            } else {
-                alert("Nothing to paste here.");
-            }
-        },
         print() {
             window.print()
         },
         changeCharactersHierarchy(charactershierarchy: Hierarchy<Character>) {
             this.charactersHierarchy = charactershierarchy;
-        },
-        selectTaxon(id: string) {
-            this.selectedTaxonId = id;
-        },
-        selectCharacter(id: string) {
-            this.selectedCharacterId = id;
         },
         createNewDatabase() {
             const newDatabaseId = "" + this.databaseIds.length;
