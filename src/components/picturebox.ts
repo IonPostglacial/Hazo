@@ -2,23 +2,16 @@ import { Picture } from '@/bunga';
 import { AddItem } from "./additem";
 
 const frameTemplate = document.createElement("template");
-const frameTemplateEditable = document.createElement("template");
 const boxTemplate = document.createElement("template");
 
-const makeFrameTemplate = (innerHTML: string) => `<link rel="stylesheet" href="style.css" />
+frameTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     <div class="vertical-flexbox space-between relative">
-        ${innerHTML}
+        <div id="delete-photo" class="close absolute-top-right"></div>
+        <a id="open-photo" class="small-margin thin-border" href="#1">
+            <img class="medium-max-width medium-max-height" src="">
+        </a>
+        <input id="set-photo" type="text" class="no-fixed-width" />
     </div>`;
-frameTemplate.innerHTML = makeFrameTemplate(`
-    <a id="open-photo" class="small-margin thin-border" href="#1">
-        <img class="medium-max-width medium-max-height" src="">
-    </a>`);
-frameTemplateEditable.innerHTML = makeFrameTemplate(`
-    <div id="delete-photo" class="close absolute-top-right"></div>
-    <a id="open-photo" class="small-margin thin-border" href="#1">
-        <img class="medium-max-width medium-max-height" src="">
-    </a>
-    <input id="set-photo" type="text" class="no-fixed-width" />`);
 boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     <collapsible-panel id="container" label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
         <slot></slot>
@@ -28,11 +21,11 @@ boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     </collapsible-panel>`;
 
 class PictureFrame extends HTMLElement {
-    editable = false;
+    #editable = false;
     #picture: Picture|undefined = undefined;
     index = 0;
 
-    static get observedAttributes() { return ["pictureid", "url", "label", "index"]; }
+    static get observedAttributes() { return ["editable", "pictureid", "url", "label", "index"]; }
 
     constructor() {
         super();
@@ -40,6 +33,20 @@ class PictureFrame extends HTMLElement {
     }
 
     get picture() { return this.#picture; }
+    get editable() { return this.#editable; }
+
+    private refreshEditable() {
+        const deletePhoto = this.shadowRoot!.getElementById("delete-photo")!;
+        const setPhoto = this.shadowRoot!.getElementById("set-photo")!;
+        
+        if (this.editable) {
+            deletePhoto.classList.remove("invisible");
+            setPhoto.classList.remove("invisible");
+        } else {
+            deletePhoto.classList.add("invisible");
+            setPhoto.classList.add("invisible");
+        }
+    }
 
     private refreshPicture() {
         const image = this.shadowRoot?.querySelector("img");
@@ -55,38 +62,45 @@ class PictureFrame extends HTMLElement {
         this.refreshPicture();
     }
 
+    set editable(editable: boolean) {
+        console.log(typeof editable, editable);
+        this.#editable = editable;
+        this.refreshEditable();
+    }
+
     connectedCallback() {
-        this.editable = this.getAttribute("editable") === "true";
         this.index = parseInt(this.getAttribute("index") ?? "0");
         const id = this.getAttribute("pictureid") ?? "";
         const url = this.getAttribute("url") ?? "";
         const label = this.getAttribute("label") ?? "";
+        console.log("editable", this.getAttribute("editable"));
+        this.#editable = !!this.getAttribute("editable");
         this.#picture = { id, url, label };
 
-        if (this.editable) {
-            this.shadowRoot!.appendChild(frameTemplateEditable.content.cloneNode(true));
-            this.shadowRoot!.getElementById("delete-photo")!.onclick = () => {
-                const e = new CustomEvent("delete-photo", { bubbles: true, detail: { index: this.index } });
-                this.dispatchEvent(e);
-            }
-            const setPhoto = this.shadowRoot!.getElementById("set-photo");
-            if (setPhoto instanceof HTMLInputElement) {
-                setPhoto.value = this.picture?.url ?? "";
-                setPhoto.onchange = () => {
-                    const e = new CustomEvent("set-photo", {
-                        bubbles: true, 
-                        detail: { value: setPhoto.value, index: this.index }
-                    });
-                    this.dispatchEvent(e);
-                }
-            }
-        } else {
-            this.shadowRoot!.appendChild(frameTemplate.content.cloneNode(true));
-        }
+        this.shadowRoot!.appendChild(frameTemplate.content.cloneNode(true));
+        
         this.shadowRoot!.getElementById("open-photo")!.onclick = () => {
             const e = new CustomEvent("open-photo", { bubbles: true, detail: { index: this.index } });
             this.dispatchEvent(e);
         }
+        this.shadowRoot!.getElementById("delete-photo")!.onclick = () => {
+            const e = new CustomEvent("delete-photo", { bubbles: true, detail: { index: this.index } });
+            this.dispatchEvent(e);
+        }
+        const setPhoto = this.shadowRoot!.getElementById("set-photo");
+        
+        if (setPhoto instanceof HTMLInputElement) {
+            setPhoto.value = this.picture?.url ?? "";
+            setPhoto.onchange = () => {
+                const e = new CustomEvent("set-photo", {
+                    bubbles: true, 
+                    detail: { value: setPhoto.value, index: this.index }
+                });
+                this.dispatchEvent(e);
+            }
+        }
+
+        this.refreshEditable();
         this.refreshPicture();
     }
 
@@ -108,6 +122,9 @@ class PictureFrame extends HTMLElement {
             break;
         case "index":
             this.index = parseInt(newValue);
+            break;
+        case "editable":
+            this.editable = !!newValue;
             break;
         }
         if (name !== "index") {

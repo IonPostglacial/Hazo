@@ -50,10 +50,11 @@
                     <picture-box :editable="editable"
                             @open-photo="openPhoto"
                             @add-photo="addItemPhoto"
-                            @set-photo="setItemPhoto" 
+                            @set-photo="setItemPhoto"
                             @delete-photo="deleteItemPhoto">
                         <picture-frame v-for="(photo, index) in selectedTaxon.photos" :key="photo.id"
-                            :index="index" :editable="editable" :pictureid="photo.id" :url="photo.url" :label="photo.label"></picture-frame>
+                            :index="index" :editable="editable ? 'editable' : ''" :pictureid="photo.id" :url="photo.url" :label="photo.label">
+                        </picture-frame>
                     </picture-box>
                     <div class="horizontal-flexbox start-align relative">
                         <collapsible-panel label="Properties" 
