@@ -13,7 +13,7 @@
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                 <div class="flex-grow-1 medium-padding">{{ selectedCharacter.name }}</div>
             </div>
-            <picture-box editable="true"
+            <picture-box editable="editable"
                     @add-photo="addCharacterPhoto"
                     @set-photo="setCharacterPhoto"
                     @delete-photo="deleteCharacterPhoto"

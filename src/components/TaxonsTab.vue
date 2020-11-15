@@ -47,7 +47,7 @@
             </taxon-presentation>
             <section v-if="mode !== 'present-item' && typeof selectedTaxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox scroll">
                 <div class="vertical-flexbox scroll">
-                    <picture-box :editable="editable"
+                    <picture-box :editable="editable ? 'editable' : ''"
                             @open-photo="openPhoto"
                             @add-photo="addItemPhoto"
                             @set-photo="setItemPhoto"

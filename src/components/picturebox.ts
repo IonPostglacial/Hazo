@@ -63,7 +63,6 @@ class PictureFrame extends HTMLElement {
     }
 
     set editable(editable: boolean) {
-        console.log(typeof editable, editable);
         this.#editable = editable;
         this.refreshEditable();
     }
@@ -73,7 +72,6 @@ class PictureFrame extends HTMLElement {
         const id = this.getAttribute("pictureid") ?? "";
         const url = this.getAttribute("url") ?? "";
         const label = this.getAttribute("label") ?? "";
-        console.log("editable", this.getAttribute("editable"));
         this.#editable = !!this.getAttribute("editable");
         this.#picture = { id, url, label };
 
@@ -134,25 +132,50 @@ class PictureFrame extends HTMLElement {
 }
 
 class PictureBox extends HTMLElement {
-    editable = false;
+    #editable = false;
 
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
     }
 
+    static get observedAttributes() { return ["editable"]; }
+
+    get editable() { return this.#editable; }
+    set editable(editable) {
+        this.#editable = editable;
+        this.refreshEditable();
+    }
+
+    refreshEditable() {
+        const addPhoto = this.shadowRoot!.getElementById("add-photo") as AddItem;
+
+        if (this.editable) {
+            addPhoto.classList.remove("invisible");
+        } else {
+            addPhoto.classList.add("invisible");
+        }
+    }
+
     connectedCallback() {
-        this.editable = this.getAttribute("editable") === "true";
+        this.#editable = !!this.getAttribute("editable");
         this.shadowRoot!.appendChild(boxTemplate.content.cloneNode(true));
         const addPhoto = this.shadowRoot!.getElementById("add-photo") as AddItem;
-        if (this.editable) {
-            addPhoto.addEventListener("add-item", (evt) => {
-                const event = evt as Event & { detail: string };
-                const e = new CustomEvent("add-photo", { detail: { value: event.detail }, bubbles: true });
-                this.dispatchEvent(e);
-            });
-        } else {
-            addPhoto.hidden = true;
+
+        addPhoto.addEventListener("add-item", (evt) => {
+            const event = evt as Event & { detail: string };
+            const e = new CustomEvent("add-photo", { detail: { value: event.detail }, bubbles: true });
+            this.dispatchEvent(e);
+        });
+
+        this.refreshEditable();
+    }
+
+    attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+        switch (name) {
+        case "editable":
+            this.editable = !!newValue;
+            break;
         }
     }
 }
