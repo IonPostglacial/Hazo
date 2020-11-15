@@ -33,6 +33,7 @@
                     @button-clicked="buttonClicked"
                     @move-item-up="moveItemUp"
                     @move-item-down="moveItemDown">
+                    <slot></slot>
                 </TreeMenuItem>
             </ul>
         </div>

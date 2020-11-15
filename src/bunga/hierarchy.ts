@@ -1,7 +1,7 @@
 import { HierarchicalItem } from "./datatypes";
 import clone from "../clone";
 
-interface IMap<T> {
+export interface IMap<T> {
     get(key: string): T|undefined;
     has(key: string): boolean;
     set(key: string, value: T): void;
@@ -110,6 +110,27 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
                     }
                 }
             }
+        }
+    }
+
+    protected cloneNewItem(item: T): T {
+        const newItem = clone(item);
+        newItem.id = "";
+        newItem.childrenOrder = [];
+
+        return newItem;
+    }
+
+    duplicateItem(item: T|undefined, parentId: string|undefined) {
+        if (typeof item === "undefined") return;
+
+        const newItem = this.cloneNewItem(item);
+        newItem.parentId = parentId;
+
+        this.add(newItem);
+
+        for (const child of this.childrenOf(item)) {
+            this.duplicateItem(child, newItem.id);
         }
     }
 

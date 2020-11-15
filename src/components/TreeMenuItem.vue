@@ -8,8 +8,8 @@
             <label :class="['medium-line-height', 'blue-hover', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', { 'background-color-1': selected }]" v-on:click="select">
                 <div v-if="isFirstColumn" class="min-width-small">{{ prettyId }}</div>
                 <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName }}</div>
-                <slot></slot>
             </label>
+            <slot></slot>
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
             <div v-if="editable && isLastColumn" @click="moveUp" class="move-up">🡡</div>
             <div v-if="editable && isLastColumn" @click="moveDown" class="move-down">🡣</div>

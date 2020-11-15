@@ -219,14 +219,11 @@ export default Vue.extend({
     },
     methods: {
         copyItem() {
-            this.copiedTaxon = clone(this.selectedTaxon!);
-            this.copiedTaxon.id = "";
+            this.copiedTaxon = this.selectedTaxon;
         },
         pasteItem() {
             if (typeof this.copiedTaxon !== "undefined") {
-                const id = this.selectedTaxon!.id;
-                Object.assign(this.selectedTaxon, this.copiedTaxon);
-                this.selectedTaxon!.id = id;
+                this.$store.commit("duplicateTaxon", { taxon: this.copiedTaxon, parentId: this.selectedTaxonId });
             } else {
                 alert("Nothing to paste here.");
             }

@@ -121,7 +121,6 @@
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
-import clone from "../clone";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { mapState } from "vuex";
 import { createCharacter, createDetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
@@ -162,14 +161,11 @@ export default Vue.extend({
     },
     methods: {
         copyItem() {
-            this.copiedCharacter = clone(this.selectedCharacter!);
-            this.copiedCharacter.id = "";
+            this.copiedCharacter = this.selectedCharacter;
         },
         pasteItem() {
             if (typeof this.copiedCharacter !== "undefined") {
-                const id = this.selectedCharacter!.id;
-                Object.assign(this.selectedCharacter, this.copiedCharacter);
-                this.selectedCharacter!.id = id;
+                this.$store.commit("duplicateCharacter", { character: this.copiedCharacter, parentId: this.selectedCharacterId });
             } else {
                 alert("Nothing to paste here.");
             }

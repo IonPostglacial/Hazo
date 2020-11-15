@@ -11,18 +11,18 @@ import "./components";
 
 
 Vue.config.productionTip = false;
-Vue.config.ignoredElements = [ "add-item" ];
+Vue.config.ignoredElements = ["add-item"];
 
 Vue.use(Vuex);
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const store = createStore();
 const router = new VueRouter({
     routes: [
-        { path: '/taxons', component: TaxonsTab },
-        { path: '/characters', component: CharactersTab },
-        { path: '/characters-tree', component: CharactersTree },
-        { path: '/dictionary', component: WordsDictionary },
+        { path: "/taxons", component: TaxonsTab },
+        { path: "/characters", component: CharactersTab },
+        { path: "/characters-tree", component: CharactersTree },
+        { path: "/dictionary", component: WordsDictionary },
     ]
 });
 

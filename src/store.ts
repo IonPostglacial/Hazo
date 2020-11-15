@@ -2,7 +2,7 @@ import Vue from "vue";
 import { VueConstructor } from 'vue/types/umd';
 import Vuex from "vuex";
 
-import { Character, DictionaryEntry, Field, Hierarchy, HierarchicalItem, standardBooks, State, Taxon } from "./bunga";
+import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./bunga";
 import { Picture } from "./bunga/datatypes";
 import clone from "./clone";
 import { ObservableMap } from "./observablemap";
@@ -32,7 +32,7 @@ export function createStore() {
             extraFields: new Array<Field>(),
             books: standardBooks,
             taxonsHierarchy: new Hierarchy<Taxon>("t", new ObservableMap()),
-            charactersHierarchy: new Hierarchy<Character>("d", new ObservableMap()),
+            charactersHierarchy: new CharactersHierarchy("d", new ObservableMap()),
             dictionaryEntries: {} as Record<string, DictionaryEntry>,
         },
         mutations: {
@@ -44,6 +44,9 @@ export function createStore() {
             },
             removeTaxon(state, taxon: Taxon) {
                 state.taxonsHierarchy.remove(taxon);
+            },
+            duplicateTaxon(state, e: { taxon: Taxon, parentId: string }) {
+                state.taxonsHierarchy.duplicateItem(e.taxon, e.parentId);
             },
             changeTaxonParent(state, e: { taxon: Taxon, newParentId: string }) {
                 if (e.taxon.id === e.newParentId) return;
@@ -67,26 +70,16 @@ export function createStore() {
                 payload.taxon.photos.splice(payload.index, 1);
             },
             addCharacter(state, character: Character) {
-                if (character.id === "") {
-                    const newCharacter = state.charactersHierarchy.add(character);
-                    const parentDescription = state.charactersHierarchy.itemWithId(character.parentId);
-                    if(typeof character.parentId !== "undefined" && typeof parentDescription !== "undefined") {
-                        const newState: State = {
-                            id: "s-auto-" + newCharacter.id,
-                            descriptorId: character.parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []
-                        };
-                        parentDescription.states = [...parentDescription.states, newState];
-                        newCharacter.inherentState = newState;
-                    }
-                } else {
-                    state.charactersHierarchy.add(character);
-                }
+                state.charactersHierarchy.add(character);
             },
             addCharacters(state, characters: Character[]) {
                 characters.forEach(c => state.charactersHierarchy.add(c));
             },
             removeCharacter(state, character: Character) {
                 state.charactersHierarchy.remove(character);
+            },
+            duplicateCharacter(state, e: { character: Character, parentId: string }) {
+                state.charactersHierarchy.duplicateItem(e.character, e.parentId);
             },
             addCharacterPicture(state, payload: { character: Character, picture: Picture }) {
                 payload.character.photos.push(payload.picture);
@@ -98,23 +91,10 @@ export function createStore() {
                 payload.character.photos.splice(payload.index, 1);
             },
             addState(state, e: { state: State, character: Character }) {
-                state.charactersHierarchy.itemWithId(e.character.id)!.states.push(e.state);
+                state.charactersHierarchy.addState(e.state);
             },
             removeState(state, e: { state: State, character: Character }) {
-                function removeStateFromArray(array: State[], state: State) {
-                    const index = array.findIndex(s => s.id === state.id);
-                    if (index >= 0) {
-                        array.splice(index, 1);
-                    }
-                }
-
-                removeStateFromArray(e.character.states, e.state);
-                removeStateFromArray(e.character.inapplicableStates, e.state);
-                removeStateFromArray(e.character.requiredStates, e.state);
-                if (e.character.inherentState?.id === e.state.id) {
-                    e.character.inherentState = undefined;
-                }
-
+                state.charactersHierarchy.removeState(e.state);
                 function removeStateFromSelection(stateSelection: Record<string, boolean|undefined>, state: State) {
                     for (const stateId in stateSelection) {
                         if (stateId === state.id) {
@@ -122,7 +102,6 @@ export function createStore() {
                         }
                     }
                 }
-
                 for (const taxon of state.taxonsHierarchy.allItems) {
                     removeStateFromSelection(taxon.statesSelection, e.state);
                 }
