@@ -7,9 +7,10 @@
             </label>
             <label :class="['medium-line-height', 'blue-hover', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', { 'background-color-1': selected }]" v-on:click="select">
                 <div v-if="isFirstColumn" class="min-width-small">{{ prettyId }}</div>
-                <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName }}</div>
+                <slot v-bind:item="{id: item.id, name: itemName }">
+                    <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName }}</div>
+                </slot>
             </label>
-            <slot></slot>
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
             <div v-if="editable && isLastColumn" @click="moveUp" class="move-up">🡡</div>
             <div v-if="editable && isLastColumn" @click="moveDown" class="move-down">🡣</div>
@@ -26,7 +27,8 @@
                     :selected-item="selectedItem"
                     :init-open-items="initOpenItems"
                     :name-field="nameField" :items-hierarchy="itemsHierarchy" :item="child" :buttons="buttons" 
-                    v-on="$listeners" :parent-id="item.id">
+                    v-on="$listeners" :parent-id="item.id" v-slot:default="menuItemProps">
+                    <slot v-bind:item="menuItemProps.item"></slot>
                 </TreeMenuItem>
                 <li v-if="editable || spaceForAdd" :class="{ 'visibility-hidden': spaceForAdd }">
                     <add-item v-on:add-item="addItem"></add-item>

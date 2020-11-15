@@ -32,8 +32,8 @@
                     @delete-item="deleteItem" 
                     @button-clicked="buttonClicked"
                     @move-item-up="moveItemUp"
-                    @move-item-down="moveItemDown">
-                    <slot></slot>
+                    @move-item-down="moveItemDown" v-slot:default="menuItemProps">
+                    <slot v-bind:item="menuItemProps.item"></slot>
                 </TreeMenuItem>
             </ul>
         </div>

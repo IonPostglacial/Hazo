@@ -585,6 +585,11 @@ div.invisible {
     position: relative;
 }
 
+.unstyled-anchor {
+    text-decoration: none;
+    color: inherit;
+}
+
 .menu li {
     list-style: none;
 }

@@ -5,7 +5,8 @@
                 :name-fields="[{ label: 'Name', propertyName: 'name'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
                 @add-item="addCharacter"
-                @delete-item="deleteCharacter">
+                @delete-item="deleteCharacter" v-slot="menuProps">
+                <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </TreeMenu>
         </nav>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
@@ -135,8 +136,13 @@ export default Vue.extend({
             showBigImage: false,
             bigImages: [{id: "", url: "", label: ""}],
             copiedCharacter: undefined as HierarchicalItem<Character>|undefined,
-            selectedCharacterId: "",
+            selectedCharacterId: this.$route.params.id ?? "",
         };
+    },
+    watch: {
+        $route(to: any) {
+            this.selectedCharacterId = to.params.id;
+        }
     },
     computed: {
         ...mapState(["charactersHierarchy"]),

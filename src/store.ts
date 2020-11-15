@@ -55,9 +55,9 @@ export function createStore() {
 
                 state.taxonsHierarchy.remove(e.taxon);
                 e.taxon.parentId = e.newParentId;
-                this.addTaxon(state, e.taxon);
+                state.taxonsHierarchy.add(e.taxon);
                 for (const child of childrenTree) {
-                    this.addTaxon(state, child);
+                    state.taxonsHierarchy.add(child);
                 }
             },
             addTaxonPicture(state, payload: { taxon: Taxon, picture: Picture }) {

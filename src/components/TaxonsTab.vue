@@ -3,7 +3,8 @@
         <nav v-if="showLeftMenu" class="scroll thin-border white-background no-print">
             <TreeMenu :editable="editable" :items="taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
-                @select-item="selectTaxon" @add-item="addTaxon" @delete-item="removeTaxon">
+                @add-item="addTaxon" @delete-item="removeTaxon" v-slot="menuProps">
+                <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </TreeMenu>
         </nav>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
@@ -174,7 +175,12 @@ export default Vue.extend({
             latexProgressText: "",
             selectingParent: false,
             copiedTaxon: undefined as HierarchicalItem<Taxon>|undefined,
-            selectedTaxonId: "",
+            selectedTaxonId: this.$route.params.id ?? "",
+        }
+    },
+    watch: {
+        $route(to: any) {
+            this.selectedTaxonId = to.params.id;
         }
     },
     computed: {
