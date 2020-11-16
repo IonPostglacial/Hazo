@@ -1,10 +1,13 @@
 <template>
     <div>
         <div class="horizontal-flexbox">
-            <label for="lang-selector">Language</label>
-            <select name="lang" id="lang-selector" v-model="lang">
-                <option v-for="(language, index) in languageList" :key="language.name" :value="index">{{ language.name }}</option>
-            </select>
+            <div class="horizontal-flexbox">
+                <label for="lang-selector">Language</label>
+                <select name="lang" id="lang-selector" v-model="lang">
+                    <option v-for="(language, index) in languageList" :key="language.name" :value="index">{{ language.name }}</option>
+                </select>
+            </div>
+            <button @click="exportMarkdown">Export to Markdown</button>
         </div>
         <div id="interactive-tree">
         </div>
@@ -17,11 +20,12 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { mapState } from "vuex";
 import * as d3 from "d3";
 import { State } from '@/bunga/datatypes'; // eslint-disable-line no-unused-vars
+import download from '@/download';
 
-type D3Hierarchy = { name: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
+type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
 
-function updateD3(element: Element, treeData: D3Hierarchy) {
+function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy) {
     const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = element.clientHeight;
 
     const margin = { top: 20, right: 90, bottom: 30, left: 90 },
@@ -86,6 +90,7 @@ function updateD3(element: Element, treeData: D3Hierarchy) {
             .attr("transform", function() {
                 return "translate(" + source.y0 + "," + source.x0 + ")";
             })
+            .on("dblclick", (e: any, d: any) => { if (d.data.url) vue.$router.push(d.data.url); })
             .on("click", click);
 
         // Add Circle for the nodes
@@ -203,6 +208,16 @@ function updateD3(element: Element, treeData: D3Hierarchy) {
     }
 }
 
+function hierarchyToMarkdown(data: D3Hierarchy, indentation=-1): string {
+    let content = "";
+    for (let i = 0; i < indentation; i++) content += "\t";
+    if (indentation >= 0) content += `- ${data.name}\r\n`;
+    for (const child of data.children ?? []) {
+        content += hierarchyToMarkdown(child, indentation + 1);
+    }
+    return content;
+}
+
 export default Vue.extend({
     name: "CharactersTree",
     data() {
@@ -221,9 +236,10 @@ export default Vue.extend({
         treeData(): D3Hierarchy {
             const hierarchyToD3 = (hierarchy: Hierarchy<any>, h: any): D3Hierarchy => {
                 const langFieldName = this.selectedLang.field;
-                console.log(name);
+                console.log(h);
                 return {
                     name: h[langFieldName],
+                    url: (h.id ? ("characters/" + h.id) : undefined),
                     color: h.color,
                     children: [
                         ...hierarchy.childrenOf(h),
@@ -234,10 +250,15 @@ export default Vue.extend({
         },
     },
     mounted() {
-        updateD3(this.$el, this.treeData);
+        updateD3(this, this.$el, this.treeData);
     },
     updated() {
-        updateD3(this.$el, this.treeData);
+        updateD3(this, this.$el, this.treeData);
+    },
+    methods: {
+        exportMarkdown() {
+            download(hierarchyToMarkdown(this.treeData), "md");
+        }
     }
 });
 </script>
