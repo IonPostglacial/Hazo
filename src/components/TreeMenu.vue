@@ -9,6 +9,7 @@
                 </div>
             </div>
             <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between button-group">
+                <button @click="$emit('unselected')">0</button>
                 <li v-for="nameField in nameFields" :key="nameField.propertyName" :class="['flex-grow-1', 'button', 'no-list-style', { 'background-color-1': visibleColumns[nameField.propertyName] }]" @click="toggleColumnVisibility(nameField.propertyName)">
                     {{ nameField.label }}
                 </li>

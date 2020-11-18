@@ -3,7 +3,7 @@
         <nav v-if="showLeftMenu" class="scroll thin-border white-background no-print">
             <TreeMenu :editable="editable" :items="taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
-                @add-item="addTaxon" @delete-item="removeTaxon" v-slot="menuProps">
+                @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </TreeMenu>
         </nav>
@@ -35,8 +35,8 @@
                         <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name }}</button>
                     </div>
                 </div>
-                <div v-if="typeof selectedTaxon !== 'undefined'" class="button-group">
-                    <button type="button" @click="copyItem">Copy</button>
+                <div class="button-group">
+                    <button v-if="typeof selectedTaxon !== 'undefined'" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
                 </div>
                 <div class="button-group">

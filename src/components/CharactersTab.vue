@@ -5,7 +5,7 @@
                 :name-fields="[{ label: 'Name', propertyName: 'name'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
                 @add-item="addCharacter"
-                @delete-item="deleteCharacter" v-slot="menuProps">
+                @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </TreeMenu>
         </nav>
@@ -14,8 +14,8 @@
             <div class="horizontal-flexbox medium-padding thin-border">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                 <div class="flex-grow-1 medium-padding">{{ selectedCharacter.name }}</div>
-                <div v-if="typeof selectedCharacter !== 'undefined'" class="button-group">
-                    <button type="button" @click="copyItem">Copy</button>
+                <div class="button-group">
+                    <button v-if="typeof selectedCharacter !== 'undefined'" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
                 </div>
             </div>

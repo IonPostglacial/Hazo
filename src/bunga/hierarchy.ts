@@ -136,10 +136,11 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     addHierarchy(hierarchy: Hierarchy<T>, targetId: string): void {
-        for (const item of hierarchy.allItems) {
+        for (const item of [...hierarchy.allItems]) {
             if (typeof item.parentId === "undefined") item.parentId = targetId;
             const children = [...hierarchy.childrenOf(item)];
             item.id = "";
+            item.childrenOrder = [];
             this.add(item);
             for (const child of children) {
                 child.parentId = item.id;
