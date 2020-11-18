@@ -10,16 +10,16 @@
             </TreeMenu>
         </nav>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
-        <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll vertical-flexbox flex-grow-1">
+        <section class="scroll vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox medium-padding thin-border">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                <div class="flex-grow-1 medium-padding">{{ selectedCharacter.name }}</div>
+                <div class="flex-grow-1 medium-padding">{{ selectedCharacter ? selectedCharacter.name : '' }}</div>
                 <div class="button-group">
                     <button v-if="typeof selectedCharacter !== 'undefined'" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
                 </div>
             </div>
-            <picture-box editable="editable"
+            <picture-box v-if="typeof selectedCharacter !== 'undefined'" editable="editable"
                     @add-photo="addCharacterPhoto"
                     @set-photo="setCharacterPhoto"
                     @delete-photo="deleteCharacterPhoto"
@@ -27,14 +27,14 @@
                 <picture-frame v-for="(photo, index) in selectedCharacter.photos" :key="photo.id"
                     :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" editable="true"></picture-frame>
             </picture-box>
-            <collapsible-panel label="Identification">
+            <collapsible-panel v-if="typeof selectedCharacter !== 'undefined'" label="Identification">
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameEN" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameCN" /></div>
                 <label class="item-property">Detail</label>
                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea> 
             </collapsible-panel>
-            <collapsible-panel v-if="selectedCharacter.parentId" label="Dependencies">
+            <collapsible-panel v-if="selectedCharacter && selectedCharacter.parentId" label="Dependencies">
                 <div class="horizontal-flexbox">
                     <section class="medium-margin medium-padding thin-border flex-grow-1">
                         <label>Inherent State</label>
