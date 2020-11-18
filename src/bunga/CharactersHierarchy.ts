@@ -8,10 +8,13 @@ export class CharactersHierarchy extends Hierarchy<Character> {
     }
 
     add(character: Character): Character {
+        console.log("add character", character.name);
         if (character.id === "") {
+            console.log("character is new", character.name);
             const newCharacter = super.add(character);
             const parentDescription = this.itemWithId(character.parentId);
             if(typeof character.parentId !== "undefined" && typeof parentDescription !== "undefined") {
+                console.log("add character inherent state", character.name);
                 const newState: State = {
                     id: "s-auto-" + newCharacter.id,
                     descriptorId: character.parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []

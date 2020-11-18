@@ -9,7 +9,7 @@ export interface IMap<T> {
     [Symbol.iterator](): Iterator<[string, T]>;
     values(): Iterable<T>;
     clear(): void;
-    toObject(): any;
+    entries(): Iterable<[string, T]>;
 }
 
 export class Hierarchy<T extends HierarchicalItem<T>> {
@@ -121,16 +121,29 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return newItem;
     }
 
-    duplicateItem(item: T|undefined, parentId: string|undefined) {
-        if (typeof item === "undefined") return;
+    extractHierarchy(item: T, hierarchy: Hierarchy<T>|null = null, parentId: string|undefined = undefined): Hierarchy<T> {
+        if (hierarchy === null) hierarchy = new Hierarchy<T>(this.idPrefix, new Map<string, T>());
 
         const newItem = this.cloneNewItem(item);
         newItem.parentId = parentId;
 
-        this.add(newItem);
+        hierarchy.add(newItem);
 
         for (const child of this.childrenOf(item)) {
-            this.duplicateItem(child, newItem.id);
+            this.extractHierarchy(child, hierarchy, newItem.id);
+        }
+        return hierarchy;
+    }
+
+    addHierarchy(hierarchy: Hierarchy<T>, targetId: string): void {
+        for (const item of hierarchy.allItems) {
+            if (typeof item.parentId === "undefined") item.parentId = targetId;
+            const children = [...hierarchy.childrenOf(item)];
+            item.id = "";
+            this.add(item);
+            for (const child of children) {
+                child.parentId = item.id;
+            }
         }
     }
 
@@ -244,6 +257,6 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     toObject(): any {
-        return this.items.toObject();
+        return Object.fromEntries(this.items.entries());
     }
 }

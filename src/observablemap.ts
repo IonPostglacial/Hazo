@@ -52,7 +52,7 @@ export class ObservableMap<T> {
         return m;
     }
 
-    toObject(): any {
-        return this.r;
+    entries(): Iterable<[string, T]> {
+        return Object.entries(this.r);
     }
 }

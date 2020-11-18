@@ -174,7 +174,6 @@ export default Vue.extend({
             editorConfig: {},
             latexProgressText: "",
             selectingParent: false,
-            copiedTaxon: undefined as HierarchicalItem<Taxon>|undefined,
             selectedTaxonId: this.$route.params.id ?? "",
         }
     },
@@ -225,14 +224,10 @@ export default Vue.extend({
     },
     methods: {
         copyItem() {
-            this.copiedTaxon = this.selectedTaxon;
+            this.$store.commit("copyTaxon", this.selectedTaxon);
         },
         pasteItem() {
-            if (typeof this.copiedTaxon !== "undefined") {
-                this.$store.commit("duplicateTaxon", { taxon: this.copiedTaxon, parentId: this.selectedTaxonId });
-            } else {
-                alert("Nothing to paste here.");
-            }
+            this.$store.commit("pasteTaxon", this.selectedTaxonId);
         },
         openSelectParentDropdown() {
             this.selectingParent = true;

@@ -135,7 +135,6 @@ export default Vue.extend({
             showLeftMenu: true,
             showBigImage: false,
             bigImages: [{id: "", url: "", label: ""}],
-            copiedCharacter: undefined as HierarchicalItem<Character>|undefined,
             selectedCharacterId: this.$route.params.id ?? "",
         };
     },
@@ -167,14 +166,10 @@ export default Vue.extend({
     },
     methods: {
         copyItem() {
-            this.copiedCharacter = this.selectedCharacter;
+            this.$store.commit("copyCharacter", this.selectedCharacter);
         },
         pasteItem() {
-            if (typeof this.copiedCharacter !== "undefined") {
-                this.$store.commit("duplicateCharacter", { character: this.copiedCharacter, parentId: this.selectedCharacterId });
-            } else {
-                alert("Nothing to paste here.");
-            }
+            this.$store.commit("pasteCharacter", this.selectedCharacterId);
         },
         setInapplicableState(state: State, selected: boolean) {
             this.$store.commit("setInapplicableState", { state, selected });

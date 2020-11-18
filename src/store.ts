@@ -34,8 +34,18 @@ export function createStore() {
             taxonsHierarchy: new Hierarchy<Taxon>("t", new ObservableMap()),
             charactersHierarchy: new CharactersHierarchy("d", new ObservableMap()),
             dictionaryEntries: {} as Record<string, DictionaryEntry>,
+            copiedTaxon: null as null|Hierarchy<Taxon>,
+            copiedCharacter: null as null|Hierarchy<Character>,
         },
         mutations: {
+            copyTaxon(state, taxon: Taxon) {
+                state.copiedTaxon = state.taxonsHierarchy.extractHierarchy(taxon);
+            },
+            pasteTaxon(state, targetId: string) {
+                if (state.copiedTaxon !== null) {
+                    state.taxonsHierarchy.addHierarchy(state.copiedTaxon, targetId);
+                }
+            },
             addTaxon(state, taxon: Taxon) {
                 state.taxonsHierarchy.add(taxon);
             },
@@ -44,9 +54,6 @@ export function createStore() {
             },
             removeTaxon(state, taxon: Taxon) {
                 state.taxonsHierarchy.remove(taxon);
-            },
-            duplicateTaxon(state, e: { taxon: Taxon, parentId: string }) {
-                state.taxonsHierarchy.duplicateItem(e.taxon, e.parentId);
             },
             changeTaxonParent(state, e: { taxon: Taxon, newParentId: string }) {
                 if (e.taxon.id === e.newParentId) return;
@@ -69,6 +76,14 @@ export function createStore() {
             removeTaxonPicture(state, payload: { taxon: Taxon, index: number }) {
                 payload.taxon.photos.splice(payload.index, 1);
             },
+            copyCharacter(state, character: Character) {
+                state.copiedCharacter = state.charactersHierarchy.extractHierarchy(character);
+            },
+            pasteCharacter(state, targetId: string) {
+                if (state.copiedCharacter !== null) {
+                    state.charactersHierarchy.addHierarchy(state.copiedCharacter, targetId);
+                }
+            },
             addCharacter(state, character: Character) {
                 state.charactersHierarchy.add(character);
             },
@@ -77,9 +92,6 @@ export function createStore() {
             },
             removeCharacter(state, character: Character) {
                 state.charactersHierarchy.remove(character);
-            },
-            duplicateCharacter(state, e: { character: Character, parentId: string }) {
-                state.charactersHierarchy.duplicateItem(e.character, e.parentId);
             },
             addCharacterPicture(state, payload: { character: Character, picture: Picture }) {
                 payload.character.photos.push(payload.picture);
