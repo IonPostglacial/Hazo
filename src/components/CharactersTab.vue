@@ -17,6 +17,8 @@
                 <div class="button-group">
                     <button v-if="typeof selectedCharacter !== 'undefined'" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
+                    <button v-if="typeof selectedCharacter !== 'undefined'" type="button" @click="copyStates">Copy States</button>
+                    <button type="button" @click="pasteStates">Paste States</button>
                 </div>
             </div>
             <picture-box v-if="typeof selectedCharacter !== 'undefined'" editable="editable"
@@ -155,6 +157,12 @@ export default Vue.extend({
         },
         pasteItem() {
             this.$store.commit("pasteCharacter", this.selectedCharacterId);
+        },
+        copyStates() {
+            this.$store.commit("copyStates", this.selectedCharacter?.states);
+        },
+        pasteStates() {
+            this.$store.commit("pasteStates", this.selectedCharacterId);
         },
         setInapplicableState(state: State, selected: boolean) {
             this.$store.commit("setInapplicableState", { state, selected });
