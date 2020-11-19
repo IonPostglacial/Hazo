@@ -85,8 +85,9 @@
                                     <div>EN</div><input type="text" class="flex-grow-1" v-model="state.nameEN" />
                                     <div>CN</div><input type="text" class="flex-grow-1" v-model="state.nameCN" />
                                     <label>Color</label><input type="color" v-model="state.color">
+                                    <div>Description</div>
+                                    <textarea v-model="state.description" class="input-text" pleceholder="description"></textarea>
                                 </div>
-                                <textarea v-model="state.description" rows="7" class="flex-grow-1" pleceholder="description"></textarea>
                                 <picture-box
                                         class="scroll"
                                         editable="true"
