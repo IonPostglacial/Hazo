@@ -10,12 +10,14 @@ frameTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
         <a id="open-photo" class="small-margin thin-border" href="#1">
             <img class="medium-max-width medium-max-height" src="">
         </a>
-        <input id="set-photo" type="text" class="no-fixed-width" />
+        <div class="horizontal-flexbox">
+            <input id="set-photo" type="text" class="no-fixed-width" />
+        </div>
     </div>`;
 boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     <collapsible-panel id="container" label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
         <slot></slot>
-        <div class="vertical-flexbox space-between relative">
+        <div class="horizontal-flexbox space-between relative">
             <add-item id="add-photo"></add-item>
         </div>
     </collapsible-panel>`;
@@ -135,6 +137,7 @@ class PictureFrame extends HTMLElement {
 
 class PictureBox extends HTMLElement {
     #editable = false;
+    #selectedPhotoIndex = 0;
 
     constructor() {
         super();
@@ -147,6 +150,12 @@ class PictureBox extends HTMLElement {
     set editable(editable) {
         this.#editable = editable;
         this.refreshEditable();
+    }
+
+    get selectedPhotoIndex() { return this.#selectedPhotoIndex; }
+    set selectedPhotoIndex(index: number) {
+        const frames = this.shadowRoot!.querySelectorAll("picture-frame");
+        frames.forEach((f, i) =>  { if (i === index) f.classList.remove("invisible"); else f.classList.add("invisible"); });
     }
 
     refreshEditable() {
@@ -163,15 +172,25 @@ class PictureBox extends HTMLElement {
 
     connectedCallback() {
         this.#editable = !!this.getAttribute("editable");
-        this.shadowRoot!.appendChild(boxTemplate.content.cloneNode(true));
-        const addPhoto = this.shadowRoot!.getElementById("add-photo") as AddItem;
+        this.#selectedPhotoIndex = parseInt(this.getAttribute("photoindex") ?? "0");
 
-        addPhoto.addEventListener("add-item", (evt) => {
+        this.shadowRoot!.appendChild(boxTemplate.content.cloneNode(true));
+        const addPhoto = this.shadowRoot?.getElementById("add-photo") as AddItem|null;
+        const previousBtn = this.shadowRoot?.getElementById("previous-btn") as HTMLButtonElement|null;
+        const nextBtn = this.shadowRoot?.getElementById("next-btn") as HTMLButtonElement|null;
+
+        addPhoto?.addEventListener("add-item", (evt) => {
             const event = evt as Event & { detail: string };
             const e = new CustomEvent("add-photo", { detail: { value: event.detail }, bubbles: true });
             this.dispatchEvent(e);
         });
-
+        previousBtn?.addEventListener("click", (evt) => {
+            if (this.selectedPhotoIndex > 0) this.selectedPhotoIndex--;
+        });
+        nextBtn?.addEventListener("click", (evt) => {
+            const frames = this.shadowRoot!.querySelectorAll("picture-frame");
+            if (this.selectedPhotoIndex < frames.length - 1) this.selectedPhotoIndex++;
+        });
         this.refreshEditable();
     }
 
@@ -179,6 +198,9 @@ class PictureBox extends HTMLElement {
         switch (name) {
         case "editable":
             this.editable = !!newValue;
+            break;
+        case "photoindex":
+            this.selectedPhotoIndex = +newValue;
             break;
         }
     }
