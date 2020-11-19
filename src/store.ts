@@ -5,6 +5,7 @@ import Vuex from "vuex";
 import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./bunga";
 import { Picture } from "./bunga/datatypes";
 import clone from "./clone";
+import makeid from './makeid';
 import { ObservableMap } from "./observablemap";
 
 export type BungaStore = ReturnType<typeof createStore>;
@@ -36,6 +37,7 @@ export function createStore() {
             dictionaryEntries: {} as Record<string, DictionaryEntry>,
             copiedTaxon: null as null|Hierarchy<Taxon>,
             copiedCharacter: null as null|Hierarchy<Character>,
+            copiedStates: [] as State[]
         },
         mutations: {
             copyTaxon(state, taxon: Taxon) {
@@ -82,6 +84,19 @@ export function createStore() {
             pasteCharacter(state, targetId: string) {
                 if (state.copiedCharacter !== null) {
                     state.charactersHierarchy.addHierarchy(state.copiedCharacter, targetId);
+                }
+            },
+            copyStates(state, states: State[]|undefined) {
+                if (typeof states !== "undefined") {
+                    state.copiedStates = clone(states);
+                    state.copiedStates.forEach(s => s.id = "s-" + makeid(8));
+                }
+            },
+            pasteStates(state, characterId: string) {
+                const character = state.charactersHierarchy.itemWithId(characterId);
+
+                if (typeof character !== "undefined") {
+                    character.states.push(...state.copiedStates);
                 }
             },
             addCharacter(state, character: Character) {
