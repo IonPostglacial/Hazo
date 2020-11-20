@@ -19,6 +19,7 @@ Vue.use(VueRouter);
 const store = createStore();
 const router = new VueRouter({
     routes: [
+        { path: "/", component: TaxonsTab },
         { path: "/taxons/:id?", component: TaxonsTab },
         { path: "/characters/:id?", component: CharactersTab },
         { path: "/characters-tree", component: CharactersTree },
