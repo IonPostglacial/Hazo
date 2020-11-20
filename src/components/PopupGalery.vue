@@ -3,7 +3,7 @@
         <header class="horizontal-flexbox medium-padding thin-border">
             <div class="nowrap no-vertical-overflow flex-grow-1">{{ selectedImage.label }}</div><div class="close" @click="close"></div>
         </header>
-        <div class="horizontal-flexbox cented-aligned">
+        <div class="horizontal-flexbox cented-aligned dark-background">
             <button v-if="selectedImageIndex > 0" class="background-color-1 font-size-28" @click="selectedImageIndex--">🡄</button>
             <img class="max-width-screen max-height-screen" :src="selectedImage.url" :alt="selectedImage.label">
             <button v-if="selectedImageIndex < images.length - 1" class="background-color-1 font-size-28" @click="selectedImageIndex++">🡆</button>

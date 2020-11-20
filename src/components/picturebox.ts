@@ -1,4 +1,5 @@
 import { Picture } from '@/bunga';
+import { MutationTree } from 'vuex';
 import { AddItem } from "./additem";
 
 const frameTemplate = document.createElement("template");
@@ -6,19 +7,24 @@ const boxTemplate = document.createElement("template");
 
 frameTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     <div class="vertical-flexbox space-between relative">
-        <div id="delete-photo" class="close absolute-top-right"></div>
-        <a id="open-photo" class="small-margin thin-border" href="#1">
-            <img class="medium-max-width medium-max-height" src="">
+        <div id="delete-photo" class="close white absolute-top-right"></div>
+        <a id="open-photo" class="small-margin thin-border fill dark-background" href="#1">
+            <img src="">
         </a>
         <div class="horizontal-flexbox">
-            <input id="set-photo" type="text" class="no-fixed-width" />
+            <input id="set-photo" type="text" class="no-fixed-width flex-grow-1" />
         </div>
     </div>`;
 boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
     <collapsible-panel id="container" label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
         <slot></slot>
         <div class="horizontal-flexbox space-between relative">
-            <add-item id="add-photo"></add-item>
+            <div id="previous-next-btn-group" class="button-group invisible">
+                <button type="button" id="previous-btn">&lt;</button>
+                <button type="button" id="next-btn">&gt;</button>
+            </div>
+            <div id="txt-index" class="medium-padding"></div>
+            <add-item id="add-photo" class="flex-grow-1"></add-item>
         </div>
     </collapsible-panel>`;
 
@@ -101,7 +107,6 @@ class PictureFrame extends HTMLElement {
                 this.dispatchEvent(e);
             }
         }
-
         this.refreshEditable();
         this.refreshPicture();
     }
@@ -152,10 +157,25 @@ class PictureBox extends HTMLElement {
         this.refreshEditable();
     }
 
+    get indexTextElement() {
+        return this.shadowRoot!.getElementById("txt-index")!;
+    }
+
+    get previousNextButtonGroupElement() {
+        return this.shadowRoot!.getElementById("previous-next-btn-group")!;
+    }
+
+    get indexText() {
+        return this.children.length > 1 ? `${this.selectedPhotoIndex + 1} / ${this.children.length}` : "";
+    }
+
     get selectedPhotoIndex() { return this.#selectedPhotoIndex; }
     set selectedPhotoIndex(index: number) {
-        const frames = this.shadowRoot!.querySelectorAll("picture-frame");
-        frames.forEach((f, i) =>  { if (i === index) f.classList.remove("invisible"); else f.classList.add("invisible"); });
+        this.#selectedPhotoIndex = index;
+        this.indexTextElement.innerHTML = this.indexText;
+        Array.from(this.children).forEach((f, i) => {
+            if (i === index) f.classList.remove("invisible"); else f.classList.add("invisible");
+        });
     }
 
     refreshEditable() {
@@ -167,6 +187,14 @@ class PictureBox extends HTMLElement {
             addPhoto.classList.remove("invisible");
         } else {
             addPhoto.classList.add("invisible");
+        }
+    }
+
+    refreshChildNumber() {
+        if (this.children.length > 1) {
+            this.previousNextButtonGroupElement.classList.remove("invisible");
+        } else {
+            this.previousNextButtonGroupElement.classList.add("invisible");
         }
     }
 
@@ -188,10 +216,26 @@ class PictureBox extends HTMLElement {
             if (this.selectedPhotoIndex > 0) this.selectedPhotoIndex--;
         });
         nextBtn?.addEventListener("click", (evt) => {
-            const frames = this.shadowRoot!.querySelectorAll("picture-frame");
-            if (this.selectedPhotoIndex < frames.length - 1) this.selectedPhotoIndex++;
+            if (this.selectedPhotoIndex < this.children.length - 1) this.selectedPhotoIndex++;
         });
         this.refreshEditable();
+        this.refreshChildNumber();
+        this.indexTextElement.innerHTML = this.indexText;
+        const self = this;
+        const observer = new MutationObserver(function(mutationsList: MutationRecord[], observer: MutationObserver) {
+            for(const mutation of mutationsList) {
+                if (mutation.type === "childList") {
+                    Array.from(mutation.addedNodes)
+                        .filter(node => node.nodeName === "PICTURE-FRAME")
+                        .forEach(() =>  {
+                            self.selectedPhotoIndex = self.children.length - 1;
+                            self.refreshChildNumber();
+                        });
+                    self.selectedPhotoIndex -= mutation.removedNodes.length;
+                }
+            }
+        });
+        observer.observe(this, { attributes: true, childList: true, subtree: true });
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
