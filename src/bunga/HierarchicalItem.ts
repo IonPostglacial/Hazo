@@ -1,4 +1,6 @@
-import { HierarchicalItem } from "./datatypes";
+import { ItemPropertyField } from '@/components/itempropertyfield';
+import { Character, HierarchicalItem } from "./datatypes";
+import Taxon from './datatypes/Taxon';
 import { createDetailData, DetailDataInit } from "./DetailData";
 import { picturesFromPhotos } from './picture';
 
@@ -14,7 +16,7 @@ export function createHierarchicalItem<T>(init : HierarchicalItemInit): Hierarch
 	}, createDetailData(init));
 }
 
-export function repairPotentialCorruption(item: HierarchicalItem<any>) {
+export function repairPotentialCorruption(item: HierarchicalItem<Taxon|Character>) {
 	item.topLevel = typeof item.parentId === "undefined";
 	item.photos = picturesFromPhotos(item.photos);
 	const childrenOrder = new Set<any>();
@@ -24,4 +26,12 @@ export function repairPotentialCorruption(item: HierarchicalItem<any>) {
 		childrenOrder.add(childId);
 	}
 	item.childrenOrder = [...childrenOrder];
+
+	if (item.type === "character") {
+		const character = item as Character;
+
+		for (const state of character.states) {
+			state.descriptorId = character.id;
+		}
+	}
 }
