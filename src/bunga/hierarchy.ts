@@ -1,5 +1,5 @@
 import { HierarchicalItem } from "./datatypes";
-import clone from "../clone";
+import clone from "../tools/clone";
 
 export interface IMap<T> {
     get(key: string): T|undefined;

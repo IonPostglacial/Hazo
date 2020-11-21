@@ -4,9 +4,9 @@ import Vuex from "vuex";
 
 import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./bunga";
 import { Picture } from "./bunga/datatypes";
-import clone from "./clone";
-import makeid from './makeid';
-import { ObservableMap } from "./observablemap";
+import clone from "./tools/clone";
+import makeid from './tools/makeid';
+import { ObservableMap } from "./tools/observablemap";
 
 export type BungaStore = ReturnType<typeof createStore>;
 

@@ -45,7 +45,7 @@ import Vue from "vue";
 import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
-import download from "./download";
+import download from "@/tools/download";
 import { DictionaryEntry, HierarchicalItem, Picture, State } from "./bunga/datatypes"; // eslint-disable-line no-unused-vars
 import { BungaVue } from "./store";
 

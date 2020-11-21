@@ -49,14 +49,14 @@
 </template>
 
 <script lang="ts">
-import parseCSV from "../parse-csv";
+import parseCSV from "@/tools/parse-csv";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue, { PropType } from "vue";  // eslint-disable-line no-unused-vars
 import { mapState } from "vuex";
-import download from "../download";
+import download from "@/tools/download";
 import { DictionaryEntry } from "../bunga";  // eslint-disable-line no-unused-vars
 
 export default Vue.extend({

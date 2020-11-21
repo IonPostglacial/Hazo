@@ -20,7 +20,7 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { mapState } from "vuex";
 import * as d3 from "d3";
 import { State } from '@/bunga/datatypes'; // eslint-disable-line no-unused-vars
-import download from '@/download';
+import download from '@/tools/download';
 
 type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
