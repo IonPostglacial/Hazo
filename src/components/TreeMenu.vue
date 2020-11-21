@@ -44,12 +44,12 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { MenuEventHub } from "../menu-event-hub";
+import { MenuEventHub } from "@/tools/menu-event-hub";
 import TreeMenuItem from "./TreeMenuItem.vue";
 import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
-import { Button } from "../Button"; // eslint-disable-line no-unused-vars
+import { Button } from "@/bunga/Button"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
-import debounce from "../debounce";
+import debounce from "@/tools/debounce";
 
 export default Vue.extend({
     name: "TreeMenu",

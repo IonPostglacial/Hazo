@@ -153,11 +153,11 @@ import { Book, Character, HierarchicalItem, Picture, State, Taxon, TexExporter, 
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { mapState } from "vuex";
 import { Hierarchy } from '@/bunga/hierarchy';
-import clone from '@/clone';
+import clone from '@/tools/clone';
 import { createDetailData } from '@/bunga/DetailData';
 import { createTaxon } from '@/bunga/Taxon';
-import { ObservableMap } from '@/observablemap';
-import download from "../download";
+import { ObservableMap } from '@/tools/observablemap';
+import download from "@/tools/download";
 import exportStatistics from "../bunga/features/exportstats";
 
 export default Vue.extend({

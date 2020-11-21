@@ -40,9 +40,9 @@
 
 <script lang="ts">
 import { HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
-import { Button } from "../Button"; // eslint-disable-line no-unused-vars
+import { Button } from "@/bunga/Button"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { MenuEventHub } from "../menu-event-hub"; // eslint-disable-line no-unused-vars
+import { MenuEventHub } from "@/tools/menu-event-hub"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy'; // eslint-disable-line no-unused-vars
 
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
