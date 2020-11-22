@@ -1,10 +1,11 @@
-import { Book, BookInfo, Character, Dataset, DetailData, DictionaryEntry, Field, HierarchicalItem, Picture, State, Taxon } from "./datatypes";
+import { Book, BookInfo, Character, DetailData, DictionaryEntry, Field, HierarchicalItem, Picture, State, Taxon } from "./datatypes";
 import { standardBooks } from "./stdcontent";
-import { createDataset } from "./Dataset";
+import { Dataset } from "./Dataset";
 import { createDetailData } from './DetailData';
 import { createHierarchicalItem } from './HierarchicalItem';
 import { createTaxon, taxonDescriptions } from './Taxon';
 import { createCharacter } from './Character';
+import { ManyToManyBimap } from '@/tools/bimaps';
 
 export interface EncodedDataset {
 	id: string
@@ -139,10 +140,12 @@ export function decodeDataset(dataset: AlreadyEncodedDataset): Dataset {
 	for (const taxon of dataset.taxons) {
 		taxons[taxon.id] = decodeTaxon(taxon, characters, states, books);
 	}
-	return createDataset(
+	return new Dataset(
 		dataset.id,
 		taxons,
 		characters,
+		states,
+		new ManyToManyBimap(),
 		books,
 		dataset.extraFields,
 		dataset.dictionaryEntries,

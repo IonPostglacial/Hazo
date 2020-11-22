@@ -72,7 +72,6 @@ export interface Description {
 }
 
 export interface Taxon extends HierarchicalItem<Taxon> {
-	statesSelection: Record<string, boolean|undefined>;
     bookInfoByIds:Record<string, BookInfo>;
 }
 
@@ -85,13 +84,4 @@ export interface DictionaryEntry {
 	defEN: string;
 	defFR: string;
 	url: string;
-}
-
-export interface Dataset {
-	id: string;
-	taxons: Record<string, Taxon>;
-	characters: Record<string, Character>;
-	books: Book[];
-	extraFields: Field[];
-	dictionaryEntries: Record<string, DictionaryEntry>;
 }

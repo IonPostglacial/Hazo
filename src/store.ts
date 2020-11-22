@@ -3,7 +3,9 @@ import { VueConstructor } from 'vue/types/umd';
 import Vuex from "vuex";
 
 import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./bunga";
+import { Dataset } from './bunga/Dataset';
 import { Picture } from "./bunga/datatypes";
+import { ManyToManyBimap } from './tools/bimaps';
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";
@@ -30,44 +32,39 @@ function setState(states: State[], state: State, selected: boolean) {
 export function createStore() {
     return new Vuex.Store({
         state: {
-            extraFields: new Array<Field>(),
-            books: standardBooks,
-            taxonsHierarchy: new Hierarchy<Taxon>("t", new ObservableMap()),
-            charactersHierarchy: new CharactersHierarchy("d", new ObservableMap()),
-            dictionaryEntries: {} as Record<string, DictionaryEntry>,
+            dataset: new Dataset("",
+                new Hierarchy<Taxon>("t", new ObservableMap()),
+                new CharactersHierarchy("d", new ObservableMap()),
+                {},
+                new ManyToManyBimap(),
+                standardBooks,
+                new Array<Field>(),
+                {}
+            ),
             copiedTaxon: null as null|Hierarchy<Taxon>,
             copiedCharacter: null as null|Hierarchy<Character>,
             copiedStates: [] as State[]
         },
         mutations: {
             copyTaxon(state, taxon: Taxon) {
-                state.copiedTaxon = state.taxonsHierarchy.extractHierarchy(taxon);
+                state.copiedTaxon = state.dataset.taxonsHierarchy.extractHierarchy(taxon);
             },
             pasteTaxon(state, targetId: string) {
                 if (state.copiedTaxon !== null) {
-                    state.taxonsHierarchy.addHierarchy(state.copiedTaxon, targetId);
+                    state.dataset.taxonsHierarchy.addHierarchy(state.copiedTaxon, targetId);
                 }
             },
             addTaxon(state, taxon: Taxon) {
-                state.taxonsHierarchy.add(taxon);
+                state.dataset.addTaxon(taxon);
             },
             addTaxons(state, taxons: Taxon[]) {
-                taxons.forEach(t => state.taxonsHierarchy.add(t));
+                taxons.forEach(t => state.dataset.addTaxon(t));
             },
             removeTaxon(state, taxon: Taxon) {
-                state.taxonsHierarchy.remove(taxon);
+                state.dataset.removeTaxon(taxon);
             },
             changeTaxonParent(state, e: { taxon: Taxon, newParentId: string }) {
-                if (e.taxon.id === e.newParentId) return;
-
-                const childrenTree = [...state.taxonsHierarchy.getOrderedChildrenTree(e.taxon)];
-
-                state.taxonsHierarchy.remove(e.taxon);
-                e.taxon.parentId = e.newParentId;
-                state.taxonsHierarchy.add(e.taxon);
-                for (const child of childrenTree) {
-                    state.taxonsHierarchy.add(child);
-                }
+                state.dataset.changeTaxonParent(e.taxon, e.newParentId);
             },
             addTaxonPicture(state, payload: { taxon: Taxon, picture: Picture }) {
                 payload.taxon.photos.push(payload.picture);
@@ -79,11 +76,11 @@ export function createStore() {
                 payload.taxon.photos.splice(payload.index, 1);
             },
             copyCharacter(state, character: Character) {
-                state.copiedCharacter = state.charactersHierarchy.extractHierarchy(character);
+                state.copiedCharacter = state.dataset.charactersHierarchy.extractHierarchy(character);
             },
             pasteCharacter(state, targetId: string) {
                 if (state.copiedCharacter !== null) {
-                    state.charactersHierarchy.addHierarchy(state.copiedCharacter, targetId);
+                    state.dataset.charactersHierarchy.addHierarchy(state.copiedCharacter, targetId);
                 }
             },
             copyStates(state, states: State[]|undefined) {
@@ -93,20 +90,20 @@ export function createStore() {
                 }
             },
             pasteStates(state, characterId: string) {
-                const character = state.charactersHierarchy.itemWithId(characterId);
+                const character = state.dataset.charactersHierarchy.itemWithId(characterId);
 
                 if (typeof character !== "undefined") {
                     character.states.push(...state.copiedStates);
                 }
             },
             addCharacter(state, character: Character) {
-                state.charactersHierarchy.add(character);
+                state.dataset.addCharacter(character);
             },
             addCharacters(state, characters: Character[]) {
-                characters.forEach(c => state.charactersHierarchy.add(c));
+                characters.forEach(c => state.dataset.addCharacter(c));
             },
             removeCharacter(state, character: Character) {
-                state.charactersHierarchy.remove(character);
+                state.dataset.removeCharacter(character);
             },
             addCharacterPicture(state, payload: { character: Character, picture: Picture }) {
                 payload.character.photos.push(payload.picture);
@@ -118,20 +115,10 @@ export function createStore() {
                 payload.character.photos.splice(payload.index, 1);
             },
             addState(state, e: { state: State, character: Character }) {
-                state.charactersHierarchy.addState(e.state);
+                state.dataset.addState(e.state);
             },
             removeState(state, e: { state: State, character: Character }) {
-                state.charactersHierarchy.removeState(e.state);
-                function removeStateFromSelection(stateSelection: Record<string, boolean|undefined>, state: State) {
-                    for (const stateId in stateSelection) {
-                        if (stateId === state.id) {
-                            delete stateSelection[stateId];
-                        }
-                    }
-                }
-                for (const taxon of state.taxonsHierarchy.allItems) {
-                    removeStateFromSelection(taxon.statesSelection, e.state);
-                }
+                state.dataset.removeState(e.state);
             },
             addStatePicture(state, payload: { state: State, picture: Picture }) {
                 payload.state.photos.push(payload.picture);
@@ -143,21 +130,21 @@ export function createStore() {
                 payload.state.photos.splice(payload.index, 1);
             },
             setInapplicableState(state, payload: { state: State, selected: boolean }) {
-                const character = state.charactersHierarchy.itemWithId(payload.state.descriptorId);
+                const character = state.dataset.charactersHierarchy.itemWithId(payload.state.descriptorId);
                 if (typeof character === "undefined") return;
 
                 setState(character.inapplicableStates, payload.state, payload.selected);
-                state.charactersHierarchy.add(clone(character));
+                state.dataset.charactersHierarchy.add(clone(character));
             },
             setRequiredState(state, payload: { state: State, selected: boolean }) {
-                const character = state.charactersHierarchy.itemWithId(payload.state.descriptorId);
+                const character = state.dataset.charactersHierarchy.itemWithId(payload.state.descriptorId);
                 if (typeof character === "undefined") return;
 
                 setState(character.requiredStates, payload.state, payload.selected);
-                state.charactersHierarchy.add(clone(character));
+                state.dataset.charactersHierarchy.add(clone(character));
             },
             setInherentState(state, payload: { state: State }) {
-                const character = state.charactersHierarchy.itemWithId(payload.state.descriptorId);
+                const character = state.dataset.charactersHierarchy.itemWithId(payload.state.descriptorId);
                 if (typeof character === "undefined") return;
 
                 character.inherentState = payload.state;
@@ -166,18 +153,18 @@ export function createStore() {
                 setState(character.inapplicableStates, payload.state, false);
             },
             addDictionaryEntry(state, entry: DictionaryEntry) {
-                Vue.set(state.dictionaryEntries, entry.id, entry);
+                Vue.set(state.dataset.dictionaryEntries, entry.id, entry);
             },
             addDictionaryEntries(state, entries: Array<DictionaryEntry>) {
-                entries.forEach(e => Vue.set(state.dictionaryEntries, e.id, e));
+                entries.forEach(e => Vue.set(state.dataset.dictionaryEntries, e.id, e));
             },
             addExtraField(state, {detail} : {detail: string}) {
-                state.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
+                state.dataset.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
             },
             removeExtraField(state, id:string) {
-                const i = state.extraFields.findIndex(f => f.id === id);
+                const i = state.dataset.extraFields.findIndex(f => f.id === id);
                 if (i >= 0) {
-                    state.extraFields.splice(i, 1);
+                    state.dataset.extraFields.splice(i, 1);
                 }
             },
         }
