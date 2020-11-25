@@ -123,7 +123,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const characters = new CharactersHierarchy("c", new makeMap());
 	const taxons = new Hierarchy("t", new makeMap());
 	const books = standardBooks.slice();
-	const statesByTaxons = new ManyToManyBimap();
+	const statesByTaxons = new ManyToManyBimap(makeMap);
 
 	for (const state of dataset.states) {
 		states[state.id] = state;

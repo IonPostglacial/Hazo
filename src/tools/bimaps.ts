@@ -1,3 +1,5 @@
+import { IMap } from '@/bunga/hierarchy';
+
 function addUniqueElementToArray(elements: string[], element: string) {
     if (!elements.includes(element)) {
         elements.push(element);
@@ -11,52 +13,52 @@ function removeUniqueElementFromArray(elements: string[], element: string) {
     }
 }
 
-function addUniqueElementToRecord(elementsByKey: Record<string, string[]>, key: string, element: string) {
-    let elements = elementsByKey[key];
+function addUniqueElementToMap(elementsByKey: IMap<string[]>, key: string, element: string) {
+    let elements = elementsByKey.get(key);
     if (typeof elements === "undefined") {
         elements = [];
     }
     addUniqueElementToArray(elements, element);
-    elementsByKey[key] = elements;
+    elementsByKey.set(key, elements);
 }
 
-function removeUniqueElementFromRecord(elementsByKey: Record<string, string[]>, key: string, element: string) {
-    const elements = elementsByKey[key];
+function removeUniqueElementFromMap(elementsByKey: IMap<string[]>, key: string, element: string) {
+    const elements = elementsByKey.get(key);
     if (typeof elements !== "undefined") {
         removeUniqueElementFromArray(elements, element);
     }
 }
 
 export class OneToManyBimap {
-    private rightIdsByLeftIds: Record<string, string[]>;
-    private leftIdByRightIds: Record<string, string>;
+    private rightIdsByLeftIds: IMap<string[]>;
+    private leftIdByRightIds: IMap<string>;
 
-    constructor() {
-        this.rightIdsByLeftIds = {};
-        this.leftIdByRightIds = {};
+    constructor(makeMap: { new(): IMap<any> }) {
+        this.rightIdsByLeftIds = new makeMap();
+        this.leftIdByRightIds = new makeMap();
     }
 
     add(leftId: string, rightId: string) {
-        addUniqueElementToRecord(this.rightIdsByLeftIds, leftId, rightId);
-        this.leftIdByRightIds[rightId] = leftId;
+        addUniqueElementToMap(this.rightIdsByLeftIds, leftId, rightId);
+        this.leftIdByRightIds.set(rightId, leftId);
     }
 
     remove(leftId: string, rightId: string) {
-        removeUniqueElementFromRecord(this.rightIdsByLeftIds, leftId, rightId);
-        delete this.leftIdByRightIds[rightId];
+        removeUniqueElementFromMap(this.rightIdsByLeftIds, leftId, rightId);
+        this.leftIdByRightIds.delete(rightId);
     }
 
     removeLeft(leftId: string) {
-        delete this.rightIdsByLeftIds[leftId];
+        this.rightIdsByLeftIds.delete(leftId);
         for (const rightId of Object.keys(this.leftIdByRightIds)) {
-            if (this.leftIdByRightIds[rightId] === leftId) {
-                delete this.leftIdByRightIds[rightId];
+            if (this.leftIdByRightIds.get(rightId) === leftId) {
+                this.leftIdByRightIds.delete(rightId);
             }
         }
     }
 
     removeRight(rightId: string) {
-        delete this.leftIdByRightIds[rightId];
+        this.leftIdByRightIds.delete(rightId);
         for (const rightIds of Object.values(this.rightIdsByLeftIds)) {
             removeUniqueElementFromArray(rightIds, rightId);
         }
@@ -66,53 +68,57 @@ export class OneToManyBimap {
         return Object.entries(this.rightIdsByLeftIds);
     }
 
-    getRightIdsByLeftId(leftId: string): readonly string[] {
-        return this.rightIdsByLeftIds[leftId];
+    getRightIdsByLeftId(leftId: string): readonly string[]|undefined {
+        return this.rightIdsByLeftIds.get(leftId);
     }
 
-    getLeftIdByRightId(rightId: string): string {
-        return this.leftIdByRightIds[rightId];
+    getLeftIdByRightId(rightId: string): string|undefined {
+        return this.leftIdByRightIds.get(rightId);
     }
 }
 
 export class ManyToManyBimap {
-    private rightIdsByLeftIds: Record<string, string[]>;
-    private leftIdsByRightIds: Record<string, string[]>;
+    private rightIdsByLeftIds: IMap<string[]>;
+    private leftIdsByRightIds: IMap<string[]>;
 
-    constructor() {
-        this.rightIdsByLeftIds = {};
-        this.leftIdsByRightIds = {};
+    constructor(makeMap: { new(): IMap<string[]> }) {
+        this.rightIdsByLeftIds = new makeMap();
+        this.leftIdsByRightIds = new makeMap();
+    }
+
+    has(leftId: string, rightId: string): boolean {
+        return this.leftIdsByRightIds.get(rightId)?.includes(leftId) ?? false;
     }
 
     add(leftId: string, rightId: string) {
-        addUniqueElementToRecord(this.rightIdsByLeftIds, leftId, rightId);
-        addUniqueElementToRecord(this.leftIdsByRightIds, rightId, leftId);
+        addUniqueElementToMap(this.rightIdsByLeftIds, leftId, rightId);
+        addUniqueElementToMap(this.leftIdsByRightIds, rightId, leftId);
     }
 
     remove(leftId: string, rightId: string) {
-        removeUniqueElementFromRecord(this.rightIdsByLeftIds, leftId, rightId);
-        removeUniqueElementFromRecord(this.leftIdsByRightIds, rightId, leftId);
+        removeUniqueElementFromMap(this.rightIdsByLeftIds, leftId, rightId);
+        removeUniqueElementFromMap(this.leftIdsByRightIds, rightId, leftId);
     }
 
     removeLeft(leftId: string) {
-        delete this.rightIdsByLeftIds[leftId];
+        this.rightIdsByLeftIds.delete(leftId);
         for (const leftIds of Object.values(this.leftIdsByRightIds)) {
             removeUniqueElementFromArray(leftIds, leftId);
         }
     }
 
     removeRight(rightId: string) {
-        delete this.leftIdsByRightIds[rightId];
+        this.leftIdsByRightIds.delete(rightId);
         for (const rightIds of Object.values(this.rightIdsByLeftIds)) {
             removeUniqueElementFromArray(rightIds, rightId);
         }
     }
 
-    getRightIdsByLeftId(leftId: string): readonly string[] {
-        return this.rightIdsByLeftIds[leftId];
+    getRightIdsByLeftId(leftId: string): readonly string[]|undefined {
+        return this.rightIdsByLeftIds.get(leftId);
     }
 
-    getLeftIdsByRightId(rightId: string): readonly string[] {
-        return this.leftIdsByRightIds[rightId];
+    getLeftIdsByRightId(rightId: string): readonly string[]|undefined {
+        return this.leftIdsByRightIds.get(rightId);
     }
 }

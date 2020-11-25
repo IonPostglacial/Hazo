@@ -8,7 +8,7 @@
             </TreeMenu>
         </nav>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
-        <extra-fields-panel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false"></extra-fields-panel>
+        <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
         <div class="vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
                 <div class="horizontal-flexbox">
@@ -48,7 +48,7 @@
             </div>
             <taxon-presentation v-if="mode === 'present-item'"
                 @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-                :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="dataset.taxonsHierarchy" :characters="dataset.charactersHierarchy.allItems">
+                :selected-taxon-id="selectedTaxonId" :dataset="dataset">
             </taxon-presentation>
             <section v-if="mode !== 'present-item' && typeof selectedTaxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox scroll">
                 <div class="vertical-flexbox scroll">
@@ -95,7 +95,7 @@
                                     N° Herbier</item-property-field>
                                 <item-property-field property="herbariumPicture" :value="selectedTaxon.herbariumPicture" :editable="editable">
                                     Herbarium Picture</item-property-field>
-                                <div v-for="extraField in extraFields" :key="extraField.id">
+                                <div v-for="extraField in dataset.extraFields" :key="extraField.id">
                                     <item-property-field :property="extraField.id" :icon="extraField.icon" :value="selectedTaxon.extra[extraField.id]" :editable="editable">
                                         {{ extraField.label }}</item-property-field>
                                 </div>
@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <div class="vertical-flexbox scroll flex-grow-1">
-                    <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
+                    <collapsible-panel v-for="book in dataset.books" :key="book.id" :label="book.label">
                         <div v-if="selectedTaxon.bookInfoByIds">
                             <div v-if="selectedTaxon.bookInfoByIds[book.id]">
                                 <label class="medium-margin">
@@ -151,7 +151,6 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, HierarchicalItem, Picture, State, Taxon, TexExporter, exportZipFolder } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { mapState } from "vuex";
 import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/tools/clone';
 import { createDetailData } from '@/bunga/DetailData';
@@ -159,7 +158,7 @@ import { createTaxon } from '@/bunga/Taxon';
 import { ObservableMap } from '@/tools/observablemap';
 import download from "@/tools/download";
 import exportStatistics from "../bunga/features/exportstats";
-import { Dataset } from '@/bunga/Dataset';
+import { Dataset } from '@/bunga/Dataset'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -203,13 +202,13 @@ export default Vue.extend({
                 if (typeof character.requiredStates === "undefined") {
                     console.log(character);
                 }
-                const taxonLacksRequiredStates = !character.requiredStates.every((requiredState: State) => selectedTaxon.statesSelection[requiredState.id] ?? false);
-                const taxonHasSomeInapplicableState = character.inapplicableStates.some((inapplicableState: State) => selectedTaxon.statesSelection[inapplicableState.id] ?? false);
+                const taxonLacksRequiredStates = !character.requiredStates.every((requiredState: State) => this.dataset.hasTaxonState(selectedTaxon, requiredState));
+                const taxonHasSomeInapplicableState = character.inapplicableStates.some((inapplicableState: State) => this.dataset.hasTaxonState(selectedTaxon, inapplicableState));
 
                 if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
                     dependencyHierarchy.remove(character);
                 } else {
-                    const characterStates = character.states.map((s: State) => Object.assign({ type: "state", parentId: s.descriptorId, selected: selectedTaxon.statesSelection[s.id] ?? false }, s));
+                    const characterStates = character.states.map((s: State) => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.dataset.hasTaxonState(selectedTaxon, s) }, s));
                     const characterChildren = [...dependencyHierarchy.childrenOf(character)];
                     
                     for (const state of characterStates) {
@@ -248,12 +247,12 @@ export default Vue.extend({
         addTaxon(e: {value: string, parentId: string }) {
             this.$store.commit("addTaxon", createTaxon({
                 ...createDetailData({ id: "", name: e.value, photos: [], }),
-                bookInfoByIds: Object.fromEntries(this.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
+                bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId, childrenIds: []
             }));
         },
         removeTaxon(e: { itemId: string }) {
-            this.$store.commit("removeTaxon", this.taxonsHierarchy?.itemWithId(e.itemId));
+            this.$store.commit("removeTaxon", this.dataset.taxonsHierarchy?.itemWithId(e.itemId));
         },
         setProperty(e: { detail: { property: string, value: string } }) {
             (this.selectedTaxon as any)[e.detail.property] = e.detail.value;
@@ -262,23 +261,22 @@ export default Vue.extend({
             this.selectedTaxon!.extra[e.detail.property] = e.detail.value;
         },
         pushToChildren(e: { detail: string }) {
-            for (const child of this.taxonsHierarchy!.childrenOf(this.selectedTaxon)) {
+            for (const child of this.dataset.taxonsHierarchy!.childrenOf(this.selectedTaxon)) {
                 const anyChild: any = child, anyItem: any = this.selectedTaxon;
                 anyChild[e.detail] = anyItem[e.detail];
             }
         },
         taxonStateToggle(e: { item: State|Character }) {
             const isCharacter = (e.item as Character).type === "character";
-            const stateToAddId = isCharacter ? (e.item as Character).inherentState?.id : e.item.id;
+            const stateToAdd = isCharacter ? (e.item as Character).inherentState : e.item as State;
 
-            if (typeof this.selectedTaxon !== "undefined" && typeof stateToAddId !== "undefined") {
-                const selected = !this.selectedTaxon.statesSelection[stateToAddId];
-                const newStateSelection = { ...this.selectedTaxon.statesSelection, [stateToAddId]: selected };
-                this.$store.commit("addTaxon", { ...this.selectedTaxon, statesSelection: newStateSelection });
+            if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
+                const selected = !this.dataset.hasTaxonState(this.selectedTaxon, stateToAdd);
+                this.$store.commit("setTaxonState", { taxon: this.selectTaxon, state: stateToAdd, has: selected });
             }
         },
         openCharacter(e: { item: Character }) {
-            if (e.item.inherentState && this.selectedTaxon && !this.selectedTaxon.statesSelection[e.item.inherentState.id]) {
+            if (e.item.inherentState && this.selectedTaxon && !this.dataset.hasTaxonState(this.selectedTaxon, e.item.inherentState)) {
                 this.taxonStateToggle({ item: e.item.inherentState });
             }
         },
@@ -307,18 +305,18 @@ export default Vue.extend({
             this.showBigImage = true;
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.taxonsHierarchy!);
+            const zipTxt = await exportZipFolder(this.dataset.taxonsHierarchy!);
             download(zipTxt, "zip", true);
         },
         texExport() {
-            const taxonToTex = new TexExporter([...this.taxonsHierarchy!.allItems], this.charactersHierarchy!.allItems);
+            const taxonToTex = new TexExporter(this.dataset);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
                 download(tex, "zip", true);
             });
         },
         exportStats() {
-            const csv = exportStatistics(this.taxonsHierarchy!);
+            const csv = exportStatistics(this.dataset.taxonsHierarchy);
             download(csv, "csv");
         },
     }

@@ -64,10 +64,14 @@ export class Dataset {
 		this.statesByTaxons.removeRight(state.id);
 	}
 
+	hasTaxonState(taxon: Taxon, state: State) {
+		return this.statesByTaxons.has(taxon.id, state.id);
+	}
+
 	*taxonDescriptions(taxon: Taxon): Iterable<Description> {
-		const statesByCharacter = new OneToManyBimap();
+		const statesByCharacter = new OneToManyBimap(Map);
 	
-		for (const stateId of this.statesByTaxons.getRightIdsByLeftId(taxon.id)) {
+		for (const stateId of this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []) {
 			const state = this.states[stateId];
 			statesByCharacter.add(state.descriptorId, state.id);
 		}

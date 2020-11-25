@@ -17,7 +17,6 @@
 <script lang="ts">
 import type { Character, HierarchicalItem, Hierarchy } from "@/bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { mapState } from "vuex";
 import * as d3 from "d3";
 import { State } from '@/bunga/datatypes'; // eslint-disable-line no-unused-vars
 import download from '@/tools/download';
@@ -229,7 +228,9 @@ export default Vue.extend({
         };
     },
     computed: {
-        ...mapState(["charactersHierarchy"]),
+        charactersHierarchy(): Hierarchy<Character> {
+            return this.$store.state.dataset.charactersHierarchy;
+        },
         selectedLang(): { name: string, field: string } {
             return this.languageList[this.lang];
         },

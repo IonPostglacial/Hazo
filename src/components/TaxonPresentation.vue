@@ -27,7 +27,7 @@
 </template>
 <script lang="ts">
 import { Character, Description, Hierarchy, Taxon } from '@/bunga'; // eslint-disable-line no-unused-vars
-import { taxonDescriptions } from '@/bunga/Taxon';
+import { Dataset } from "@/bunga/Dataset"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
@@ -35,8 +35,7 @@ export default Vue.extend({
     props: {
         showLeftMenu: Boolean,
         selectedTaxonId: String,
-        taxonsHierarchy: Object as PropType<Hierarchy<Taxon>>,
-        characters: Object as PropType<Iterable<Character>>,
+        dataset: Object as PropType<Dataset>,
     },
     data() {
         return {
@@ -45,16 +44,16 @@ export default Vue.extend({
     },
     computed: {
         selectedTaxon(): Taxon|undefined {
-            return this.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
+            return this.dataset.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
         },
         itemsToDisplay(): Iterable<Taxon> {
-            return this.taxonsHierarchy?.getLeaves(this.selectedTaxon) ?? [];
+            return this.dataset.taxonsHierarchy?.getLeaves(this.selectedTaxon) ?? [];
         },
         hierarchyToDisplay(): Taxon[] {
             return this.hierarchy.filter(parent => this.isParentSelected[parent.id]);
         },
         hierarchy(): Taxon[] {
-            const hierarchy = this.taxonsHierarchy?.parentsOf(this.selectedTaxon) ?? [];
+            const hierarchy = this.dataset.taxonsHierarchy?.parentsOf(this.selectedTaxon) ?? [];
             hierarchy.forEach(parent =>  {
                 if (typeof this.isParentSelected[parent.id] === "undefined")
                     Vue.set(this.isParentSelected, parent.id, true);
@@ -63,8 +62,8 @@ export default Vue.extend({
         },
     },
     methods: {
-        descriptions(taxon: Taxon): Description[] {
-            return taxonDescriptions(taxon, this.characters!);
+        descriptions(taxon: Taxon): Iterable<Description> {
+            return this.dataset.taxonDescriptions(taxon);
         },
     }
 })

@@ -93,8 +93,8 @@ function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record
     });
 }
 
-function extractStatesByTaxons(sddContent: sdd_Dataset): ManyToManyBimap {
-    const statesByTaxons = new ManyToManyBimap();
+function extractStatesByTaxons(makeMap: MapContructor<string[]>, sddContent: sdd_Dataset): ManyToManyBimap {
+    const statesByTaxons = new ManyToManyBimap(makeMap);
     for (const taxon of sddContent.taxons) {
         for (const categorical of taxon.categoricals) {
             for (const stateRef of categorical.stateRefs) {
@@ -146,7 +146,7 @@ export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset
 	const statesById = extractStatesById(dataset, photosByRef);
 	const descriptors = extractCharactersHierarchy(makeMap, dataset, statesById, photosByRef);
     const taxons = extractTaxonsHierarchy(makeMap, dataset, extraFields, photosByRef);
-    const statesByTaxons = extractStatesByTaxons(dataset);
+    const statesByTaxons = extractStatesByTaxons(makeMap, dataset);
 
 	return new Dataset("0", taxons, descriptors, statesById, statesByTaxons);
 }

@@ -36,7 +36,7 @@ export function createStore() {
                 new Hierarchy<Taxon>("t", new ObservableMap()),
                 new CharactersHierarchy("d", new ObservableMap()),
                 {},
-                new ManyToManyBimap(),
+                new ManyToManyBimap(ObservableMap),
                 standardBooks,
                 new Array<Field>(),
                 {}
@@ -151,6 +151,13 @@ export function createStore() {
                 
                 setState(character.requiredStates, payload.state, false);
                 setState(character.inapplicableStates, payload.state, false);
+            },
+            setTaxonState(state, p: { taxon: Taxon, state: State, has: boolean }) {
+                if (p.has) {
+                    state.dataset.statesByTaxons.add(p.taxon.id, p.state.id);
+                } else {
+                    state.dataset.statesByTaxons.remove(p.taxon.id, p.state.id);
+                }
             },
             addDictionaryEntry(state, entry: DictionaryEntry) {
                 Vue.set(state.dataset.dictionaryEntries, entry.id, entry);
