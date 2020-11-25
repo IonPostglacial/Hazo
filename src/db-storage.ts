@@ -1,18 +1,7 @@
-import { encodeDataset, EncodedDataset } from "./bunga/Codec";
-import { createDataset } from "./bunga/Dataset";
-import { Book, Character, DictionaryEntry, Field, Taxon } from "./bunga/datatypes";
+import { EncodedDataset } from "./bunga/Codec";
 
 const DB_NAME = "Datasets";
 const DB_VERSION = 5;
-
-interface DatasetDBv4 {
-	id: string;
-    taxons: Taxon[];
-    characters: Character[];
-	books: Book[];
-	extraFields: Field[];
-	dictionaryEntries: Record<string, DictionaryEntry>;
-}
 
 function createStore(db: IDBDatabase) {
     if (!db.objectStoreNames.contains("Datasets")) {
@@ -22,18 +11,6 @@ function createStore(db: IDBDatabase) {
 
 async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     createStore(db);
-    if (oldVersion === 4) {
-        const datasetIds = await dbList();
-
-        for (const datasetId of datasetIds) {
-            const dbDataset = await dbLoad(datasetId) as unknown as DatasetDBv4;
-            const dataset = createDataset(datasetId,
-                Object.fromEntries(dbDataset.taxons.map(t => [t.id, t])),
-                Object.fromEntries(dbDataset.characters.map(c => [c.id, c])),
-                dbDataset.books, dbDataset.extraFields, dbDataset.dictionaryEntries);
-            dbStore(encodeDataset(dataset));
-        }
-    }
 }
 
 function dbStore(dataset: EncodedDataset) {

@@ -1,7 +1,6 @@
 import type { Dataset as sdd_Dataset } from "./sdd/datatypes";
 import { Loader } from "./sdd/loader";
-import { Dataset, Field } from "./bunga/datatypes"
-import { datasetFromSdd } from "./bunga";
+import { Dataset, Field, datasetFromSdd } from "./bunga";
 
 function loadSddFile(file: File): Promise<sdd_Dataset[]> {
     return new Promise(function (resolve, reject) {

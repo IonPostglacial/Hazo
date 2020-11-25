@@ -47,10 +47,12 @@ export class Dataset {
 
 	addState(state: State) {
 		this.charactersHierarchy.addState(state);
+		this.states[state.id] = state;
 	}
 
 	removeState(state: State) {
 		this.charactersHierarchy.removeState(state);
+		delete this.states[state.id];
 		this.statesByTaxons.removeRight(state.id);
 	}
 }

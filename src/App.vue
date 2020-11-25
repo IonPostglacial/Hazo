@@ -62,7 +62,7 @@ export default BungaVue.extend({
         this.loadBase();
     },
     computed: {
-        ...mapState(["extraFields", "books", "taxonsHierarchy", "charactersHierarchy", "dictionaryEntries"]),
+        ...mapState(["dataset"]),
     },
     watch: {
         selectedBase(val) {

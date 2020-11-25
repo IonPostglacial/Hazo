@@ -2,23 +2,11 @@ import { createHierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem
 
 import { BookInfo, Character, Description, State, Taxon } from "./datatypes";
 
-interface TaxonInit extends Omit<HierarchicalItemInit, "type"> { statesSelection?: Record<string, boolean>, bookInfoByIds?: Record<string, BookInfo> }
+interface TaxonInit extends Omit<HierarchicalItemInit, "type"> { bookInfoByIds?: Record<string, BookInfo> }
 
 export function createTaxon(init: TaxonInit): Taxon {
-	return Object.assign({ statesSelection: init.statesSelection ?? {}, bookInfoByIds: init.bookInfoByIds ?? {} },
+	return Object.assign({ bookInfoByIds: init.bookInfoByIds ?? {} },
 		createHierarchicalItem<Taxon>({ type: "taxon", ...init }));
-}
-
-function taxonCharacterStates(taxon: Taxon, character: Character): State[] {
-	const states: State[] = [];
-
-	for (const [stateId, selected] of Object.entries(taxon.statesSelection)) {
-		const state = character.states.find(state => state.id === stateId);
-		if (typeof state !== "undefined" && selected) {
-			states.push(state);
-		}
-	}
-	return states;
 }
 
 export function taxonDescriptions(taxon: Taxon, characters: Iterable<Character>): Description[] {
