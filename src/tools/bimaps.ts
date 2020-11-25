@@ -62,6 +62,10 @@ export class OneToManyBimap {
         }
     }
 
+    rightIdsGroupedByLeftId(): Iterable<[string, string[]]> {
+        return Object.entries(this.rightIdsByLeftIds);
+    }
+
     getRightIdsByLeftId(leftId: string): readonly string[] {
         return this.rightIdsByLeftIds[leftId];
     }

@@ -1,14 +1,13 @@
 import { Book, BookInfo, Character, DetailData, DictionaryEntry, Field, HierarchicalItem, Picture, State, Taxon } from "./datatypes";
 import { standardBooks } from "./stdcontent";
 import { Dataset } from "./Dataset";
-import { createDetailData } from './DetailData';
-import { createHierarchicalItem } from './HierarchicalItem';
-import { createTaxon, taxonDescriptions } from './Taxon';
-import { createCharacter } from './Character';
-import { ManyToManyBimap } from '@/tools/bimaps';
-import { Constructor } from 'vue/types/options';
-import { Hierarchy, IMap } from './hierarchy';
-import { CharactersHierarchy } from './CharactersHierarchy';
+import { createDetailData } from "./DetailData";
+import { createHierarchicalItem } from "./HierarchicalItem";
+import { createTaxon } from "./Taxon";
+import { createCharacter } from "./Character";
+import { ManyToManyBimap } from "@/tools/bimaps";
+import { Hierarchy, IMap } from "./hierarchy";
+import { CharactersHierarchy } from "./CharactersHierarchy";
 
 export interface EncodedDataset {
 	id: string
@@ -47,10 +46,10 @@ function encodeDescription(descriptorId: string, statesIds: string[]) {
 	return { descriptorId, statesIds };
 }
 
-function encodeTaxon(taxon: Taxon, characters: Iterable<Character>) {
+function encodeTaxon(taxon: Taxon, dataset: Dataset) {
 	return {
 		bookInfoByIds: taxon.bookInfoByIds,
-		descriptions: taxonDescriptions(taxon, characters).map(d => encodeDescription(d.character.id, d.states.map(s => s.id))),
+		descriptions: [...dataset.taxonDescriptions(taxon)].map(d => encodeDescription(d.character.id, d.states.map(s => s.id))),
 		...encodeHierarchicalItem(taxon),
 	};
 }
@@ -68,7 +67,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	const characters = dataset.charactersHierarchy.allItems;
 	return {
 		id: dataset.id,
-		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, characters)),
+		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, dataset)),
 		characters: Array.from(characters).map(character => encodeCharacter(character)),
 		states: Object.values(dataset.states),
 		books: dataset.books,
@@ -104,7 +103,6 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 	return createTaxon({
 		...item,
 		childrenIds: item.childrenOrder ?? [],
-		statesSelection: statesSelection,
 		bookInfoByIds,
 	});
 }
@@ -120,14 +118,12 @@ function decodeCharacter(character: EncodedCharacter, states: Record<string, Sta
 	});
 }
 
-export function decodeDataset(
-		dataset: AlreadyEncodedDataset,
-		makeTaxonsMap: { new(): IMap<Taxon> },
-		makeCharactersMap: { new(): IMap<Character> }): Dataset {
+export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEncodedDataset): Dataset {
 	const states: Record<string, State> = {};
-	const characters = new CharactersHierarchy("c", new makeCharactersMap());
-	const taxons = new Hierarchy("t", new makeTaxonsMap());
+	const characters = new CharactersHierarchy("c", new makeMap());
+	const taxons = new Hierarchy("t", new makeMap());
 	const books = standardBooks.slice();
+	const statesByTaxons = new ManyToManyBimap();
 
 	for (const state of dataset.states) {
 		states[state.id] = state;
@@ -136,6 +132,11 @@ export function decodeDataset(
 		characters.add(decodeCharacter(character, states));
 	}
 	for (const taxon of dataset.taxons) {
+		taxon.descriptions.forEach(d => {
+			for (const stateId of d.statesIds) {
+				statesByTaxons.add(d.descriptorId, stateId);
+			}
+		});
 		taxons.add(decodeTaxon(taxon, books));
 	}
 	return new Dataset(
@@ -143,7 +144,7 @@ export function decodeDataset(
 		taxons,
 		characters,
 		states,
-		new ManyToManyBimap(), // TODO: fill the bimap, obviously ;)
+		statesByTaxons,
 		books,
 		dataset.extraFields,
 		dataset.dictionaryEntries,

@@ -1,7 +1,6 @@
 import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
-import { Character, Dataset, DetailData, Field, State, Taxon } from "./datatypes";
-import { taxonDescriptions } from "./Taxon";
-import { Hierarchy } from "./hierarchy";
+import { Character, DetailData, Field, State, Taxon } from "./datatypes";
+import { Dataset } from "./Dataset";
 
 interface SddStateData {
     state: sdd_State;
@@ -63,14 +62,14 @@ function characterToSdd(character: Character, extraFields: Field[], mediaObjects
 	};
 }
 
-function taxonToSdd(taxon: Taxon, characters: Character[], extraFields: Field[], mediaObjects: MediaObject[]): SddTaxonData {
+function taxonToSdd(taxon: Taxon, dataset: Dataset): SddTaxonData {
     const sddTaxon: sdd_Taxon = {
         id: taxon.id,
         hid: taxon.id,
         parentId: taxon.parentId,
-        ...detailDataToSdd(taxon, extraFields),
+        ...detailDataToSdd(taxon, dataset.extraFields),
         childrenIds: taxon.childrenOrder?.slice() ?? [],
-        categoricals: taxonDescriptions(taxon, characters).map(d => ({
+        categoricals: [...dataset.taxonDescriptions(taxon)].map(d => ({
             ref: d.character.id,
             stateRefs: d.states.map(s => ({ ref: s.id }))
         })),
@@ -81,19 +80,19 @@ function taxonToSdd(taxon: Taxon, characters: Character[], extraFields: Field[],
     };
 }
 
-export function datasetToSdd(dataset:Dataset, extraFields:Array<Field>): sdd_Dataset {
+export function datasetToSdd(dataset: Dataset): sdd_Dataset {
 	const taxons: sdd_Taxon[] = [],
 		characters: sdd_Character[] = [];
 	let states: sdd_State[] = [],
 		mediaObjects: sdd_MediaObject[] = [];
 
-	for (const taxon of Object.values(dataset.taxons)) {
-		const sddData = taxonToSdd(taxon, Object.values(dataset.characters), extraFields, mediaObjects);
+	for (const taxon of dataset.taxons) {
+		const sddData = taxonToSdd(taxon, dataset);
 		taxons.push(sddData.taxon);
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
 	}
-	for (const character of Object.values(dataset.characters)) {
-		const sddData = characterToSdd(character, extraFields, mediaObjects);
+	for (const character of dataset.characters) {
+		const sddData = characterToSdd(character, dataset.extraFields, mediaObjects);
 		characters.push(sddData.character);
 		states = states.concat(sddData.states);
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);

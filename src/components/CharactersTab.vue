@@ -115,7 +115,6 @@
 import TreeMenu from "./TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { mapState } from "vuex";
 import { createCharacter, createDetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
@@ -135,7 +134,9 @@ export default Vue.extend({
         }
     },
     computed: {
-        ...mapState(["charactersHierarchy"]),
+        charactersHierarchy() {
+            return this.$store.state.dataset.charactersHierarchy;
+        },
         selectedCharacter(): Character|undefined {
             return this.charactersHierarchy?.itemWithId(this.selectedCharacterId);
         },

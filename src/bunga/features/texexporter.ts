@@ -1,22 +1,21 @@
 import JSZip from "jszip";
+import { Dataset } from '../Dataset';
 import { Character, Description, Picture, Taxon } from "../datatypes";
 import generateFileName from "./generatefilename";
-import { taxonDescriptions } from "../Taxon";
+
 
 export class TexExporter {
-    taxons: Taxon[];
-    characters: Iterable<Character>;
+    dataset: Dataset;
     photos: string[];
     pictureNameByUrl: Map<string, string>;
     progressListeners: ((progress: number, progressMax: number) => void)[];
 
-    constructor(taxons: Taxon[], characters: Iterable<Character>) {
-        this.taxons = taxons;
-        this.characters = characters;
+    constructor(dataset: Dataset) {
+        this.dataset = dataset;
         this.progressListeners = [];
         this.pictureNameByUrl = new Map();
         this.photos = [];
-        for (const taxon of taxons) {
+        for (const taxon of dataset.taxons) {
             if (taxon.photos.length > 0) {
                 const photo = taxon.photos[0];
                 this.pictureNameByUrl.set(photo.url, generateFileName(taxon.name) + ".jpg");
@@ -58,7 +57,7 @@ export class TexExporter {
             \\end{block}
             \\begin{block}{Description}
             \\begin{itemize}
-            ${taxonDescriptions(taxon, this.characters).map(descriptionTemplate).join("\n")}
+            ${Array.from(this.dataset.taxonDescriptions(taxon)).map(descriptionTemplate).join("\n")}
             \\end{itemize}
             \\end{block}
         \\end{frame}
@@ -93,7 +92,7 @@ export class TexExporter {
 
             \\section{Taxons}
 
-            ${this.taxons.map(taxonTemplate).join("\n")}
+            ${Array.from(this.dataset.taxons).map(taxonTemplate).join("\n")}
 
             \\end{document}
         `;

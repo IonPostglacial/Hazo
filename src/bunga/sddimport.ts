@@ -1,11 +1,16 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, Dataset, Description, DetailData, Field, State, Taxon } from "./datatypes";
+import { Character, DetailData, Field, State, Taxon } from "./datatypes";
+import { Dataset } from "./Dataset";
 import { standardFields } from "./stdcontent";
-import { createDataset } from "./Dataset";
 import { createDetailData } from "./DetailData";
 import { createCharacter } from "./Character";
 import { createTaxon } from "./Taxon";
 import { picturesFromPhotos } from './picture';
+import { ManyToManyBimap } from '@/tools/bimaps';
+import { Hierarchy, IMap } from './hierarchy';
+import { CharactersHierarchy } from './CharactersHierarchy';
+
+type MapContructor<T> = { new (): IMap<T> };
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {
@@ -80,19 +85,24 @@ function characterFromSdd(character: sdd_Character, photosByRef: Record<string, 
     });
 }
 
-function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>, descriptors: Record<string, Character>): Taxon {
-    const statesSelection: Record<string, boolean> = {};
-    for (const categorical of taxon.categoricals) {
-        for (const stateRef of categorical.stateRefs) {
-            statesSelection[stateRef.ref] = true;
-        }
-    }
+function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>): Taxon {
     return createTaxon({
         parentId: taxon.parentId,
         childrenIds: taxon.childrenIds,
-        statesSelection: statesSelection,
         ...detailDataFromSdd(taxon.id, taxon, extraFields, photosByRef)
     });
+}
+
+function extractStatesByTaxons(sddContent: sdd_Dataset): ManyToManyBimap {
+    const statesByTaxons = new ManyToManyBimap();
+    for (const taxon of sddContent.taxons) {
+        for (const categorical of taxon.categoricals) {
+            for (const stateRef of categorical.stateRefs) {
+                statesByTaxons.add(taxon.id, stateRef.ref);
+            }
+        }
+    }
+    return statesByTaxons;
 }
 
 function extractStatesById(sddContent: sdd_Dataset, photosByRef: Record<string, string>) {
@@ -104,22 +114,22 @@ function extractStatesById(sddContent: sdd_Dataset, photosByRef: Record<string, 
 	return statesById;
 }
 
-function extractItemsById(sddContent: sdd_Dataset, descriptors: Record<string, Character>, extraFields: Field[], statesById: Record<string, State>, photosByRef: Record<string, string>) {
-	const itemsById: Record<string, Taxon> = {};
+function extractTaxonsHierarchy(makeMap: MapContructor<Taxon>, sddContent: sdd_Dataset, extraFields: Field[], photosByRef: Record<string, string>): Hierarchy<Taxon> {
+	const taxons = new Hierarchy<Taxon>("t", new makeMap());
 
 	for (const taxon of sddContent.taxons) {
-		itemsById[taxon.id] = taxonFromSdd(taxon, extraFields, photosByRef, descriptors);
+        taxons.add(taxonFromSdd(taxon, extraFields, photosByRef));
 	}
-	return itemsById;
+	return taxons;
 }
 
-function extractDescriptorsById(sddContent: sdd_Dataset, statesById: Record<string, State>, photosByRef: Record<string, string>) {
-	const descriptorsById: Record<string, Character> = {};
+function extractCharactersHierarchy(makeMap: MapContructor<Character>, sddContent: sdd_Dataset, statesById: Record<string, State>, photosByRef: Record<string, string>): CharactersHierarchy {
+	const characters = new CharactersHierarchy("c", new makeMap());
 
 	for (const character of sddContent.characters) {
-		descriptorsById[character.id] = characterFromSdd(character, photosByRef, statesById);
+		characters.add(characterFromSdd(character, photosByRef, statesById));
 	}
-	return descriptorsById;
+	return characters;
 }
 
 function extractPhotosByRef(sddContent: sdd_Dataset) {
@@ -131,11 +141,12 @@ function extractPhotosByRef(sddContent: sdd_Dataset) {
 	return photosByRef;
 }
 
-export function datasetFromSdd(dataset: sdd_Dataset, extraFields: Field[]): Dataset {
+export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset, extraFields: Field[]): Dataset {
 	const photosByRef = extractPhotosByRef(dataset);
 	const statesById = extractStatesById(dataset, photosByRef);
-	const descriptors = extractDescriptorsById(dataset, statesById, photosByRef);
-	const taxons = extractItemsById(dataset, descriptors, extraFields, statesById, photosByRef);
+	const descriptors = extractCharactersHierarchy(makeMap, dataset, statesById, photosByRef);
+    const taxons = extractTaxonsHierarchy(makeMap, dataset, extraFields, photosByRef);
+    const statesByTaxons = extractStatesByTaxons(dataset);
 
-	return createDataset("0", taxons, descriptors);
+	return new Dataset("0", taxons, descriptors, statesById, statesByTaxons);
 }

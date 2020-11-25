@@ -1,6 +1,6 @@
-import { Book, Character, Field, Picture, State, Taxon } from "./datatypes";
+import { Book, Character, Description, Field, Picture, State, Taxon } from "./datatypes";
 import { standardBooks } from "./stdcontent";
-import { ManyToManyBimap } from "@/tools/bimaps";
+import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { Hierarchy } from './hierarchy';
 import { CharactersHierarchy } from './CharactersHierarchy';
 
@@ -24,6 +24,10 @@ export class Dataset {
 		this.taxonsHierarchy.remove(taxon);
 	}
 
+	get taxons() {
+		return this.taxonsHierarchy.allItems;
+	}
+
 	changeTaxonParent(taxon: Taxon, newParentId: string) {
 		if (taxon.id === newParentId) return;
 
@@ -45,6 +49,10 @@ export class Dataset {
 		this.charactersHierarchy.remove(character);
 	}
 
+	get characters() {
+		return this.charactersHierarchy.allItems;
+	}
+
 	addState(state: State) {
 		this.charactersHierarchy.addState(state);
 		this.states[state.id] = state;
@@ -54,5 +62,21 @@ export class Dataset {
 		this.charactersHierarchy.removeState(state);
 		delete this.states[state.id];
 		this.statesByTaxons.removeRight(state.id);
+	}
+
+	*taxonDescriptions(taxon: Taxon): Iterable<Description> {
+		const statesByCharacter = new OneToManyBimap();
+	
+		for (const stateId of this.statesByTaxons.getRightIdsByLeftId(taxon.id)) {
+			const state = this.states[stateId];
+			statesByCharacter.add(state.descriptorId, state.id);
+		}
+		for (const [characterId, stateIds] of statesByCharacter.rightIdsGroupedByLeftId()) {
+			const character = this.charactersHierarchy.itemWithId(characterId);
+
+			if (typeof character !== "undefined") {
+				yield { character, states: stateIds.map(id => this.states[id]) };
+			}
+		}
 	}
 }

@@ -1,7 +1,7 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1">
         <nav v-if="showLeftMenu" class="scroll thin-border white-background no-print">
-            <TreeMenu :editable="editable" :items="taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+            <TreeMenu :editable="editable" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
@@ -24,14 +24,14 @@
                     <div v-if="selectingParent">
                         <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
                         <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
-                            <TreeMenu :items="taxonsHierarchy"
+                            <TreeMenu :items="dataset.taxonsHierarchy"
                                 :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
                                 @select-item="changeSelectedTaxonParent">
                             </TreeMenu>
                         </div>
                     </div>
                     <div v-if="!selectingParent" class="button-group">
-                        <button type="button" v-for="parent in taxonsHierarchy.parentsOf(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name }}</button>
+                        <button type="button" v-for="parent in dataset.taxonsHierarchy.parentsOf(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name }}</button>
                         <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name }}</button>
                     </div>
                 </div>
@@ -48,7 +48,7 @@
             </div>
             <taxon-presentation v-if="mode === 'present-item'"
                 @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-                :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="taxonsHierarchy" :characters="charactersHierarchy.allItems">
+                :selected-taxon-id="selectedTaxonId" :taxons-hierarchy="dataset.taxonsHierarchy" :characters="dataset.charactersHierarchy.allItems">
             </taxon-presentation>
             <section v-if="mode !== 'present-item' && typeof selectedTaxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox scroll">
                 <div class="vertical-flexbox scroll">
@@ -159,6 +159,7 @@ import { createTaxon } from '@/bunga/Taxon';
 import { ObservableMap } from '@/tools/observablemap';
 import download from "@/tools/download";
 import exportStatistics from "../bunga/features/exportstats";
+import { Dataset } from '@/bunga/Dataset';
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -183,20 +184,22 @@ export default Vue.extend({
         }
     },
     computed: {
-        ...mapState(["extraFields", "books", "taxonsHierarchy", "charactersHierarchy"]),
+        dataset(): Dataset {
+            return this.$store.state.dataset;
+        },
         editable(): boolean {
             return this.mode === "edit-item";
         },
         selectedTaxon(): Taxon|undefined {
-            return this.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+            return this.dataset.taxonsHierarchy.itemWithId(this.selectedTaxonId);
         },
         itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
             if (typeof this.selectedTaxon === "undefined") return new Hierarchy<Character & { selected?: boolean }>("c", new ObservableMap());
             const selectedTaxon = this.selectedTaxon;
 
-            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.charactersHierarchy);
+            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.dataset.charactersHierarchy);
 
-            for (const character of this.charactersHierarchy.allItems) {
+            for (const character of this.dataset.characters) {
                 if (typeof character.requiredStates === "undefined") {
                     console.log(character);
                 }

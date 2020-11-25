@@ -37,17 +37,16 @@
 </template>
 
 <script lang="ts">
-import { standardBooks } from "./bunga/stdcontent";
 import { Character, Dataset, Field, Taxon } from "./bunga"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, Hierarchy, highlightTaxonsDetails, repairPotentialCorruption } from "./bunga"; // eslint-disable-line no-unused-vars
 import DB from "./db-storage";
-import Vue from "vue";
 import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
 import { DictionaryEntry, HierarchicalItem, Picture, State } from "./bunga/datatypes"; // eslint-disable-line no-unused-vars
 import { BungaVue } from "./store";
+import { ObservableMap } from './tools/observablemap';
 
 export default BungaVue.extend({
     name: "App",
@@ -73,9 +72,9 @@ export default BungaVue.extend({
         loadBase(id?: string) {
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
-                const dataset = decodeDataset(savedDataset);
-                const taxons = Object.values(dataset?.taxons ?? {}),
-                    characters = Object.values(dataset?.characters ?? {}),
+                const dataset = decodeDataset(ObservableMap, savedDataset);
+                const taxons = Array.from(dataset?.taxonsHierarchy.allItems ?? []),
+                    characters = Array.from(dataset?.charactersHierarchy.allItems ?? []),
                     dictionaryEntries = Object.values(dataset?.dictionaryEntries ?? {});
                 taxons.forEach(repairPotentialCorruption);
                 characters.forEach(repairPotentialCorruption);
@@ -88,9 +87,6 @@ export default BungaVue.extend({
         print() {
             window.print()
         },
-        changeCharactersHierarchy(charactershierarchy: Hierarchy<Character>) {
-            this.charactersHierarchy = charactershierarchy;
-        },
         createNewDatabase() {
             const newDatabaseId = "" + this.databaseIds.length;
             this.databaseIds.push(newDatabaseId);
@@ -99,17 +95,16 @@ export default BungaVue.extend({
         saveData() {
             const taxons: Record<string, Taxon> = {};
             const characters: Record<string, Character> = {};
-            for (const taxon of this.taxonsHierarchy.allItems) {
+            for (const taxon of this.dataset.taxons) {
                 taxons[taxon.id] = taxon;
             }
-            for (const character of this.charactersHierarchy.allItems) {
+            for (const character of this.dataset.characters) {
                 characters[character.id] = character;
             }
-            DB.store(encodeDataset({ id: this.selectedBase, taxons: taxons, characters: characters, extraFields: this.extraFields, dictionaryEntries: this.dictionaryEntries, books: standardBooks }));
+            DB.store(encodeDataset(this.dataset));
         },
         resetData() {
-            this.taxonsHierarchy.clear();
-            this.charactersHierarchy.clear();
+            this.$store.commit("resetData");
         },
         importFile() {
             document.getElementById("import-data")?.click();
@@ -122,19 +117,19 @@ export default BungaVue.extend({
             const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
 
-            for (const item of this.taxonsHierarchy.allItems) {
-                const newDetail = item.detail.replace(re, replacement);
-                this.taxonsHierarchy.add(Object.assign({}, item, { detail: newDetail }));
+            for (const taxon of this.dataset.taxons) {
+                const newDetail = taxon.detail.replace(re, replacement);
+                this.$store.commit("addTaxon", Object.assign({}, taxon, { detail: newDetail }));
             }
-            for (const description of this.charactersHierarchy.allItems) {
-                const newDetail = description.detail.replace(re, replacement);
-                this.charactersHierarchy.add(Object.assign({}, description, { detail: newDetail }));
+            for (const character of this.dataset.characters) {
+                const newDetail = character.detail.replace(re, replacement);
+                this.$store.commit("addCharacter", Object.assign({}, character, { detail: newDetail }));
             }
         },
         async fileRead(file: File): Promise<Dataset | null> {
             let result: Dataset | null = null;
             if (file.name.endsWith(".xml")) {
-                result = await loadSDD(file, this.extraFields);
+                result = await loadSDD(file, this.dataset.extraFields);
             } else if (file.name.endsWith(".json")) {
                 result = await this.jsonUpload(file);
             } else if (file.name.endsWith(".bunga.bold.csv")) {
@@ -151,7 +146,7 @@ export default BungaVue.extend({
             for (const item of Object.values(result?.taxons ?? {})) {
                 resultsByName[item.name] = item;
             }
-            for (const item of this.taxonsHierarchy.allItems) {
+            for (const item of this.dataset.taxons) {
                 const newInfo: any = resultsByName[item.name], anyItem: any = item;
                 if (typeof newInfo !== "undefined") {
                     for (const prop of propertiesToMerge) {
@@ -171,21 +166,21 @@ export default BungaVue.extend({
             if (typeof result === "undefined" || result === null) return;
 
             if (typeof result.extraFields !== "undefined") {
-                this.extraFields = result.extraFields;
+                this.dataset.extraFields = result.extraFields;
             }
             if (typeof result.characters !== "undefined") {
                 for (const character of Object.values(result.characters)) {
-                    this.charactersHierarchy.add(character);
+                    this.$store.commit("addCharacter", character);
                 }
             }
             if (typeof result.taxons !== "undefined") {
-                for (const item of Object.values(result.taxons)) {
-                    this.taxonsHierarchy.add(item);
+                for (const taxon of Object.values(result.taxons)) {
+                    this.$store.commit("addTaxon", taxon);
                 }
             }
             if (typeof result.dictionaryEntries !== "undefined") {
                 for (const entry of Object.values(result.dictionaryEntries)) {
-                    Vue.set(this.dictionaryEntries, entry.id, entry);
+                    this.$store.commit("addDictionaryEntry", entry);
                 }
             }
         },
@@ -194,7 +189,7 @@ export default BungaVue.extend({
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
-                        highlightTaxonsDetails(fileReader.result, this.taxonsHierarchy.toObject());
+                        highlightTaxonsDetails(fileReader.result, this.dataset.taxonsHierarchy.toObject());
                     }
                     resolve(null);
                 };
@@ -210,7 +205,7 @@ export default BungaVue.extend({
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
                         const db = JSON.parse(fileReader.result);
-                        const dataset = decodeDataset(db);
+                        const dataset = decodeDataset(ObservableMap, db);
                         resolve(dataset);
                     }
                 };
@@ -221,21 +216,14 @@ export default BungaVue.extend({
             });
         },
         jsonExport() {
-            const json = JSON.stringify(encodeDataset({
-                id: this.selectedBase, 
-                taxons: this.taxonsHierarchy.toObject(), 
-                characters: this.charactersHierarchy.toObject(), 
-                extraFields: this.extraFields,
-                dictionaryEntries: this.dictionaryEntries,
-                books: standardBooks,
-            }));
+            const json = JSON.stringify(encodeDataset(this.dataset));
             download(json, "bunga.json");
         },
         exportSDD() {
             const xml = saveSDD({
-                items: this.taxonsHierarchy,
-                descriptors: this.charactersHierarchy,
-                extraFields: this.extraFields,
+                items: this.dataset.taxonsHierarchy.toObject(),
+                descriptors: this.dataset.charactersHierarchy.toObject(),
+                extraFields: this.dataset.extraFields,
             });
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }

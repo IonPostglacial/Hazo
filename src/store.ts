@@ -161,11 +161,15 @@ export function createStore() {
             addExtraField(state, {detail} : {detail: string}) {
                 state.dataset.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
             },
-            removeExtraField(state, id:string) {
+            removeExtraField(state, id: string) {
                 const i = state.dataset.extraFields.findIndex(f => f.id === id);
                 if (i >= 0) {
                     state.dataset.extraFields.splice(i, 1);
                 }
+            },
+            resetData(state) {
+                state.dataset.taxonsHierarchy.clear();
+                state.dataset.charactersHierarchy.clear();
             },
         }
     });
