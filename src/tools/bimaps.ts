@@ -50,7 +50,7 @@ export class OneToManyBimap {
 
     removeLeft(leftId: string) {
         this.rightIdsByLeftIds.delete(leftId);
-        for (const rightId of Object.keys(this.leftIdByRightIds)) {
+        for (const rightId of this.leftIdByRightIds.keys()) {
             if (this.leftIdByRightIds.get(rightId) === leftId) {
                 this.leftIdByRightIds.delete(rightId);
             }
@@ -59,13 +59,13 @@ export class OneToManyBimap {
 
     removeRight(rightId: string) {
         this.leftIdByRightIds.delete(rightId);
-        for (const rightIds of Object.values(this.rightIdsByLeftIds)) {
+        for (const rightIds of this.rightIdsByLeftIds.values()) {
             removeUniqueElementFromArray(rightIds, rightId);
         }
     }
 
     rightIdsGroupedByLeftId(): Iterable<[string, string[]]> {
-        return Object.entries(this.rightIdsByLeftIds);
+        return this.rightIdsByLeftIds.entries();
     }
 
     getRightIdsByLeftId(leftId: string): readonly string[]|undefined {
@@ -102,14 +102,14 @@ export class ManyToManyBimap {
 
     removeLeft(leftId: string) {
         this.rightIdsByLeftIds.delete(leftId);
-        for (const leftIds of Object.values(this.leftIdsByRightIds)) {
+        for (const leftIds of this.leftIdsByRightIds.values()) {
             removeUniqueElementFromArray(leftIds, leftId);
         }
     }
 
     removeRight(rightId: string) {
         this.leftIdsByRightIds.delete(rightId);
-        for (const rightIds of Object.values(this.rightIdsByLeftIds)) {
+        for (const rightIds of this.rightIdsByLeftIds.values()) {
             removeUniqueElementFromArray(rightIds, rightId);
         }
     }
@@ -120,5 +120,10 @@ export class ManyToManyBimap {
 
     getLeftIdsByRightId(rightId: string): readonly string[]|undefined {
         return this.leftIdsByRightIds.get(rightId);
+    }
+
+    clear() {
+        this.leftIdsByRightIds.clear();
+        this.rightIdsByLeftIds.clear();
     }
 }

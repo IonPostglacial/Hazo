@@ -270,9 +270,10 @@ export default Vue.extend({
             const isCharacter = (e.item as Character).type === "character";
             const stateToAdd = isCharacter ? (e.item as Character).inherentState : e.item as State;
 
+            console.log("toggle", this.selectedTaxon, stateToAdd);
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
                 const selected = !this.dataset.hasTaxonState(this.selectedTaxon, stateToAdd);
-                this.$store.commit("setTaxonState", { taxon: this.selectTaxon, state: stateToAdd, has: selected });
+                this.$store.commit("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
         },
         openCharacter(e: { item: Character }) {

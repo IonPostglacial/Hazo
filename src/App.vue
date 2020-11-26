@@ -57,8 +57,10 @@ export default BungaVue.extend({
         };
     },
     mounted() {
-        DB.list().then(dbIds => this.databaseIds = dbIds);
-        this.loadBase();
+        DB.list().then(dbIds => {
+            this.databaseIds = dbIds;
+            this.selectedBase = this.databaseIds[0];
+        });
     },
     computed: {
         ...mapState(["dataset"]),
@@ -74,14 +76,11 @@ export default BungaVue.extend({
                 this.resetData();
                 const dataset = decodeDataset(ObservableMap, savedDataset);
                 const taxons = Array.from(dataset?.taxonsHierarchy.allItems ?? []),
-                    characters = Array.from(dataset?.charactersHierarchy.allItems ?? []),
-                    dictionaryEntries = Object.values(dataset?.dictionaryEntries ?? {});
+                    characters = Array.from(dataset?.charactersHierarchy.allItems ?? []);
                 taxons.forEach(repairPotentialCorruption);
                 characters.forEach(repairPotentialCorruption);
 
-                this.$store.commit("addTaxons", taxons);
-                this.$store.commit("addCharacters", characters);
-                this.$store.commit("addDictionaryEntries", dictionaryEntries);
+                this.$store.commit("setDataset", dataset);
             });
         },
         print() {
@@ -165,24 +164,8 @@ export default BungaVue.extend({
             const result = await this.fileRead((e.target.files ?? [])[0]);
             if (typeof result === "undefined" || result === null) return;
 
-            if (typeof result.extraFields !== "undefined") {
-                this.dataset.extraFields = result.extraFields;
-            }
-            if (typeof result.characters !== "undefined") {
-                for (const character of Object.values(result.characters)) {
-                    this.$store.commit("addCharacter", character);
-                }
-            }
-            if (typeof result.taxons !== "undefined") {
-                for (const taxon of Object.values(result.taxons)) {
-                    this.$store.commit("addTaxon", taxon);
-                }
-            }
-            if (typeof result.dictionaryEntries !== "undefined") {
-                for (const entry of Object.values(result.dictionaryEntries)) {
-                    this.$store.commit("addDictionaryEntry", entry);
-                }
-            }
+            result.id = this.selectedBase;
+            this.$store.commit("setDataset", result);
         },
         boldUpload(file: File): Promise<null> {
             return new Promise((resolve, reject) => {

@@ -3,14 +3,25 @@ import { Hierarchy, IMap } from "./hierarchy";
 
 
 export class CharactersHierarchy extends Hierarchy<Character> {
+    #stateAdditionCallbacks: Set<(s: State)=>void>;
+    #stateRemovalCallbacks: Set<(s: State)=>void>;
+
     constructor(idPrefix: string, items: IMap<Character>, itemsOrder: string[]|undefined = undefined) {
         super(idPrefix, items, itemsOrder);
+        this.#stateAdditionCallbacks = new Set();
+        this.#stateRemovalCallbacks = new Set();
+    }
+
+    onStateAdded(callback: (s: State) => void) {
+        this.#stateAdditionCallbacks.add(callback);
+    }
+
+    onStateRemoved(callback: (s: State) => void) {
+        this.#stateRemovalCallbacks.add(callback);
     }
 
     add(character: Character): Character {
-        console.log("add character", character.name);
         if (character.id === "") {
-            console.log("character is new", character.name);
             const newCharacter = super.add(character);
             const parentDescription = this.itemWithId(character.parentId);
             if(typeof character.parentId !== "undefined" && typeof parentDescription !== "undefined") {
@@ -19,7 +30,7 @@ export class CharactersHierarchy extends Hierarchy<Character> {
                     id: "s-auto-" + newCharacter.id,
                     descriptorId: character.parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []
                 };
-                parentDescription.states = [...parentDescription.states, newState];
+                this.addState(newState);
                 newCharacter.inherentState = newState;
             }
             return newCharacter;
@@ -31,6 +42,9 @@ export class CharactersHierarchy extends Hierarchy<Character> {
     addState(state: State) {
         const character = this.itemWithId(state.descriptorId);
         character?.states.push(state);
+        for (const callback of this.#stateAdditionCallbacks) {
+            callback(state);
+        }
     }
 
     removeState(state: State) {
@@ -50,6 +64,9 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         removeStateFromArray(character.requiredStates, state);
         if (character.inherentState?.id === state.id) {
             character.inherentState = undefined;
+        }
+        for (const callback of this.#stateRemovalCallbacks) {
+            callback(state);
         }
     }
 

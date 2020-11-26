@@ -7,14 +7,17 @@ import { CharactersHierarchy } from './CharactersHierarchy';
 
 export class Dataset {
 	constructor(
-		public id: string,
-		public taxonsHierarchy: Hierarchy<Taxon>,
-		public charactersHierarchy: CharactersHierarchy,
-		public states: Record<string, State>,
-		public statesByTaxons: ManyToManyBimap,
-		public books: Book[] = standardBooks.slice(),
-		public extraFields: Field[] = [],
-		public dictionaryEntries: Record<string, any> = {}) {}
+			public id: string,
+			public taxonsHierarchy: Hierarchy<Taxon>,
+			public charactersHierarchy: CharactersHierarchy,
+			public states: Partial<Record<string, State>>,
+			public statesByTaxons: ManyToManyBimap,
+			public books: Book[] = standardBooks.slice(),
+			public extraFields: Field[] = [],
+			public dictionaryEntries: Record<string, any> = {}) {
+		this.charactersHierarchy.onStateAdded(s => this.states[s.id] = s);
+		this.charactersHierarchy.onStateRemoved(s => delete this.states[s.id]);
+	}
 
 	addTaxon(taxon: Taxon) {
 		this.taxonsHierarchy.add(taxon);	
@@ -55,12 +58,10 @@ export class Dataset {
 
 	addState(state: State) {
 		this.charactersHierarchy.addState(state);
-		this.states[state.id] = state;
 	}
 
 	removeState(state: State) {
 		this.charactersHierarchy.removeState(state);
-		delete this.states[state.id];
 		this.statesByTaxons.removeRight(state.id);
 	}
 
@@ -73,13 +74,14 @@ export class Dataset {
 	
 		for (const stateId of this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []) {
 			const state = this.states[stateId];
+			if (typeof state === "undefined") throw "Data corruption in taxon states: " + stateId;
 			statesByCharacter.add(state.descriptorId, state.id);
 		}
 		for (const [characterId, stateIds] of statesByCharacter.rightIdsGroupedByLeftId()) {
 			const character = this.charactersHierarchy.itemWithId(characterId);
-
 			if (typeof character !== "undefined") {
-				yield { character, states: stateIds.map(id => this.states[id]) };
+				console.log("taxon description", characterId, stateIds);
+				yield { character, states: stateIds.map(id => this.states[id]).filter(s => typeof s !== "undefined") as State[] };
 			}
 		}
 	}

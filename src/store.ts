@@ -114,11 +114,17 @@ export function createStore() {
             removeCharacterPicture(state, payload: { character: Character, index: number }) {
                 payload.character.photos.splice(payload.index, 1);
             },
-            addState(state, e: { state: State, character: Character }) {
-                state.dataset.addState(e.state);
+            setDataset(state, dataset: Dataset) {
+                Object.assign(state.dataset, dataset);
             },
-            removeState(state, e: { state: State, character: Character }) {
-                state.dataset.removeState(e.state);
+            addState(state, bungaState: State) {
+                state.dataset.addState(bungaState);
+            },
+            addStates(state, states: State[]) {
+                states.forEach(s => state.dataset.addState(s));
+            },
+            removeState(state, bungaState: State) {
+                state.dataset.removeState(bungaState);
             },
             addStatePicture(state, payload: { state: State, picture: Picture }) {
                 payload.state.photos.push(payload.picture);
@@ -159,6 +165,9 @@ export function createStore() {
                     state.dataset.statesByTaxons.remove(p.taxon.id, p.state.id);
                 }
             },
+            setStatesByTaxons(state, statesByTaxons: ManyToManyBimap) {
+                state.dataset.statesByTaxons = statesByTaxons;
+            },
             addDictionaryEntry(state, entry: DictionaryEntry) {
                 Vue.set(state.dataset.dictionaryEntries, entry.id, entry);
             },
@@ -177,6 +186,8 @@ export function createStore() {
             resetData(state) {
                 state.dataset.taxonsHierarchy.clear();
                 state.dataset.charactersHierarchy.clear();
+                state.dataset.states = {};
+                state.dataset.statesByTaxons.clear();
             },
         }
     });

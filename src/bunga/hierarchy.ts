@@ -7,6 +7,7 @@ export interface IMap<T> {
     set(key: string, value: T): void;
     delete(key: string): void;
     [Symbol.iterator](): Iterator<[string, T]>;
+    keys(): Iterable<string>;
     values(): Iterable<T>;
     clear(): void;
     entries(): Iterable<[string, T]>;
@@ -73,9 +74,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             }
         } else {
             const parent = this.items.get(newItem.parentId);
-            if (typeof parent === "undefined") {
-                console.warn(`Added item "${newItem.name}" with an invalid parent id: ${newItem.parentId}`);
-            } else {
+            if (typeof parent !== "undefined") {
                 if(typeof parent.childrenOrder === "undefined") {
                     parent.childrenOrder = [newId];
                 } else {
