@@ -123,6 +123,10 @@ ul {
     margin: 0;
 }
 
+.fit-contain {
+    object-fit: contain;
+}
+
 .fill {
     display: flex;
     justify-content: center;

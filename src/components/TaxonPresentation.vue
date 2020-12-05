@@ -7,19 +7,24 @@
             <h1><div v-for="parent in hierarchyToDisplay" :key="parent.id">{{ parent.name }}</div></h1>
             <section v-for="taxon in itemsToDisplay" :key="taxon.id" class="page-break">
                 <h2><i>{{ taxon.name }}</i> {{ taxon.author }}</h2>
-                <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox space-between limited-width">
-                    <div class="horizontal-flexbox small-height">
-                        <div v-for="state in description.states" :key="'img-' + state.id" class="horizontal-flexbox">
-                            <img v-for="photo in state.photos" class="small-height medium-max-width thin-border" :key="photo.id" :src="photo.url">
-                        </div>
+                <div class="horizontal-flexbox">
+                    <div class="flex-grow-1">
+                        <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox space-between limited-width">
+                            <div class="horizontal-flexbox small-height">
+                                <div v-for="state in description.states" :key="'img-' + state.id" class="horizontal-flexbox">
+                                    <img v-for="photo in state.photos" class="small-height medium-max-width thin-border" :key="photo.id" :src="photo.url">
+                                </div>
+                            </div>
+                            <div class="horizontal-flexbox">
+                                <div>{{ description.character.name }}<span class="spaced">is</span></div>
+                                <div v-for="(state, index) in description.states" :key="state.id">
+                                    <span v-if="index > 0" class="spaced">or</span> {{ state.name }}
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                    <div class="horizontal-flexbox">
-                        <div>{{ description.character.name }}<span class="spaced">is</span></div>
-                        <div v-for="(state, index) in description.states" :key="state.id">
-                            <span v-if="index > 0" class="spaced">or</span> {{ state.name }}
-                        </div>
-                    </div>
-                </section>
+                    <img v-if="taxon.photos[0]" class="medium-max-width fit-contain" :src="taxon.photos[0].url"/>
+                </div>
                 <hr class="no-print">
             </section>
         </article>
