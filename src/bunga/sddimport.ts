@@ -6,7 +6,7 @@ import { createDetailData } from "./DetailData";
 import { createCharacter } from "./Character";
 import { createTaxon } from "./Taxon";
 import { picturesFromPhotos } from './picture';
-import { ManyToManyBimap } from '@/tools/bimaps';
+import { ManyToManyBimap, OneToManyBimap } from '@/tools/bimaps';
 import { Hierarchy, IMap } from './hierarchy';
 import { CharactersHierarchy } from './CharactersHierarchy';
 
@@ -79,7 +79,6 @@ function characterFromSdd(character: sdd_Character, photosByRef: Record<string, 
     return createCharacter({
         parentId: character.parentId,
         childrenIds: character.childrenIds,
-        states: character.states?.map(s => statesById[s.id]),
         inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById[s.ref]),
         ...detailDataFromSdd(character.id, character, [], photosByRef),
     });
@@ -103,6 +102,16 @@ function extractStatesByTaxons(makeMap: MapContructor<string[]>, sddContent: sdd
         }
     }
     return statesByTaxons;
+}
+
+function extractStatesByCharacters(makeMap: MapContructor<string[]>, sddContent: sdd_Dataset, statesById: Record<string, State>): OneToManyBimap {
+    const statesByCharacters = new OneToManyBimap(makeMap);
+    for (const character of sddContent.characters) {
+        for (const sddState of sddContent.states) {
+            statesByCharacters.add(character.id, sddState.id);
+        }
+    }
+    return statesByCharacters;
 }
 
 function extractStatesById(sddContent: sdd_Dataset, photosByRef: Record<string, string>) {
@@ -147,6 +156,7 @@ export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset
 	const descriptors = extractCharactersHierarchy(makeMap, dataset, statesById, photosByRef);
     const taxons = extractTaxonsHierarchy(makeMap, dataset, extraFields, photosByRef);
     const statesByTaxons = extractStatesByTaxons(makeMap, dataset);
+    const statesByCharacters = extractStatesByCharacters(makeMap, dataset, statesById);
 
-	return new Dataset("0", taxons, descriptors, statesById, statesByTaxons);
+	return new Dataset("0", taxons, descriptors, statesById, statesByTaxons, statesByCharacters);
 }

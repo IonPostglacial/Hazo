@@ -23,9 +23,5 @@ export function repairPotentialCorruption(item: HierarchicalItem<any>) {
 	for (const childId of item.childrenOrder ?? []) {
 		childrenOrder.add(childId);
 	}
-	if (item.type === "character") {
-		const character = item as Character;
-		character.states = character.states.filter(s => typeof s !== "undefined");
-	}
 	item.childrenOrder = [...childrenOrder];
 }

@@ -5,7 +5,7 @@ import Vuex from "vuex";
 import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./bunga";
 import { Dataset } from './bunga/Dataset';
 import { Picture } from "./bunga/datatypes";
-import { ManyToManyBimap } from './tools/bimaps';
+import { ManyToManyBimap, OneToManyBimap } from './tools/bimaps';
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";
@@ -37,6 +37,7 @@ export function createStore() {
                 new CharactersHierarchy("d", new ObservableMap()),
                 {},
                 new ManyToManyBimap(ObservableMap),
+                new OneToManyBimap(ObservableMap),
                 standardBooks,
                 new Array<Field>(),
                 {}
@@ -90,10 +91,10 @@ export function createStore() {
                 }
             },
             pasteStates(state, characterId: string) {
-                const character = state.dataset.charactersHierarchy.itemWithId(characterId);
-
-                if (typeof character !== "undefined") {
-                    character.states.push(...state.copiedStates);
+                for (const s of state.copiedStates) {
+                    const stateToAdd = clone(s);
+                    stateToAdd.descriptorId = characterId;
+                    state.dataset.addState(stateToAdd);
                 }
             },
             addCharacter(state, character: Character) {

@@ -5,7 +5,7 @@ import { createDetailData } from "./DetailData";
 import { createHierarchicalItem } from "./HierarchicalItem";
 import { createTaxon } from "./Taxon";
 import { createCharacter } from "./Character";
-import { ManyToManyBimap } from "@/tools/bimaps";
+import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { Hierarchy, IMap } from "./hierarchy";
 import { CharactersHierarchy } from "./CharactersHierarchy";
 
@@ -54,9 +54,9 @@ function encodeTaxon(taxon: Taxon, dataset: Dataset) {
 	};
 }
 
-function encodeCharacter(character: Character) {
+function encodeCharacter(dataset: Dataset, character: Character) {
 	return {
-		states: character.states.filter(s => typeof s !== "undefined").map(s => s.id),
+		states: Array.from(dataset.characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
 		inherentStateId: character.inherentState?.id,
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),
@@ -69,7 +69,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	return {
 		id: dataset.id,
 		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, dataset)),
-		characters: Array.from(characters).map(character => encodeCharacter(character)),
+		characters: Array.from(characters).map(character => encodeCharacter(dataset, character)),
 		states: Object.values(dataset.states).filter(s => typeof s !== "undefined") as State[],
 		books: dataset.books,
 		extraFields: dataset.extraFields,
@@ -113,7 +113,6 @@ function decodeCharacter(character: EncodedCharacter, states: Record<string, Sta
 	return createCharacter({
 		...item,
 		childrenIds: item.childrenOrder ?? [],
-		states: character.states.map(id => states[id]),
 		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states[character.inherentStateId],
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states[id]) ?? [],
 		requiredStates: character.requiredStatesIds?.map(id => states[id]) ?? [],
@@ -126,12 +125,14 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const taxons = new Hierarchy("t", new makeMap());
 	const books = standardBooks.slice();
 	const statesByTaxons = new ManyToManyBimap(makeMap);
+	const statesByCharacters = new OneToManyBimap(makeMap);
 
 	for (const state of dataset?.states ?? []) {
 		states[state.id] = state;
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
 		characters.add(decodeCharacter(character, states));
+		character.states.forEach(id => statesByCharacters.add(character.id, id));
 	}
 	for (const taxon of dataset?.taxons ?? []) {
 		taxon.descriptions.forEach(d => {
@@ -147,6 +148,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		characters,
 		states,
 		statesByTaxons,
+		statesByCharacters,
 		books,
 		dataset?.extraFields ?? [],
 		dataset?.dictionaryEntries ?? {},

@@ -45,8 +45,8 @@ export function detailDataToSdd(data: DetailData, extraFields: Field[]): Represe
 	};
 }
 
-function characterToSdd(character: Character, extraFields: Field[], mediaObjects: sdd_MediaObject[]): SddCharacterData {
-	const statesData = character.states.map(s => stateToSdd(s));
+function characterToSdd(dataset: Dataset, character: Character, extraFields: Field[], mediaObjects: sdd_MediaObject[]): SddCharacterData {
+	const statesData = Array.from(dataset.characterStates(character)).map(s => stateToSdd(s));
 	const states = statesData.map(data => data.state);
 	return {
 		character: {
@@ -92,7 +92,7 @@ export function datasetToSdd(dataset: Dataset): sdd_Dataset {
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
 	}
 	for (const character of dataset.characters) {
-		const sddData = characterToSdd(character, dataset.extraFields, mediaObjects);
+		const sddData = characterToSdd(dataset, character, dataset.extraFields, mediaObjects);
 		characters.push(sddData.character);
 		states = states.concat(sddData.states);
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);

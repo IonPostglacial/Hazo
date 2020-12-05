@@ -116,7 +116,7 @@ import TreeMenu from "./TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createCharacter, createDetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
-import { Dataset } from "@/bunga/Dataset";
+import { Dataset } from "@/bunga/Dataset"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -236,7 +236,6 @@ export default Vue.extend({
                 ...createDetailData({ id: "", name: e.value }),
                 parentId: e.parentId,
                 childrenIds: [],
-                states: [],
             }));
         },
         deleteCharacter(e: { itemId: string}) {
