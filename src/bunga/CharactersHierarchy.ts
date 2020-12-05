@@ -40,8 +40,6 @@ export class CharactersHierarchy extends Hierarchy<Character> {
     }
 
     addState(state: State) {
-        const character = this.itemWithId(state.descriptorId);
-        character?.states.push(state);
         for (const callback of this.#stateAdditionCallbacks) {
             callback(state);
         }
@@ -58,8 +56,6 @@ export class CharactersHierarchy extends Hierarchy<Character> {
                 array.splice(index, 1);
             }
         }
-
-        removeStateFromArray(character.states, state);
         removeStateFromArray(character.inapplicableStates, state);
         removeStateFromArray(character.requiredStates, state);
         if (character.inherentState?.id === state.id) {
@@ -72,7 +68,6 @@ export class CharactersHierarchy extends Hierarchy<Character> {
 
     protected cloneNewItem(item: Character): Character {
         const newItem = super.cloneNewItem(item);
-        newItem.states = [];
         newItem.requiredStates = [];
         newItem.inapplicableStates = [];
         newItem.inherentState = undefined;

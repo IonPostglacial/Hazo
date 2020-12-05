@@ -208,7 +208,7 @@ export default Vue.extend({
                 if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
                     dependencyHierarchy.remove(character);
                 } else {
-                    const characterStates = character.states.map((s: State) => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.dataset.hasTaxonState(selectedTaxon, s) }, s));
+                    const characterStates = Array.from(this.dataset.characterStates(character)).map((s: State) => Object.assign({ type: "state", parentId: s.descriptorId, selected: this.dataset.hasTaxonState(selectedTaxon, s) }, s));
                     const characterChildren = [...dependencyHierarchy.childrenOf(character)];
                     
                     for (const state of characterStates) {

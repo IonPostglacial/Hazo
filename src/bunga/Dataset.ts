@@ -12,11 +12,12 @@ export class Dataset {
 			public charactersHierarchy: CharactersHierarchy,
 			public states: Partial<Record<string, State>>,
 			public statesByTaxons: ManyToManyBimap,
+			public statesByCharacter: OneToManyBimap,
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = [],
 			public dictionaryEntries: Record<string, any> = {}) {
-		this.charactersHierarchy.onStateAdded(s => this.states[s.id] = s);
-		this.charactersHierarchy.onStateRemoved(s => delete this.states[s.id]);
+		this.charactersHierarchy.onStateAdded(s => this.addState(s));
+		this.charactersHierarchy.onStateRemoved(s => this.removeState(s));
 	}
 
 	addTaxon(taxon: Taxon) {
@@ -57,12 +58,22 @@ export class Dataset {
 	}
 
 	addState(state: State) {
-		this.charactersHierarchy.addState(state);
+		this.states[state.id] = state;
+		this.statesByCharacter.add(state.descriptorId, state.id);
 	}
 
 	removeState(state: State) {
-		this.charactersHierarchy.removeState(state);
+		delete this.states[state.id];
+		this.statesByCharacter.removeRight(state.id);
 		this.statesByTaxons.removeRight(state.id);
+	}
+
+	*characterStates(character: Character|undefined): Iterable<State> {
+		if (typeof character === "undefined") return [];
+		for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {
+			const state = this.states[stateId];
+			if (typeof state !== "undefined") yield state;
+		}
 	}
 
 	hasTaxonState(taxon: Taxon, state: State) {

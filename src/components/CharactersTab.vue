@@ -116,6 +116,7 @@ import TreeMenu from "./TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createCharacter, createDetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Dataset } from "@/bunga/Dataset";
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -134,6 +135,9 @@ export default Vue.extend({
         }
     },
     computed: {
+        dataset(): Dataset {
+            return this.$store.state.dataset;
+        },
         charactersHierarchy() {
             return this.$store.state.dataset.charactersHierarchy;
         },
@@ -161,7 +165,7 @@ export default Vue.extend({
             this.$store.commit("pasteCharacter", this.selectedCharacterId);
         },
         copyStates() {
-            this.$store.commit("copyStates", this.selectedCharacter?.states);
+            this.$store.commit("copyStates", Array.from(this.dataset.characterStates(this.selectedCharacter)));
         },
         pasteStates() {
             this.$store.commit("pasteStates", this.selectedCharacterId);
