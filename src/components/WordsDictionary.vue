@@ -55,9 +55,9 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue, { PropType } from "vue";  // eslint-disable-line no-unused-vars
-import { mapState } from "vuex";
 import download from "@/tools/download";
 import { DictionaryEntry } from "../bunga";  // eslint-disable-line no-unused-vars
+import { IMap } from "@/bunga/hierarchy";  // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "WordsDictionary",
@@ -73,12 +73,14 @@ export default Vue.extend({
         };
     },
     computed: {
-        ...mapState(["dictionaryEntries"]),
-        selectedEntry(): DictionaryEntry {
-            return this.dictionaryEntries[this.selectedEntryId];
+        dictionaryEntries(): IMap<DictionaryEntry> {
+            return this.$store.state.dataset.dictionaryEntries;
+        },
+        selectedEntry(): DictionaryEntry|undefined {
+            return this.dictionaryEntries.get(this.selectedEntryId);
         },
         entriesToDisplay(): Iterable<DictionaryEntry> {
-            return Object.values(this.dictionaryEntries as Record<string, DictionaryEntry>).filter((entry) => {
+            return Array.from(this.dictionaryEntries.values()).filter((entry) => {
                 if (this.entriesFilter !== "") {
                     return ["nameCN", "nameEN", "nameFR"].
                         map(field => (entry as any)[field]).
@@ -104,7 +106,7 @@ export default Vue.extend({
                 }
                 return escapedValue;
             }
-            for (const { nameCN, nameEN, defCN, defEN, nameFR, defFR, url } of Object.values(this.dictionaryEntries as Record<string, DictionaryEntry>)) {
+            for (const { nameCN, nameEN, defCN, defEN, nameFR, defFR, url } of this.dictionaryEntries.values()) {
                 csv += [nameCN, nameEN, defCN, defEN, nameFR, defFR, url].map(escapeValue).join(",") + "\n";
             }
             download(csv, "csv");
@@ -122,7 +124,7 @@ export default Vue.extend({
                     const csv = parseCSV(fileReader.result);
                     for (const [id, [nameCN, nameEN, defCN, defEN]] of csv.entries()) {
                         if (id > 0) {
-                            this.dictionaryEntries[id] = { id: id.toString(), nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" };
+                            this.dictionaryEntries.set(""+id, { id: id.toString(), nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" });
                         }
                     }
                 }

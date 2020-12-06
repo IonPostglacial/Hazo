@@ -35,12 +35,12 @@ export function createStore() {
             dataset: new Dataset("",
                 new Hierarchy<Taxon>("t", new ObservableMap()),
                 new CharactersHierarchy("d", new ObservableMap()),
-                {},
+                new ObservableMap(),
                 new ManyToManyBimap(ObservableMap),
                 new OneToManyBimap(ObservableMap),
+                new ObservableMap(),
                 standardBooks,
                 new Array<Field>(),
-                {}
             ),
             copiedTaxon: null as null|Hierarchy<Taxon>,
             copiedCharacter: null as null|Hierarchy<Character>,
@@ -186,7 +186,7 @@ export function createStore() {
             resetData(state) {
                 state.dataset.taxonsHierarchy.clear();
                 state.dataset.charactersHierarchy.clear();
-                state.dataset.states = {};
+                state.dataset.states = new ObservableMap();
                 state.dataset.statesByTaxons.clear();
             },
         }

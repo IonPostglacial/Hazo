@@ -1,7 +1,7 @@
-import { Book, Character, Description, Field, Picture, State, Taxon } from "./datatypes";
+import { Book, Character, Description, DictionaryEntry, Field, State, Taxon } from "./datatypes";
 import { standardBooks } from "./stdcontent";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
-import { Hierarchy } from './hierarchy';
+import { Hierarchy, IMap } from './hierarchy';
 import { CharactersHierarchy } from './CharactersHierarchy';
 
 
@@ -10,12 +10,12 @@ export class Dataset {
 			public id: string,
 			public taxonsHierarchy: Hierarchy<Taxon>,
 			public charactersHierarchy: CharactersHierarchy,
-			public states: Partial<Record<string, State>>,
+			public states: IMap<State>,
 			public statesByTaxons: ManyToManyBimap,
 			public statesByCharacter: OneToManyBimap,
+			public dictionaryEntries: IMap<DictionaryEntry>,
 			public books: Book[] = standardBooks.slice(),
-			public extraFields: Field[] = [],
-			public dictionaryEntries: Record<string, any> = {}) {
+			public extraFields: Field[] = []) {
 		this.charactersHierarchy.onStateAdded(e => this.addState(e.state, e.character));
 		this.charactersHierarchy.onStateRemoved(e => this.removeState(e.state));
 	}
@@ -58,12 +58,12 @@ export class Dataset {
 	}
 
 	addState(state: State, character: Character) {
-		this.states[state.id] = state;
+		this.states.set(state.id, state);
 		this.statesByCharacter.add(character.id, state.id);
 	}
 
 	removeState(state: State) {
-		delete this.states[state.id];
+		this.states.delete(state.id);
 		this.statesByCharacter.removeRight(state.id);
 		this.statesByTaxons.removeRight(state.id);
 	}
@@ -71,7 +71,7 @@ export class Dataset {
 	*characterStates(character: Character|undefined): Iterable<State> {
 		if (typeof character === "undefined") return [];
 		for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {
-			const state = this.states[stateId];
+			const state = this.states.get(stateId);
 			if (typeof state !== "undefined") yield state;
 		}
 	}
@@ -88,7 +88,7 @@ export class Dataset {
 		const statesByCharacter = new OneToManyBimap(Map);
 	
 		for (const stateId of this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []) {
-			const state = this.states[stateId];
+			const state = this.states.get(stateId);
 			if (typeof state === "undefined") throw "Data corruption in taxon states: " + stateId;
 			const characterId = this.statesByCharacter.getLeftIdByRightId(stateId);
 			if (typeof characterId === "undefined") throw "Data corruption in character states: " + stateId;
@@ -98,7 +98,7 @@ export class Dataset {
 			const character = this.charactersHierarchy.itemWithId(characterId);
 			if (typeof character !== "undefined") {
 				console.log("taxon description", characterId, stateIds);
-				yield { character, states: stateIds.map(id => this.states[id]).filter(s => typeof s !== "undefined") as State[] };
+				yield { character, states: stateIds.map(id => this.states.get(id)).filter(s => typeof s !== "undefined") as State[] };
 			}
 		}
 	}

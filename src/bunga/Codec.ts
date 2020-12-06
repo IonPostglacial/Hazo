@@ -16,7 +16,7 @@ export interface EncodedDataset {
 	states: State[];
 	books: Book[];
 	extraFields: Field[];
-	dictionaryEntries: DictionaryEntry[]|Record<string, DictionaryEntry>;
+	dictionaryEntries: Partial<Record<string, DictionaryEntry>>;
 }
 
 type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { photos: string[]|Picture[] };
@@ -73,7 +73,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 		states: Object.values(dataset.states).filter(s => typeof s !== "undefined") as State[],
 		books: dataset.books,
 		extraFields: dataset.extraFields,
-		dictionaryEntries: dataset.dictionaryEntries,
+		dictionaryEntries: Object.fromEntries(dataset.dictionaryEntries.entries()),
 	};
 }
 
@@ -108,19 +108,19 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 	});
 }
 
-function decodeCharacter(character: EncodedCharacter, states: Record<string, State>): Character {
+function decodeCharacter(character: EncodedCharacter, states: IMap<State>): Character {
 	const item = decodeHierarchicalItem(character);
 	return createCharacter({
 		...item,
 		childrenIds: item.childrenOrder ?? [],
-		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states[character.inherentStateId],
-		inapplicableStates: character.inapplicableStatesIds?.map(id => states[id]) ?? [],
-		requiredStates: character.requiredStatesIds?.map(id => states[id]) ?? [],
+		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
+		inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
+		requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
 	});
 }
 
 export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEncodedDataset|undefined): Dataset {
-	const states: Record<string, State> = {};
+	const states: IMap<State> = new makeMap();
 	const characters = new CharactersHierarchy("c", new makeMap());
 	const taxons = new Hierarchy("t", new makeMap());
 	const books = standardBooks.slice();
@@ -128,7 +128,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const statesByCharacters = new OneToManyBimap(makeMap);
 
 	for (const state of dataset?.states ?? []) {
-		states[state.id] = state;
+		states.set(state.id, state);
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
 		characters.add(decodeCharacter(character, states));
@@ -142,6 +142,12 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		});
 		taxons.add(decodeTaxon(taxon, books));
 	}
+	const dictionaryEntries = new makeMap();
+	for (const entry of Object.values(dataset?.dictionaryEntries ?? {})) {
+		if (typeof entry !== "undefined") {
+			dictionaryEntries.set(entry.id, entry);
+		}
+	}
 	return new Dataset(
 		dataset?.id ?? "0",
 		taxons,
@@ -149,8 +155,8 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		states,
 		statesByTaxons,
 		statesByCharacters,
+		dictionaryEntries,
 		books,
 		dataset?.extraFields ?? [],
-		dataset?.dictionaryEntries ?? {},
 	);
 }
