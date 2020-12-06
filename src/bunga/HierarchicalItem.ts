@@ -1,3 +1,4 @@
+import { ItemPropertyField } from '@/components/itempropertyfield';
 import { Character, HierarchicalItem } from "./datatypes";
 import { createDetailData, DetailDataInit } from "./DetailData";
 import { picturesFromPhotos } from './picture';
