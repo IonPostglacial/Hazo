@@ -250,12 +250,14 @@ export default Vue.extend({
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
 
             this.$store.commit("addState", {
-                id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
-                descriptorId: this.selectedCharacter.id,
-                name: e.detail,
-                nameEN: "",
-                nameCN: "",
-                photos: []
+                state: {
+                    id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
+                    name: e.detail,
+                    nameEN: "",
+                    nameCN: "",
+                    photos: []
+                },
+                character: this.selectedCharacter,
             });
         },
         removeState(state: State) {

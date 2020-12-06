@@ -1,10 +1,13 @@
 import { Character, State } from "./datatypes";
 import { Hierarchy, IMap } from "./hierarchy";
 
+interface Callback {
+    (e: { state: State, character: Character }): void;
+}
 
 export class CharactersHierarchy extends Hierarchy<Character> {
-    #stateAdditionCallbacks: Set<(s: State)=>void>;
-    #stateRemovalCallbacks: Set<(s: State)=>void>;
+    #stateAdditionCallbacks: Set<Callback>;
+    #stateRemovalCallbacks: Set<Callback>;
 
     constructor(idPrefix: string, items: IMap<Character>, itemsOrder: string[]|undefined = undefined) {
         super(idPrefix, items, itemsOrder);
@@ -12,25 +15,25 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         this.#stateRemovalCallbacks = new Set();
     }
 
-    onStateAdded(callback: (s: State) => void) {
+    onStateAdded(callback: Callback) {
         this.#stateAdditionCallbacks.add(callback);
     }
 
-    onStateRemoved(callback: (s: State) => void) {
+    onStateRemoved(callback: Callback) {
         this.#stateRemovalCallbacks.add(callback);
     }
 
     add(character: Character): Character {
         if (character.id === "") {
             const newCharacter = super.add(character);
-            const parentDescription = this.itemWithId(character.parentId);
-            if(typeof character.parentId !== "undefined" && typeof parentDescription !== "undefined") {
+            const parentCharacter = this.itemWithId(character.parentId);
+            if(typeof character.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
                 console.log("add character inherent state", character.name);
                 const newState: State = {
                     id: "s-auto-" + newCharacter.id,
-                    descriptorId: character.parentId, name: newCharacter.name, nameEN: "", nameCN: "", photos: []
+                    name: newCharacter.name, nameEN: "", nameCN: "", photos: []
                 };
-                this.addState(newState);
+                this.addState(newState, parentCharacter);
                 newCharacter.inherentState = newState;
             }
             return newCharacter;
@@ -39,15 +42,13 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         }
     }
 
-    addState(state: State) {
+    addState(state: State, character: Character) {
         for (const callback of this.#stateAdditionCallbacks) {
-            callback(state);
+            callback({ state, character });
         }
     }
 
-    removeState(state: State) {
-        const character = this.itemWithId(state.descriptorId);
-
+    removeState(state: State, character: Character) {
         if (typeof character === "undefined") return;
 
         function removeStateFromArray(array: State[], state: State) {
@@ -62,7 +63,7 @@ export class CharactersHierarchy extends Hierarchy<Character> {
             character.inherentState = undefined;
         }
         for (const callback of this.#stateRemovalCallbacks) {
-            callback(state);
+            callback({ state, character });
         }
     }
 

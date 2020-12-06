@@ -93,8 +93,10 @@ export function createStore() {
             pasteStates(state, characterId: string) {
                 for (const s of state.copiedStates) {
                     const stateToAdd = clone(s);
-                    stateToAdd.descriptorId = characterId;
-                    state.dataset.addState(stateToAdd);
+                    const character = state.dataset.charactersHierarchy.itemWithId(characterId);
+                    if (typeof character !== "undefined") {
+                        state.dataset.addState(stateToAdd, character);
+                    }
                 }
             },
             addCharacter(state, character: Character) {
@@ -118,11 +120,8 @@ export function createStore() {
             setDataset(state, dataset: Dataset) {
                 Object.assign(state.dataset, dataset);
             },
-            addState(state, bungaState: State) {
-                state.dataset.addState(bungaState);
-            },
-            addStates(state, states: State[]) {
-                states.forEach(s => state.dataset.addState(s));
+            addState(state, payload: { state: State, character: Character }) {
+                state.dataset.addState(payload.state, payload.character);
             },
             removeState(state, bungaState: State) {
                 state.dataset.removeState(bungaState);
@@ -137,21 +136,21 @@ export function createStore() {
                 payload.state.photos.splice(payload.index, 1);
             },
             setInapplicableState(state, payload: { state: State, selected: boolean }) {
-                const character = state.dataset.charactersHierarchy.itemWithId(payload.state.descriptorId);
+                const character = state.dataset.stateCharacter(payload.state);
                 if (typeof character === "undefined") return;
 
                 setState(character.inapplicableStates, payload.state, payload.selected);
                 state.dataset.charactersHierarchy.add(clone(character));
             },
             setRequiredState(state, payload: { state: State, selected: boolean }) {
-                const character = state.dataset.charactersHierarchy.itemWithId(payload.state.descriptorId);
+                const character = state.dataset.stateCharacter(payload.state);
                 if (typeof character === "undefined") return;
 
                 setState(character.requiredStates, payload.state, payload.selected);
                 state.dataset.charactersHierarchy.add(clone(character));
             },
             setInherentState(state, payload: { state: State }) {
-                const character = state.dataset.charactersHierarchy.itemWithId(payload.state.descriptorId);
+                const character = state.dataset.stateCharacter(payload.state);
                 if (typeof character === "undefined") return;
 
                 character.inherentState = payload.state;

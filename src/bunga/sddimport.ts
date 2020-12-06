@@ -15,7 +15,6 @@ type MapContructor<T> = { new (): IMap<T> };
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {
         id: state.id,
-        descriptorId: state.characterId,
         name: state.label,
         nameEN: "",
         nameCN: "",

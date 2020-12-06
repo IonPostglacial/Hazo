@@ -16,8 +16,8 @@ export class Dataset {
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = [],
 			public dictionaryEntries: Record<string, any> = {}) {
-		this.charactersHierarchy.onStateAdded(s => this.addState(s));
-		this.charactersHierarchy.onStateRemoved(s => this.removeState(s));
+		this.charactersHierarchy.onStateAdded(e => this.addState(e.state, e.character));
+		this.charactersHierarchy.onStateRemoved(e => this.removeState(e.state));
 	}
 
 	addTaxon(taxon: Taxon) {
@@ -57,9 +57,9 @@ export class Dataset {
 		return this.charactersHierarchy.allItems;
 	}
 
-	addState(state: State) {
+	addState(state: State, character: Character) {
 		this.states[state.id] = state;
-		this.statesByCharacter.add(state.descriptorId, state.id);
+		this.statesByCharacter.add(character.id, state.id);
 	}
 
 	removeState(state: State) {
@@ -76,6 +76,10 @@ export class Dataset {
 		}
 	}
 
+	stateCharacter(state: State): Character|undefined {
+		return this.charactersHierarchy.itemWithId(this.statesByCharacter.getLeftIdByRightId(state.id));
+	}
+
 	hasTaxonState(taxon: Taxon, state: State) {
 		return this.statesByTaxons.has(taxon.id, state.id);
 	}
@@ -86,7 +90,9 @@ export class Dataset {
 		for (const stateId of this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []) {
 			const state = this.states[stateId];
 			if (typeof state === "undefined") throw "Data corruption in taxon states: " + stateId;
-			statesByCharacter.add(state.descriptorId, state.id);
+			const characterId = this.statesByCharacter.getLeftIdByRightId(stateId);
+			if (typeof characterId === "undefined") throw "Data corruption in character states: " + stateId;
+			statesByCharacter.add(characterId, stateId);
 		}
 		for (const [characterId, stateIds] of statesByCharacter.rightIdsGroupedByLeftId()) {
 			const character = this.charactersHierarchy.itemWithId(characterId);
