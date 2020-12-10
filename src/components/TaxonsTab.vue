@@ -149,7 +149,7 @@ import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, HierarchicalItem, Picture, State, Taxon, TexExporter, exportZipFolder } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Book, Character, HierarchicalItem, Picture, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/tools/clone';
@@ -157,7 +157,8 @@ import { createDetailData } from '@/bunga/DetailData';
 import { createTaxon } from '@/bunga/Taxon';
 import { ObservableMap } from '@/tools/observablemap';
 import download from "@/tools/download";
-import exportStatistics from "../bunga/features/exportstats";
+import exportStatistics from "@/features/exportstats";
+import { TexExporter, exportZipFolder } from "@/features";
 import { Dataset } from '@/bunga/Dataset'; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({

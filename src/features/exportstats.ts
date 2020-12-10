@@ -1,5 +1,4 @@
-import { Taxon } from "../datatypes";
-import { Hierarchy } from "../hierarchy";
+import { Hierarchy, Taxon } from "@/bunga";
 
 
 export default function exportStatistics(taxonsHierarchy: Hierarchy<Taxon>): string {

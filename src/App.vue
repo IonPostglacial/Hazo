@@ -38,7 +38,8 @@
 
 <script lang="ts">
 import { Character, Dataset, Field, Taxon } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, Hierarchy, highlightTaxonsDetails, repairPotentialCorruption } from "./bunga"; // eslint-disable-line no-unused-vars
+import { encodeDataset, decodeDataset, Hierarchy, repairPotentialCorruption } from "./bunga"; // eslint-disable-line no-unused-vars
+import { highlightTaxonsDetails } from "./features";
 import DB from "./db-storage";
 import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";

@@ -1,7 +1,3 @@
-export * from "./bunga/features/highlight";
-export * from "./bunga/features/generatefilename";
-export * from "./bunga/features/zipfolderexport";
-export * from "./bunga/features/texexporter";
 export * from "./bunga/Character";
 export * from "./bunga/Codec";
 export * from "./bunga/Dataset";
