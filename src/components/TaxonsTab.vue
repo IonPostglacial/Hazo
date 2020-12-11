@@ -149,12 +149,10 @@ import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, HierarchicalItem, Picture, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Book, Character, DetailData, HierarchicalItem, Picture, State, Taxon } from "../bunga"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from '@/bunga/hierarchy';
 import clone from '@/tools/clone';
-import { createDetailData } from '@/bunga/DetailData';
-import { createTaxon } from '@/bunga/Taxon';
 import { ObservableMap } from '@/tools/observablemap';
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
@@ -251,8 +249,8 @@ export default Vue.extend({
             this.selectedTaxonId = id;
         },
         addTaxon(e: {value: string, parentId: string }) {
-            this.$store.commit("addTaxon", createTaxon({
-                ...createDetailData({ id: "", name: e.value, photos: [], }),
+            this.$store.commit("addTaxon", new Taxon({
+                ...new DetailData({ id: "", name: e.value, photos: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId, childrenIds: []
             }));

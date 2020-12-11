@@ -38,14 +38,14 @@
 
 <script lang="ts">
 import { Character, Dataset, Field, Taxon } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, Hierarchy, repairPotentialCorruption } from "./bunga"; // eslint-disable-line no-unused-vars
+import { encodeDataset, decodeDataset, Hierarchy } from "./bunga"; // eslint-disable-line no-unused-vars
 import { highlightTaxonsDetails } from "./features";
 import DB from "./db-storage";
 import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
-import { DictionaryEntry, HierarchicalItem, Picture, State } from "./bunga/datatypes"; // eslint-disable-line no-unused-vars
+import { DictionaryEntry, HierarchicalItem, Picture, State } from "@/bunga"; // eslint-disable-line no-unused-vars
 import { BungaVue } from "./store";
 import { ObservableMap } from './tools/observablemap';
 
@@ -75,13 +75,7 @@ export default BungaVue.extend({
         loadBase(id?: string) {
             DB.load(id ?? "0").then(savedDataset => {
                 this.resetData();
-                const dataset = decodeDataset(ObservableMap, savedDataset);
-                const taxons = Array.from(dataset?.taxonsHierarchy.allItems ?? []),
-                    characters = Array.from(dataset?.charactersHierarchy.allItems ?? []);
-                taxons.forEach(repairPotentialCorruption);
-                characters.forEach(repairPotentialCorruption);
-
-                this.$store.commit("setDataset", dataset);
+                this.$store.commit("setDataset", decodeDataset(ObservableMap, savedDataset));
             });
         },
         print() {

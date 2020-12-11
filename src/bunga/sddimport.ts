@@ -1,10 +1,10 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, DetailData, Field, State, Taxon } from "./datatypes";
+import { Field, State } from "./datatypes";
 import { Dataset } from "./Dataset";
 import { standardFields } from "./stdcontent";
-import { createDetailData } from "./DetailData";
-import { createCharacter } from "./Character";
-import { createTaxon } from "./Taxon";
+import { DetailData } from "./DetailData";
+import { Character } from "./Character";
+import { Taxon } from "./Taxon";
 import { picturesFromPhotos } from './picture';
 import { ManyToManyBimap, OneToManyBimap } from '@/tools/bimaps';
 import { Hierarchy, IMap } from './hierarchy';
@@ -66,7 +66,7 @@ function detailDataFromSdd(id: string, representation: Representation, extraFiel
         detail = detail.replace(emptyParagraphRe, "");
     }
     const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);
-    const data = createDetailData({ id: id, name: name, author: author, nameCN: nameCN, fasc: fasc, page: page, detail: detail, photos: photos });
+    const data = new DetailData({ id: id, name: name, author: author, nameCN: nameCN, fasc: fasc, page: page, detail: detail, photos: photos });
 
     for (const field of fields) {
         ((field.std) ? data : data.extra)[field.id] = findInDescription(representation.detail, field.label);
@@ -75,7 +75,7 @@ function detailDataFromSdd(id: string, representation: Representation, extraFiel
 }
 
 function characterFromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: IMap<State>): Character {
-    return createCharacter({
+    return new Character({
         parentId: character.parentId,
         childrenIds: character.childrenIds,
         inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById.get(s.ref)!),
@@ -84,7 +84,7 @@ function characterFromSdd(character: sdd_Character, photosByRef: Record<string, 
 }
 
 function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>): Taxon {
-    return createTaxon({
+    return new Taxon({
         parentId: taxon.parentId,
         childrenIds: taxon.childrenIds,
         ...detailDataFromSdd(taxon.id, taxon, extraFields, photosByRef)

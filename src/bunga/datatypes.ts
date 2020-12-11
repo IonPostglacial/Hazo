@@ -35,44 +35,6 @@ export interface State extends BasicInfo {
 	color?: string;
 }
 
-export interface DetailData extends BasicInfo {
-	author: string;
-	vernacularName: string;
-	vernacularName2: string;
-	name2: string;
-	meaning: string;
-	herbariumPicture: string;
-	website: string;
-	noHerbier: number|undefined;
-	fasc: number|undefined;
-	page: number|undefined;
-	detail : string;
-	extra: Record<string, any>;
-}
-
-export interface HierarchicalItem<T> extends DetailData {
-    type: string;
-	parentId: string|undefined;
-	topLevel: boolean;
-	hidden: boolean;
-	childrenOrder: string[]|undefined;
-}
-
-export interface Character extends HierarchicalItem<Character> {
-	inherentState?: State;
-	inapplicableStates: State[];
-	requiredStates: State[];
-}
-
-export interface Description {
-    character: Character;
-    states: State[];
-}
-
-export interface Taxon extends HierarchicalItem<Taxon> {
-    bookInfoByIds:Record<string, BookInfo>;
-}
-
 export interface DictionaryEntry {
 	id: string,
 	nameCN: string;

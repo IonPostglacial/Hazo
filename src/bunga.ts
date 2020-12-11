@@ -1,6 +1,7 @@
 export * from "./bunga/Character";
 export * from "./bunga/Codec";
 export * from "./bunga/Dataset";
+export * from "./bunga/Description";
 export * from "./bunga/DetailData";
 export * from "./bunga/HierarchicalItem";
 export * from "./bunga/Taxon";

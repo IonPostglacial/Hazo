@@ -1,4 +1,4 @@
-import { Taxon } from "@/bunga/datatypes";
+import { Taxon } from "@/bunga";
 
 function escape(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

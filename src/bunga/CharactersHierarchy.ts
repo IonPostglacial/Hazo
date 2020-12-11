@@ -1,4 +1,5 @@
-import { Character, State } from "./datatypes";
+import { State } from "./datatypes";
+import { Character } from "./Character";
 import { Hierarchy, IMap } from "./hierarchy";
 
 interface Callback {

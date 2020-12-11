@@ -1,5 +1,8 @@
 import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
-import { Character, DetailData, Field, State, Taxon } from "./datatypes";
+import { Field, State } from "./datatypes";
+import { Character } from "./Character";
+import { DetailData } from "./DetailData";
+import { Taxon } from "./Taxon";
 import { Dataset } from "./Dataset";
 import { OneToManyBimap } from '@/tools/bimaps';
 

@@ -1,4 +1,4 @@
-import { HierarchicalItem } from "./datatypes";
+import { HierarchicalItem } from "./HierarchicalItem";
 import clone from "../tools/clone";
 
 export interface IMap<T> {

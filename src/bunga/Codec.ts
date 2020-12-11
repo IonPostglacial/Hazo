@@ -1,10 +1,10 @@
-import { Book, BookInfo, Character, DetailData, DictionaryEntry, Field, HierarchicalItem, Picture, State, Taxon } from "./datatypes";
+import { Book, BookInfo, DictionaryEntry, Field, Picture, State } from "./datatypes";
 import { standardBooks } from "./stdcontent";
 import { Dataset } from "./Dataset";
-import { createDetailData } from "./DetailData";
-import { createHierarchicalItem } from "./HierarchicalItem";
-import { createTaxon } from "./Taxon";
-import { createCharacter } from "./Character";
+import { DetailData } from "./DetailData";
+import { HierarchicalItem } from "./HierarchicalItem";
+import { Taxon } from "./Taxon";
+import { Character } from "./Character";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { Hierarchy, IMap } from "./hierarchy";
 import { CharactersHierarchy } from "./CharactersHierarchy";
@@ -34,11 +34,27 @@ function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>)
 		children.add(childId);
 	}
 	return {
+		id: item.id,
 		type: item.type,
 		parentId: item.parentId,
 		topLevel: item.topLevel,
 		children: [...children],
-		...createDetailData(item),
+		name: item.name,
+		nameEN: item.nameEN,
+		nameCN: item.nameCN,
+		photos: item.photos,
+		author: item.author,
+		vernacularName: item.vernacularName,
+		vernacularName2: item.vernacularName2,
+		name2: item.name2,
+		meaning: item.meaning,
+		herbariumPicture: item.herbariumPicture,
+		website: item.website,
+		noHerbier: item.noHerbier,
+		fasc: item.fasc,
+		page: item.page,
+		detail: item.detail,
+		extra: item.extra,
 	};
 }
 
@@ -78,7 +94,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 }
 
 function decodeHierarchicalItem<T>(item: EncodedHierarchicalItem): HierarchicalItem<T> {
-	return createHierarchicalItem({...item, childrenIds: item.children});
+	return new HierarchicalItem({...item, childrenIds: item.children});
 }
 
 function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]): Taxon {
@@ -101,7 +117,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
             statesSelection[stateId] = true;
         }
     }
-	return createTaxon({
+	return new Taxon({
 		...item,
 		childrenIds: item.childrenOrder ?? [],
 		bookInfoByIds,
@@ -110,7 +126,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 
 function decodeCharacter(character: EncodedCharacter, states: IMap<State>): Character {
 	const item = decodeHierarchicalItem(character);
-	return createCharacter({
+	return new Character({
 		...item,
 		childrenIds: item.childrenOrder ?? [],
 		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),

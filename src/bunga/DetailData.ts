@@ -1,4 +1,4 @@
-import { DetailData, Picture } from "./datatypes";
+import { BasicInfo, Picture } from "./datatypes";
 import { picturesFromPhotos } from './picture';
 
 export interface DetailDataInit {
@@ -21,24 +21,42 @@ export interface DetailDataInit {
 	extra?: Record<string, any>;
 }
 
-export function createDetailData(init: DetailDataInit): DetailData {
-	return {
-		id: init.id,
-		name: init.name ?? "",
-		author: init.author ?? "",
-		nameEN: init.nameEN ?? "",
-		nameCN: init.nameCN ?? "",
-		name2: init.name2 ?? "",
-		vernacularName: init.vernacularName ?? "",
-		vernacularName2: init.vernacularName2 ?? "",
-		meaning: init.meaning ?? "",
-		herbariumPicture: init.herbariumPicture ?? "",
-		website: init.website ?? "",
-		noHerbier: init.noHerbier,
-		fasc: init.fasc,
-		page: init.page,
-		detail: init.detail ?? "",
-		photos: picturesFromPhotos(init.photos ?? []),
-		extra: init.extra ?? {},
+export class DetailData implements BasicInfo {
+	id: string;
+	name: string;
+	nameEN: string;
+	nameCN: string;
+	photos: Picture[];
+	author: string;
+	vernacularName: string;
+	vernacularName2: string;
+	name2: string;
+	meaning: string;
+	herbariumPicture: string;
+	website: string;
+	noHerbier: number|undefined;
+	fasc: number|undefined;
+	page: number|undefined;
+	detail : string;
+	extra: Record<string, any>;
+
+	constructor(init: DetailDataInit) {
+		this.id = init.id;
+		this.name = init.name ?? "";
+		this.author = init.author ?? "";
+		this.nameEN = init.nameEN ?? "";
+		this.nameCN = init.nameCN ?? "";
+		this.name2 = init.name2 ?? "";
+		this.vernacularName = init.vernacularName ?? "";
+		this.vernacularName2 = init.vernacularName2 ?? "";
+		this.meaning = init.meaning ?? "";
+		this.herbariumPicture = init.herbariumPicture ?? "";
+		this.website = init.website ?? "";
+		this.noHerbier = init.noHerbier;
+		this.fasc = init.fasc;
+		this.page = init.page;
+		this.detail = init.detail ?? "";
+		this.photos = picturesFromPhotos(init.photos ?? []);
+		this.extra = init.extra ?? {};
 	}
 }
