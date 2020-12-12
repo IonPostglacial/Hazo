@@ -3,6 +3,12 @@ export interface Book {
     label: string;
 }
 
+export interface Button {
+    id: string;
+    for: string;
+    label: string;
+}
+
 export interface Picture {
 	id: string;
 	url: string;

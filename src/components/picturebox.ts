@@ -1,4 +1,4 @@
-import { Picture } from '@/bunga';
+import { Picture } from '@/datatypes';
 import { MutationTree } from 'vuex';
 import { AddItem } from "./additem";
 

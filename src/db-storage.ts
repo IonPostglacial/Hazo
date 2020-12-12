@@ -1,4 +1,4 @@
-import { EncodedDataset } from "./bunga/Codec";
+import { EncodedDataset } from "./features/codec";
 
 const DB_NAME = "Datasets";
 const DB_VERSION = 5;

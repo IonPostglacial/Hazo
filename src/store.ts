@@ -2,9 +2,9 @@ import Vue from "vue";
 import { VueConstructor } from 'vue/types/umd';
 import Vuex from "vuex";
 
-import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./bunga";
-import { Dataset } from './bunga/Dataset';
-import { Picture } from "./bunga/datatypes";
+import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./datatypes";
+import { Dataset } from './datatypes/Dataset';
+import { Picture } from "./datatypes/datatypes";
 import { ManyToManyBimap, OneToManyBimap } from './tools/bimaps';
 import clone from "./tools/clone";
 import makeid from './tools/makeid';

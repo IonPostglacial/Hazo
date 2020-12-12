@@ -1,13 +1,13 @@
-import { Book, BookInfo, DictionaryEntry, Field, Picture, State } from "./datatypes";
-import { standardBooks } from "./stdcontent";
-import { Dataset } from "./Dataset";
-import { DetailData } from "./DetailData";
-import { HierarchicalItem } from "./HierarchicalItem";
-import { Taxon } from "./Taxon";
-import { Character } from "./Character";
+import { Book, BookInfo, DictionaryEntry, Field, Picture, State } from "../datatypes/datatypes";
+import { standardBooks } from "../datatypes/stdcontent";
+import { Dataset } from "../datatypes/Dataset";
+import { DetailData } from "../datatypes/DetailData";
+import { HierarchicalItem } from "../datatypes/HierarchicalItem";
+import { Taxon } from "../datatypes/Taxon";
+import { Character } from "../datatypes/Character";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
-import { Hierarchy, IMap } from "./hierarchy";
-import { CharactersHierarchy } from "./CharactersHierarchy";
+import { Hierarchy, IMap } from "../datatypes/hierarchy";
+import { CharactersHierarchy } from "../datatypes/CharactersHierarchy";
 
 export interface EncodedDataset {
 	id: string

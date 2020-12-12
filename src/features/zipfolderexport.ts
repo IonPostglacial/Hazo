@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { Hierarchy, Taxon } from "@/bunga";
+import { Hierarchy, Taxon } from "@/datatypes";
 import generateFileName from "./generatefilename";
 
 

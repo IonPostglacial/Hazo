@@ -1,6 +1,7 @@
 import type { Dataset as sdd_Dataset } from "./sdd/datatypes";
 import { Loader } from "./sdd/loader";
-import { Dataset, Field, datasetFromSdd } from "./bunga";
+import { Dataset, Field } from "@/datatypes";
+import { datasetFromSdd } from "@/features";
 import { ObservableMap } from './tools/observablemap';
 
 function loadSddFile(file: File): Promise<sdd_Dataset[]> {

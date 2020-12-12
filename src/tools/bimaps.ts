@@ -1,4 +1,4 @@
-import { IMap } from "@/bunga/hierarchy";
+import { IMap } from "@/datatypes/hierarchy";
 
 function addUniqueElementToArray(elements: string[], element: string) {
     if (!elements.includes(element)) {

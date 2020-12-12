@@ -11,7 +11,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Picture } from "@/bunga/datatypes"; // eslint-disable-line no-unused-vars
+import { Picture } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 

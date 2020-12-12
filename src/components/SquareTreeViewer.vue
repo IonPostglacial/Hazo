@@ -21,7 +21,7 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Hierarchy, HierarchicalItem } from "../bunga"; // eslint-disable-line no-unused-vars
+import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 
 type ItemType = HierarchicalItem<any> & { selected?: boolean };
 

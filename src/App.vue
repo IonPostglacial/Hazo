@@ -37,15 +37,13 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Field, Taxon } from "./bunga"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, Hierarchy } from "./bunga"; // eslint-disable-line no-unused-vars
-import { highlightTaxonsDetails } from "./features";
+import { Character, Dataset, DictionaryEntry, Field, HierarchicalItem, Hierarchy, Picture, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { encodeDataset, decodeDataset, highlightTaxonsDetails } from "@/features";
 import DB from "./db-storage";
 import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
-import { DictionaryEntry, HierarchicalItem, Picture, State } from "@/bunga"; // eslint-disable-line no-unused-vars
 import { BungaVue } from "./store";
 import { ObservableMap } from './tools/observablemap';
 

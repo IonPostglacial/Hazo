@@ -31,8 +31,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Character, Description, Hierarchy, Taxon } from '@/bunga'; // eslint-disable-line no-unused-vars
-import { Dataset } from "@/bunga/Dataset"; // eslint-disable-line no-unused-vars
+import { Character, Dataset, Description, Hierarchy, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({

@@ -56,8 +56,7 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue, { PropType } from "vue";  // eslint-disable-line no-unused-vars
 import download from "@/tools/download";
-import { DictionaryEntry } from "../bunga";  // eslint-disable-line no-unused-vars
-import { IMap } from "@/bunga/hierarchy";  // eslint-disable-line no-unused-vars
+import { DictionaryEntry, IMap } from "@/datatypes";  // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "WordsDictionary",

@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { Dataset, Description, Picture, Taxon } from "@/bunga";
+import { Dataset, Description, Picture, Taxon } from "@/datatypes";
 import generateFileName from "./generatefilename";
 
 
