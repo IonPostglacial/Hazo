@@ -2,21 +2,20 @@ import Vue from "vue";
 import { VueConstructor } from 'vue/types/umd';
 import Vuex from "vuex";
 
-import { Character, CharactersHierarchy, DictionaryEntry, Field, Hierarchy, standardBooks, State, Taxon } from "./datatypes";
+import { Character, CharactersHierarchy, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, State, Taxon } from "./datatypes";
 import { Dataset } from './datatypes/Dataset';
-import { Picture } from "./datatypes/datatypes";
 import { ManyToManyBimap, OneToManyBimap } from './tools/bimaps';
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";
 
-export type BungaStore = ReturnType<typeof createStore>;
+export type HazoStore = ReturnType<typeof createStore>;
 
-abstract class BungaVueClass extends Vue {
-    public $store!: BungaStore;
+abstract class HazoVueClass extends Vue {
+    public $store!: HazoStore;
 }
 
-export const BungaVue = (Vue as VueConstructor<BungaVueClass>);
+export const HazoVue = (Vue as VueConstructor<HazoVueClass>);
 
 function setState(states: State[], state: State, selected: boolean) {
     if (selected) {
@@ -123,8 +122,8 @@ export function createStore() {
             addState(state, payload: { state: State, character: Character }) {
                 state.dataset.addState(payload.state, payload.character);
             },
-            removeState(state, bungaState: State) {
-                state.dataset.removeState(bungaState);
+            removeState(state, hazoState: State) {
+                state.dataset.removeState(hazoState);
             },
             addStatePicture(state, payload: { state: State, picture: Picture }) {
                 payload.state.photos.push(payload.picture);

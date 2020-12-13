@@ -1,5 +1,5 @@
 import { Character } from "./Character";
-import { State } from "./datatypes";
+import { State } from "./types";
 
 export interface Description {
     character: Character;

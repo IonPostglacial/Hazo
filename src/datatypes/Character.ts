@@ -1,4 +1,4 @@
-import { State } from "./datatypes";
+import { State } from "./types";
 import { HierarchicalItemInit } from "./HierarchicalItem";
 import { HierarchicalItem } from "./HierarchicalItem";
 

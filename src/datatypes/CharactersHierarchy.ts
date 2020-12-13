@@ -1,4 +1,4 @@
-import { State } from "./datatypes";
+import { State } from "./types";
 import { Character } from "./Character";
 import { Hierarchy, IMap } from "./hierarchy";
 

@@ -44,10 +44,10 @@ import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
-import { BungaVue } from "./store";
+import { HazoVue } from "./store";
 import { ObservableMap } from './tools/observablemap';
 
-export default BungaVue.extend({
+export default HazoVue.extend({
     name: "App",
     data() {
         return {
@@ -124,7 +124,7 @@ export default BungaVue.extend({
                 result = await loadSDD(file, this.dataset.extraFields);
             } else if (file.name.endsWith(".json")) {
                 result = await this.jsonUpload(file);
-            } else if (file.name.endsWith(".bunga.bold.csv")) {
+            } else if (file.name.endsWith(".bold.csv")) {
                 result = await this.boldUpload(file);
             }
             return result;
@@ -193,7 +193,7 @@ export default BungaVue.extend({
         },
         jsonExport() {
             const json = JSON.stringify(encodeDataset(this.dataset));
-            download(json, "bunga.json");
+            download(json, "hazo.json");
         },
         exportSDD() {
             const xml = saveSDD({

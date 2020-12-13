@@ -1,6 +1,6 @@
 import { HierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
 
-import { BookInfo } from "./datatypes";
+import { BookInfo } from "./types";
 
 interface TaxonInit extends Omit<HierarchicalItemInit, "type"> { bookInfoByIds?: Record<string, BookInfo> }
 

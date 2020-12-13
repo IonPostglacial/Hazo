@@ -1,4 +1,4 @@
-import { Book, DictionaryEntry, Field, State } from "./datatypes";
+import { Book, DictionaryEntry, Field, State } from "./types";
 import { Character } from "./Character";
 import { Description } from "./Description";
 import { Taxon } from "./Taxon";

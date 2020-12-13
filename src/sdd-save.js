@@ -6,7 +6,7 @@ function saveSDD({ items, descriptors, extraFields }) {
     
     const technicalMetadata = xml.createElement("TechnicalMetadata");
     const generator = xml.createElement("Generator");
-    generator.setAttribute("name", "Bunga");
+    generator.setAttribute("name", "Hazo");
     generator.setAttribute("notes", "This software is developed and distributed by Li Tian & Nicolas Galipot - Copyright (c) 2020");
     generator.setAttribute("version", "0.9");
 

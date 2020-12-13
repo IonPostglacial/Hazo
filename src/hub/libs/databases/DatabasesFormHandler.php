@@ -49,6 +49,6 @@ class DatabasesFormHandler extends FormHandler {
     }
 
     protected function onError(int $method): void {
-        echo "please enter a db file in the Bunga format<br>";
+        echo "please enter a db file in the Hazo format<br>";
     }
 }

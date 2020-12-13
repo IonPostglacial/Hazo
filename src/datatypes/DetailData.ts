@@ -1,4 +1,4 @@
-import { BasicInfo, Picture } from "./datatypes";
+import { BasicInfo, Picture } from "./types";
 import { picturesFromPhotos } from './picture';
 
 export interface DetailDataInit {

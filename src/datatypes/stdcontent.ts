@@ -1,4 +1,4 @@
-import { Book, Field } from "./datatypes";
+import { Book, Field } from "./types";
 
 export const standardBooks: Book[] = [
     {id: "fmc", label: "Flore de Madagascar et Comores"},
