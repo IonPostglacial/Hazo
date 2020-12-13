@@ -48,20 +48,20 @@ export class AddItem extends HTMLElement {
         const singleLineInput = this._getSingleLineInput();
         const multiLineInput = this._getMultiLineInput();
 
-        const addItem = (value: string) => {
-            const text = value;
-            const e = new CustomEvent("add-item", { detail: text });
+        const addItem = (value: string[]) => {
+            const e = new CustomEvent("add-item", { detail: value });
             this.dispatchEvent(e);
         };
         const addSingleItem = () => {
-            addItem(singleLineInput.value);
+            addItem([singleLineInput.value]);
             singleLineInput.value = "";
         };
         const addMultipleItems = () => {
-            const namesToAdd = multiLineInput.value.split("\n").map(name => name.trim());
-            for (const name of namesToAdd) {
-                if (name !== "") {
-                    addItem(name);
+            const linesToAdd = multiLineInput.value.split("\n").map(name => name.trim());
+            for (const line of linesToAdd) {
+                const columnsToAdd = line.split("\t").map(c => c.trim());
+                if (columnsToAdd.length > 0) {
+                    addItem(columnsToAdd);
                 }
             }
             multiLineInput.value = "";

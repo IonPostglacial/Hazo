@@ -246,9 +246,10 @@ export default Vue.extend({
         selectTaxon(id: string) {
             this.selectedTaxonId = id;
         },
-        addTaxon(e: {value: string, parentId: string }) {
+        addTaxon(e: {value: string[], parentId: string }) {
+            const [name, vernacularName, nameCN] = e.value;
             this.$store.commit("addTaxon", new Taxon({
-                ...new DetailData({ id: "", name: e.value, photos: [], }),
+                ...new DetailData({ id: "", name, vernacularName, nameCN, photos: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId, childrenIds: []
             }));

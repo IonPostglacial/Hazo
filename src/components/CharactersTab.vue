@@ -103,7 +103,7 @@
                             </label>
                         </li>
                         <li>
-                            <add-item v-on:add-item="addState"></add-item>
+                            <add-item @add-item="addState"></add-item>
                         </li>
                     </ul>
                 </div>
@@ -181,14 +181,15 @@ export default Vue.extend({
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
         },
-        addCharacterPhoto(e: {detail: {value: string}}) {
+        addCharacterPhoto(e: {detail: {value: string[]}}) {
+            const [url, label] = e.detail.value;
             const numberOfPhotos = this.selectedCharacter!.photos.length;
             this.$store.commit("addCharacterPicture", {
                 character: this.selectedCharacter,
                 picture: {
                     id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
-                    url: e.detail.value,
-                    label: `${this.selectedCharacter!.name} #${numberOfPhotos}`,
+                    url: url,
+                    label: label ?? `${this.selectedCharacter!.name} #${numberOfPhotos}`,
                 }
             });
         },
@@ -230,9 +231,10 @@ export default Vue.extend({
             this.showBigImage = true;
             this.bigImages = state.photos;
         },
-        addCharacter(e: { value: string, parentId: string }) {
+        addCharacter(e: { value: string[], parentId: string }) {
+            const [name, nameCN] = e.value;
             this.$store.commit("addCharacter", new Character({
-                ...new DetailData({ id: "", name: e.value }),
+                ...new DetailData({ id: "", name, nameCN }),
                 parentId: e.parentId,
                 childrenIds: [],
             }));
@@ -245,15 +247,17 @@ export default Vue.extend({
                 console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }
         },
-        addState(e: {detail: string}) {
+        addState(e: {detail: string[]}) {
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
-
+            const [name, nameEN, nameCN, color, description] = e.detail;
             this.$store.commit("addState", {
                 state: {
                     id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
-                    name: e.detail,
-                    nameEN: "",
-                    nameCN: "",
+                    name,
+                    nameEN,
+                    nameCN,
+                    color,
+                    description,
                     photos: []
                 },
                 character: this.selectedCharacter,

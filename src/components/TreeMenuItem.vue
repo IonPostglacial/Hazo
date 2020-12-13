@@ -31,7 +31,7 @@
                     <slot v-bind:item="menuItemProps.item"></slot>
                 </TreeMenuItem>
                 <li v-if="editable || spaceForAdd" :class="{ 'visibility-hidden': spaceForAdd }">
-                    <add-item v-on:add-item="addItem"></add-item>
+                    <add-item @add-item="addItem"></add-item>
                 </li>
             </div>
         </div>
@@ -108,7 +108,7 @@ export default Vue.extend({
         toggleOpen() {
             this.itemBus?.emitToggle(this.item!.id);
         },
-        addItem({detail}: {detail: string}) {
+        addItem({ detail }: { detail: string[] }) {
             this.$emit("add-item", { value: detail, parentId: this.item?.id });
         },
         deleteItem() {

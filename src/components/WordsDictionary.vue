@@ -19,7 +19,7 @@
                         <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.nameFR }}</label></td>
                     </tr>
                 </table>
-                <add-item v-on:add-item="addEntry"></add-item>
+                <add-item @add-item="addEntry"></add-item>
             </div>
             <div v-if="typeof selectedEntry !== 'undefined'" class="white-background medium-padding scroll height-full">
                 <div class="horizontal-flexbox">
@@ -85,7 +85,7 @@ export default Vue.extend({
                         map(field => (entry as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.entriesFilter?.toUpperCase()) ?? false);
                 } else {
-                    return Object.values(this.dictionaryEntries);
+                    return this.dictionaryEntries.values();
                 }
             });
         },
@@ -110,9 +110,14 @@ export default Vue.extend({
             }
             download(csv, "csv");
         },
-        addEntry(e: { detail: string }) {
+        addEntry(e: { detail: string[] }) {
+            const [nameCN, nameEN, defCN, defEN, nameFR, defFR] = e.detail;
             const id = Date.now();
-            this.$store.commit("addDictionaryEntry", { id: id.toString(), nameCN: e.detail, nameEN: "", defCN: "", defEN: "", nameFR: "", defFR: "", url: "" });
+            console.log("add entry");
+            this.$store.commit("addDictionaryEntry", {
+                id: id.toString(), nameCN: nameCN ?? "", nameEN: nameEN ?? "", defCN: defCN ?? "",
+                defEN: defEN ?? "", nameFR: nameFR ?? "", defFR: defFR ?? "", url: ""
+            });
         },
         uploadCSV(e: InputEvent) {
             const target = e.target as HTMLInputElement;

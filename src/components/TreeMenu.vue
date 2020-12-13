@@ -38,7 +38,7 @@
                 </TreeMenuItem>
             </ul>
         </div>
-         <add-item v-if="editable" v-on:add-item="addItem({ value: $event.detail })"></add-item>
+        <add-item v-if="editable" @add-item="addItem({ value: $event.detail })"></add-item>
     </div> 
 </template>
 
@@ -119,7 +119,7 @@ export default Vue.extend({
         closeAll() {
             this.itemsBus.emitCloseAll();
         },
-        addItem(e: string) {
+        addItem(e: { value: string[], parentId?: string }) {
             this.$emit("add-item", e);
         },
         deleteItem(e: string) {

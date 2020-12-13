@@ -30,8 +30,8 @@ import Vue from "vue";
 export default Vue.extend({
     props: { showFields: Boolean, extraFields: Array },
     methods: {
-        addExtraField(e: { detail: string }) {
-            this.$store.commit("addExtraField", e);
+        addExtraField(e: { detail: string[] }) {
+            this.$store.commit("addExtraField", e.detail[0]);
         },
         removeExtraField(id: string) {
             this.$store.commit("removeExtraField", id);
