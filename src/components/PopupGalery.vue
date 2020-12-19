@@ -1,6 +1,6 @@
 <template>
     <div v-if="open" class="absolute over-everything full-width medium-margin thin-border white-background flex-grow-1 centered-text">
-        <header class="horizontal-flexbox medium-padding thin-border">
+        <header class="horizontal-flexbox medium-padding thin-border background-gradient-1">
             <div class="nowrap no-vertical-overflow flex-grow-1">{{ selectedImage.label }}</div><div class="close" @click="close"></div>
         </header>
         <div class="horizontal-flexbox cented-aligned dark-background">
