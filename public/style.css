@@ -41,6 +41,10 @@ select,
     user-select: none;
 }
 
+.button-group {
+    white-space: nowrap;
+}
+
 .button-group button,
 .button-group select,
 .button-group selector-label,
@@ -49,7 +53,6 @@ select,
     margin-right: 0;
     border-radius: 0;
     border-left-width: 0;
-    white-space: nowrap;
 }
 
 .button-group button:first-child,
@@ -390,7 +393,6 @@ div.invisible {
 .scroll {
     overflow-x: hidden;
     overflow-y: auto;
-    margin-right: 8px;
 }
 
 .warning-color {

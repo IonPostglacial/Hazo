@@ -4,8 +4,8 @@
             <div class="thin-margin horizontal-flexbox space-between center-items">
                 <input class="flex-grow-1" type="search" @input="updateSearchFilter" :value="visibleFilter" placeholder="Filter" />
                 <div class="horizontal-flexbox button-group">
-                    <button type="button" v-on:click="openAll">Open All</button>
-                    <button type="button" v-on:click="closeAll">Close All</button>
+                    <button type="button" v-on:click="openAll">Expand</button>
+                    <button type="button" v-on:click="closeAll">Collapse</button>
                 </div>
             </div>
             <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between button-group">

@@ -13,7 +13,6 @@
         <section class="scroll vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox medium-padding thin-border">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                <div class="flex-grow-1 medium-padding">{{ selectedCharacter ? selectedCharacter.name : '' }}</div>
                 <div class="button-group">
                     <button v-if="typeof selectedCharacter !== 'undefined'" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
