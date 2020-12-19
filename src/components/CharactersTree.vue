@@ -19,6 +19,7 @@ import type { Character, Dataset, HierarchicalItem, Hierarchy, State } from "@/d
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
+import { map } from "@/tools/iter";
 
 type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
@@ -246,7 +247,7 @@ export default Vue.extend({
                     color: h.color,
                     children: [
                         ...hierarchy.childrenOf(h),
-                        ...Array.from(this.dataset.characterStates(h))?.map((s: any) => ({ name: s[langFieldName], children: [], color: s.color }))
+                        ...map(this.dataset.characterStates(h), (s: any) => ({ name: s[langFieldName], children: [], color: s.color }))
                     ].map(child => hierarchyToD3(hierarchy, child)) };
             };
             return { name: "Characters", children: [...this.charactersHierarchy!.topLevelItems].map(ch => hierarchyToD3(this.charactersHierarchy!, ch)) };

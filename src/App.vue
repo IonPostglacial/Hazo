@@ -1,7 +1,7 @@
 <template>
     <div id="app" class="vertical-flexbox lightgrey-background height-full">
         <nav class="thin-border background-gradient-1 no-print centered-text">
-            <div class="button-group medium-margin inline-block">
+            <div class="button-group inline-block">
                 <router-link class="button" to="/taxons">Taxons</router-link>
                 <router-link class="button" to="/characters">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>

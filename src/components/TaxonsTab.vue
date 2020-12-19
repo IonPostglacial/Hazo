@@ -152,6 +152,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, Dataset, DetailData, HierarchicalItem, Hierarchy, Picture, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import clone from '@/tools/clone';
+import { map } from "@/tools/iter";
 import { ObservableMap } from '@/tools/observablemap';
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
@@ -205,8 +206,8 @@ export default Vue.extend({
                 if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
                     dependencyHierarchy.remove(character);
                 } else {
-                    const characterStates = Array.from(this.dataset.characterStates(character))
-                        .map((s: State) => Object.assign({
+                    const characterStates = map(this.dataset.characterStates(character),
+                        (s: State) => Object.assign({
                             type: "state",
                             parentId: this.dataset.statesByCharacter.getLeftIdByRightId(s.id),
                             selected: this.dataset.hasTaxonState(selectedTaxon, s)

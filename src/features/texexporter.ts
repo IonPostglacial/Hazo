@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import { Dataset, Description, Picture, Taxon } from "@/datatypes";
 import generateFileName from "./generatefilename";
-
+import { join, map } from "@/tools/iter";
 
 export class TexExporter {
     dataset: Dataset;
@@ -56,7 +56,7 @@ export class TexExporter {
             \\end{block}
             \\begin{block}{Description}
             \\begin{itemize}
-            ${Array.from(this.dataset.taxonDescriptions(taxon)).map(descriptionTemplate).join("\n")}
+            ${join(map(this.dataset.taxonDescriptions(taxon), descriptionTemplate), "\n")}
             \\end{itemize}
             \\end{block}
         \\end{frame}
@@ -91,7 +91,7 @@ export class TexExporter {
 
             \\section{Taxons}
 
-            ${Array.from(this.dataset.taxons).map(taxonTemplate).join("\n")}
+            ${join(map(this.dataset.taxons, taxonTemplate), "\n")}
 
             \\end{document}
         `;

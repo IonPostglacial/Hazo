@@ -57,6 +57,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue, { PropType } from "vue";  // eslint-disable-line no-unused-vars
 import download from "@/tools/download";
 import { DictionaryEntry, IMap } from "@/datatypes";  // eslint-disable-line no-unused-vars
+import { filter } from "@/tools/iter";
 
 export default Vue.extend({
     name: "WordsDictionary",
@@ -79,15 +80,15 @@ export default Vue.extend({
             return this.dictionaryEntries.get(this.selectedEntryId);
         },
         entriesToDisplay(): Iterable<DictionaryEntry> {
-            return Array.from(this.dictionaryEntries.values()).filter((entry) => {
-                if (this.entriesFilter !== "") {
+            if (this.entriesFilter !== "") {
+                return filter(this.dictionaryEntries.values(), (entry) => {
                     return ["nameCN", "nameEN", "nameFR"].
                         map(field => (entry as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.entriesFilter?.toUpperCase()) ?? false);
-                } else {
-                    return this.dictionaryEntries.values();
-                }
-            });
+                });
+            } else {
+                return this.dictionaryEntries.values();
+            }
         },
     },
     methods: {
@@ -113,7 +114,6 @@ export default Vue.extend({
         addEntry(e: { detail: string[] }) {
             const [nameCN, nameEN, defCN, defEN, nameFR, defFR] = e.detail;
             const id = Date.now();
-            console.log("add entry");
             this.$store.commit("addDictionaryEntry", {
                 id: id.toString(), nameCN: nameCN ?? "", nameEN: nameEN ?? "", defCN: defCN ?? "",
                 defEN: defEN ?? "", nameFR: nameFR ?? "", defFR: defFR ?? "", url: ""
