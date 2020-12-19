@@ -52,7 +52,7 @@ export default HazoVue.extend({
     data() {
         return {
             databaseIds: ["0"],
-            selectedBase: "0",
+            selectedBase: "",
         };
     },
     mounted() {
