@@ -1,6 +1,6 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
-        <nav v-if="showLeftMenu" class="scroll thin-border white-background">
+        <nav v-if="showLeftMenu" class="scroll white-background">
             <TreeMenu editable :items="charactersHierarchy" name="description"
                 :name-fields="[{ label: 'Name', propertyName: 'name'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"

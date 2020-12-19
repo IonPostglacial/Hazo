@@ -1,6 +1,6 @@
 <template>
-    <div class="horizontal-flexbox start-align flex-grow-1">
-        <nav v-if="showLeftMenu" class="scroll thin-border white-background no-print">
+    <div class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
+        <nav v-if="showLeftMenu" class="scroll white-background no-print">
             <TreeMenu :editable="editable" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
                 @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
