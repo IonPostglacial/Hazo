@@ -66,7 +66,7 @@ function encodeTaxon(taxon: Taxon, dataset: Dataset) {
 
 function encodeCharacter(dataset: Dataset, character: Character) {
 	return {
-		states: Array.from(dataset.characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
+		states: Array.from(dataset.charactersHierarchy.characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
 		inherentStateId: character.inherentState?.id,
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),
@@ -80,7 +80,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 		id: dataset.id,
 		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, dataset)),
 		characters: Array.from(characters).map(character => encodeCharacter(dataset, character)),
-		states: Object.values(dataset.states).filter(s => typeof s !== "undefined") as State[],
+		states: Array.from(dataset.charactersHierarchy.allStates),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
 		dictionaryEntries: Object.fromEntries(dataset.dictionaryEntries.entries()),
@@ -131,12 +131,12 @@ function decodeCharacter(character: EncodedCharacter, states: IMap<State>): Char
 
 export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEncodedDataset|undefined): Dataset {
 	const states: IMap<State> = new makeMap();
-	const characters = new CharactersHierarchy("c", new makeMap());
 	const taxons = new Hierarchy("t", new makeMap());
 	const books = standardBooks.slice();
 	const statesByTaxons = new ManyToManyBimap(makeMap);
 	const statesByCharacters = new OneToManyBimap(makeMap);
-
+	const characters = new CharactersHierarchy("c", new makeMap(), states, statesByCharacters);
+	
 	for (const state of dataset?.states ?? []) {
 		states.set(state.id, state);
 	}
@@ -162,9 +162,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		dataset?.id ?? "0",
 		taxons,
 		characters,
-		states,
 		statesByTaxons,
-		statesByCharacters,
 		dictionaryEntries,
 		books,
 		dataset?.extraFields ?? [],

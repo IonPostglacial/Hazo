@@ -5,6 +5,7 @@
                 <router-link class="button" to="/taxons">Taxons</router-link>
                 <router-link class="button" to="/characters">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
+                <router-link class="button" to="/identification">Identification</router-link>
                 <router-link class="button" to="/dictionary">Dictionary</router-link>
             </div>
         </nav>

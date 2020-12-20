@@ -77,7 +77,7 @@
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
-                        <li v-for="state in dataset.characterStates(selectedCharacter) || []" :key="state.id" class="display-contents">
+                        <li v-for="state in dataset.charactersHierarchy.characterStates(selectedCharacter) || []" :key="state.id" class="display-contents">
                             <label class="medium-padding rounded nowrap horizontal-flexbox">
                                 <div class="form-grid">
                                     <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name" />
@@ -149,7 +149,7 @@ export default Vue.extend({
             const parent = this.charactersHierarchy?.itemWithId(parentId);
             if (typeof parent === "undefined")
                 return[];
-            return Array.from(this.dataset.characterStates(parent));
+            return Array.from(this.dataset.charactersHierarchy.characterStates(parent));
         },
         parentStatesExceptInherent(): State[] {
             return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
@@ -163,7 +163,7 @@ export default Vue.extend({
             this.$store.commit("pasteCharacter", this.selectedCharacterId);
         },
         copyStates() {
-            this.$store.commit("copyStates", Array.from(this.dataset.characterStates(this.selectedCharacter)));
+            this.$store.commit("copyStates", Array.from(this.dataset.charactersHierarchy.characterStates(this.selectedCharacter)));
         },
         pasteStates() {
             this.$store.commit("pasteStates", this.selectedCharacterId);

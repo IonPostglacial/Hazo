@@ -33,10 +33,8 @@ export function createStore() {
         state: {
             dataset: new Dataset("",
                 new Hierarchy<Taxon>("t", new ObservableMap()),
-                new CharactersHierarchy("d", new ObservableMap()),
-                new ObservableMap(),
+                new CharactersHierarchy("d", new ObservableMap(), new ObservableMap(), new OneToManyBimap(ObservableMap)),
                 new ManyToManyBimap(ObservableMap),
-                new OneToManyBimap(ObservableMap),
                 new ObservableMap(),
                 standardBooks,
                 new Array<Field>(),
@@ -94,7 +92,7 @@ export function createStore() {
                     const stateToAdd = clone(s);
                     const character = state.dataset.charactersHierarchy.itemWithId(characterId);
                     if (typeof character !== "undefined") {
-                        state.dataset.addState(stateToAdd, character);
+                        state.dataset.charactersHierarchy.addState(stateToAdd, character);
                     }
                 }
             },
@@ -120,10 +118,10 @@ export function createStore() {
                 Object.assign(state.dataset, dataset);
             },
             addState(state, payload: { state: State, character: Character }) {
-                state.dataset.addState(payload.state, payload.character);
+                state.dataset.charactersHierarchy.addState(payload.state, payload.character);
             },
             removeState(state, hazoState: State) {
-                state.dataset.removeState(hazoState);
+                state.dataset.charactersHierarchy.removeState(hazoState);
             },
             addStatePicture(state, payload: { state: State, picture: Picture }) {
                 payload.state.photos.push(payload.picture);
@@ -135,21 +133,21 @@ export function createStore() {
                 payload.state.photos.splice(payload.index, 1);
             },
             setInapplicableState(state, payload: { state: State, selected: boolean }) {
-                const character = state.dataset.stateCharacter(payload.state);
+                const character = state.dataset.charactersHierarchy.stateCharacter(payload.state);
                 if (typeof character === "undefined") return;
 
                 setState(character.inapplicableStates, payload.state, payload.selected);
                 state.dataset.charactersHierarchy.add(clone(character));
             },
             setRequiredState(state, payload: { state: State, selected: boolean }) {
-                const character = state.dataset.stateCharacter(payload.state);
+                const character = state.dataset.charactersHierarchy.stateCharacter(payload.state);
                 if (typeof character === "undefined") return;
 
                 setState(character.requiredStates, payload.state, payload.selected);
                 state.dataset.charactersHierarchy.add(clone(character));
             },
             setInherentState(state, payload: { state: State }) {
-                const character = state.dataset.stateCharacter(payload.state);
+                const character = state.dataset.charactersHierarchy.stateCharacter(payload.state);
                 if (typeof character === "undefined") return;
 
                 character.inherentState = payload.state;
@@ -185,7 +183,6 @@ export function createStore() {
             resetData(state) {
                 state.dataset.taxonsHierarchy.clear();
                 state.dataset.charactersHierarchy.clear();
-                state.dataset.states = new ObservableMap();
                 state.dataset.statesByTaxons.clear();
             },
         }

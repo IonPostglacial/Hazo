@@ -247,7 +247,7 @@ export default Vue.extend({
                     color: h.color,
                     children: [
                         ...hierarchy.childrenOf(h),
-                        ...map(this.dataset.characterStates(h), (s: any) => ({ name: s[langFieldName], children: [], color: s.color }))
+                        ...map(this.dataset.charactersHierarchy.characterStates(h), (s: any) => ({ name: s[langFieldName], children: [], color: s.color }))
                     ].map(child => hierarchyToD3(hierarchy, child)) };
             };
             return { name: "Characters", children: [...this.charactersHierarchy!.topLevelItems].map(ch => hierarchyToD3(this.charactersHierarchy!, ch)) };

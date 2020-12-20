@@ -1,6 +1,5 @@
 import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
 import { Character, Dataset, DetailData, Field, State, Taxon } from "@/datatypes";
-import { OneToManyBimap } from '@/tools/bimaps';
 
 interface SddStateData {
     state: sdd_State;
@@ -18,11 +17,11 @@ interface SddTaxonData {
 	mediaObjects: MediaObject[];
 }
 
-export function stateToSdd(statesByCharacters: OneToManyBimap, state: State):SddStateData {
+export function stateToSdd(dataset: Dataset, state: State):SddStateData {
     return {
         state: {
             id: state.id,
-            characterId: statesByCharacters.getLeftIdByRightId(state.id) ?? "",
+            characterId: dataset.charactersHierarchy.stateCharacter(state)?.id ?? "",
             label: state.name,
             detail: "",
             mediaObjectsRefs: [],
@@ -46,7 +45,7 @@ export function detailDataToSdd(data: DetailData, extraFields: Field[]): Represe
 }
 
 function characterToSdd(dataset: Dataset, character: Character, extraFields: Field[], mediaObjects: sdd_MediaObject[]): SddCharacterData {
-	const statesData = Array.from(dataset.characterStates(character)).map(s => stateToSdd(dataset.statesByCharacter, s));
+	const statesData = Array.from(dataset.charactersHierarchy.characterStates(character)).map(s => stateToSdd(dataset, s));
 	const states = statesData.map(data => data.state);
 	return {
 		character: {

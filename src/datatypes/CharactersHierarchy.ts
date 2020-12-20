@@ -1,17 +1,22 @@
 import { State } from "./types";
 import { Character } from "./Character";
 import { Hierarchy, IMap } from "./hierarchy";
+import { OneToManyBimap } from "@/tools/bimaps";
 
 interface Callback {
     (e: { state: State, character: Character }): void;
 }
 
 export class CharactersHierarchy extends Hierarchy<Character> {
+    private states: IMap<State>;
+    private statesByCharacter: OneToManyBimap;
     #stateAdditionCallbacks: Set<Callback>;
     #stateRemovalCallbacks: Set<Callback>;
 
-    constructor(idPrefix: string, items: IMap<Character>, itemsOrder: string[]|undefined = undefined) {
-        super(idPrefix, items, itemsOrder);
+    constructor(idPrefix: string, characters: IMap<Character>, statesById: IMap<State>, statesByCharacter: OneToManyBimap, charactersOrder: string[]|undefined = undefined) {
+        super(idPrefix, characters, charactersOrder);
+        this.states = statesById;
+        this.statesByCharacter = statesByCharacter;
         this.#stateAdditionCallbacks = new Set();
         this.#stateRemovalCallbacks = new Set();
     }
@@ -44,12 +49,16 @@ export class CharactersHierarchy extends Hierarchy<Character> {
     }
 
     addState(state: State, character: Character) {
+		this.states.set(state.id, state);
+		this.statesByCharacter.add(character.id, state.id);
         for (const callback of this.#stateAdditionCallbacks) {
             callback({ state, character });
         }
     }
 
-    removeState(state: State, character: Character) {
+    removeState(state: State) {
+		this.states.delete(state.id);
+        const character = this.itemWithId(this.statesByCharacter.getLeftIdByRightId(state.id));
         if (typeof character === "undefined") return;
 
         function removeStateFromArray(array: State[], state: State) {
@@ -67,6 +76,26 @@ export class CharactersHierarchy extends Hierarchy<Character> {
             callback({ state, character });
         }
     }
+    
+	*characterStates(character: Character|undefined): Iterable<State> {
+		if (typeof character === "undefined") return [];
+		for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {
+			const state = this.states.get(stateId);
+			if (typeof state !== "undefined") yield state;
+		}
+    }
+
+	stateCharacter(state: {id: string}): Character|undefined {
+		return this.itemWithId(this.statesByCharacter.getLeftIdByRightId(state.id));
+    }
+
+    get allStates(): Iterable<State> {
+        return this.states.values();
+    }
+    
+    statesFromIds(stateIds: readonly string[]): State[] {
+        return stateIds.map(id => this.states.get(id)!).filter(s => typeof s !== "undefined");
+    }
 
     protected cloneNewItem(item: Character): Character {
         const newItem = super.cloneNewItem(item);
@@ -74,5 +103,10 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         newItem.inapplicableStates = [];
         newItem.inherentState = undefined;
         return newItem;
+    }
+
+    clear() {
+        super.clear();
+        this.states.clear();
     }
 }

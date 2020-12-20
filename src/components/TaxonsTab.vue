@@ -151,9 +151,6 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, Dataset, DetailData, HierarchicalItem, Hierarchy, Picture, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import clone from '@/tools/clone';
-import { map } from "@/tools/iter";
-import { ObservableMap } from '@/tools/observablemap';
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder } from "@/features";
@@ -191,40 +188,11 @@ export default Vue.extend({
             return this.dataset.taxonsHierarchy.itemWithId(this.selectedTaxonId);
         },
         itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
-            if (typeof this.selectedTaxon === "undefined") return new Hierarchy<Character & { selected?: boolean }>("c", new ObservableMap());
-            const selectedTaxon = this.selectedTaxon;
-
-            const dependencyHierarchy: Hierarchy<Character & { selected?: boolean }> = clone(this.dataset.charactersHierarchy);
-
-            for (const character of this.dataset.characters) {
-                if (typeof character.requiredStates === "undefined") {
-                    console.log(character);
-                }
-                const taxonLacksRequiredStates = !character.requiredStates.every((requiredState: State) => this.dataset.hasTaxonState(selectedTaxon, requiredState));
-                const taxonHasSomeInapplicableState = character.inapplicableStates.some((inapplicableState: State) => this.dataset.hasTaxonState(selectedTaxon, inapplicableState));
-
-                if (taxonLacksRequiredStates || taxonHasSomeInapplicableState) {
-                    dependencyHierarchy.remove(character);
-                } else {
-                    const characterStates = map(this.dataset.characterStates(character),
-                        (s: State) => Object.assign({
-                            type: "state",
-                            parentId: this.dataset.statesByCharacter.getLeftIdByRightId(s.id),
-                            selected: this.dataset.hasTaxonState(selectedTaxon, s)
-                        }, s));
-                    const characterChildren = [...dependencyHierarchy.childrenOf(character)];
-                    
-                    for (const state of characterStates) {
-                        const inherentCharacter = characterChildren.find(characterChild => characterChild.inherentState?.id === state.id);
-                        if(typeof inherentCharacter === "undefined") {
-                            dependencyHierarchy.add(state as unknown as Character);
-                        } else {
-                            inherentCharacter.selected = state.selected;
-                        }
-                    }
-                }
+            if (typeof this.selectedTaxon !== "undefined") {
+                return this.dataset.taxonCharactersTree(this.selectedTaxon);
+            } else {
+                return new Hierarchy("", new Map());
             }
-            return dependencyHierarchy;
         },
     },
     methods: {
@@ -274,7 +242,6 @@ export default Vue.extend({
             const isCharacter = (e.item as Character).type === "character";
             const stateToAdd = isCharacter ? (e.item as Character).inherentState : e.item as State;
 
-            console.log("toggle", this.selectedTaxon, stateToAdd);
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
                 const selected = !this.dataset.hasTaxonState(this.selectedTaxon, stateToAdd);
                 this.$store.commit("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
