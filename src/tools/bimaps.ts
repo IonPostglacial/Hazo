@@ -43,6 +43,10 @@ export class OneToManyBimap {
         this.leftIdByRightIds.set(rightId, leftId);
     }
 
+    has(leftId: string, rightId: string): boolean {
+        return this.leftIdByRightIds.get(rightId) === leftId;
+    }
+
     remove(leftId: string, rightId: string) {
         removeUniqueElementFromMap(this.rightIdsByLeftIds, leftId, rightId);
         this.leftIdByRightIds.delete(rightId);

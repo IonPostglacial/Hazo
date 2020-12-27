@@ -76,7 +76,13 @@ export class CharactersHierarchy extends Hierarchy<Character> {
             callback({ state, character });
         }
     }
-    
+
+    characterHasState(character: { id: string }|undefined, state: { id: string }|undefined): boolean {
+        return typeof character !== "undefined" &&
+            typeof state !== "undefined" &&
+            this.statesByCharacter.has(character.id, state.id);
+    }
+
 	*characterStates(character: Character|undefined): Iterable<State> {
 		if (typeof character === "undefined") return [];
 		for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {

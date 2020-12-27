@@ -8,6 +8,7 @@ import { Hierarchy, IMap } from './hierarchy';
 import { CharactersHierarchy } from './CharactersHierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
+import { forEach } from 'jszip';
 
 
 export class Dataset {
@@ -79,6 +80,17 @@ export class Dataset {
 		const taxonHasAllRequiredStates = character.requiredStates.every((requiredState: State) => this.hasTaxonState(taxon, requiredState));
 		const taxonHasNoInapplicableState = !character.inapplicableStates.some((inapplicableState: State) => this.hasTaxonState(taxon, inapplicableState));
 		return taxonHasAllRequiredStates && taxonHasNoInapplicableState;
+	}
+
+	taxonStatesForCharacter(taxon: { id: string }, character: { id: string }): State[] {
+		const stateIds: string[] = [];
+
+		this.statesByTaxons.getRightIdsByLeftId(taxon.id)?.forEach(stateId => {
+			if (this.charactersHierarchy.characterHasState(character, { id: stateId })) {
+				stateIds.push(stateId);
+			}
+		});
+		return this.charactersHierarchy.statesFromIds(stateIds);
 	}
 
 	*taxonDescriptions(taxon: Taxon): Iterable<Description> {

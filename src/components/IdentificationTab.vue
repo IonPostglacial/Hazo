@@ -53,9 +53,13 @@ export default Vue.extend({
             const identifiedStates = this.identificationDataset.taxonStates(this.taxonToIdentify);
             if (identifiedStates.length > 0) {
                 let allMatchingTaxonIds = Array.from(map(researchDataset.taxonsHierarchy.allItems, t => t.id));
+
                 for (const state of identifiedStates) {
+                    const character = researchDataset.charactersHierarchy.stateCharacter(state)!;
                     const matchingTaxonIds = researchDataset.statesByTaxons.getLeftIdsByRightId(state.id) ?? [];
-                    allMatchingTaxonIds = allMatchingTaxonIds.filter(id => matchingTaxonIds.includes(id));
+                    allMatchingTaxonIds = allMatchingTaxonIds.filter(id =>
+                        researchDataset.taxonStatesForCharacter({ id }, character).length === 0 ||
+                                                                         matchingTaxonIds.includes(id));
                 }
                 return allMatchingTaxonIds.map(id => researchDataset.taxonsHierarchy.itemWithId(id)!);
             } else {
@@ -66,7 +70,6 @@ export default Vue.extend({
     watch: {
         charactersHierarchy(oldValue, newValue) {
             this.identificationDataset.charactersHierarchy = newValue;
-            console.log("watching research charactersHierarchy!", oldValue, newValue);
         },
     },
     methods: {
