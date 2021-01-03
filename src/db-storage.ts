@@ -13,29 +13,33 @@ async function onUpgrade(db: IDBDatabase, oldVersion: number) {
     createStore(db);
 }
 
-function dbStore(dataset: EncodedDataset) {
-    const rq = indexedDB.open(DB_NAME, DB_VERSION);
+function dbStore(dataset: EncodedDataset): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const rq = indexedDB.open(DB_NAME, DB_VERSION);
     
-    rq.onupgradeneeded = function (event) {
-        onUpgrade(rq.result, event.oldVersion);
-    };
-    rq.onerror = function () {
-        alert("Impossible to store data on your browser.");
-    };
-    rq.onsuccess = function () {
-        const db = rq.result;
-
-        const transaction = db.transaction("Datasets", "readwrite");
-        
-        transaction.oncomplete = function () {
-            // TODO: Handle success, error
-            console.log(`Write to dataset #${dataset.id} successful`);
+        rq.onupgradeneeded = function (event) {
+            onUpgrade(rq.result, event.oldVersion);
         };
+        rq.onerror = function () {
+            alert("Impossible to store data on your browser.");
+            reject();
+        };
+        rq.onsuccess = function () {
+            const db = rq.result;
     
-        const datasets = transaction.objectStore("Datasets");
-
-        datasets.put(dataset); // TODO: Handle success, error
-    };
+            const transaction = db.transaction("Datasets", "readwrite");
+            
+            transaction.oncomplete = function () {
+                // TODO: Handle success, error
+                console.log(`Write to dataset #${dataset.id} successful`);
+            };
+        
+            const datasets = transaction.objectStore("Datasets");
+    
+            datasets.put(dataset);
+            resolve();
+        };
+    });
 }
 
 function dbList(): Promise<string[]> {

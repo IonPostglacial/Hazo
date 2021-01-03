@@ -24,9 +24,9 @@
             <div class="button-group">
                 <button type="button" class="background-color-ok" @click="saveData">Save</button>
                 <select v-model="selectedBase">
-                    <option v-for="databaseId in databaseIds" :key="databaseId" :value="databaseId">Database #{{ databaseId }}</option>
+                    <option v-for="datasetId in datasetIds" :key="datasetId" :value="datasetId">{{ datasetId }}</option>
                 </select>
-                <button type="button" class="background-color-1" @click="createNewDatabase">New DB</button>
+                <button type="button" class="background-color-1" @click="createNewDataset">New DB</button>
                 <button type="button" class="background-color-ko" @click="resetData">Reset</button>
             </div>
             <div class="button-group">
@@ -54,25 +54,30 @@ export default HazoVue.extend({
     name: "App",
     data() {
         return {
-            databaseIds: ["0"],
+            datasetIds: [] as string[],
             selectedBase: "",
         };
     },
     mounted() {
         DB.list().then(dbIds => {
-            this.databaseIds = dbIds;
-            this.selectedBase = this.databaseIds[0];
+            this.datasetIds = dbIds;
+            const dataUrl = this.$route.query.from;
+            if (typeof dataUrl === "string") {
+                fetch(datasetRegistry + dataUrl).then(async (data) => {
+                    const dataText = await data.text();
+                    const fetchedDataset = JSON.parse(dataText);
+                    if (!this.datasetIds.includes(fetchedDataset.id)) {
+                        this.datasetIds.push(fetchedDataset.id);
+                    }
+                    DB.store(fetchedDataset).then(() => {
+                        this.$store.commit("setDataset", decodeDataset(ObservableMap, fetchedDataset));
+                        this.selectedBase = fetchedDataset.id;
+                    });
+                });
+            } else {
+                this.createNewDataset();
+            }
         });
-        const dataUrl = this.$route.query.from;
-        console.log(this.$route, dataUrl);
-        if (typeof dataUrl === "string") {
-            fetch(datasetRegistry + dataUrl).then(async (data) => {
-                const dataText = await data.text();
-                const fetchedDataset = JSON.parse(dataText);
-                this.databaseIds.push(fetchedDataset.id);
-                this.$store.commit("setDataset", decodeDataset(ObservableMap, fetchedDataset));
-            });
-        }
     },
     computed: {
         ...mapState(["dataset"]),
@@ -83,8 +88,8 @@ export default HazoVue.extend({
         }
     },
     methods: {
-        loadBase(id?: string) {
-            DB.load(id ?? "0").then(savedDataset => {
+        loadBase(id: string) {
+            DB.load(id).then(savedDataset => {
                 this.resetData();
                 this.$store.commit("setDataset", decodeDataset(ObservableMap, savedDataset));
             });
@@ -92,10 +97,13 @@ export default HazoVue.extend({
         print() {
             window.print()
         },
-        createNewDatabase() {
-            const newDatabaseId = "" + this.databaseIds.length;
-            this.databaseIds.push(newDatabaseId);
-            this.selectedBase = newDatabaseId;
+        createNewDataset() {
+            let manualId = window.prompt("Dataset Id ?") ?? "#";
+            while (this.datasetIds.includes(manualId)) {
+                manualId = manualId + " (other)";
+            }
+            this.datasetIds.push(manualId);
+            this.selectedBase = manualId;
         },
         saveData() {
             const taxons: Record<string, Taxon> = {};

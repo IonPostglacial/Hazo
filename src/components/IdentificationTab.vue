@@ -8,7 +8,7 @@
         </div>
     </div>
     <div class="veritcal-flexbox scroll">
-        <div>Matching Taxons</div>
+        <div>Matching Taxons [{{ matchingTaxons.length }} / {{ allTaxons.length }}]</div>
         <ul class="flex-grow-1">
             <li v-for="taxon in matchingTaxons" :key="taxon.id">{{ taxon.name }}</li>
         </ul>
@@ -47,6 +47,9 @@ export default Vue.extend({
         },
         taxonCharactersTree(): Hierarchy<any> {
             return this.identificationDataset.taxonCharactersTree(this.taxonToIdentify);
+        },
+        allTaxons(): Taxon[] {
+            return Array.from(this.$store.state.dataset.taxonsHierarchy.allItems);
         },
         matchingTaxons(): Taxon[] {
             const researchDataset: Dataset = this.$store.state.dataset;

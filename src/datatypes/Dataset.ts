@@ -8,7 +8,6 @@ import { Hierarchy, IMap } from './hierarchy';
 import { CharactersHierarchy } from './CharactersHierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
-import { forEach } from 'jszip';
 
 
 export class Dataset {
