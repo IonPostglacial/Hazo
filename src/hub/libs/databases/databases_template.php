@@ -20,6 +20,10 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
             .file-list-item[data-state="unshared"] .unshare-block {
                 display: none;
             }
+            .private-link {
+                display: inline-block;
+                min-width: 300px;
+            }
         </style>
         <script>
             window.addEventListener("load", function () {
@@ -69,12 +73,12 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
         <a href="./">Back to home</a>
         <h2>Your list of databases</h2>
         <form method="POST">
-        <ul>
+        <ul id="db-grid-list">
             <?php foreach($personalFiles as $fileName): ?>
                 <li class="file-list-item"
                         data-file="<?= htmlspecialchars(basename($fileName)) ?>"
                         data-state="<?= isset($sharingsByFilePath[$fileName]) ? "shared" : "unshared" ?>">
-                    <a href="private.php?file=<?= htmlspecialchars(basename($fileName)) ?>"><?= htmlspecialchars(basename($fileName)) ?></a>
+                    <a class="private-link" href="private.php?file=<?= htmlspecialchars(basename($fileName)) ?>"><?= htmlspecialchars(basename($fileName)) ?></a>
                     <a class="button" href="../#/?from=<?= urlencode("private.php?file=" . htmlspecialchars(basename($fileName))) ?>">Open in Hazo</a>
                     <div class="unshare-block inline-block">
                         <button type="button" class="btn-unshare" data-file="<?= htmlspecialchars(basename($fileName)) ?>">
