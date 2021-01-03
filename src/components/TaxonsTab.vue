@@ -278,13 +278,13 @@ export default Vue.extend({
         },
         async emptyZip() {
             const zipTxt = await exportZipFolder(this.dataset.taxonsHierarchy!);
-            download(zipTxt, "zip", true);
+            download(zipTxt, "zip", undefined, true);
         },
         texExport() {
             const taxonToTex = new TexExporter(this.dataset);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
-                download(tex, "zip", true);
+                download(tex, "zip", undefined, true);
             });
         },
         exportStats() {

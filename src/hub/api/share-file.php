@@ -1,7 +1,7 @@
 <?php
-include_once("../common/tools.php");
-include_once("../common/FileSharing.php");
-include_once("../common/Client.php");
+require_once("../libs/common/tools.php");
+require_once("../libs/common/FileSharing.php");
+require_once("../libs/common/Client.php");
 
 function handleRequest() {
     $client = Client::getCurrent();
@@ -15,7 +15,6 @@ function handleRequest() {
     if (!file_exists($fileFullName)) {
         return replyJson(["status" => "ko", "message" => "file '$fileName' doesn't exist"]);
     }
-    $client->ensureConnection();
     if (!$client->isAuthenticated()) {
         return replyForbidden();
     }

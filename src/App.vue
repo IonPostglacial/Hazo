@@ -26,6 +26,8 @@
                 <select v-model="selectedBase">
                     <option v-for="datasetId in datasetIds" :key="datasetId" :value="datasetId">{{ datasetId }}</option>
                 </select>
+                <button @click="renameDataset">Rename DB</button>
+                <button v-if="datasetIds.length > 1" @click="deleteDataset">Delete DB</button>
                 <button type="button" class="background-color-1" @click="createNewDataset">New DB</button>
                 <button type="button" class="background-color-ko" @click="resetData">Reset</button>
             </div>
@@ -75,7 +77,11 @@ export default HazoVue.extend({
                     });
                 });
             } else {
-                this.createNewDataset();
+                if (this.datasetIds.length === 0) {
+                    this.createNewDataset();
+                } else {
+                    this.selectedBase = this.datasetIds[0];
+                }
             }
         });
     },
@@ -91,11 +97,11 @@ export default HazoVue.extend({
         loadBase(id: string) {
             DB.load(id).then(savedDataset => {
                 this.resetData();
-                this.$store.commit("setDataset", decodeDataset(ObservableMap, savedDataset));
+                this.$store.commit("setDataset", decodeDataset(ObservableMap, savedDataset ?? { id }));
             });
         },
         print() {
-            window.print()
+            window.print();
         },
         createNewDataset() {
             let manualId = window.prompt("Dataset Id ?") ?? "#";
@@ -115,6 +121,32 @@ export default HazoVue.extend({
                 characters[character.id] = character;
             }
             DB.store(encodeDataset(this.dataset));
+        },
+        renameDataset() {
+            let newId = "";
+            while(newId === "") {
+                newId = window.prompt("New name of the dataset ?") ?? "";
+                if (this.datasetIds.includes(newId)) {
+                    alert("This dataset name already exists");
+                    newId = "";
+                }
+            }
+            DB.delete(this.dataset.id);
+            const i = this.datasetIds.indexOf(this.dataset.id);
+            this.dataset.id = newId;
+            DB.store(encodeDataset(this.dataset));
+            this.datasetIds[i] = newId;
+            this.selectedBase = newId;
+        },
+        deleteDataset() {
+            if (typeof this.dataset !== "undefined") {
+                const i = this.datasetIds.indexOf(this.dataset.id);
+                this.datasetIds.splice(i, 1);
+                DB.delete(this.dataset.id);
+                if (this.datasetIds.length > 0) {
+                    this.selectedBase = this.datasetIds[0];
+                }
+            }
         },
         resetData() {
             this.$store.commit("resetData");
@@ -214,7 +246,7 @@ export default HazoVue.extend({
         },
         jsonExport() {
             const json = JSON.stringify(encodeDataset(this.dataset));
-            download(json, "hazo.json");
+            download(json, "hazo.json", this.dataset.id);
         },
         exportSDD() {
             const xml = saveSDD({

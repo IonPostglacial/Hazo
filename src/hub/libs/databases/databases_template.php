@@ -24,7 +24,8 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
         <script>
             window.addEventListener("load", function () {
                 let shareButtons = document.getElementsByClassName("btn-share"),
-                    unshareButtons = document.getElementsByClassName("btn-unshare");
+                    unshareButtons = document.getElementsByClassName("btn-unshare"),
+                    deleteButtons = document.getElementsByClassName("btn-delete");
                 for (const button of shareButtons) {
                     button.addEventListener("click", async function () {
                         const fileToShare = button.dataset.file;
@@ -41,7 +42,7 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
                         const downloadLink = fileListItem.querySelector(".unshare-block a");
                         downloadLink.href = `shared.php?linkid=${json.linkid}`;
                     });
-                };
+                }
                 for (const button of unshareButtons) {
                     button.addEventListener("click", async function () {
                         const fileToShare = encodeURI(button.dataset.file);
@@ -49,11 +50,20 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
                             method: "POST",
                             body: `file=${fileToShare}&method=unshare`,
                         });
-                        console.log(res);
                         const fileListItem = document.querySelector(`.file-list-item[data-file="${fileToShare}"]`);
                         fileListItem.dataset.state = "unshared";
                     });
-                };
+                }
+                for (const button of deleteButtons) {
+                    button.addEventListener("click", async function () {
+                        const fileToDelete = encodeURI(button.dataset.file);
+                        const res = await fetch(`api/datasets.php?file=${fileToDelete}`, {
+                            method: "DELETE",
+                        });
+                        const fileListItem = document.querySelector(`.file-list-item[data-file="${fileToDelete}"]`);
+                        fileListItem.remove();
+                    });
+                }
             });
         </script>
         <a href="./">Back to home</a>
@@ -77,6 +87,7 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
                             Share
                         </button>
                     </div>
+                    <button type="button" class="btn-delete" data-file="<?= htmlspecialchars(basename($fileName)) ?>">Delete</button>
                 </li>
             <?php endforeach; ?>
         </ul>

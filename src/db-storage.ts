@@ -80,6 +80,27 @@ function dbList(): Promise<string[]> {
     });
 }
 
+function dbDelete(id: string) {
+    const rq = indexedDB.open(DB_NAME, DB_VERSION);
+    rq.onupgradeneeded = function (event) {
+        onUpgrade(rq.result, event.oldVersion);
+    };
+    rq.onsuccess = function () {
+        const db = rq.result;
+
+        const transaction = db.transaction("Datasets", "readwrite");
+
+        transaction.oncomplete = function () {
+            // TODO: Handle success, error
+            console.log(`Deletion of dataset #${id} successful`);
+        };
+
+        const datasets = transaction.objectStore("Datasets");
+
+        datasets.delete(id);
+    }
+}
+
 function dbLoad(id: string): Promise<EncodedDataset> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
@@ -118,4 +139,5 @@ export default {
     store: dbStore,
     list: dbList,
     load: dbLoad,
+    delete: dbDelete,
 }
