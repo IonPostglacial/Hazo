@@ -40,7 +40,7 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
                         const fileListItem = document.querySelector(`.file-list-item[data-file="${fileToShare}"]`);
                         fileListItem.dataset.state = "shared";
                         const downloadLink = fileListItem.querySelector(".unshare-block a");
-                        downloadLink.href = `shared.php?linkid=${json.linkid}`;
+                        downloadLink.href = `../#/?from=shared.php%3Flinkid%3D${json.linkid}`;
                     });
                 }
                 for (const button of unshareButtons) {
@@ -80,7 +80,7 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
                         <button type="button" class="btn-unshare" data-file="<?= htmlspecialchars(basename($fileName)) ?>">
                             Unshare
                         </button>
-                        <a download href="shared.php?linkid=<?= htmlspecialchars(isset($sharingsByFilePath[$fileName]) ? $sharingsByFilePath[$fileName] : "") ?>">link for sharing</a>
+                        <a download href="../#/?from=<?= urlencode("shared.php?linkid=" . htmlspecialchars(isset($sharingsByFilePath[$fileName]) ? $sharingsByFilePath[$fileName] : "")) ?>">link for sharing</a>
                     </div>
                     <div class="share-block inline-block">
                         <button type="button" class="btn-share" data-file="<?= htmlspecialchars(basename($fileName)) ?>">

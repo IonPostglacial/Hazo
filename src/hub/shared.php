@@ -1,14 +1,15 @@
 <?php
-include_once("common/tools.php");
-include_once("common/FileSharing.php");
-
-ensureClientConnection();
+require_once("libs/common/tools.php");
+require_once("libs/common/Client.php");
+require_once("libs/common/FileSharing.php");
 
 function isArgumentValid() {
     return isset($_GET["linkid"]);
 }
 
 function handleRequest() {
+    $client = Client::getCurrent();
+    $client->ensureConnection();
     if (isArgumentValid()) {
         $linkId = $_GET["linkid"];
         $pdo = getDataDbHandle();
