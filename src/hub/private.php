@@ -1,6 +1,6 @@
 <?php
-include_once("common/tools.php");
-include_once("common/Client.php");
+require_once("libs/common/tools.php");
+require_once("libs/common/Client.php");
 
 function isClientAuthorized(Client $client): bool {
     return $client->isAuthenticated();

@@ -48,6 +48,8 @@ import download from "@/tools/download";
 import { HazoVue } from "./store";
 import { ObservableMap } from './tools/observablemap';
 
+const datasetRegistry = "https://nicolas.galipot.net/Hazo/hub/";
+
 export default HazoVue.extend({
     name: "App",
     data() {
@@ -61,6 +63,16 @@ export default HazoVue.extend({
             this.databaseIds = dbIds;
             this.selectedBase = this.databaseIds[0];
         });
+        const dataUrl = this.$route.query.from;
+        console.log(this.$route, dataUrl);
+        if (typeof dataUrl === "string") {
+            fetch(datasetRegistry + dataUrl).then(async (data) => {
+                const dataText = await data.text();
+                const fetchedDataset = JSON.parse(dataText);
+                this.databaseIds.push(fetchedDataset.id);
+                this.$store.commit("setDataset", decodeDataset(ObservableMap, fetchedDataset));
+            });
+        }
     },
     computed: {
         ...mapState(["dataset"]),

@@ -35,4 +35,8 @@ new Vue({
     router: router,
 }).$mount("#app");
 
-navigator.serviceWorker.register("img-caching-service-worker.js", { scope: "./" });
+window.addEventListener("load", function (e) {
+    document.documentElement.style.setProperty("--viewport-height", `${0.01 * window.innerHeight}px`);
+});
+
+navigator.serviceWorker?.register("img-caching-service-worker.js", { scope: "./" });

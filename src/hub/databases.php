@@ -1,3 +1,7 @@
+<?php 
+require_once("libs/common/Client.php");
+Client::getCurrent()->ensureConnection();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

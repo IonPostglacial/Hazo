@@ -1,5 +1,5 @@
 <?php
-include_once("config.php");
+require_once("config.php");
 
 function debugMode(): void {
     ini_set("display_errors", 1);

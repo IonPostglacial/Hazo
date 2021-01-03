@@ -192,6 +192,7 @@ input[type="text"].no-fixed-width {
 #app {
     font-family: "SourceSans";
     height: 100vh;
+    height: calc(var(--viewport-height, 1vh) * 100);
     width: 100vw;
     overflow: hidden;
 }

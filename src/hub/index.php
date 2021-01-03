@@ -1,3 +1,7 @@
+<?php
+require_once("libs/common/Client.php");
+Client::getCurrent()->ensureConnection();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +13,6 @@
 <body>
 <div class="centered readable-max-width">
 <?php
-require_once("libs/common/tools.php");
 require_once("libs/common/with_authentication.php");
 
 with_authentication(function (Client $client) {

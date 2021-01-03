@@ -1,4 +1,5 @@
 <?php
+require_once("libs/common/tools.php");
 require_once("libs/common/FormHandler.php");
 require_once("libs/common/Credentials.php");
 

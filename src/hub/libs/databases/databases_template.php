@@ -65,7 +65,7 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
                         data-file="<?= htmlspecialchars(basename($fileName)) ?>"
                         data-state="<?= isset($sharingsByFilePath[$fileName]) ? "shared" : "unshared" ?>">
                     <a href="private.php?file=<?= htmlspecialchars(basename($fileName)) ?>"><?= htmlspecialchars(basename($fileName)) ?></a>
-                    <button type="button">Open in Hazo</button>
+                    <a class="button" href="../#/?from=<?= urlencode("private.php?file=" . htmlspecialchars(basename($fileName))) ?>">Open in Hazo</a>
                     <div class="unshare-block inline-block">
                         <button type="button" class="btn-unshare" data-file="<?= htmlspecialchars(basename($fileName)) ?>">
                             Unshare
