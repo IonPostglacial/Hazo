@@ -182,7 +182,7 @@ export default HazoVue.extend({
             }
             return result;
         },
-        async fileMerge(e: InputEvent) {
+        async mergeProperties(e: InputEvent) {
             if (!(e.target instanceof HTMLInputElement)) return;
 
             const result = await this.fileRead((e.target.files ?? [])[0]);
@@ -202,6 +202,16 @@ export default HazoVue.extend({
                         }
                     }
                 }
+            }
+        },
+        async fileMerge(e: InputEvent) {
+            if (!(e.target instanceof HTMLInputElement)) return;
+
+            const result = await this.fileRead((e.target.files ?? [])[0]);
+
+            if (result !== null) {
+                this.$store.commit("addTaxons", Array.from(result.taxons));
+                this.$store.commit("addCharacters", Array.from(result.characters));
             }
         },
         async fileUpload(e: InputEvent) {
