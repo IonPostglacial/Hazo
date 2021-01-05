@@ -102,8 +102,6 @@
                             </div>
                         </collapsible-panel>
                     </div>
-                </div>
-                <div class="vertical-flexbox scroll flex-grow-1">
                     <collapsible-panel v-for="book in dataset.books" :key="book.id" :label="book.label">
                         <div v-if="selectedTaxon.bookInfoByIds">
                             <div v-if="selectedTaxon.bookInfoByIds[book.id]">
@@ -130,6 +128,8 @@
                         <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
                         <div v-if="!editable" class="limited-width" v-html="selectedTaxon.detail"></div>
                     </collapsible-panel>
+                </div>
+                <div class="vertical-flexbox scroll flex-grow-1">
                     <collapsible-panel label="Description">
                         <SquareTreeViewer class="large-max-width" :name-fields="['name', 'nameEN', 'nameCN']" :editable="editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                     </collapsible-panel>
