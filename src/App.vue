@@ -8,6 +8,7 @@
                 <router-link class="button" to="/identification">Identification</router-link>
                 <router-link class="button" to="/dictionary">Dictionary</router-link>
             </div>
+            <a class="button" href="/Hazo/hub/" target="_blank">Hub</a>
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
             <router-view></router-view>
