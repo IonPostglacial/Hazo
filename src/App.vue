@@ -108,7 +108,7 @@ export default HazoVue.extend({
             data.append("db-file-upload", new Blob([json], {type : "application/json"}), this.dataset.id + ".hazo.json");
             const res = await fetch("hub/databases.php", {
                 method: "POST",
-                headers: { "Content-Type": "multipart/form-data" },
+                // headers: { "Content-Type": "multipart/form-data" },
                 body: data,
             });
             if (res.status === 403) {
