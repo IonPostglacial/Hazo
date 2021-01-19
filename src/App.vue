@@ -8,7 +8,11 @@
                 <router-link class="button" to="/identification">Identification</router-link>
                 <router-link class="button" to="/dictionary">Dictionary</router-link>
             </div>
-            <a class="button" href="/Hazo/hub/" target="_blank">Hub</a>
+            <div class="button-group inline-block float-right">
+                <button type="button" @click="openHub">Hub</button>
+                <button type="button" @click="push">Push</button>
+                <button type="button" @click="pull">Pull</button>
+            </div>
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
             <router-view></router-view>
@@ -95,6 +99,32 @@ export default HazoVue.extend({
         }
     },
     methods: {
+        openHub() {
+            window.open('/Hazo/hub/');
+        },
+        async push() {
+            const json = JSON.stringify(encodeDataset(this.dataset));
+            const data = new FormData();
+            data.append("db-file-upload", new Blob([json], {type : "application/json"}), this.dataset.id + ".hazo.json");
+            const res = await fetch("hub/databases.php", {
+                method: "POST",
+                headers: { "Content-Type": "multipart/form-data" },
+                body: data,
+            });
+            if (res.status === 403) {
+                alert("You should connect to the Hub to be able to upload files.");
+            }
+        },
+        async pull() {
+            const res = await fetch("hub/private.php?file="+ encodeURI(this.dataset.id) + ".hazo.json");
+            if (res.status === 403) {
+                alert("You should connect to the Hub to be able to download files.");
+            } else {
+                const json = await res.json();
+                this.resetData();
+                this.$store.commit("setDataset", decodeDataset(ObservableMap, json));
+            }
+        },
         loadBase(id: string) {
             DB.load(id).then(savedDataset => {
                 this.resetData();
