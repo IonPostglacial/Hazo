@@ -48,6 +48,11 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         }
     }
 
+    remove(character: Character): void {
+        this.statesByCharacter.removeLeft(character.id);
+        super.remove(character);
+    }
+
     addState(state: State, character: Character) {
         if (state.id === "") {
             const stateKeys = Array.from(this.states.keys());
