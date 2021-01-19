@@ -251,7 +251,7 @@ export default Vue.extend({
             const [name, nameEN, nameCN, color, description] = e.detail;
             this.$store.commit("addState", {
                 state: {
-                    id: "s" + ((Math.random() * 1000) | 0) + Date.now().toString(),
+                    id: "",
                     name,
                     nameEN,
                     nameCN,

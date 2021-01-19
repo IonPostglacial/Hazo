@@ -211,8 +211,12 @@ export default HazoVue.extend({
             const result = await this.fileRead((e.target.files ?? [])[0]);
 
             if (result !== null) {
-                this.$store.commit("addTaxons", Array.from(result.taxons));
-                this.$store.commit("addCharacters", Array.from(result.characters));
+                for (const taxon of result.taxonsHierarchy.topLevelItems) {
+                    this.$store.commit("addTaxonHierarchy", result.taxonsHierarchy.extractHierarchy(taxon));
+                }
+                for (const character of result.charactersHierarchy.topLevelItems) {
+                    this.$store.commit("addCharacterHierarchy", result.charactersHierarchy.extractHierarchy(character));
+                }
             }
         },
         async fileUpload(e: InputEvent) {

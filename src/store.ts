@@ -52,6 +52,9 @@ export function createStore() {
                     state.dataset.taxonsHierarchy.addHierarchy(state.copiedTaxon, targetId);
                 }
             },
+            addTaxonHierarchy(state, taxonHierarchy:Hierarchy<Taxon>) {
+                state.dataset.taxonsHierarchy.addHierarchy(taxonHierarchy, undefined);
+            },
             addTaxon(state, taxon: Taxon) {
                 state.dataset.addTaxon(taxon);
             },
@@ -95,6 +98,9 @@ export function createStore() {
                         state.dataset.charactersHierarchy.addState(stateToAdd, character);
                     }
                 }
+            },
+            addCharacterHierarchy(state, characterHierarchy:Hierarchy<Character>) {
+                state.dataset.charactersHierarchy.addHierarchy(characterHierarchy, undefined);
             },
             addCharacter(state, character: Character) {
                 state.dataset.addCharacter(character);
