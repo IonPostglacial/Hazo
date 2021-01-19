@@ -3,6 +3,7 @@ require_once("libs/common/tools.php");
 require_once("libs/common/FileSharing.php");
 
 function databases_template(DatabasesFormHandler $form, Client $client) {
+    $form->execute();
     $personalDirectory = $client->getPersonalDirectory();
 
     if (!file_exists($personalDirectory)) {
@@ -101,7 +102,6 @@ function databases_template(DatabasesFormHandler $form, Client $client) {
             <label>Database file</label><input type="file" name="db-file-upload" id="db-file-upload">
             <button type="submit" class="background-color-1">Upload</button>
         </form>
-        <?php $form->execute(); ?>
     </section>
 <?php
 }
