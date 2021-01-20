@@ -27,11 +27,6 @@ class DatabasesFormHandler extends FormHandler {
         $uploadedFile = $arguments["uploadedFile"];
         $target_file = $target_dir . "/" . basename($uploadedFile["name"]);
         
-        if (file_exists($target_file)) {
-            echo "file already exists.";
-            return;
-        }
-        
         $content = file_get_contents($uploadedFile["tmp_name"]);
         
         if (!$this->isJson($content)) {
