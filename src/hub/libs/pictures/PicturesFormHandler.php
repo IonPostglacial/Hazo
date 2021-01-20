@@ -20,10 +20,14 @@ class PicturesFormHandler extends FormHandler {
 
     protected function validate(int $method, array $args): array {
         $zipMimeTypes = ["application/zip", "application/x-zip-compressed", "multipart/x-zip"];
+        $imgMimeTypes = ["image/gif", "image/jpeg", "image/png", "image/svg+xml"];
         $fileNotEmpty = !empty($_FILES) && !empty($_FILES["pictures-file-upload"]);
+        $fileMimeType = $fileNotEmpty ? $_FILES["pictures-file-upload"]["type"] : null;
+        $fileIsZip = in_array($fileMimeType, $zipMimeTypes);
+        $fileIsImg = in_array($fileMimeType, $imgMimeTypes);
 
-        if($fileNotEmpty && in_array($_FILES["pictures-file-upload"]["type"], $zipMimeTypes) && $this->isFileSmallerThanLimit($_FILES["pictures-file-upload"])) {
-            return ["uploadedFile" => $_FILES["pictures-file-upload"]];
+        if($fileNotEmpty && ($fileIsZip || $fileIsImg) && $this->isFileSmallerThanLimit($_FILES["pictures-file-upload"])) {
+            return ["uploadedFile" => $_FILES["pictures-file-upload"], "isZip" => $fileIsZip];
         } else {
             $this->invalidate();
             return [];
@@ -36,14 +40,18 @@ class PicturesFormHandler extends FormHandler {
         $uploadedFileName = pathinfo($uploadedFile["name"], PATHINFO_FILENAME);
         $targetDir = $this->client->getPersonalDirectory() . "/pictures/" . $this->escapeDirectoryName($uploadedFileName);
 
-        $zip = new ZipArchive;
-        $res = $zip->open($uploadedFileFullName);
-        if ($res === TRUE) {
-            $zip->extractTo($targetDir . "/");
-            $zip->close();
-            echo "success";
+        if ($args["isZip"]) {
+            $zip = new ZipArchive;
+            $res = $zip->open($uploadedFileFullName);
+            if ($res === TRUE) {
+                $zip->extractTo($targetDir . "/");
+                $zip->close();
+                echo "success";
+            } else {
+                echo "failure";
+            }
         } else {
-            echo "failure";
+            move_uploaded_file($uploadedFileFullName, $this->client->getPersonalDirectory() . "/pictures/" . $uploadedFile["name"]);
         }
     }
 
