@@ -23,7 +23,7 @@ const router = new VueRouter({
         { path: "/", component: TaxonsTab },
         { path: "/taxons/:id?", component: TaxonsTab },
         { path: "/characters/:id?", component: CharactersTab },
-        { path: "/characters-tree", component: CharactersTree },
+        { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: store.state.dataset.charactersHierarchy }) },
         { path: "/identification", component: IdentificationTab },
         { path: "/dictionary", component: WordsDictionary },
     ]

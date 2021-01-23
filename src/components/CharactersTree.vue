@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div :data-c="selectedCharacter ? selectedCharacter.id : ''">
         <div class="horizontal-flexbox">
             <div class="horizontal-flexbox">
                 <label for="lang-selector">Language</label>
@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import type { Character, Dataset, HierarchicalItem, Hierarchy, State } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import type { Character, Dataset, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
@@ -219,6 +219,9 @@ function hierarchyToMarkdown(data: D3Hierarchy, indentation=-1): string {
 
 export default Vue.extend({
     name: "CharactersTree",
+    props: {
+        selectedCharacter: Object as PropType<Character|undefined>,
+    },
     data() {
         const langFR = { name: "FR", field: "name" }, langEN = { name: "EN", field: "nameEN" }, langCN = { name: "CN", field: "nameCN" };
 
@@ -231,16 +234,19 @@ export default Vue.extend({
         dataset(): Dataset {
             return this.$store.state.dataset;
         },
-        charactersHierarchy(): Hierarchy<Character> {
-            return this.$store.state.dataset.charactersHierarchy;
-        },
         selectedLang(): { name: string, field: string } {
             return this.languageList[this.lang];
+        },
+        charactersHierarchy(): Hierarchy<Character> {
+            if (typeof this.selectedCharacter === "undefined") {
+                return this.$store.state.dataset.charactersHierarchy;
+            } else {
+                return this.$store.state.dataset.charactersHierarchy.extractHierarchy(this.selectedCharacter);
+            }
         },
         treeData(): D3Hierarchy {
             const hierarchyToD3 = (hierarchy: Hierarchy<any>, h: any): D3Hierarchy => {
                 const langFieldName = this.selectedLang.field;
-                console.log(h);
                 return {
                     name: h[langFieldName],
                     url: (h.id ? ("characters/" + h.id) : undefined),
@@ -250,13 +256,19 @@ export default Vue.extend({
                         ...map(this.dataset.charactersHierarchy.characterStates(h), (s: any) => ({ name: s[langFieldName], children: [], color: s.color }))
                     ].map(child => hierarchyToD3(hierarchy, child)) };
             };
-            return { name: "Characters", children: [...this.charactersHierarchy!.topLevelItems].map(ch => hierarchyToD3(this.charactersHierarchy!, ch)) };
+            const topLevelItems = Array.from(this.charactersHierarchy!.topLevelItems);
+            if (topLevelItems.length === 1) {
+                return hierarchyToD3(this.charactersHierarchy, topLevelItems[0]);
+            } else {
+                return { name: "Characters", children: topLevelItems.map(ch => hierarchyToD3(this.charactersHierarchy!, ch)) };
+            }
         },
     },
     mounted() {
         updateD3(this, this.$el, this.treeData);
     },
     updated() {
+        console.log("updated !!!");
         updateD3(this, this.$el, this.treeData);
     },
     methods: {

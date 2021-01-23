@@ -33,8 +33,10 @@
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameEN" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameCN" /></div>
                 <label class="item-property">Detail</label>
-                <textarea class="input-text" v-model="selectedCharacter.detail"></textarea> 
+                <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
             </collapsible-panel>
+            <characters-tree v-if="selectedCharacter" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+            </characters-tree>
             <collapsible-panel v-if="selectedCharacter && selectedCharacter.parentId" label="Dependencies">
                 <div class="horizontal-flexbox">
                     <section class="medium-margin medium-padding thin-border flex-grow-1">
@@ -112,13 +114,14 @@
 </template>
 <script lang="ts">
 import TreeMenu from "./TreeMenu.vue";
+import CharactersTree from "./CharactersTree.vue";
 import PopupGalery from "./PopupGalery.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Dataset, DetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "@/datatypes"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { PopupGalery, TreeMenu },
+    components: { PopupGalery, TreeMenu, CharactersTree },
     data() {
         return {
             showLeftMenu: true,
