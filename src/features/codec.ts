@@ -88,7 +88,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 }
 
 function decodeHierarchicalItem<T>(item: EncodedHierarchicalItem): HierarchicalItem<T> {
-	return new HierarchicalItem({...item, childrenIds: item.children});
+	return new HierarchicalItem(item);
 }
 
 function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]): Taxon {
@@ -113,7 +113,6 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
     }
 	return new Taxon({
 		...item,
-		childrenIds: item.childrenOrder ?? [],
 		bookInfoByIds,
 	});
 }
@@ -122,7 +121,6 @@ function decodeCharacter(character: EncodedCharacter, states: IMap<State>): Char
 	const item = decodeHierarchicalItem(character);
 	return new Character({
 		...item,
-		childrenIds: item.childrenOrder ?? [],
 		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
 		requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
@@ -131,7 +129,7 @@ function decodeCharacter(character: EncodedCharacter, states: IMap<State>): Char
 
 export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEncodedDataset|undefined): Dataset {
 	const states: IMap<State> = new makeMap();
-	const taxons = new Hierarchy("t", new makeMap());
+	const taxons = new Hierarchy<Taxon>("t", new makeMap());
 	const books = standardBooks.slice();
 	const statesByTaxons = new ManyToManyBimap(makeMap);
 	const statesByCharacters = new OneToManyBimap(makeMap);
@@ -151,6 +149,12 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 			}
 		});
 		taxons.add(decodeTaxon(taxon, books));
+	}
+	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
+		characters.itemWithId(character.id)?.reorderChildren(character.children);
+	}
+	for (const taxon of dataset?.taxons ?? []) {
+		taxons.itemWithId(taxon.id)?.reorderChildren(taxon.children);
 	}
 	const dictionaryEntries = new makeMap();
 	for (const entry of Object.values(dataset?.dictionaryEntries ?? {})) {

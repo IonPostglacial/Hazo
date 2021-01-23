@@ -71,7 +71,6 @@ function detailDataFromSdd(id: string, representation: Representation, extraFiel
 function characterFromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: IMap<State>): Character {
     return new Character({
         parentId: character.parentId,
-        childrenIds: character.childrenIds,
         inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById.get(s.ref)!),
         ...detailDataFromSdd(character.id, character, [], photosByRef),
     });
@@ -80,7 +79,6 @@ function characterFromSdd(character: sdd_Character, photosByRef: Record<string, 
 function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>): Taxon {
     return new Taxon({
         parentId: taxon.parentId,
-        childrenIds: taxon.childrenIds,
         ...detailDataFromSdd(taxon.id, taxon, extraFields, photosByRef)
     });
 }

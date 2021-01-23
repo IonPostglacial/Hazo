@@ -220,7 +220,7 @@ export default Vue.extend({
             this.$store.commit("addTaxon", new Taxon({
                 ...new DetailData({ id: "", name, vernacularName, nameCN, photos: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
-                parentId: e.parentId, childrenIds: []
+                parentId: e.parentId
             }));
         },
         removeTaxon(e: { itemId: string }) {

@@ -33,7 +33,7 @@ export default Vue.extend({
     components: { SquareTreeViewer },
     data() {
         const dataset = this.$store.state.dataset;
-        const taxonToIdentify = new Taxon({ id: "t1", parentId: undefined, childrenIds: [] });
+        const taxonToIdentify = new Taxon({ id: "t1", parentId: undefined });
         const identificationDataset = new Dataset("", new Hierarchy<Taxon>("t", new ObservableMap()), dataset.charactersHierarchy, new ManyToManyBimap(ObservableMap), new Map(), []);
         identificationDataset.addTaxon(taxonToIdentify);
         return {

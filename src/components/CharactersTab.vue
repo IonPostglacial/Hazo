@@ -235,7 +235,6 @@ export default Vue.extend({
             this.$store.commit("addCharacter", new Character({
                 ...new DetailData({ id: "", name, nameCN }),
                 parentId: e.parentId,
-                childrenIds: [],
             }));
         },
         deleteCharacter(e: { itemId: string}) {

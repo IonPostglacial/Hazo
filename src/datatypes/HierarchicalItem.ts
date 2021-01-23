@@ -1,27 +1,37 @@
 import { DetailData, DetailDataInit } from "./DetailData";
-import { picturesFromPhotos } from './picture';
 
-export interface HierarchicalItemInit extends DetailDataInit { type: string, parentId: string|undefined, childrenIds: readonly string[] }
+export interface HierarchicalItemInit extends DetailDataInit { type: string, parentId: string|undefined }
 
 export class HierarchicalItem<T> extends DetailData {
     type: string;
 	parentId: string|undefined;
-	topLevel: boolean;
 	hidden: boolean;
-	childrenOrder: string[]|undefined;
+	childrenOrder: string[];
 
 	constructor(init : HierarchicalItemInit) {
 		super(init);
 		this.type = init.type;
 		this.parentId = init.parentId;
-		this.topLevel = typeof init.parentId === "undefined";
 		this.hidden = false;
-		const childrenOrder = new Set<any>();
-	
-		// Ensure each children has an order
-		for (const childId of init.childrenIds ?? []) {
-			childrenOrder.add(childId);
+		this.childrenOrder = [];
+	}
+
+	get topLevel(): boolean {
+		return typeof this.parentId === "undefined";
+	}
+
+	reorderChildren(childrenIds: string[]) {
+		const oldOrder = this.childrenOrder;
+		this.childrenOrder = [];
+		for (const id of childrenIds) {
+			const oldIdIndex = oldOrder.indexOf(id);
+			if (oldIdIndex >= 0) {
+				this.childrenOrder.push(id);
+				oldOrder.splice(oldIdIndex, 1);
+			}
 		}
-		this.childrenOrder = [...childrenOrder];
+		for (const id of oldOrder) {
+			this.childrenOrder.push(id);
+		}
 	}
 }
