@@ -167,3 +167,85 @@ test("Add hierarchy", () => {
     expect(childrenOf2.map(t => t.name)).toStrictEqual(["A"]);
     expect(Array.from(hierarchy3.childrenOf(childrenOf2[0])).map(t => t.name)).toStrictEqual(["B", "C"]);
 });
+
+test("Parents of", () => {
+    const hierarchy = new Hierarchy<Taxon>("t", new Map());
+    const taxon1 = new Taxon({ id: "1", name: "", parentId: undefined }) 
+    const taxon2 = new Taxon({ id: "2", name: "", parentId: "1" }); 
+    const taxon3 = new Taxon({ id: "3", name: "", parentId: "2" }); 
+    const taxon4 = new Taxon({ id: "4", name: "", parentId: "2" });
+    const taxon5 = new Taxon({ id: "5", name: "", parentId: "1" }); 
+    hierarchy.add(taxon1);
+    hierarchy.add(taxon2);
+    hierarchy.add(taxon3);
+    hierarchy.add(taxon4);
+    hierarchy.add(taxon5);
+
+    expect(hierarchy.parentsOf(taxon1)).toStrictEqual([]);
+    expect(hierarchy.parentsOf(taxon2)).toStrictEqual([taxon1]);
+    expect(hierarchy.parentsOf(taxon3)).toStrictEqual([taxon1, taxon2]);
+    expect(hierarchy.parentsOf(taxon4)).toStrictEqual([taxon1, taxon2]);
+    expect(hierarchy.parentsOf(taxon5)).toStrictEqual([taxon1]);
+});
+
+test("Get ordered children tree", () => {
+    const hierarchy = new Hierarchy<Taxon>("t", new Map());
+    hierarchy.add(new Taxon({ id: "1", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "2", name: "", parentId: "1" }));
+    hierarchy.add(new Taxon({ id: "3", name: "", parentId: "2" }));
+    hierarchy.add(new Taxon({ id: "4", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "5", name: "", parentId: "4" }));
+    hierarchy.add(new Taxon({ id: "6", name: "", parentId: "4" }));
+
+    const childrenTree1 = Array.from(hierarchy.getOrderedChildrenTree(hierarchy.itemWithId("1")));
+    expect(childrenTree1.map(t => t.id)).toStrictEqual(["1", "2", "3"]);
+
+    const childrenTree2 = Array.from(hierarchy.getOrderedChildrenTree(hierarchy.itemWithId("2")));
+    expect(childrenTree2.map(t => t.id)).toStrictEqual(["2", "3"]);
+    
+    const childrenTree4 = Array.from(hierarchy.getOrderedChildrenTree(hierarchy.itemWithId("4")));
+    expect(childrenTree4.map(t => t.id)).toStrictEqual(["4", "5", "6"]);
+});
+
+test("Get leaves", () => {
+    const hierarchy = new Hierarchy<Taxon>("t", new Map());
+    hierarchy.add(new Taxon({ id: "1", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "2", name: "", parentId: "1" }));
+    hierarchy.add(new Taxon({ id: "3", name: "", parentId: "2" }));
+    hierarchy.add(new Taxon({ id: "4", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "5", name: "", parentId: "4" }));
+    hierarchy.add(new Taxon({ id: "6", name: "", parentId: "4" }));
+
+    const leaves1 = Array.from(hierarchy.getLeaves(hierarchy.itemWithId("1")));
+    expect(leaves1.map(t => t.id)).toStrictEqual(["3"]);
+
+    const leaves4 = Array.from(hierarchy.getLeaves(hierarchy.itemWithId("4")));
+    expect(leaves4.map(t => t.id)).toStrictEqual(["5", "6"]);
+});
+
+test("Remove items", () => {
+    const hierarchy = new Hierarchy<Taxon>("t", new Map());
+    hierarchy.add(new Taxon({ id: "1", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "2", name: "", parentId: "1" }));
+    hierarchy.add(new Taxon({ id: "3", name: "", parentId: "2" }));
+    hierarchy.add(new Taxon({ id: "4", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "5", name: "", parentId: "4" }));
+    hierarchy.add(new Taxon({ id: "6", name: "", parentId: "4" }));
+
+    hierarchy.remove(hierarchy.itemWithId("6")!);
+    expect(Array.from(hierarchy.allItems).map(t => t.id)).toStrictEqual(["1", "2", "3", "4", "5"]);
+    expect(Array.from(hierarchy.childrenOf(hierarchy.itemWithId("4"))).map(t => t.id)).toStrictEqual(["5"]);
+
+    hierarchy.remove(hierarchy.itemWithId("1")!);
+    expect(Array.from(hierarchy.allItems).map(t => t.id)).toStrictEqual(["4", "5"]);
+});
+
+test("Clear", () => {
+    const hierarchy = new Hierarchy<Taxon>("t", new Map());
+    hierarchy.add(new Taxon({ id: "1", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "2", name: "", parentId: undefined }));
+    hierarchy.add(new Taxon({ id: "3", name: "", parentId: "2" }));
+    hierarchy.clear();
+
+    expect(Array.from(hierarchy.allItems)).toStrictEqual([]);
+});
