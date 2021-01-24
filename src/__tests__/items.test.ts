@@ -1,38 +1,79 @@
 import clone from "../tools/clone";
-import { ItemStore } from "../datatypes/ItemStore";
+import { Item } from "../datatypes/Item";
 
 test("Adding items", () => {
-    const items = new ItemStore();
-    items.add({ name: { S: "A" } });
-    items.add({ name: { S: "B" } });
-    items.add({ name: { S: "C" } });
-    expect(items.map(i => i.name.S)).toStrictEqual(["A", "B", "C"]);
+    const store = Item.createStore();
+    store.add({ name: { S: "A" } });
+    store.add({ name: { S: "B" } });
+    store.add({ name: { S: "C" } });
+    expect(store.map(i => i.name.S)).toStrictEqual(["A", "B", "C"]);
 });
 
 test("Getting items", () => {
-    const items = new ItemStore();
-    items.add({ name: { S: "A" } });
-    items.add({ name: { S: "B" } });
-    const [item1, item2] = items.map(i => clone(i));
-    expect(items.get(item1.id)).toStrictEqual(item1);
-    expect(items.get(item2.id)).toStrictEqual(item2);
-    expect(items.get(item1.id)?.name.S).toBe("A");
-    expect(items.get(item2.id)?.name.S).toBe("B");
+    const store = Item.createStore();
+    store.add({ name: { S: "A" } });
+    store.add({ name: { S: "B" } });
+    const [item1, item2] = store.map(i => clone(i));
+    expect(store.getById(item1.id)).toStrictEqual(item1);
+    expect(store.getById(item2.id)).toStrictEqual(item2);
+    expect(item1.name.S).toBe("A");
+    expect(item2.name.S).toBe("B");
 });
 
 test("Swapping items", () => {
-    const items = new ItemStore();
-    items.add({ name: { S: "A" } });
-    items.add({ name: { S: "B" } });
-    items.add({ name: { S: "C" } });
-    const [item1, item2, item3] = items.map(i => clone(i));
-    
-    items.swap(item1, item2);
+    const store = Item.createStore();
+    store.add({ name: { S: "A" } });
+    store.add({ name: { S: "B" } });
+    store.add({ name: { S: "C" } });
+    const [item1, item2, item3] = store.map(i => clone(i));
+    const item1clone = item1.clone();
+    const item2clone = item2.clone();
 
-    expect(items.get(item1.id)).toStrictEqual(item1);
-    expect(items.get(item2.id)).toStrictEqual(item2);
-    expect(items.get(item3.id)).toStrictEqual(item3);
-    expect(items.get(item1.id)?.name.S).toBe("A");
-    expect(items.get(item2.id)?.name.S).toBe("B");
-    expect(items.get(item3.id)?.name.S).toBe("C");
+    item1.swap(item2);
+
+    const [item1b, item2b, item3b] = store.map(i => clone(i));
+
+    expect(item1b.name.S).toBe("B");
+    expect(item2b.name.S).toBe("A");
+    expect(item3b.name.S).toBe("C");
+    expect(store.getById(item1.id)).toStrictEqual(item1);
+    expect(store.getById(item2.id)).toStrictEqual(item2);
+    expect(store.getById(item3.id)).toStrictEqual(item3);
+    expect(item1.name.S).toBe("A");
+    expect(item2.name.S).toBe("B");
+    expect(item3.name.S).toBe("C");
+    expect(item1clone.name.S).toBe("A");
+    expect(item2clone.name.S).toBe("B");
+});
+
+test("Deleting items", () => {
+    const store = Item.createStore();
+    store.add({ name: { S: "A" } });
+    store.add({ name: { S: "B" } });
+    store.add({ name: { S: "C" } });
+
+    const [item1, item2, item3] = store.map(i => clone(i));
+    const item1clone = item1.clone();
+
+    expect(item1.name.S).toBe("A");
+    expect(item1clone.name.S).toBe("A");
+    expect(item2.name.S).toBe("B");
+    expect(item3.name.S).toBe("C");
+
+    item1.delete();
+
+    const [item1b, item2b] = store.map(i => clone(i));
+
+    expect(item1b.name.S).toBe("B");
+    expect(item2b.name.S).toBe("C");
+    expect(item1.id).toBe(0);
+    expect(item1clone.id).toBe(0);
+
+    store.add({ name: { S: "A" } });
+    item2b.delete();
+
+    const [item1c, item2c] = store.map(i => clone(i));
+
+    expect(item1c.name.S).toBe("B");
+    expect(item2c.name.S).toBe("A");
 });
