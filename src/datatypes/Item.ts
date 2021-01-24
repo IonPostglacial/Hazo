@@ -22,43 +22,14 @@ export namespace Item {
         const names: MultilangText[] = [{}];
         const descriptions: MultilangText[] = [{}];
         const pictures: Picture[][] = [[]];
-        const onswappedListeners = new Map<Ref, (item1: Ref, item2: Ref) => void>();
-        const onremovededListeners = new Map<Ref, (item: Ref) => void>();
-
-        function swapped(item1: Ref, item2: Ref) {
-            for (const listener of onswappedListeners.values()) {
-                listener(item1, item2);
-            }
-        }
-
-        function removed(item: Ref) {
-            holes.add(item.index);
-            for (const listener of onremovededListeners.values()) {
-                listener(item);
-            }
-        }
+        const refs: Ref[] = [];
 
         class Ref {
             index: number;
         
             constructor(index: number) {
                 this.index = index;
-                store.onSwapped(this, (item1: Ref, item2: Ref) => {
-                    if (this !== item1 && this !== item2) {
-                        if (this.index === item1.index) {
-                            this.index = item2.index;
-                        } else if (this.index === item2.index) {
-                            this.index = item1.index;
-                        }
-                    }
-                });
-                store.onRemoved(this, (item: Ref) => {
-                    if (this.index === item.index) {
-                        this.index = 0;
-                        onswappedListeners.delete(this);
-                        onswappedListeners.delete(this);
-                    }
-                });
+                refs.push(this);
             }
         
             get id(): number {
@@ -111,15 +82,25 @@ export namespace Item {
                 const { id, name, description, pictures } = this;
                 this.assign(item);
                 item.assign({ id, name, description, pictures });
-                [this.index, item.index] = [item.index, this.index];
-                swapped(this, item);
+                const oldIndex1 = this.index, oldIndex2 = item.index;
+                for (const ref of refs) {
+                    if (ref.index === oldIndex1) {
+                        ref.index = oldIndex2;
+                    } else if (ref.index === oldIndex2) {
+                        ref.index = oldIndex1;
+                    }
+                }
             }
         
             delete() {
                 if (this.id !== 0) {
                     this.id = 0;
-                    removed(this);
-                    this.index = 0;
+                    holes.add(this.index);
+                    for (const ref of refs) {
+                        if (ref.index === this.index) {
+                            this.index = 0;
+                        }
+                    }
                 }
             }
         
@@ -157,12 +138,6 @@ export namespace Item {
                     result.push(callback(item));
                 });
                 return result;
-            },
-            onSwapped(item: Ref, callback: (item1: Ref, item2: Ref) => void): void {
-                onswappedListeners.set(item, callback);
-            },
-            onRemoved(item: Ref, callback: (item: Ref) => void): void {
-                onremovededListeners.set(item, callback);
             },
             forEach(callback: (item: Ref) => void): void {
                 for (let i = 1; i < ids.length; i++) {
