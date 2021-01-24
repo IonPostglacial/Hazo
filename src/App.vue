@@ -57,8 +57,7 @@ import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
 import { HazoVue } from "./store";
 import { ObservableMap } from './tools/observablemap';
-
-const datasetRegistry = "https://nicolas.galipot.net/Hazo/hub/";
+import { Config } from './tools/config';
 
 export default HazoVue.extend({
     name: "App",
@@ -66,18 +65,17 @@ export default HazoVue.extend({
         return {
             datasetIds: [] as string[],
             selectedBase: "",
-            connectedToHub: false,
         };
     },
     mounted() {
-        fetch(datasetRegistry).then(res => {
+        fetch(Config.datasetRegistry).then(res => {
             if (res.ok) {
-                this.connectedToHub = true;
+                this.$store.commit("setConnectedToHub", true);
             } else {
                 const timerId = window.setInterval(() => {
-                    fetch(datasetRegistry).then(res => {
+                    fetch(Config.datasetRegistry).then(res => {
                         if (res.ok) {
-                            this.connectedToHub = true;
+                            this.$store.commit("setConnectedToHub", true);
                             window.clearInterval(timerId);
                         }
                     })
@@ -88,7 +86,7 @@ export default HazoVue.extend({
             this.datasetIds = dbIds;
             const dataUrl = this.$route.query.from;
             if (typeof dataUrl === "string") {
-                fetch(datasetRegistry + dataUrl).then(async (data) => {
+                fetch(Config.datasetRegistry + dataUrl).then(async (data) => {
                     const dataText = await data.text();
                     const fetchedDataset = JSON.parse(dataText);
                     if (!this.datasetIds.includes(fetchedDataset.id)) {
@@ -109,7 +107,7 @@ export default HazoVue.extend({
         });
     },
     computed: {
-        ...mapState(["dataset"]),
+        ...mapState(["dataset", "connectedToHub"]),
     },
     watch: {
         selectedBase(val) {
@@ -118,13 +116,13 @@ export default HazoVue.extend({
     },
     methods: {
         openHub() {
-            window.open('/Hazo/hub/');
+            window.open(Config.datasetRegistry);
         },
         async push() {
             const json = JSON.stringify(encodeDataset(this.dataset));
             const data = new FormData();
             data.append("db-file-upload", new Blob([json], {type : "application/json"}), this.dataset.id + ".hazo.json");
-            const res = await fetch("hub/databases.php", {
+            const res = await fetch(Config.datasetRegistry + "databases.php", {
                 method: "POST",
                 body: data,
             });
@@ -133,7 +131,7 @@ export default HazoVue.extend({
             }
         },
         async pull() {
-            const res = await fetch("hub/private.php?file="+ encodeURI(this.dataset.id) + ".hazo.json");
+            const res = await fetch(Config.datasetRegistry + "private.php?file="+ encodeURI(this.dataset.id) + ".hazo.json");
             if (res.status === 403) {
                 alert("You should connect to the Hub to be able to download files.");
             } else {

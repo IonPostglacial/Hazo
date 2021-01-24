@@ -39,11 +39,15 @@ export function createStore() {
                 standardBooks,
                 new Array<Field>(),
             ),
+            connectedToHub: false,
             copiedTaxon: null as null|Hierarchy<Taxon>,
             copiedCharacter: null as null|Hierarchy<Character>,
             copiedStates: [] as State[]
         },
         mutations: {
+            setConnectedToHub(state, connectedToHub) {
+                state.connectedToHub = connectedToHub;
+            },
             copyTaxon(state, taxon: Taxon) {
                 state.copiedTaxon = state.dataset.taxonsHierarchy.extractHierarchy(taxon);
             },

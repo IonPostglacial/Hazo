@@ -7,6 +7,9 @@ function handleRequest() {
     $client = Client::getCurrent();
     $client->ensureConnection();
     
+    if (!$client->isAuthenticated()) {
+        return replyForbidden();
+    }
     if (empty($_POST["file"])) {
         return replyJson(["status" => "ko", "message" => "file argument is mandatory"]);
     }
@@ -14,9 +17,6 @@ function handleRequest() {
     $fileFullName = $client->getPersonalFilePath($fileName);
     if (!file_exists($fileFullName)) {
         return replyJson(["status" => "ko", "message" => "file '$fileName' doesn't exist"]);
-    }
-    if (!$client->isAuthenticated()) {
-        return replyForbidden();
     }
     $pdo = getDataDbHandle();
 

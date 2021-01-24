@@ -1,6 +1,6 @@
-import { Picture } from '@/datatypes';
-import { MutationTree } from 'vuex';
+import { Picture } from "@/datatypes";
 import { AddItem } from "./additem";
+import { Config } from "@/tools/config";
 
 const frameTemplate = document.createElement("template");
 const boxTemplate = document.createElement("template");
@@ -27,6 +27,30 @@ boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
             <add-item id="add-photo" class="flex-grow-1"></add-item>
         </div>
     </collapsible-panel>`;
+
+async function photoSelected(photoUrl: string) {
+    if (photoUrl.startsWith(Config.datasetRegistry)) {
+        return photoUrl;
+    } else {
+        const res = await fetch(Config.datasetRegistry + "api/upload-img.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "file=" + encodeURI(photoUrl),
+        });
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === "ok") {
+                return Config.datasetRegistry + encodeURI(json.url);
+            } else {
+                return photoUrl;
+            }
+        } else {
+            return photoUrl;
+        }
+    }
+}
 
 class PictureFrame extends HTMLElement {
     #editable = false;
@@ -100,11 +124,13 @@ class PictureFrame extends HTMLElement {
         if (setPhoto instanceof HTMLInputElement) {
             setPhoto.value = this.picture?.url ?? "";
             setPhoto.onchange = () => {
-                const e = new CustomEvent("set-photo", {
-                    bubbles: true, 
-                    detail: { value: setPhoto.value, index: this.index }
+                photoSelected(setPhoto.value).then(url => {
+                    const e = new CustomEvent("set-photo", {
+                        bubbles: true, 
+                        detail: { value: url, index: this.index }
+                    });
+                    this.dispatchEvent(e);
                 });
-                this.dispatchEvent(e);
             }
         }
         this.refreshEditable();
@@ -208,9 +234,11 @@ class PictureBox extends HTMLElement {
         const nextBtn = this.shadowRoot?.getElementById("next-btn") as HTMLButtonElement|null;
 
         addPhoto?.addEventListener("add-item", (evt) => {
-            const event = evt as Event & { detail: string };
-            const e = new CustomEvent("add-photo", { detail: { value: event.detail }, bubbles: true });
-            this.dispatchEvent(e);
+            const event = evt as Event & { detail: string[] };
+            photoSelected(event.detail[0]).then(url => {
+                const e = new CustomEvent("add-photo", { detail: { value: [url] }, bubbles: true });
+                this.dispatchEvent(e);
+            });
         });
         previousBtn?.addEventListener("click", (evt) => {
             if (this.selectedPhotoIndex > 0) this.selectedPhotoIndex--;
@@ -223,7 +251,7 @@ class PictureBox extends HTMLElement {
         this.indexTextElement.innerHTML = this.indexText;
         const self = this;
         const observer = new MutationObserver(function(mutationsList: MutationRecord[], observer: MutationObserver) {
-            for(const mutation of mutationsList) {
+            for (const mutation of mutationsList) {
                 if (mutation.type === "childList") {
                     Array.from(mutation.addedNodes)
                         .filter(node => node.nodeName === "PICTURE-FRAME")
