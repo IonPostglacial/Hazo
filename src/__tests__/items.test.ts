@@ -77,3 +77,29 @@ test("Deleting items", () => {
     expect(item1c.name.S).toBe("B");
     expect(item2c.name.S).toBe("A");
 });
+
+test("Companion stores", () => {
+    const added: (string|undefined)[] = [], swapped: [(string|undefined), (string|undefined)][] = [], deleted: (string|undefined)[] = [];
+    const store = Item.createStore([
+        {
+            itemAdded(item) {
+                added.push(item.name.S);
+            },
+            itemsSwapped(item1, item2) {
+                swapped.push([item1.name.S, item2.name.S]);
+            },
+            itemDeleted(item) {
+                deleted.push(item.name.S);
+            },
+        }
+    ]);
+    store.add({ name: { S: "A" } });
+    store.add({ name: { S: "B" } });
+    const [item1, item2] = store.map(i => clone(i));
+    item1.swap(item2);
+    item1.delete();
+
+    expect(added).toStrictEqual([undefined, "A", "B"]);
+    expect(swapped).toStrictEqual([["A", "B"]]);
+    expect(deleted).toStrictEqual(["A"]);
+});

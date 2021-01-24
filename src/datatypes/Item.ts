@@ -1,3 +1,5 @@
+import { storePictureToDatabase } from "./picture";
+
 type Languages = "S" | "V" | "CN" | "EN" | "FR";
 type MultilangText = Partial<Record<Languages, string>>;
 
@@ -14,9 +16,16 @@ export namespace Item {
         pictures: readonly Picture[];
     }
 
-    export type Init = Omit<Partial<Data>, "id">;
+    export interface CompanionStore {
+        itemAdded(item: Ref): void;
+        itemsSwapped(index1: Ref, index2: Ref): void;
+        itemDeleted(itemIndex: Ref): void;
+    }
 
-    export function createStore() {
+    export type Init = Omit<Partial<Data>, "id">;
+    export type Ref = ReturnType<ReturnType<typeof createStore>["getById"]>;
+
+    export function createStore(companionStores: CompanionStore[] = []) {
         const holes = new Set<number>();
         const ids = [0];
         const names: MultilangText[] = [{}];
@@ -79,6 +88,9 @@ export namespace Item {
             }
         
             swap(item: Ref) {
+                for (const companionStore of companionStores) {
+                    companionStore.itemsSwapped(this, item);
+                }
                 const { id, name, description, pictures } = this;
                 this.assign(item);
                 item.assign({ id, name, description, pictures });
@@ -94,6 +106,9 @@ export namespace Item {
         
             delete() {
                 if (this.id !== 0) {
+                    for (const companionStore of companionStores) {
+                        companionStore.itemDeleted(this);
+                    }
                     this.id = 0;
                     holes.add(this.index);
                     for (const ref of refs) {
@@ -111,10 +126,14 @@ export namespace Item {
 
         var store = {
             add(item: Item.Init): void {
-                ids.push(ids.length);
+                const newItemId = ids.length;
+                ids.push(newItemId);
                 names.push(item.name ?? {});
                 descriptions.push(item.description ?? {});
                 pictures.push(Array.from(item.pictures?? []));
+                for (const companionStore of companionStores) {
+                    companionStore.itemAdded(store.getById(newItemId));
+                }
             },
             getById(id: number): Ref {
                 if (id >= 0 && id < ids.length) {
@@ -148,9 +167,11 @@ export namespace Item {
                 }
             }
         }
-
         const _cachedItem = new Ref(0);
-
+        
+        for (const companionStore of companionStores) {
+            companionStore.itemAdded(store.getById(0));
+        }
         return store;
     }
 }
