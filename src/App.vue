@@ -9,9 +9,12 @@
                 <router-link class="button" to="/dictionary">Dictionary</router-link>
             </div>
             <div class="button-group inline-block float-right">
-                <button type="button" @click="openHub">Hub</button>
-                <button type="button" @click="push">Push</button>
-                <button type="button" @click="pull">Pull</button>
+                <button type="button" @click="openHub">Hub
+                    <span v-if="connectedToHub"> (Connected)</span>
+                    <span v-if="!connectedToHub"> (Disconnected)</span>
+                </button>
+                <button v-if="connectedToHub" type="button" @click="push">Push</button>
+                <button v-if="connectedToHub" type="button" @click="pull">Pull</button>
             </div>
         </nav>
         <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
@@ -45,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, DictionaryEntry, Field, HierarchicalItem, Hierarchy, Picture, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails } from "@/features";
 import DB from "./db-storage";
 import { mapState } from "vuex";
@@ -63,9 +66,24 @@ export default HazoVue.extend({
         return {
             datasetIds: [] as string[],
             selectedBase: "",
+            connectedToHub: false,
         };
     },
     mounted() {
+        fetch(datasetRegistry).then(res => {
+            if (res.ok) {
+                this.connectedToHub = true;
+            } else {
+                const timerId = window.setInterval(() => {
+                    fetch(datasetRegistry).then(res => {
+                        if (res.ok) {
+                            this.connectedToHub = true;
+                            window.clearInterval(timerId);
+                        }
+                    })
+                }, 300_000);
+            }
+        });
         DB.list().then(dbIds => {
             this.datasetIds = dbIds;
             const dataUrl = this.$route.query.from;
@@ -108,7 +126,6 @@ export default HazoVue.extend({
             data.append("db-file-upload", new Blob([json], {type : "application/json"}), this.dataset.id + ".hazo.json");
             const res = await fetch("hub/databases.php", {
                 method: "POST",
-                // headers: { "Content-Type": "multipart/form-data" },
                 body: data,
             });
             if (res.status === 403) {
