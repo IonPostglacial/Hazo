@@ -166,7 +166,11 @@ export default HazoVue.extend({
             for (const character of this.dataset.characters) {
                 characters[character.id] = character;
             }
-            DB.store(encodeDataset(this.dataset));
+            DB.store(encodeDataset(this.dataset)).then(() => {
+                if (this.connectedToHub) {
+                    this.push();
+                }
+            });
         },
         renameDataset() {
             let newId = "";
