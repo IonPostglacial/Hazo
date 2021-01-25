@@ -59,7 +59,7 @@ export default Vue.extend({
                 if (this.menuFilter !== "") {
                     return item.name.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
                 } else {
-                    return this.isRoot ? item.topLevel : !item.topLevel;
+                    return true; //this.isRoot ? item.topLevel : !item.topLevel;
                 }
             };
             return this.currentItems.filter(shouldDisplayItem);
