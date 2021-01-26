@@ -41,6 +41,14 @@ export class AddItem extends HTMLElement {
         return this.shadowRoot?.getElementById("multi-line-input") as HTMLInputElement;
     }
 
+    get value() {
+        return (this.isMultiline ? this._getMultiLineInput() : this._getSingleLineInput()).value;
+    }
+
+    set value(value: string) {
+        (this.isMultiline ? this._getMultiLineInput() : this._getSingleLineInput()).value = value;
+    }
+
     connectedCallback() {
         this.shadowRoot!.appendChild(template.content.cloneNode(true));
         const multilineButton = this.shadowRoot?.getElementById("multiline-button")!;

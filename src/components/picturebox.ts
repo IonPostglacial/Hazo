@@ -24,6 +24,13 @@ boxTemplate.innerHTML = `<link rel="stylesheet" href="style.css" />
                 <button type="button" id="next-btn">&gt;</button>
             </div>
             <div id="txt-index" class="medium-padding"></div>
+            <div id="upload-photo">
+                <button type="button" id="upload-popup-btn">&#128621;</button>
+                <div id="upload-popup" class="absolute over-everything invisible thin-border medium-padding white-background">
+                    <input type="file" id="upload-file-field" />
+                    <button type="button" id="upload-file-btn" class="background-color-1">Upload</button>
+                </div>
+            </div>
             <add-item id="add-photo" class="flex-grow-1"></add-item>
         </div>
     </collapsible-panel>`;
@@ -37,7 +44,7 @@ async function photoSelected(photoUrl: string) {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: "file=" + encodeURI(photoUrl),
+            body: "file-url=" + encodeURI(photoUrl),
         });
         if (res.ok) {
             const json = await res.json();
@@ -205,14 +212,17 @@ class PictureBox extends HTMLElement {
     }
 
     refreshEditable() {
-        const addPhoto = this.shadowRoot!.getElementById("add-photo") as AddItem|null;
+        const addPhoto = this.shadowRoot?.getElementById("add-photo") as AddItem|null;
+        const uploadPhotoDiv = this.shadowRoot?.getElementById("upload-photo") as HTMLElement|null 
 
-        if (!addPhoto) return;
-
-        if (this.editable) {
-            addPhoto.classList.remove("invisible");
-        } else {
-            addPhoto.classList.add("invisible");
+        if (addPhoto && uploadPhotoDiv) {
+            if (this.editable) {
+                uploadPhotoDiv.classList.remove("invisible")
+                addPhoto.classList.remove("invisible");
+            } else {
+                uploadPhotoDiv.classList.add("invisible");
+                addPhoto.classList.add("invisible");
+            }
         }
     }
 
@@ -232,6 +242,10 @@ class PictureBox extends HTMLElement {
         const addPhoto = this.shadowRoot?.getElementById("add-photo") as AddItem|null;
         const previousBtn = this.shadowRoot?.getElementById("previous-btn") as HTMLButtonElement|null;
         const nextBtn = this.shadowRoot?.getElementById("next-btn") as HTMLButtonElement|null;
+        const uploadPopupButton = this.shadowRoot?.getElementById("upload-popup-btn") as HTMLButtonElement|null;
+        const uploadPopup = this.shadowRoot?.getElementById("upload-popup") as HTMLElement|null;
+        const uploadFileButton = this.shadowRoot?.getElementById("upload-file-btn") as HTMLButtonElement|null;
+        const uploadFileField = this.shadowRoot?.getElementById("upload-file-field") as HTMLInputElement|null;
 
         addPhoto?.addEventListener("add-item", (evt) => {
             const event = evt as Event & { detail: string[] };
@@ -245,6 +259,33 @@ class PictureBox extends HTMLElement {
         });
         nextBtn?.addEventListener("click", (evt) => {
             if (this.selectedPhotoIndex < this.children.length - 1) this.selectedPhotoIndex++;
+        });
+        uploadPopupButton?.addEventListener("click", (evt) => {
+            if (uploadPopup?.classList.contains("invisible")) {
+                uploadPopup.classList.remove("invisible");
+            }else {
+                uploadPopup?.classList.add("invisible");
+            }
+        });
+        uploadFileButton?.addEventListener("click", async (evt) => {
+            if (uploadFileField?.files?.length ?? 0 > 0) {
+                const fileToUpload = uploadFileField!.files![0];
+                const data = new FormData();
+                data.append("file", fileToUpload, Math.random() * 1E6 + fileToUpload.name);
+                try {
+                    const res = await fetch(Config.datasetRegistry + "api/upload-img.php", {
+                        method: "POST",
+                        body: data,
+                    });
+                    const json = await res.json();
+                    if (addPhoto) {
+                        addPhoto.value = Config.datasetRegistry + encodeURI(json.url);
+                    }
+                } catch {
+                    0 === 0;
+                }
+            }
+            uploadPopup?.classList.add("invisible");
         });
         this.refreshEditable();
         this.refreshChildNumber();
