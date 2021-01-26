@@ -1,5 +1,5 @@
 import clone from "../tools/clone";
-import { Item } from "../datatypes/Item";
+import * as Item from "../datatypes/Item";
 
 test("Adding items", () => {
     const store = Item.createStore();
