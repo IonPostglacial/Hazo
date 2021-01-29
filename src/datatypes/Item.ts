@@ -1,5 +1,3 @@
-import { storePictureToDatabase } from "./picture";
-
 type Languages = "S" | "V" | "CN" | "EN" | "FR";
 type MultilangText = Partial<Record<Languages, string>>;
 
