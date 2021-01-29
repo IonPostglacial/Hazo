@@ -1,4 +1,4 @@
-import { Item } from "./Item";
+import * as Item from "./Item";
 
 export function createHierarchyStore() {
     const childrenRefs: Item.Ref[][] = [];
