@@ -21,7 +21,13 @@ export type CompanionStore = {
 }
 
 export type Init = Omit<Partial<Item>, "id">;
-export type Ref = ReturnType<ReturnType<typeof createStore>["getById"]>;
+export type Ref = Item & {
+    index: number;
+    assign(item: Item): void;
+    swap(ref: Ref): void;
+    delete(): void;
+    clone(): Ref;
+}
 
 export function createStore(companionStores: CompanionStore[] = []) {
     const holes = new Set<number>();
@@ -31,60 +37,45 @@ export function createStore(companionStores: CompanionStore[] = []) {
     const pictures: Picture[][] = [[]];
     const refs: Ref[] = [];
 
-    class Ref {
-        index: number;
-    
-        constructor(index: number) {
-            this.index = index;
-            refs.push(this);
-        }
-    
+    const Ref = {
+        index: 0,
+
         get id(): number {
             return ids[this.index];
-        }
-    
+        },
         set id(newId: number) {
             ids[this.index] = newId;
-        }
-    
+        },
         get name(): MultilangText {
             return names[this.index];
-        }
-    
+        },
         set name(newName: MultilangText) {
             names[this.index] = newName;
-        }
-    
+        },
         get description(): MultilangText {
             return descriptions[this.index];
-        }
-    
+        },
         set description(newDescription: MultilangText) {
             descriptions[this.index] = newDescription;
-        }
-    
+        },
         get pictures(): readonly Picture[] {
             return pictures[this.index];
-        }
-    
+        },
         addPicture(picture: Picture) {
             pictures[this.index].push(picture);
-        }
-
+        },
         removePicture(picture: Picture) {
             const index = pictures[this.index].findIndex(pic => pic.url === picture.url);
             if (index >= 0) {
                 pictures[this.index].splice(index, 1);
             }
-        }
-    
+        },
         assign(item: Item) {
             this.id = item.id;
             this.name = item.name;
             this.description = item.description;
             pictures[this.index] = Array.from(item.pictures);
-        }
-    
+        },
         swap(item: Ref) {
             for (const companionStore of companionStores) {
                 companionStore.itemsSwapped(this, item);
@@ -100,8 +91,7 @@ export function createStore(companionStores: CompanionStore[] = []) {
                     ref.index = oldIndex1;
                 }
             }
-        }
-    
+        },
         delete() {
             if (this.id !== 0) {
                 for (const companionStore of companionStores) {
@@ -115,14 +105,20 @@ export function createStore(companionStores: CompanionStore[] = []) {
                     }
                 }
             }
-        }
-    
+        },
         clone() {
-            return new Ref(this.index);
+            return makeRef(this.index);
         }
     }
 
-    var store = {
+    function makeRef(index: number): Ref {
+        const ref = Object.create(Ref);
+        ref.index = index;
+        refs.push(ref);
+        return ref;
+    }
+
+    const store = {
         add(item: Init): void {
             const newItemId = ids.length;
             ids.push(newItemId);
@@ -136,17 +132,17 @@ export function createStore(companionStores: CompanionStore[] = []) {
         getById(id: number): Ref {
             if (id >= 0 && id < ids.length) {
                 if (ids[id] === id) {
-                    return new Ref(id);
+                    return makeRef(id);
                 } else {
                     const index = ids.indexOf(id);
                     if (index >= 0) {
-                        return new Ref(index);
+                        return makeRef(index);
                     } else {
-                        return new Ref(0);
+                        return makeRef(0);
                     }
                 }
             } else {
-                return new Ref(0);
+                return makeRef(0);
             }
         },
         map<T>(callback: (item: Ref) => T): T[] {
@@ -165,7 +161,7 @@ export function createStore(companionStores: CompanionStore[] = []) {
             }
         }
     }
-    const _cachedItem = new Ref(0);
+    const _cachedItem = makeRef(0);
     
     for (const companionStore of companionStores) {
         companionStore.itemAdded(store.getById(0));
