@@ -1,27 +1,24 @@
-import { createHierarchyStore } from "../datatypes/HierarchyStore";
+import { createHierarchyStore, Ref } from "../datatypes/HierarchyStore";
 import clone from "../tools/clone";
-import * as Item from "../datatypes/Item";
 
 test("Parent Children relationship", () => {
-    const hierarchyStore = createHierarchyStore();
-    const store = Item.createStore([hierarchyStore]);
+    const store = createHierarchyStore();
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
 
     const [item1, item2] = store.map(ref => clone(ref));
 
-    hierarchyStore.addChild(item1, item2);
+    item1.addChild(item2);
 
-    expect(hierarchyStore.childrenOf(item1)).toStrictEqual([item2]);
-    expect(hierarchyStore.childrenOf(item2)).toStrictEqual([]);
-    expect(hierarchyStore.parentOf(item1)).toStrictEqual(undefined);
-    expect(hierarchyStore.parentOf(item2)).toStrictEqual(item1);
+    expect(item1.children).toStrictEqual([item2]);
+    expect(item2.children).toStrictEqual([]);
+    expect(item1.parent).toStrictEqual(undefined);
+    expect(item2.parent).toStrictEqual(item1);
 });
 
 test("Test swap implementation", () => {
-    const hierarchyStore = createHierarchyStore();
-    const store = Item.createStore([hierarchyStore]);
+    const store = createHierarchyStore();
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -29,20 +26,19 @@ test("Test swap implementation", () => {
 
     const [item1, item2, item3] = store.map(ref => clone(ref));
     
-    hierarchyStore.addChild(item1, item2);
-    hierarchyStore.addChild(item1, item3);
+    item1.addChild(item2);
+    item1.addChild(item3);
     item2.swap(item3);
     
-    expect(hierarchyStore.childrenOf(item1)).toStrictEqual([item3, item2]);
+    expect(item1.children).toStrictEqual([item3, item2]);
 
     item1.swap(item2);
 
-    expect(hierarchyStore.childrenOf(item1)).toStrictEqual([item2, item3]);
+    expect(item1.children).toStrictEqual([item2, item3]);
 });
 
 test("Cascade deletion", () => {
-    const hierarchyStore = createHierarchyStore();
-    const store = Item.createStore([hierarchyStore]);
+    const store= createHierarchyStore();
     
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -51,8 +47,8 @@ test("Cascade deletion", () => {
     
     const [item1, item2, item3, item4] = store.map(ref => clone(ref));
     
-    hierarchyStore.addChild(item1, item2);
-    hierarchyStore.addChild(item1, item3);
+    item1.addChild(item2);
+    item1.addChild(item3);
     
     item1.delete();
 
@@ -62,9 +58,8 @@ test("Cascade deletion", () => {
 });
 
 test("For each part of", () => {
-    const hierarchyStore = createHierarchyStore();
-    const store = Item.createStore([hierarchyStore]);
-    
+    const store = createHierarchyStore();
+
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
     store.add({ name: { S: "C" } });
@@ -73,32 +68,31 @@ test("For each part of", () => {
     
     const [item1, item2, item3, item4, item5] = store.map(ref => clone(ref));
     
-    hierarchyStore.addChild(item1, item2);
-    hierarchyStore.addChild(item2, item3);
-    hierarchyStore.addChild(item1, item4);
+    item1.addChild(item2);
+    item2.addChild(item3);
+    item1.addChild(item4);
 
     item2.swap(item4);
 
-    const parts: Item.Ref[] = [];
+    const parts: Ref[] = [];
 
-    hierarchyStore.forEachPartOf(item1, item => {
-        parts.push(item);
+    item1.forEachNode(node => {
+        parts.push(node);
     });
 
     expect(parts).toStrictEqual([item1, item4, item2, item3]);
 
-    const parts2: Item.Ref[] = [];
+    const parts2: Ref[] = [];
 
-    hierarchyStore.forEachPartOf(item5, item => {
+    item5.forEachNode(item => {
         parts2.push(item);
-    })
+    });
 
     expect(parts2).toStrictEqual([item5]);
 });
 
 test("For each leaves of", () => {
-    const hierarchyStore = createHierarchyStore();
-    const store = Item.createStore([hierarchyStore]);
+    const store = createHierarchyStore();
     
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -107,21 +101,21 @@ test("For each leaves of", () => {
     
     const [item1, item2, item3, item4] = store.map(ref => clone(ref));
     
-    hierarchyStore.addChild(item1, item2);
-    hierarchyStore.addChild(item1, item3);
+    item1.addChild(item2);
+    item1.addChild(item3);
     
-    const leaves: Item.Ref[] = [];
+    const leaves: Ref[] = [];
 
-    hierarchyStore.forEachLeavesOf(item1, item => {
-        leaves.push(item);
+    item1.forEachLeaves(node => {
+        leaves.push(node);
     });
 
     expect(leaves).toStrictEqual([item2, item3]);
 
-    const leaves2: Item.Ref[] = [];
+    const leaves2: Ref[] = [];
 
-    hierarchyStore.forEachLeavesOf(item4, item => {
-        leaves2.push(item);
+    item4.forEachLeaves(node => {
+        leaves2.push(node);
     });
 
     expect(leaves2).toStrictEqual([item4]);

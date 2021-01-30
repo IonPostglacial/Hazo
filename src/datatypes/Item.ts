@@ -1,3 +1,5 @@
+import * as storeUtils from "./storeUtils";
+
 type Languages = "S" | "V" | "CN" | "EN" | "FR";
 type MultilangText = Partial<Record<Languages, string>>;
 
@@ -14,30 +16,25 @@ export type Item = {
     pictures: readonly Picture[];
 }
 
-export type CompanionStore = {
-    itemAdded(item: Ref): void;
-    itemsSwapped(index1: Ref, index2: Ref): void;
-    itemDeleted(itemIndex: Ref): void;
-}
-
 export type Init = Omit<Partial<Item>, "id">;
 export type Ref = Item & {
     index: number;
-    assign(item: Item): void;
     swap(ref: Ref): void;
     delete(): void;
     clone(): Ref;
+    addPicture(picture: Picture): void;
+    removePicture(picture: Picture): void;
 }
+export type Store = ReturnType<typeof createStore>;
 
-export function createStore(companionStores: CompanionStore[] = []) {
-    const holes = new Set<number>();
+export function createStore() {
     const ids = [0];
     const names: MultilangText[] = [{}];
     const descriptions: MultilangText[] = [{}];
     const pictures: Picture[][] = [[]];
     const refs: Ref[] = [];
 
-    const Ref = {
+    const Ref: Ref = {
         index: 0,
 
         get id(): number {
@@ -70,40 +67,16 @@ export function createStore(companionStores: CompanionStore[] = []) {
                 pictures[this.index].splice(index, 1);
             }
         },
-        assign(item: Item) {
-            this.id = item.id;
-            this.name = item.name;
-            this.description = item.description;
-            pictures[this.index] = Array.from(item.pictures);
-        },
         swap(item: Ref) {
-            for (const companionStore of companionStores) {
-                companionStore.itemsSwapped(this, item);
-            }
             const { id, name, description, pictures } = this;
-            this.assign(item);
-            item.assign({ id, name, description, pictures });
-            const oldIndex1 = this.index, oldIndex2 = item.index;
-            for (const ref of refs) {
-                if (ref.index === oldIndex1) {
-                    ref.index = oldIndex2;
-                } else if (ref.index === oldIndex2) {
-                    ref.index = oldIndex1;
-                }
-            }
+            assign(this, item);
+            assign(item, { id, name, description, pictures });
+            storeUtils.swapRefIndices(refs, this.index, item.index);
         },
         delete() {
             if (this.id !== 0) {
-                for (const companionStore of companionStores) {
-                    companionStore.itemDeleted(this);
-                }
                 this.id = 0;
-                holes.add(this.index);
-                for (const ref of refs) {
-                    if (ref.index === this.index) {
-                        this.index = 0;
-                    }
-                }
+                storeUtils.deleteRef(refs, this);
             }
         },
         clone() {
@@ -118,53 +91,35 @@ export function createStore(companionStores: CompanionStore[] = []) {
         return ref;
     }
 
+    function assign(ref: Ref, item: Item) {
+        ref.id = item.id;
+        ref.name = item.name;
+        ref.description = item.description;
+        pictures[ref.index] = Array.from(item.pictures);
+    }
+
     const store = {
-        add(item: Init): void {
+        makeRef,
+        ids,
+        ref: makeRef(0),
+        add(item: Init): number {
             const newItemId = ids.length;
             ids.push(newItemId);
             names.push(item.name ?? {});
             descriptions.push(item.description ?? {});
             pictures.push(Array.from(item.pictures?? []));
-            for (const companionStore of companionStores) {
-                companionStore.itemAdded(store.getById(newItemId));
-            }
+            return newItemId;
         },
         getById(id: number): Ref {
-            if (id >= 0 && id < ids.length) {
-                if (ids[id] === id) {
-                    return makeRef(id);
-                } else {
-                    const index = ids.indexOf(id);
-                    if (index >= 0) {
-                        return makeRef(index);
-                    } else {
-                        return makeRef(0);
-                    }
-                }
-            } else {
-                return makeRef(0);
-            }
+            return storeUtils.getRefById(store, id);
         },
         map<T>(callback: (item: Ref) => T): T[] {
-            const result: T[] = [];
-            this.forEach((item) => {
-                result.push(callback(item));
-            });
-            return result;
+            return storeUtils.map(store, callback);
         },
         forEach(callback: (item: Ref) => void): void {
-            for (let i = 1; i < ids.length; i++) {
-                if (ids[i] !== 0) {
-                    _cachedItem.index = i;
-                    callback(_cachedItem);
-                }
-            }
+            storeUtils.forEach(store, callback);
         }
     }
-    const _cachedItem = makeRef(0);
-    
-    for (const companionStore of companionStores) {
-        companionStore.itemAdded(store.getById(0));
-    }
+
     return store;
 }
