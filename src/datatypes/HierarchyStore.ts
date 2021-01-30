@@ -3,8 +3,7 @@ import * as Item from "./Item";
 export function createHierarchyStore() {
     const childrenRefs: Item.Ref[][] = [];
     const parentById = new Map<number, Item.Ref>();
-
-    return {
+    const store = {
         itemAdded(item: Item.Ref): void {
             childrenRefs.push([]);
         },
@@ -45,5 +44,22 @@ export function createHierarchyStore() {
                 return [];
             }
         },
+        forEachPartOf(item: Item.Ref, callback: (item: Item.Ref) => void): void {
+            callback(item);
+            for (const child of store.childrenOf(item)) {
+                store.forEachPartOf(child, callback);
+            }
+        },
+        forEachLeavesOf(item: Item.Ref, callback: (item: Item.Ref) => void): void {
+            const children = store.childrenOf(item);
+            if (children.length === 0) {
+                callback(item);
+            } else {
+                for (const child of children) {
+                    store.forEachLeavesOf(child, callback);
+                }
+            }
+        }
     };
+    return store;
 }
