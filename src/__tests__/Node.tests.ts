@@ -1,8 +1,8 @@
-import { createHierarchyStore, Ref } from "../datatypes/HierarchyStore";
+import * as Node from "../datatypes/Node";
 import clone from "../tools/clone";
 
 test("Parent Children relationship", () => {
-    const store = createHierarchyStore();
+    const store = Node.createStore();
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -18,7 +18,7 @@ test("Parent Children relationship", () => {
 });
 
 test("Test swap implementation", () => {
-    const store = createHierarchyStore();
+    const store = Node.createStore();
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -38,7 +38,7 @@ test("Test swap implementation", () => {
 });
 
 test("Cascade deletion", () => {
-    const store= createHierarchyStore();
+    const store= Node.createStore();
     
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -58,7 +58,7 @@ test("Cascade deletion", () => {
 });
 
 test("For each part of", () => {
-    const store = createHierarchyStore();
+    const store = Node.createStore();
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -74,7 +74,7 @@ test("For each part of", () => {
 
     item2.swap(item4);
 
-    const parts: Ref[] = [];
+    const parts: Node.Ref[] = [];
 
     item1.forEachNode(node => {
         parts.push(node);
@@ -82,7 +82,7 @@ test("For each part of", () => {
 
     expect(parts).toStrictEqual([item1, item4, item2, item3]);
 
-    const parts2: Ref[] = [];
+    const parts2: Node.Ref[] = [];
 
     item5.forEachNode(item => {
         parts2.push(item);
@@ -92,7 +92,7 @@ test("For each part of", () => {
 });
 
 test("For each leaves of", () => {
-    const store = createHierarchyStore();
+    const store = Node.createStore();
     
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -104,7 +104,7 @@ test("For each leaves of", () => {
     item1.addChild(item2);
     item1.addChild(item3);
     
-    const leaves: Ref[] = [];
+    const leaves: Node.Ref[] = [];
 
     item1.forEachLeaves(node => {
         leaves.push(node);
@@ -112,7 +112,7 @@ test("For each leaves of", () => {
 
     expect(leaves).toStrictEqual([item2, item3]);
 
-    const leaves2: Ref[] = [];
+    const leaves2: Node.Ref[] = [];
 
     item4.forEachLeaves(node => {
         leaves2.push(node);

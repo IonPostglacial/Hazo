@@ -20,7 +20,7 @@ export type Ref = {
     forEachLeaves(callback: (node: Ref) => void): void;
 }
 
-export function createHierarchyStore() {
+export function createStore() {
     const store = Item.createStore();
     const childrenRefs: Ref[][] = [[]];
     const refs: Ref[] = [];
