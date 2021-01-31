@@ -6,12 +6,12 @@ export type Ref<T> = T & {
 };
 
 export type Store<T> = {
-    ids: readonly number[];
+    ids: number[];
     makeRef(index: number): Ref<T>;
     ref: Ref<T>;
 }
 
-export function defineStore<T, U>(ids: number[], conf: { ref: Ref<T>, add(init: U): number }): Store<T> {
+export function defineStore<T, U>(conf: { ids: number[], ref: Ref<T>, add(init: U): number }) {
     const refs: Ref<T>[] = [];
 
     function makeRef(index: number): Ref<T> {
@@ -22,18 +22,18 @@ export function defineStore<T, U>(ids: number[], conf: { ref: Ref<T>, add(init: 
     }
     
     const store = {
-        ids,
+        ids: conf.ids,
         ref: makeRef(0),
         makeRef,
         add(item: U): number {
             return conf.add(item);
         },
         getById(id: number): Ref<T> {
-            if (id >= 0 && id < ids.length) {
-                if (ids[id] === id) {
+            if (id >= 0 && id < conf.ids.length) {
+                if (conf.ids[id] === id) {
                     return store.makeRef(id);
                 } else {
-                    const index = ids.indexOf(id);
+                    const index = conf.ids.indexOf(id);
                     if (index >= 0) {
                         return store.makeRef(index);
                     } else {
@@ -52,66 +52,30 @@ export function defineStore<T, U>(ids: number[], conf: { ref: Ref<T>, add(init: 
             return result;
         },
         forEach(callback: (item: Ref<T>) => void): void {
-            for (let i = 1; i < ids.length; i++) {
-                if (ids[i] !== 0) {
+            for (let i = 1; i < conf.ids.length; i++) {
+                if (conf.ids[i] !== 0) {
                     store.ref.index = i;
                     callback(store.ref);
                 }
             }
-        }
+        },
+        swapRefs<T>(index1: number, index2: number): void {
+            for (const ref of refs) {
+                if (ref.index === index1) {
+                    ref.index = index2;
+                } else if (ref.index === index2) {
+                    ref.index = index1;
+                }
+            }
+        },
+        deleteRef<T>(refToDelete: Ref<T>): void {
+            const indexToDelete = refToDelete.index;
+            for (const ref of refs) {
+                if (ref.index === indexToDelete) {
+                    ref.index = 0;
+                }
+            }
+        },
     };
     return store;
-}
-
-export function getRefById<T>(store: Store<T>, id: number): Ref<T> {
-    if (id >= 0 && id < store.ids.length) {
-        if (store.ids[id] === id) {
-            return store.makeRef(id);
-        } else {
-            const index = store.ids.indexOf(id);
-            if (index >= 0) {
-                return store.makeRef(index);
-            } else {
-                return store.makeRef(0);
-            }
-        }
-    } else {
-        return store.makeRef(0);
-    }
-}
-
-export function map<T, U>(store: Store<T>, callback: (item: Ref<T>) => U): U[] {
-    const result: U[] = [];
-    forEach(store, (item) => {
-        result.push(callback(item));
-    });
-    return result;
-}
-
-export function forEach<T>(store: Store<T>, callback: (item: Ref<T>) => void): void {
-    for (let i = 1; i < store.ids.length; i++) {
-        if (store.ids[i] !== 0) {
-            store.ref.index = i;
-            callback(store.ref);
-        }
-    }
-}
-
-export function swapRefIndices<T>(refs: Ref<T>[], index1: number, index2: number): void {
-    for (const ref of refs) {
-        if (ref.index === index1) {
-            ref.index = index2;
-        } else if (ref.index === index2) {
-            ref.index = index1;
-        }
-    }
-}
-
-export function deleteRef<T>(refs: Ref<T>[], refToDelete: Ref<T>): void {
-    const indexToDelete = refToDelete.index;
-    for (const ref of refs) {
-        if (ref.index === indexToDelete) {
-            ref.index = 0;
-        }
-    }
 }

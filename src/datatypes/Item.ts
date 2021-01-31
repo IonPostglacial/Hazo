@@ -1,4 +1,4 @@
-import * as storeUtils from "./storeUtils";
+import { defineStore } from "./storeUtils";
 
 type Languages = "S" | "V" | "CN" | "EN" | "FR";
 type MultilangText = Partial<Record<Languages, string>>;
@@ -32,7 +32,6 @@ export function createStore() {
     const names: MultilangText[] = [{}];
     const descriptions: MultilangText[] = [{}];
     const pictures: Picture[][] = [[]];
-    const refs: Ref[] = [];
 
     const Ref: Ref = {
         index: 0,
@@ -71,24 +70,17 @@ export function createStore() {
             const { id, name, description, pictures } = this;
             assign(this, item);
             assign(item, { id, name, description, pictures });
-            storeUtils.swapRefIndices(refs, this.index, item.index);
+            store.swapRefs(this.index, item.index);
         },
         delete() {
             if (this.id !== 0) {
                 this.id = 0;
-                storeUtils.deleteRef(refs, this);
+                store.deleteRef(this);
             }
         },
         clone() {
-            return makeRef(this.index);
+            return store.makeRef(this.index);
         }
-    }
-
-    function makeRef(index: number): Ref {
-        const ref = Object.create(Ref);
-        ref.index = index;
-        refs.push(ref);
-        return ref;
     }
 
     function assign(ref: Ref, item: Item) {
@@ -98,10 +90,9 @@ export function createStore() {
         pictures[ref.index] = Array.from(item.pictures);
     }
 
-    const store = {
-        makeRef,
+    const store = defineStore({
         ids,
-        ref: makeRef(0),
+        ref: Ref,
         add(item: Init): number {
             const newItemId = ids.length;
             ids.push(newItemId);
@@ -110,16 +101,7 @@ export function createStore() {
             pictures.push(Array.from(item.pictures?? []));
             return newItemId;
         },
-        getById(id: number): Ref {
-            return storeUtils.getRefById(store, id);
-        },
-        map<T>(callback: (item: Ref) => T): T[] {
-            return storeUtils.map(store, callback);
-        },
-        forEach(callback: (item: Ref) => void): void {
-            storeUtils.forEach(store, callback);
-        }
-    }
+    });
 
     return store;
 }

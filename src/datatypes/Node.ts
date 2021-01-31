@@ -1,5 +1,5 @@
 import * as Item from "./Item";
-import * as storeUtils from "./storeUtils";
+import { defineStore } from "./storeUtils";
 
 export type Node = {
     parent: Node|undefined;
@@ -23,7 +23,6 @@ export type Ref = {
 export function createStore() {
     const store = Item.createStore();
     const childrenRefs: Ref[][] = [[]];
-    const refs: Ref[] = [];
     const parentById = new Map<number, Ref>();
 
     const Ref: Ref = {
@@ -59,7 +58,7 @@ export function createStore() {
             childrenRefs[this.index] = childrenRefs[ref.index];
             childrenRefs[ref.index] = tmpChildren;
             this.item.swap(ref.item);
-            storeUtils.swapRefIndices(refs, this.index, ref.index);
+            hierarchyStore.swapRefs(this.index, ref.index);
         },
         delete(): void {
             if (store.ids[this.index] !== 0) {
@@ -68,11 +67,11 @@ export function createStore() {
                     child.delete();
                 }
                 this.item.delete();
-                storeUtils.deleteRef(refs, this);
+                hierarchyStore.deleteRef(this);
             }
         },
         clone(): Ref {
-            return makeRef(this.index);
+            return hierarchyStore.makeRef(this.index);
         },
         addChild(child: Ref) {
             const previousParent = parentById.get(child.item.id);
@@ -105,30 +104,13 @@ export function createStore() {
         }
     };
 
-    function makeRef(index: number): Ref {
-        const ref = Object.create(Ref);
-        ref.index = index;
-        refs.push(ref);
-        return ref;
-    }
-
-    const hierarchyStore = {
+    const hierarchyStore = defineStore({
         ids: store.ids,
-        makeRef,
-        ref: makeRef(0),
-        add(item: Item.Init): void {
-            store.add(item);
+        ref: Ref,
+        add(item: Item.Init): number {
             childrenRefs.push([]);
+            return store.add(item);
         },
-        getById(id: number): Ref {
-            return storeUtils.getRefById(hierarchyStore, id);
-        },
-        map<T>(callback: (item: Ref) => T): T[] {
-            return storeUtils.map(hierarchyStore, callback);
-        },
-        forEach(callback: (item: Ref) => void): void {
-            storeUtils.forEach(hierarchyStore, callback);
-        }
-    };
+    });
     return hierarchyStore;
 }
