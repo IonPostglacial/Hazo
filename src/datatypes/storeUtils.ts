@@ -5,12 +5,6 @@ export type Ref<T> = T & {
     clone(): Ref<T>;
 };
 
-export type Store<T> = {
-    ids: number[];
-    makeRef(index: number): Ref<T>;
-    ref: Ref<T>;
-}
-
 export function defineStore<T, U>(conf: { ids: number[], ref: Ref<T>, add(init: U): number }) {
     const refs: Ref<T>[] = [];
 

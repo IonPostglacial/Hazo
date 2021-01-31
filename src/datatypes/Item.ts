@@ -22,7 +22,6 @@ export type Item = ItemData & {
     addPicture(picture: Picture): void;
     removePicture(picture: Picture): void;
 }
-export type Store = ReturnType<typeof createStore>;
 
 export function createStore() {
     const ids = [0];
