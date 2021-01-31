@@ -16,9 +16,9 @@ const defaultInit = {
 
 export type Init = Partial<typeof defaultInit>;
 
-export type ItemData = typeof defaultInit & { id: number };
+export type Item = typeof defaultInit & { id: number };
 
-export type Item = ItemData & {
+export type ItemRef = Ref<Item> & {
     addPicture(picture: Picture): void;
     removePicture(picture: Picture): void;
 }
@@ -29,7 +29,7 @@ export function createStore() {
     const descriptions = [defaultInit.description];
     const pictures = [defaultInit.pictures];
 
-    const Ref: Ref<Item> = {
+    const Ref: ItemRef = {
         index: 0,
 
         get id(): number {
@@ -79,7 +79,7 @@ export function createStore() {
         }
     }
 
-    function assign(ref: Ref<Item>, item: ItemData) {
+    function assign(ref: Ref<Item>, item: Item) {
         ref.id = item.id;
         ref.name = item.name;
         ref.description = item.description;

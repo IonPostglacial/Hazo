@@ -4,18 +4,21 @@ import { defineStore, Ref } from "./storeUtils";
 export type Node = {
     parent: Node|undefined;
     item: Ref<Item.Item>;
-    children: Ref<Node>[];
-    addChild(child: Ref<Node>): void;
-    forEachNode(callback: (node: Ref<Node>) => void): void;
-    forEachLeaves(callback: (node: Ref<Node>) => void): void;
+    children: NodeRef[];
+}
+
+export type NodeRef = Ref<Node> & {
+    addChild(child: NodeRef): void;
+    forEachNode(callback: (node: NodeRef) => void): void;
+    forEachLeaves(callback: (node: NodeRef) => void): void;
 }
 
 export function createStore() {
     const store = Item.createStore();
-    const childrenRefs: Ref<Node>[][] = [[]];
+    const childrenRefs: NodeRef[][] = [[]];
     const parentById = new Map<number, Ref<Node>>();
 
-    const Ref: Ref<Node> = {
+    const Ref: NodeRef = {
         index: 0,
 
         get parent(): Ref<Node>|undefined {
@@ -31,7 +34,7 @@ export function createStore() {
         get item(): Ref<Item.Item> {
             return store.getById(store.ids[this.index]);
         },
-        get children(): Ref<Node>[] {
+        get children(): NodeRef[] {
             if (this.index > 0 && this.index < childrenRefs.length) {
                 return childrenRefs[this.index]
                     .filter(ref => ref.item.id !== 0)
@@ -40,7 +43,7 @@ export function createStore() {
                 return [];
             }
         },
-        set children(children: Ref<Node>[]) {
+        set children(children: NodeRef[]) {
             childrenRefs[this.index] = children;
         },
         swap(ref: Ref<Node>): void {
@@ -63,7 +66,7 @@ export function createStore() {
         clone(): Ref<Node> {
             return hierarchyStore.makeRef(this.index);
         },
-        addChild(child: Ref<Node>) {
+        addChild(child: NodeRef) {
             const previousParent = parentById.get(child.item.id);
             if (typeof previousParent !== "undefined") {
                 const index = childrenRefs[previousParent.index].findIndex(ref => ref.item.id === child.item.id);
@@ -76,13 +79,13 @@ export function createStore() {
                 parentById.set(child.item.id, this);
             }
         },
-        forEachNode(callback: (node: Ref<Node>) => void): void {
+        forEachNode(callback: (node: NodeRef) => void): void {
             callback(this);
             for (const child of this.children) {
                 child.forEachNode(callback);
             }
         },
-        forEachLeaves(callback: (node: Ref<Node>) => void): void {
+        forEachLeaves(callback: (node: NodeRef) => void): void {
             const children = this.children;
             if (children.length === 0) {
                 callback(this);
