@@ -1,27 +1,24 @@
-import { defineStore } from "./storeUtils";
+import { defineStore, Ref } from "./storeUtils";
 
 type Languages = "S" | "V" | "CN" | "EN" | "FR";
 type MultilangText = Partial<Record<Languages, string>>;
-
 
 export type Picture = {
     url: string;
     content: Blob;
 }
 
-export type Item = {
-    id: number;
-    name: MultilangText;
-    description: MultilangText;
-    pictures: readonly Picture[];
-}
+const defaultInit = {
+    name: {} as MultilangText,
+    description: {} as MultilangText,
+    pictures: [] as Picture[],
+};
 
-export type Init = Omit<Partial<Item>, "id">;
-export type Ref = Item & {
-    index: number;
-    swap(ref: Ref): void;
-    delete(): void;
-    clone(): Ref;
+export type Init = Partial<typeof defaultInit>;
+
+export type ItemData = typeof defaultInit & { id: number };
+
+export type Item = ItemData & {
     addPicture(picture: Picture): void;
     removePicture(picture: Picture): void;
 }
@@ -29,11 +26,11 @@ export type Store = ReturnType<typeof createStore>;
 
 export function createStore() {
     const ids = [0];
-    const names: MultilangText[] = [{}];
-    const descriptions: MultilangText[] = [{}];
-    const pictures: Picture[][] = [[]];
+    const names = [defaultInit.name];
+    const descriptions = [defaultInit.description];
+    const pictures = [defaultInit.pictures];
 
-    const Ref: Ref = {
+    const Ref: Ref<Item> = {
         index: 0,
 
         get id(): number {
@@ -54,7 +51,7 @@ export function createStore() {
         set description(newDescription: MultilangText) {
             descriptions[this.index] = newDescription;
         },
-        get pictures(): readonly Picture[] {
+        get pictures(): Picture[] {
             return pictures[this.index];
         },
         addPicture(picture: Picture) {
@@ -66,7 +63,7 @@ export function createStore() {
                 pictures[this.index].splice(index, 1);
             }
         },
-        swap(item: Ref) {
+        swap(item: Ref<Item>) {
             const { id, name, description, pictures } = this;
             assign(this, item);
             assign(item, { id, name, description, pictures });
@@ -83,7 +80,7 @@ export function createStore() {
         }
     }
 
-    function assign(ref: Ref, item: Item) {
+    function assign(ref: Ref<Item>, item: ItemData) {
         ref.id = item.id;
         ref.name = item.name;
         ref.description = item.description;
@@ -96,9 +93,9 @@ export function createStore() {
         add(item: Init): number {
             const newItemId = ids.length;
             ids.push(newItemId);
-            names.push(item.name ?? {});
-            descriptions.push(item.description ?? {});
-            pictures.push(Array.from(item.pictures?? []));
+            names.push(item.name ?? defaultInit.name);
+            descriptions.push(item.description ?? defaultInit.description);
+            pictures.push(Array.from(item.pictures?? defaultInit.pictures));
             return newItemId;
         },
     });

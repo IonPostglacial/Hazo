@@ -1,59 +1,49 @@
 import * as Item from "./Item";
-import { defineStore } from "./storeUtils";
+import { defineStore, Ref } from "./storeUtils";
 
 export type Node = {
     parent: Node|undefined;
-    item: Item.Ref;
-    children: Node[];
-}
-
-export type Ref = {
-    index: number;
-    parent: Node|undefined;
-    item: Item.Ref;
-    children: Ref[];
-    swap(ref: Ref): void;
-    delete(): void;
-    clone(): Ref;
-    addChild(child: Ref): void;
-    forEachNode(callback: (node: Ref) => void): void;
-    forEachLeaves(callback: (node: Ref) => void): void;
+    item: Ref<Item.Item>;
+    children: Ref<Node>[];
+    addChild(child: Ref<Node>): void;
+    forEachNode(callback: (node: Ref<Node>) => void): void;
+    forEachLeaves(callback: (node: Ref<Node>) => void): void;
 }
 
 export function createStore() {
     const store = Item.createStore();
-    const childrenRefs: Ref[][] = [[]];
-    const parentById = new Map<number, Ref>();
+    const childrenRefs: Ref<Node>[][] = [[]];
+    const parentById = new Map<number, Ref<Node>>();
 
-    const Ref: Ref = {
+    const Ref: Ref<Node> = {
         index: 0,
 
-        get parent(): Ref|undefined {
+        get parent(): Ref<Node>|undefined {
             return parentById.get(store.ids[this.index]);
         },
-        set parent(parent: Ref|undefined) {
+        set parent(parent: Ref<Node>|undefined) {
             if (typeof parent === "undefined") {
                 parentById.delete(store.ids[this.index]);
             } else {
                 parentById.set(store.ids[this.index], parent);
             }
         },
-        get item(): Item.Ref {
+        get item(): Ref<Item.Item> {
             return store.getById(store.ids[this.index]);
         },
-        get children(): Ref[] {
+        get children(): Ref<Node>[] {
             if (this.index > 0 && this.index < childrenRefs.length) {
                 return childrenRefs[this.index]
                     .filter(ref => ref.item.id !== 0)
-                    .sort((ref1: Ref, ref2: Ref) => ref1.index - ref2.index);
+                    .sort((ref1: Ref<Node>, ref2: Ref<Node>) => ref1.index - ref2.index);
             } else {
                 return [];
             }
         },
-        set children(children: Ref[]) {
+        set children(children: Ref<Node>[]) {
             childrenRefs[this.index] = children;
         },
-        swap(ref: Ref): void {
+        swap(ref: Ref<Node>): void {
             const tmpChildren = childrenRefs[this.index];
             childrenRefs[this.index] = childrenRefs[ref.index];
             childrenRefs[ref.index] = tmpChildren;
@@ -70,10 +60,10 @@ export function createStore() {
                 hierarchyStore.deleteRef(this);
             }
         },
-        clone(): Ref {
+        clone(): Ref<Node> {
             return hierarchyStore.makeRef(this.index);
         },
-        addChild(child: Ref) {
+        addChild(child: Ref<Node>) {
             const previousParent = parentById.get(child.item.id);
             if (typeof previousParent !== "undefined") {
                 const index = childrenRefs[previousParent.index].findIndex(ref => ref.item.id === child.item.id);
@@ -86,13 +76,13 @@ export function createStore() {
                 parentById.set(child.item.id, this);
             }
         },
-        forEachNode(callback: (node: Ref) => void): void {
+        forEachNode(callback: (node: Ref<Node>) => void): void {
             callback(this);
             for (const child of this.children) {
                 child.forEachNode(callback);
             }
         },
-        forEachLeaves(callback: (node: Ref) => void): void {
+        forEachLeaves(callback: (node: Ref<Node>) => void): void {
             const children = this.children;
             if (children.length === 0) {
                 callback(this);
