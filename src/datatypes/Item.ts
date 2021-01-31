@@ -16,12 +16,11 @@ const defaultInit = {
 
 export type Init = Partial<typeof defaultInit>;
 
-export type Item = typeof defaultInit & { id: number };
-
-export type ItemRef = Ref<Item> & {
+export type Item = typeof defaultInit & {
+    id: number;
     addPicture(picture: Picture): void;
     removePicture(picture: Picture): void;
-}
+};
 
 export function createStore() {
     const ids = [0];
@@ -29,7 +28,7 @@ export function createStore() {
     const descriptions = [defaultInit.description];
     const pictures = [defaultInit.pictures];
 
-    const Ref: ItemRef = {
+    const Ref: Ref<Item> = {
         index: 0,
 
         get id(): number {
@@ -53,6 +52,9 @@ export function createStore() {
         get pictures(): Picture[] {
             return pictures[this.index];
         },
+        set pictures(pics: Picture[]) {
+            pictures[this.index] = pics;
+        },
         addPicture(picture: Picture) {
             pictures[this.index].push(picture);
         },
@@ -63,9 +65,10 @@ export function createStore() {
             }
         },
         swap(item: Ref<Item>) {
-            const { id, name, description, pictures } = this;
-            assign(this, item);
-            assign(item, { id, name, description, pictures });
+            [this.id, item.id] = [item.id, this.id];
+            [this.name, item.name] = [item.name, this.name];
+            [this.description, item.description] = [item.description, this.description];
+            [this.pictures, item.pictures] = [item.pictures, this.pictures];
             store.swapRefs(this.index, item.index);
         },
         delete() {
@@ -77,13 +80,6 @@ export function createStore() {
         clone() {
             return store.makeRef(this.index);
         }
-    }
-
-    function assign(ref: Ref<Item>, item: Item) {
-        ref.id = item.id;
-        ref.name = item.name;
-        ref.description = item.description;
-        pictures[ref.index] = Array.from(item.pictures);
     }
 
     const store = defineStore({

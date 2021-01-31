@@ -29,6 +29,7 @@ test("Test swap implementation", () => {
     
     item1.addChild(item2);
     item1.addChild(item3);
+
     item2.swap(item3);
     
     expect(item1.children).toStrictEqual([item3, item2]);
@@ -39,7 +40,7 @@ test("Test swap implementation", () => {
 });
 
 test("Cascade deletion", () => {
-    const store= createStore();
+    const store = createStore();
     
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
