@@ -5,6 +5,47 @@ export type Ref<T> = T & {
     clone(): Ref<T>;
 };
 
+type RefConf<T> = {
+    on: {
+        swap(ref1: Ref<T>, ref2: Ref<T>): void;
+        delete(ref: Ref<T>): void;
+    },
+    methods: T & ThisType<Ref<T>> & { index: number }
+}
+
+export function defineRef<T>(conf: RefConf<T>): Ref<T> {
+    const refs: Ref<T>[] = [];
+    const Ref = Object.assign(conf.methods, {
+        swap(this: Ref<T>, ref: Ref<T>): void {
+            conf.on.swap(this, ref);
+            const index1 = this.index, index2 = ref.index;
+            for (const ref of refs) {
+                if (ref.index === index1) {
+                    ref.index = index2;
+                } else if (ref.index === index2) {
+                    ref.index = index1;
+                }
+            }
+        },
+        delete(this: Ref<T>): void {
+            conf.on.delete(this);
+            const indexToDelete = this.index;
+            for (const ref of refs) {
+                if (ref.index === indexToDelete) {
+                    ref.index = 0;
+                }
+            }
+        },
+        clone(this: Ref<T>): Ref<T> {
+            const ref = Object.create(Ref);
+            ref.index = this.index;
+            refs.push(ref);
+            return ref;
+        }
+    });
+    return Ref;
+}
+
 export function defineStore<T, U>(conf: { ids: number[], ref: Ref<T>, add(init: U): number }) {
     const refs: Ref<T>[] = [];
 
@@ -50,23 +91,6 @@ export function defineStore<T, U>(conf: { ids: number[], ref: Ref<T>, add(init: 
                 if (conf.ids[i] !== 0) {
                     store.ref.index = i;
                     callback(store.ref);
-                }
-            }
-        },
-        swapRefs<T>(index1: number, index2: number): void {
-            for (const ref of refs) {
-                if (ref.index === index1) {
-                    ref.index = index2;
-                } else if (ref.index === index2) {
-                    ref.index = index1;
-                }
-            }
-        },
-        deleteRef<T>(refToDelete: Ref<T>): void {
-            const indexToDelete = refToDelete.index;
-            for (const ref of refs) {
-                if (ref.index === indexToDelete) {
-                    ref.index = 0;
                 }
             }
         },
