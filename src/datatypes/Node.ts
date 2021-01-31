@@ -44,21 +44,17 @@ export function createStore() {
             childrenRefs[this.index] = children;
         },
         swap(ref: Ref<Node>): void {
-            const tmpChildren = childrenRefs[this.index];
-            childrenRefs[this.index] = childrenRefs[ref.index];
-            childrenRefs[ref.index] = tmpChildren;
+            [this.children, ref.children] = [ref.children, this.children];
             this.item.swap(ref.item);
             hierarchyStore.swapRefs(this.index, ref.index);
         },
         delete(): void {
-            if (store.ids[this.index] !== 0) {
-                parentById.delete(store.ids[this.index]);
-                for (const child of this.children) {
-                    child.delete();
-                }
-                this.item.delete();
-                hierarchyStore.deleteRef(this);
+            parentById.delete(store.ids[this.index]);
+            for (const child of this.children) {
+                child.delete();
             }
+            this.item.delete();
+            hierarchyStore.deleteRef(this);
         },
         clone(): Ref<Node> {
             return hierarchyStore.makeRef(this.index);

@@ -72,10 +72,8 @@ export function createStore() {
             store.swapRefs(this.index, item.index);
         },
         delete() {
-            if (this.id !== 0) {
-                this.id = 0;
-                store.deleteRef(this);
-            }
+            this.id = 0;
+            store.deleteRef(this);
         },
         clone() {
             return store.makeRef(this.index);
