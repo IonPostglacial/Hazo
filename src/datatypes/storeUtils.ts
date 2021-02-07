@@ -46,7 +46,7 @@ export function defineRef<T>(conf: RefConf<T>): Ref<T> {
     return Ref;
 }
 
-export function defineStore<T, U>(conf: { ids: number[], ref: Ref<T>, add(init: U): number }) {
+export function defineStore<T, U>(conf: { ref: Ref<T>, add(init: U): void }) {
     const refs: Ref<T>[] = [];
 
     function makeRef(index: number): Ref<T> {
@@ -57,18 +57,21 @@ export function defineStore<T, U>(conf: { ids: number[], ref: Ref<T>, add(init: 
     }
     
     const store = {
-        ids: conf.ids,
+        ids: [0],
         ref: makeRef(0),
         makeRef,
-        add(item: U): number {
-            return conf.add(item);
+        add(item: U): Ref<T> {
+            const newItemId = store.ids.length;
+            store.ids.push(newItemId);
+            conf.add(item);
+            return makeRef(newItemId);
         },
         getById(id: number): Ref<T> {
-            if (id >= 0 && id < conf.ids.length) {
-                if (conf.ids[id] === id) {
+            if (id >= 0 && id < store.ids.length) {
+                if (store.ids[id] === id) {
                     return store.makeRef(id);
                 } else {
-                    const index = conf.ids.indexOf(id);
+                    const index = store.ids.indexOf(id);
                     if (index >= 0) {
                         return store.makeRef(index);
                     } else {
@@ -87,8 +90,8 @@ export function defineStore<T, U>(conf: { ids: number[], ref: Ref<T>, add(init: 
             return result;
         },
         forEach(callback: (item: Ref<T>) => void): void {
-            for (let i = 1; i < conf.ids.length; i++) {
-                if (conf.ids[i] !== 0) {
+            for (let i = 1; i < store.ids.length; i++) {
+                if (store.ids[i] !== 0) {
                     store.ref.index = i;
                     callback(store.ref);
                 }

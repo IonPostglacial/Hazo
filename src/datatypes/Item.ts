@@ -23,7 +23,6 @@ export type Item = typeof defaultInit & {
 };
 
 export function createStore() {
-    const ids = [0];
     const names = [defaultInit.name];
     const descriptions = [defaultInit.description];
     const pictures = [defaultInit.pictures];
@@ -43,10 +42,10 @@ export function createStore() {
         methods: {
             index: 0,
             get id(): number {
-                return ids[this.index];
+                return store.ids[this.index];
             },
             set id(newId: number) {
-                ids[this.index] = newId;
+                store.ids[this.index] = newId;
             },
             get name(): MultilangText {
                 return names[this.index];
@@ -79,15 +78,11 @@ export function createStore() {
     });
 
     const store = defineStore({
-        ids,
         ref: Ref,
-        add(item: Init): number {
-            const newItemId = ids.length;
-            ids.push(newItemId);
+        add(item: Init) {
             names.push(item.name ?? defaultInit.name);
             descriptions.push(item.description ?? defaultInit.description);
             pictures.push(Array.from(item.pictures?? defaultInit.pictures));
-            return newItemId;
         },
     });
 

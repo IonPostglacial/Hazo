@@ -11,7 +11,8 @@ export type Node = {
 }
 
 export function createStore() {
-    const store = Item.createStore();
+    const itemStore = Item.createStore();
+    const itemRefs = [itemStore.ref];
     const childrenRefs: Ref<Node>[][] = [[]];
     const parentById = new Map<number, Ref<Node>>();
 
@@ -22,27 +23,28 @@ export function createStore() {
                 ref.item.swap(other.item);
             },
             delete(ref: Ref<Node>): void {
-                parentById.delete(store.ids[ref.index]);
+                parentById.delete(hierarchyStore.ids[ref.index]);
                 for (const child of ref.children) {
                     child.delete();
                 }
                 ref.item.delete();
+                hierarchyStore.ids[ref.index] = 0;
             },
         },
         methods: {
             index: 0,
             get parent(): Ref<Node>|undefined {
-                return parentById.get(store.ids[this.index]);
+                return parentById.get(hierarchyStore.ids[this.index]);
             },
             set parent(parent: Ref<Node>|undefined) {
                 if (typeof parent === "undefined") {
-                    parentById.delete(store.ids[this.index]);
+                    parentById.delete(hierarchyStore.ids[this.index]);
                 } else {
-                    parentById.set(store.ids[this.index], parent);
+                    parentById.set(hierarchyStore.ids[this.index], parent);
                 }
             },
             get item(): Ref<Item.Item> {
-                return store.getById(store.ids[this.index]);
+                return itemRefs[this.index];
             },
             get children(): Ref<Node>[] {
                 if (this.index > 0 && this.index < childrenRefs.length) {
@@ -90,11 +92,11 @@ export function createStore() {
     });
 
     const hierarchyStore = defineStore({
-        ids: store.ids,
         ref: Ref,
-        add(item: Item.Init): number {
+        add(item: Item.Init) {
             childrenRefs.push([]);
-            return store.add(item);
+            const it = itemStore.add(item);
+            itemRefs.push(it);
         },
     });
     return hierarchyStore;
