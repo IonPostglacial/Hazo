@@ -10,8 +10,7 @@ export type Node = {
     forEachLeaves(callback: (node: Ref<Node>) => void): void;
 }
 
-export function createStore() {
-    const itemStore = Item.createStore();
+export function createStore(itemStore: ReturnType<typeof Item.createStore>) {
     const itemRefs = [itemStore.ref];
     const childrenRefs: Ref<Node>[][] = [[]];
     const parentById = new Map<number, Ref<Node>>();

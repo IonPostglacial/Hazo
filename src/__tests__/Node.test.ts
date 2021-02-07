@@ -1,9 +1,10 @@
 import { Node, createStore } from "../datatypes/Node";
+import * as Item from "../datatypes/Item";
 import { Ref } from "../datatypes/storeUtils";
 import clone from "../tools/clone";
 
 test("Parent Children relationship", () => {
-    const store = createStore();
+    const store = createStore(Item.createStore());
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -19,7 +20,7 @@ test("Parent Children relationship", () => {
 });
 
 test("Test swap implementation", () => {
-    const store = createStore();
+    const store = createStore(Item.createStore());
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -40,7 +41,7 @@ test("Test swap implementation", () => {
 });
 
 test("Cascade deletion", () => {
-    const store = createStore();
+    const store = createStore(Item.createStore());
     
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -60,7 +61,7 @@ test("Cascade deletion", () => {
 });
 
 test("For each part of", () => {
-    const store = createStore();
+    const store = createStore(Item.createStore());
 
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -94,7 +95,7 @@ test("For each part of", () => {
 });
 
 test("For each leaves of", () => {
-    const store = createStore();
+    const store = createStore(Item.createStore());
     
     store.add({ name: { S: "A" } });
     store.add({ name: { S: "B" } });
@@ -121,4 +122,39 @@ test("For each leaves of", () => {
     });
 
     expect(leaves2).toStrictEqual([item4]);
+});
+
+test("Share Item store between multiple Node stores", () => {
+    const itemStore = Item.createStore();
+    const nodeStore1 = createStore(itemStore);
+    const nodeStore2 = createStore(itemStore);
+
+    nodeStore1.add({ name: { S: "a" } });
+    nodeStore2.add({ name: { S: "A" } });
+    nodeStore1.add({ name: { S: "b" } });
+    nodeStore2.add({ name: { S: "B" } });
+    nodeStore1.add({ name: { S: "c" } });
+    nodeStore2.add({ name: { S: "C" } });
+    nodeStore1.add({ name: { S: "d" } });
+    nodeStore2.add({ name: { S: "D" } });
+
+    const [item1, item2, item3, item4] = nodeStore1.map(ref => clone(ref));
+    const [item1b, item2b, item3b, item4b] = nodeStore2.map(ref => clone(ref));
+
+    item1.addChild(item2);
+    item1.addChild(item3);
+    item1.addChild(item4);
+
+    item1b.addChild(item2b);
+    item3b.addChild(item4b);
+
+    item2.swap(item3);
+
+    expect(item1.children).toStrictEqual([item3, item2, item4]);
+    expect(item1b.children).toStrictEqual([item2b]);
+    expect(item3b.children).toStrictEqual([item4b]);
+
+    item1.delete();
+
+    expect(itemStore.map(ref => ref).length).toBe(4);
 });
