@@ -1,8 +1,3 @@
-@font-face {
-    font-family: "SourceSans";
-    src: url("../fonts/Source_Sans_Pro/SourceSansPro-Regular.ttf");
-}
-
 html {
     box-sizing: border-box;
 }
@@ -14,7 +9,7 @@ html {
 body {
 	padding: 0;
     margin: 0;
-    font-family: "SourceSans";
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 th {
@@ -624,4 +619,39 @@ div.invisible {
 
 .selector-radio {
     display: none;
+}
+
+.small-width {
+    width: 200px;
+}
+
+.small-image {
+    max-width: 200px;
+    max-height: 200px;
+}
+
+.folder-image {
+    width: 150px;
+    height: 105px;
+    margin: 0 auto;
+    margin-top: 50px;
+    position: relative;
+    background-color: #e8cc78;
+    border-radius: 0 6px 6px 6px;
+    box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.59);
+}
+
+.folder-image:before {
+    content: '';
+    width: 50%;
+    height: 12px;
+    border-radius: 0 20px 0 0;
+    background-color: #e8cc78;
+    position: absolute;
+    top: -12px;
+    left: 0px;
+}
+
+.small-gap {
+    gap: 1ch;
 }

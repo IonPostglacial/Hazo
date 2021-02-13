@@ -2,11 +2,12 @@
 node_modules
 /dist
 src/hub/private
-/hub2/
+__pycache__
 /src/datatypes/refactor
 # local env files
 .env.local
 .env.*.local
+/hub-venv
 
 # Log files
 npm-debug.log*
