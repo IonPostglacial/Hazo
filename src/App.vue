@@ -122,7 +122,7 @@ export default HazoVue.extend({
             const json = JSON.stringify(encodeDataset(this.dataset));
             const data = new FormData();
             data.append("db-file-upload", new Blob([json], {type : "application/json"}), this.dataset.id + ".hazo.json");
-            const res = await fetch(Config.datasetRegistry + "databases.php", {
+            const res = await fetch(Config.datasetRegistry + "api/datasets", {
                 method: "POST",
                 body: data,
             });
@@ -131,7 +131,7 @@ export default HazoVue.extend({
             }
         },
         async pull() {
-            const res = await fetch(Config.datasetRegistry + "private.php?file="+ encodeURI(this.dataset.id) + ".hazo.json");
+            const res = await fetch(Config.datasetRegistry + "private/" + encodeURI(this.dataset.id) + ".hazo.json");
             if (res.status === 403) {
                 alert("You should connect to the Hub to be able to download files.");
             } else {
