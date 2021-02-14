@@ -12,21 +12,21 @@
     <section class="medium-padding">
         <div class="horizontal-flexbox flex-wrap relative small-gap">
             {% if base_path is defined %}
-                <a class="small-width thin-border vertical-flexbox space-between" href="/pictures/{{ base_path }}/..">
+                <a class="small-width vertical-flexbox space-between" href="{{ url_for(request.endpoint, path=base_path) }}..">
                     <div class="folder-image"></div>
-                    Back
+                    <div class="centered wrap-anywhere">Back</div>
                 </a>
             {% endif %}
             {% for image in images %}
                 {% if image.is_dir() %}
-                    <a class="small-width thin-border vertical-flexbox space-between" href="/pictures/{{ image.path }}{{ image.name | urlencode }}">
+                    <a class="small-width vertical-flexbox space-between" href="{{ root_path }}pictures/{% if base_path is defined %}{{ base_path }}/{% endif %}{{ image.path }}{{ image.name }}">
                         <div class="folder-image"></div>
-                        {{ image.name }}
+                        <div class="centered wrap-anywhere">{{ image.name }}</div>
                     </a>
                 {% else %}
-                    <a class="small-width thin-border vertical-flexbox space-between" href="/picture/{{ user.login | urlencode }}/{{ image.path }}{{ image.name | urlencode }}">
-                        <img class="small-image" src="/picture/{{ user.login | urlencode }}/{% if base_path is defined %}{{ base_path }}/{% endif %}{{ image.path }}{{ image.name }}" alt="{{ image.name }}">
-                        <legend>{{ image.name }}</legend>
+                    <a class="small-width vertical-flexbox space-between" href="{{ root_path }}picture/{{ user.login | urlencode }}/{% if base_path is defined %}{{ base_path }}/{% endif %}{{ image.path }}{{ image.name }}">
+                        <img class="small-image thin-border shadow-1" src="{{ root_path }}picture/{{ user.login | urlencode }}/{% if base_path is defined %}{{ base_path }}/{% endif %}{{ image.path }}{{ image.name }}">
+                        <legend class="wrap-anywhere centered">{{ image.name }}</legend>
                     </a>
                 {% endif %}
             {% endfor %}

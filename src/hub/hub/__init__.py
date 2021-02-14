@@ -177,7 +177,7 @@ def list_databases():
 @connected_only
 def image_galery():
     current_user = db.query(User).filter_by(login=session['login']).first()
-    return  render_template('image-gallery.html', user=current_user, images=current_user.personal_images)
+    return  render_template('image-gallery.html', root_path=request.url_root, user=current_user, images=current_user.personal_images)
 
 
 @app.route('/pictures/<path:path>', methods=['GET'])
@@ -185,7 +185,7 @@ def image_galery():
 def image_galery_path(path: str):
     current_user = db.query(User).filter_by(login=session['login']).first()
     dir_path = current_user.personal_folder / 'pictures' / path
-    return  render_template('image-gallery.html', base_path=path, user=current_user, images=dir_path.iterdir())
+    return  render_template('image-gallery.html', root_path=request.url_root, base_path=path, user=current_user, images=dir_path.iterdir())
 
 
 @app.route('/picture/<string:user_login>/<path:picture_path>', methods=['GET'])

@@ -655,3 +655,11 @@ div.invisible {
 .small-gap {
     gap: 1ch;
 }
+
+.wrap-anywhere {
+    word-wrap: anywhere;
+}
+
+.shadow-1 {
+    box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.59);
+}
