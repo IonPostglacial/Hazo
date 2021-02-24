@@ -1,42 +1,42 @@
 <template>
     <li>
-        <div class="horizontal-flexbox center-items medium-height">
-            <label v-if="hasArrows" v-on:click="toggleOpen" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered">
+        <div class="horizontal-flexbox center-items">
+            <div class="indent">&nbsp;</div>
+            <label v-on:click="toggleOpen" :class="['small-square', 'blue-circle-hover', 'thin-margin', 'vertical-flexbox', 'flex-centered', { 'visibility-hidden': !hasArrows }]">
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
-            <label :class="['medium-line-height', 'blue-hover-line', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', { 'background-color-1': selected }]" v-on:click="select">
-                <div v-if="isFirstColumn" class="min-width-small">{{ prettyId }}</div>
-                <slot v-bind:item="{id: item.id, name: itemName }">
-                    <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName }}</div>
-                </slot>
-            </label>
-            <div v-if="editable && isLastColumn" class="horizontal-flexbox">
-                <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
-                <div @click="moveUp" class="move-up">🡡</div>
-                <div @click="moveDown" class="move-down">🡣</div>
-                <div class="close" @click="deleteItem"></div>
+            <div class="horizontal-flexbox flex-centered">{{ prettyId }}</div>
+        </div>
+        <div v-for="nameField in fieldNames" :key="nameField.propertyName"
+                :class="['medium-line-height', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', 'cell', 'blue-hover-line', { 'background-color-1': selected }]">
+            <div class="horizontal-flexbox center-items flex-grow-1 medium-height">
+                <label class="horizontal-flexbox flex-grow-1" v-on:click="select">
+                    <slot v-bind:item="{id: item.id, name: item[nameField.propertyName] }">
+                        <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ item[nameField.propertyName] }}</div>
+                    </slot>
+                </label>
             </div>
         </div>
-        <div v-if="childrenToDisplay.length > 0" class="horizontal-flexbox start-aligned">
-            <div v-if="isFirstColumn" class="indentation-width"></div>
-            <ul v-if="open" class="flex-grow-1">
-                <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
-                    :is-first-column="isFirstColumn"
-                    :is-last-column="isLastColumn"
-                    :init-open="initOpen"
-                    :space-for-add="spaceForAdd"
-                    :selected-item="selectedItem"
-                    :init-open-items="initOpenItems"
-                    :name-field="nameField" :items-hierarchy="itemsHierarchy" :item="child" :buttons="buttons" 
-                    v-on="$listeners" :parent-id="item.id" v-slot:default="menuItemProps">
-                    <slot v-bind:item="menuItemProps.item"></slot>
-                </TreeMenuItem>
-                <li v-if="editable || spaceForAdd" :class="{ 'visibility-hidden': spaceForAdd }">
-                    <add-item @add-item="addItem"></add-item>
-                </li>
-            </ul>
+        <div v-if="editable" class="horizontal-flexbox flex-centered">
+            <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
+            <div @click="moveUp" class="move-up">🡡</div>
+            <div @click="moveDown" class="move-down">🡣</div>
+            <div class="close" @click="deleteItem"></div>
         </div>
+        <ul v-if="open" class="flex-grow-1">
+            <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
+                :init-open="initOpen"
+                :selected-item="selectedItem"
+                :init-open-items="initOpenItems"
+                :field-names="fieldNames" :items-hierarchy="itemsHierarchy" :item="child" :buttons="buttons" 
+                v-on="$listeners" :parent-id="item.id" v-slot:default="menuItemProps">
+                <slot v-bind:item="menuItemProps.item"></slot>
+            </TreeMenuItem>
+            <li v-if="editable">
+                <add-item class="full-line" @add-item="addItem"></add-item>
+            </li>
+        </ul>
     </li>
 </template>
 
@@ -54,11 +54,8 @@ export default Vue.extend({
         item: Object as PropType<HierarchicalItem<any>>,
         itemsHierarchy: Object as PropType<Hierarchy<any>>,
         buttons: Array as PropType<Array<Button>>,
-        nameField: Object as PropType<{ label: string, propertyName: string }>,
+        fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,
         editable: Boolean,
-        spaceForAdd: Boolean,
-        isFirstColumn: Boolean,
-        isLastColumn: Boolean,
         selectedItem: String,
         initOpen: Boolean,
         initOpenItems: Array as PropType<Array<string>>,
@@ -89,15 +86,7 @@ export default Vue.extend({
             return this.buttons?.filter((button) => button.for === this.item?.type);
         },
         hasArrows(): boolean {
-            return this.isFirstColumn && (this.itemsHierarchy!.hasChildren(this.item) || this.editable);
-        },
-        itemName(): string {
-            const name = (this.item as any)[this.nameField!.propertyName ?? "name"];
-            if (typeof name === "undefined" || name === null || name === "") {
-                return "_";
-            } else {
-                return name;
-            }
+            return (this.itemsHierarchy!.hasChildren(this.item) || this.editable);
         },
         childrenToDisplay(): Array<any> {
             return Array.from(this.itemsHierarchy?.childrenOf(this.item)) ?? []

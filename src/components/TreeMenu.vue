@@ -15,29 +15,23 @@
                 </li>
             </ul>
         </div>
-        <div class="horizontal-flexbox big-padding-right">
-            <ul v-for="(nameField, fieldNum) in columnsToDisplay" :key="nameField.propertyName"
-                :class="['menu', 'flex-grow-1', { 'thin-border-left': fieldNum !== 0 }]">
-                <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
-                    :item="item" :items-hierarchy="items"   
-                    :is-first-column="fieldNum === 0"
-                    :is-last-column="fieldNum === columnsToDisplay.length - 1"
-                    :space-for-add="editable && fieldNum > 0"
-                    :editable="editable" :buttons="buttons"
-                    :name-field="nameField"
-                    :selected-item="selectedItem"
-                    :init-open="initOpen"
-                    :init-open-items="initOpenItems"
-                    @selected="selectItem"
-                    @add-item="addItem"
-                    @delete-item="deleteItem" 
-                    @button-clicked="buttonClicked"
-                    @move-item-up="moveItemUp"
-                    @move-item-down="moveItemDown" v-slot:default="menuItemProps">
-                    <slot v-bind:item="menuItemProps.item"></slot>
-                </TreeMenuItem>
-            </ul>
-        </div>
+        <ul :class="['menu', 'flex-grow-1', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
+            <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
+                :item="item" :items-hierarchy="items"
+                :editable="editable" :buttons="buttons"
+                :field-names="columnsToDisplay"
+                :selected-item="selectedItem"
+                :init-open="initOpen"
+                :init-open-items="initOpenItems"
+                @selected="selectItem"
+                @add-item="addItem"
+                @delete-item="deleteItem" 
+                @button-clicked="buttonClicked"
+                @move-item-up="moveItemUp"
+                @move-item-down="moveItemDown" v-slot:default="menuItemProps">
+                <slot v-bind:item="menuItemProps.item"></slot>
+            </TreeMenuItem>
+        </ul>
         <add-item v-if="editable" @add-item="addItem({ value: $event.detail })"></add-item>
     </div> 
 </template>

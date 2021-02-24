@@ -522,7 +522,7 @@ div.invisible {
 }
 
 .over-everything {
-    z-index: 10000;;
+    z-index: 10000;
 }
 
 .absolute-top-right {
@@ -627,15 +627,6 @@ div.invisible {
     color: inherit;
 }
 
-.menu li {
-    list-style: none;
-}
-
-.menu li > div {
-    position: relative;
-    width: 100%;
-}
-
 .blue-hover-line:hover,
 .blue-hover-line:hover ~ .blue-hover-line {
     background-color: rgb(37, 113, 212);
@@ -676,4 +667,56 @@ div.invisible {
 
 .indented {
     margin-left: 42px;
+}
+
+.tree-grid {
+    display: grid;
+    position: relative;
+    grid-template-columns: minmax(auto, 10ch) repeat(var(--tree-column-number), 1fr);
+}
+
+.tree-grid.editable {
+    grid-template-columns: minmax(auto, 10ch) repeat(var(--tree-column-number), 1fr) auto;
+}
+
+.tree-grid.editable .full-line {
+    grid-column: 1 / span calc(var(--tree-column-number) + 2);
+}
+
+.tree-cols-0 {
+    --tree-column-number: 0;
+}
+
+.tree-cols-1 {
+    --tree-column-number: 1;
+}
+
+.tree-cols-2 {
+    --tree-column-number: 2;
+}
+
+.tree-cols-3 {
+    --tree-column-number: 3;
+}
+
+.tree-grid ul,
+.tree-grid li {
+    display: contents;
+}
+
+.tree-grid li li > * > .indent {
+    width: 3ch;
+}
+
+.tree-grid li li li > * > .indent {
+    width: 7ch;
+}
+
+.tree-grid li li li li > * > .indent {
+    width: 11ch;
+}
+
+.tree-grid .cell {
+    border-left: 1px solid #e3e3e3;
+    padding: 2px 1ch;
 }
