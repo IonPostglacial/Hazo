@@ -5,20 +5,22 @@
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
-            <label :class="['medium-line-height', 'blue-hover', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', { 'background-color-1': selected }]" v-on:click="select">
+            <label :class="['medium-line-height', 'blue-hover-line', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', { 'background-color-1': selected }]" v-on:click="select">
                 <div v-if="isFirstColumn" class="min-width-small">{{ prettyId }}</div>
                 <slot v-bind:item="{id: item.id, name: itemName }">
                     <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName }}</div>
                 </slot>
             </label>
-            <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
-            <div v-if="editable && isLastColumn" @click="moveUp" class="move-up">🡡</div>
-            <div v-if="editable && isLastColumn" @click="moveDown" class="move-down">🡣</div>
-            <div v-if="editable && isLastColumn" class="close" @click="deleteItem"></div>
+            <div v-if="editable && isLastColumn" class="horizontal-flexbox">
+                <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
+                <div @click="moveUp" class="move-up">🡡</div>
+                <div @click="moveDown" class="move-down">🡣</div>
+                <div class="close" @click="deleteItem"></div>
+            </div>
         </div>
-        <div class="horizontal-flexbox start-aligned">
+        <div v-if="childrenToDisplay.length > 0" class="horizontal-flexbox start-aligned">
             <div v-if="isFirstColumn" class="indentation-width"></div>
-            <div v-if="open" class="flex-grow-1">
+            <ul v-if="open" class="flex-grow-1">
                 <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                     :is-first-column="isFirstColumn"
                     :is-last-column="isLastColumn"
@@ -33,7 +35,7 @@
                 <li v-if="editable || spaceForAdd" :class="{ 'visibility-hidden': spaceForAdd }">
                     <add-item @add-item="addItem"></add-item>
                 </li>
-            </div>
+            </ul>
         </div>
     </li>
 </template>
@@ -97,8 +99,8 @@ export default Vue.extend({
                 return name;
             }
         },
-        childrenToDisplay(): Iterable<any> {
-            return this.itemsHierarchy?.childrenOf(this.item) ?? []
+        childrenToDisplay(): Array<any> {
+            return Array.from(this.itemsHierarchy?.childrenOf(this.item)) ?? []
         },
     },
     methods: {

@@ -636,8 +636,8 @@ div.invisible {
     width: 100%;
 }
 
-.blue-hover:hover,
-.menu li > div > input:checked + label {
+.blue-hover-line:hover,
+.blue-hover-line:hover ~ .blue-hover-line {
     background-color: rgb(37, 113, 212);
     color: white;
 }
