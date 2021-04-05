@@ -8,6 +8,7 @@ import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import IdentificationTab from "./components/IdentificationTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
+import debounce from "./tools/debounce";
 import "./components";
 
 
@@ -35,8 +36,14 @@ new Vue({
     router: router,
 }).$mount("#app");
 
-window.addEventListener("load", function (e) {
+function adaptSize() {
     document.documentElement.style.setProperty("--viewport-height", `${0.01 * window.innerHeight}px`);
-});
+}
 
+window.addEventListener("load", function (e) {
+    adaptSize();
+});
+window.addEventListener("resize", debounce(200, function (e) {
+    adaptSize();
+}));
 navigator.serviceWorker?.register("img-caching-service-worker.js", { scope: "./" });
