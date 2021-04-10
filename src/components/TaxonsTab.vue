@@ -36,21 +36,34 @@
                     </div>
                 </div>
                 <div class="button-group">
-                    <button v-if="typeof selectedTaxon !== 'undefined'" type="button" @click="copyItem">Copy</button>
+                    <button v-if="(typeof selectedTaxon !== 'undefined')" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
                 </div>
                 <div class="button-group">
+                    <label class="button" for="importKml">KML</label>
+                    <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
                     <button type="button" @click="emptyZip">Folders</button>
                     <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
                     <button type="button" @click="exportStats">Stats</button>
                     <button type="button" @click="showFields = !showFields">Extra Fields</button>
                 </div>
             </div>
+            <google-map v-if="(typeof selectedTaxon !== 'undefined')"
+                    id="mapid"
+                    ref="Map"
+                    :center="{ lat: 48.856614, lng: 2.3522219 }"
+                    :zoom="12">
+                <google-map-marker v-for="(position, index) in selectedTaxon.specimenLocations"
+                    :key="index"
+                    :title="selectedTaxon.name"
+                    :position="position"
+                />
+            </google-map>
             <taxon-presentation v-if="mode === 'present-item'"
                 @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
                 :selected-taxon-id="selectedTaxonId" :dataset="dataset">
             </taxon-presentation>
-            <section v-if="mode !== 'present-item' && typeof selectedTaxon !== 'undefined'" class="flex-grow-1 horizontal-flexbox scroll">
+            <section v-if="(mode !== 'present-item' && typeof selectedTaxon !== 'undefined')" class="flex-grow-1 horizontal-flexbox scroll">
                 <div class="vertical-flexbox scroll">
                     <picture-box :editable="editable ? 'editable' : ''"
                             @open-photo="openPhoto"
@@ -153,7 +166,8 @@ import { Book, Character, Dataset, DetailData, HierarchicalItem, Hierarchy, Pict
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
-import { TexExporter, exportZipFolder } from "@/features";
+import { TexExporter, exportZipFolder, importKml } from "@/features";
+
 
 export default Vue.extend({
     name: "TaxonsTab",
@@ -196,6 +210,13 @@ export default Vue.extend({
         },
     },
     methods: {
+        async importKml(e: InputEvent) {
+            if (!(e.target instanceof HTMLInputElement)) return;
+            
+            const positions = await importKml((e.target.files ?? [])[0]);
+
+            this.$store.commit("setTaxonLocations", { taxon: this.selectedTaxon, positions });
+        },
         copyItem() {
             this.$store.commit("copyTaxon", this.selectedTaxon);
         },

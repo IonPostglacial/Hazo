@@ -59,6 +59,7 @@ function encodeDescription(descriptorId: string, statesIds: string[]) {
 function encodeTaxon(taxon: Taxon, dataset: Dataset) {
 	return {
 		bookInfoByIds: taxon.bookInfoByIds,
+		specimenLocations: taxon.specimenLocations,
 		descriptions: [...dataset.taxonDescriptions(taxon)].map(d => encodeDescription(d.character.id, d.states.map(s => s.id))),
 		...encodeHierarchicalItem(taxon),
 	};
@@ -113,6 +114,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
     }
 	return new Taxon({
 		...item,
+		specimentLocations: encodedTaxon.specimenLocations,
 		bookInfoByIds,
 	});
 }

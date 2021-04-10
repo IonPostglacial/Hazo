@@ -77,6 +77,9 @@ export function createStore() {
             setTaxonPicture(state, payload: { taxon: Taxon, picture: Picture, index: number }) {
                 payload.taxon.photos[payload.index] = payload.picture;
             },
+            setTaxonLocations(state, payload: { taxon: Taxon, positions: [{ lat: number, lng: number }] }) {
+                payload.taxon.specimenLocations = payload.positions;
+            },
             removeTaxonPicture(state, payload: { taxon: Taxon, index: number }) {
                 payload.taxon.photos.splice(payload.index, 1);
             },

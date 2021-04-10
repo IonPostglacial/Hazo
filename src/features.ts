@@ -5,3 +5,4 @@ export * from "./features/texexporter";
 export * from "./features/sddexport";
 export * from "./features/sddimport";
 export * from "./features/codec";
+export * from "./features/kmlimport";

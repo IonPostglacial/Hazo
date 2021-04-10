@@ -10,6 +10,15 @@ import IdentificationTab from "./components/IdentificationTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import debounce from "./tools/debounce";
 import "./components";
+import VueGoogleMap from "vuejs-google-maps"
+import "vuejs-google-maps/dist/vuejs-google-maps.css"
+
+Vue.use(VueGoogleMap, {
+    load: {
+        apiKey: "AIzaSyClYri6lQql5nQkCwktcq2DJsjBDpmP_nU",
+        libraries: [/* rest of libraries */]
+    }
+})
 
 
 Vue.config.productionTip = false;
