@@ -24,6 +24,11 @@ def connected_only(f):
     return connected_only_fn
 
 
+@app.teardown_appcontext
+def shutdown_session(response_or_exc):
+    db.remove()
+
+
 @app.route("/login", methods=['GET', 'POST'])
 def login_page():
     url_for('static', filename='style.css')

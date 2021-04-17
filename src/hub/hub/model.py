@@ -11,7 +11,7 @@ class User(BaseModel):
     __tablename__ = "Users"
 
     login = Column(String(256), primary_key=True)
-    password_hash = Column(String())
+    password_hash = Column(String(1024))
 
     @property
     def personal_folder(self):
@@ -35,10 +35,10 @@ class User(BaseModel):
 class FileSharing(BaseModel):
     __tablename__ = "FileSharings"
 
-    owner_login = Column(String, ForeignKey("Users.login"), nullable=False)
+    owner_login = Column(String(256), ForeignKey("Users.login"), nullable=False)
     owner = relationship(User, backref=backref('file_sharings', lazy=True))
     share_link = Column(String(48), primary_key=True)
-    file_path = Column(String(), unique=True)
+    file_path = Column(String(512), unique=True)
 
     @property
     def file_name(self):
