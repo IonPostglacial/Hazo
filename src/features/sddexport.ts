@@ -22,7 +22,7 @@ export function stateToSdd(dataset: Dataset, state: State):SddStateData {
         state: {
             id: state.id,
             characterId: dataset.charactersHierarchy.stateCharacter(state)?.id ?? "",
-            label: state.name,
+            label: state.name.S,
             detail: "",
             mediaObjectsRefs: [],
         },
@@ -33,7 +33,7 @@ export function stateToSdd(dataset: Dataset, state: State):SddStateData {
 export function detailDataToSdd(data: DetailData, extraFields: Field[]): Representation {
 	return {
 		mediaObjectsRefs: [],
-		label: `${name} / ${data.author} / ${data.nameCN}`,
+		label: `${data.name.S} / ${data.author} / ${data.name.CN}`,
 		detail: "" + extraFields.map(function(field) {
 			const value = ((field.std) ? data : data.extra)[field.id];
 			if (typeof value === "undefined" || value === null || value == "") {

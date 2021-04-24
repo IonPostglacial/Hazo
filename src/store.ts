@@ -72,16 +72,16 @@ export function createStore() {
                 state.dataset.changeTaxonParent(e.taxon, e.newParentId);
             },
             addTaxonPicture(state, payload: { taxon: Taxon, picture: Picture }) {
-                payload.taxon.photos.push(payload.picture);
+                payload.taxon.pictures.push(payload.picture);
             },
             setTaxonPicture(state, payload: { taxon: Taxon, picture: Picture, index: number }) {
-                payload.taxon.photos[payload.index] = payload.picture;
+                payload.taxon.pictures[payload.index] = payload.picture;
             },
             setTaxonLocations(state, payload: { taxon: Taxon, positions: [{ lat: number, lng: number }] }) {
                 payload.taxon.specimenLocations = payload.positions;
             },
             removeTaxonPicture(state, payload: { taxon: Taxon, index: number }) {
-                payload.taxon.photos.splice(payload.index, 1);
+                payload.taxon.pictures.splice(payload.index, 1);
             },
             copyCharacter(state, character: Character) {
                 state.copiedCharacter = state.dataset.charactersHierarchy.extractHierarchy(character);
@@ -119,13 +119,13 @@ export function createStore() {
                 state.dataset.removeCharacter(character);
             },
             addCharacterPicture(state, payload: { character: Character, picture: Picture }) {
-                payload.character.photos.push(payload.picture);
+                payload.character.pictures.push(payload.picture);
             },
             setCharacterPicture(state, payload: { character: Character, picture: Picture, index: number }) {
-                payload.character.photos[payload.index] = payload.picture;
+                payload.character.pictures[payload.index] = payload.picture;
             },
             removeCharacterPicture(state, payload: { character: Character, index: number }) {
-                payload.character.photos.splice(payload.index, 1);
+                payload.character.pictures.splice(payload.index, 1);
             },
             setDataset(state, dataset: Dataset) {
                 Object.assign(state.dataset, dataset);
@@ -137,13 +137,13 @@ export function createStore() {
                 state.dataset.charactersHierarchy.removeState(hazoState);
             },
             addStatePicture(state, payload: { state: State, picture: Picture }) {
-                payload.state.photos.push(payload.picture);
+                payload.state.pictures.push(payload.picture);
             },
             setStatePicture(state, payload: { state: State, picture: Picture, index: number }) {
-                payload.state.photos[payload.index] = payload.picture;
+                payload.state.pictures[payload.index] = payload.picture;
             },
             removeStatePicture(state, payload: { state: State, index: number }) {
-                payload.state.photos.splice(payload.index, 1);
+                payload.state.pictures.splice(payload.index, 1);
             },
             setInapplicableState(state, payload: { state: State, selected: boolean }) {
                 const character = state.dataset.charactersHierarchy.stateCharacter(payload.state);

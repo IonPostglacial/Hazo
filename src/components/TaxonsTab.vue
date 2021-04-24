@@ -2,7 +2,7 @@
     <div class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <nav v-if="showLeftMenu" class="scroll white-background no-print">
             <TreeMenu :editable="editable" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
-                :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
+                :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
                 @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </TreeMenu>
@@ -12,7 +12,10 @@
         <div class="vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
                 <div class="horizontal-flexbox">
-                    <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
+                    <div class="button-group">
+                        <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
+                        <button type="button" @click="showMap = !showMap">Map</button>
+                    </div>
                     <span class="medium-margin">Mode:</span>
                     <div class="button-group">
                         <button type="button" :class="{ 'selected-tab': mode === 'view-item' }" @click="mode = 'view-item'">View</button>
@@ -25,14 +28,14 @@
                         <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
                         <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
                             <TreeMenu :items="dataset.taxonsHierarchy"
-                                :name-fields="[{ label: 'NS', propertyName: 'name' }, { label: 'NV', propertyName: 'vernacularName'}, { label: '中文名', propertyName: 'nameCN' }]"
+                                :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
                                 @select-item="changeSelectedTaxonParent">
                             </TreeMenu>
                         </div>
                     </div>
                     <div v-if="!selectingParent" class="button-group">
-                        <button type="button" v-for="parent in dataset.taxonsHierarchy.parentsOf(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name }}</button>
-                        <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name }}</button>
+                        <button type="button" v-for="parent in dataset.taxonsHierarchy.parentsOf(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
+                        <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</button>
                     </div>
                 </div>
                 <div class="button-group">
@@ -41,14 +44,15 @@
                 </div>
                 <div class="button-group">
                     <label class="button" for="importKml">KML</label>
-                    <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
                     <button type="button" @click="emptyZip">Folders</button>
                     <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
                     <button type="button" @click="exportStats">Stats</button>
                     <button type="button" @click="showFields = !showFields">Extra Fields</button>
                 </div>
+                <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
             </div>
             <google-map v-if="(typeof selectedTaxon !== 'undefined')"
+                    :class="{ invisible: !showMap }"
                     id="mapid"
                     ref="Map"
                     :center="{ lat: 48.856614, lng: 2.3522219 }"
@@ -70,7 +74,7 @@
                             @add-photo="addItemPhoto"
                             @set-photo="setItemPhoto"
                             @delete-photo="deleteItemPhoto">
-                        <picture-frame v-for="(photo, index) in selectedTaxon.photos" :key="photo.id"
+                        <picture-frame v-for="(photo, index) in selectedTaxon.pictures" :key="photo.id"
                             :index="index" :editable="editable ? 'editable' : ''" :pictureid="photo.id" :url="photo.url" :label="photo.label">
                         </picture-frame>
                     </picture-box>
@@ -80,19 +84,19 @@
                             <div class="scroll large-max-width">
                                 <div v-if="!editable">
                                     <label class="item-property">NS</label>
-                                    <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name }}</i> {{ selectedTaxon.author }}</div>
+                                    <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                                 </div>
                                 <div v-if="editable">
                                     <label class="item-property">NS</label>
-                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name" /><br>
+                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" /><br>
                                     <label class="item-property">Author</label>
                                     <input type="text" v-model="selectedTaxon.author" />
                                 </div>
                                 <item-property-field property="name2" :value="selectedTaxon.name2" :editable="editable">
                                     Synonymous</item-property-field>
-                                <item-property-field property="nameCN" :value="selectedTaxon.nameCN" :editable="editable">
+                                <item-property-field property="nameCN" :value="selectedTaxon.name.CN" :editable="editable">
                                     中文名</item-property-field>
-                                <item-property-field property="vernacularName" :value="selectedTaxon.vernacularName" :editable="editable">
+                                <item-property-field property="vernacularName" :value="selectedTaxon.name.V" :editable="editable">
                                     NV</item-property-field>
                                 <item-property-field property="vernacularName2" :value="selectedTaxon.vernacularName2" :editable="editable">
                                     NV 2</item-property-field>
@@ -144,7 +148,7 @@
                 </div>
                 <div class="vertical-flexbox scroll flex-grow-1">
                     <collapsible-panel label="Description">
-                        <SquareTreeViewer class="large-max-width" :name-fields="['name', 'nameEN', 'nameCN']" :editable="editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                        <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                     </collapsible-panel>
                 </div>
             </section>
@@ -177,8 +181,9 @@ export default Vue.extend({
             showLeftMenu: true,
             showFields: false,
             showBigImage: false,
+            showMap: false,
             bigImages: [{ id: "", url: "", label: "" }],
-            mode: "view-item",
+            mode: "edit-item",
             editor: ClassicEditor,
             editorConfig: {},
             latexProgressText: "",
@@ -239,7 +244,7 @@ export default Vue.extend({
         addTaxon(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;
             this.$store.commit("addTaxon", new Taxon({
-                ...new DetailData({ id: "", name, vernacularName, nameCN, photos: [], }),
+                ...new DetailData({ id: "", name: { S: name, V: vernacularName, CN: nameCN}, pictures: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
             }));
@@ -278,14 +283,14 @@ export default Vue.extend({
                 console.warn("Trying to add a photo but no taxon selected.");
                 return;
             }
-            const numberOfPhotos = this.selectedTaxon.photos.length;
+            const numberOfPhotos = this.selectedTaxon.pictures.length;
             this.$store.commit("addTaxonPicture", { taxon: this.selectedTaxon, picture: { id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value } });
         },
         setItemPhoto(e: {detail: {index: number, value: string}}) {
             this.$store.commit("setTaxonPicture", {
                 taxon: this.selectedTaxon,
                 index: e.detail.index,
-                picture: { ...this.selectedTaxon!.photos[e.detail.index], url: e.detail.value },
+                picture: { ...this.selectedTaxon!.pictures[e.detail.index], url: e.detail.value },
             });
         },
         deleteItemPhoto(e: {detail: { index: number }}) {
@@ -294,7 +299,7 @@ export default Vue.extend({
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
             console.log("open my photo");
-            this.bigImages = this.selectedTaxon!.photos;
+            this.bigImages = this.selectedTaxon!.pictures;
             this.showBigImage = true;
         },
         async emptyZip() {

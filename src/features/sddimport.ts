@@ -9,10 +9,14 @@ type MapContructor<T> = { new (): IMap<T> };
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {
         id: state.id,
-        name: state.label,
-        nameEN: "",
-        nameCN: "",
-        photos: picturesFromPhotos(state.mediaObjectsRefs?.map(m => photosByRef[m.ref])),
+        name: {
+            S: state.label,
+            V: state.label,
+            CN: state.label,
+            EN: state.label,
+            FR: state.label,
+        },
+        pictures: picturesFromPhotos(state.mediaObjectsRefs?.map(m => photosByRef[m.ref])),
     };
 }
 
@@ -60,7 +64,7 @@ function detailDataFromSdd(id: string, representation: Representation, extraFiel
         detail = detail.replace(emptyParagraphRe, "");
     }
     const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);
-    const data = new DetailData({ id: id, name: name, author: author, nameCN: nameCN, fasc: fasc, page: page, detail: detail, photos: photos });
+    const data = new DetailData({ id: id, name: { S: name, CN: nameCN }, author: author, fasc: fasc, page: page, detail: detail, pictures: photos });
 
     for (const field of fields) {
         ((field.std) ? data : data.extra)[field.id] = findInDescription(representation.detail, field.label);

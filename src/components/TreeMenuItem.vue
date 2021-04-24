@@ -12,7 +12,7 @@
                 :class="['medium-line-height', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', 'cell', 'blue-hover-line', { 'background-color-1': selected }]">
             <div class="horizontal-flexbox center-items flex-grow-1 medium-height">
                 <label class="horizontal-flexbox flex-grow-1" v-on:click="select">
-                    <slot v-bind:item="{id: item.id, name: item[nameField.propertyName] }">
+                    <slot v-bind:item="{id: item.id, name: item.name[nameField.propertyName] }">
                         <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ item[nameField.propertyName] }}</div>
                     </slot>
                 </label>

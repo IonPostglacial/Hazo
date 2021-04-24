@@ -29,12 +29,18 @@ export interface Field {
     icon: string;
 }
 
+export interface MultilangText {
+	S: string;
+	V?: string;
+	CN?: string;
+	EN?: string;
+	FR?: string;
+}
+
 export interface BasicInfo {
 	id: string;
-	name: string;
-	nameEN: string;
-	nameCN: string;
-	photos: Picture[];
+	name: MultilangText;
+	pictures: Picture[];
 }
 
 export interface State extends BasicInfo {

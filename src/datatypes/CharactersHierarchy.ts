@@ -37,7 +37,7 @@ export class CharactersHierarchy extends Hierarchy<Character> {
             if(typeof character.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
                 const newState: State = {
                     id: "s-auto-" + newCharacter.id,
-                    name: newCharacter.name, nameEN: "", nameCN: "", photos: []
+                    name: Object.assign({}, newCharacter.name), pictures: []
                 };
                 this.addState(newState, parentCharacter);
                 newCharacter.inherentState = newState;
@@ -116,10 +116,11 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         return stateIds.map(id => this.states.get(id)!).filter(s => typeof s !== "undefined");
     }
 
-    protected onCloneFrom(hierarchy: CharactersHierarchy, character: Character, clonedCharacter: Character) {
+    protected onCloneFrom(hierarchy: CharactersHierarchy, character: Character, clonedCharacter: Character, newParent: Character|undefined) {
         clonedCharacter.requiredStates = [];
         clonedCharacter.inapplicableStates = [];
         clonedCharacter.inherentState = undefined;
+        const oldParent = hierarchy.itemWithId(character.parentId);
         const oldStates = hierarchy.characterStates(character);
         const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
         const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
@@ -133,9 +134,10 @@ export class CharactersHierarchy extends Hierarchy<Character> {
             if (oldInapplicableStatesIds.includes(oldState.id)) {
                 clonedCharacter.inapplicableStates.push(newState);
             }
-            if (character.inherentState?.id === oldState.id) {
-                clonedCharacter.inherentState = newState;
-            }
+        }
+        if (newParent && character.inherentState?.id) {
+            const oldInherentStateIndex = Array.from(hierarchy.characterStates(oldParent)).findIndex(s => s.id === character.inherentState?.id);
+            clonedCharacter.inherentState = Array.from(this.characterStates(newParent))[oldInherentStateIndex];
         }
     }
 

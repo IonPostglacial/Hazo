@@ -2,7 +2,7 @@
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll white-background">
             <TreeMenu editable :items="charactersHierarchy" name="description"
-                :name-fields="[{ label: 'Name', propertyName: 'name'}, { label: '中文名', propertyName: 'nameCN' }]"
+                :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
                 @add-item="addCharacter"
                 @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
@@ -25,13 +25,13 @@
                     @set-photo="setCharacterPhoto"
                     @delete-photo="deleteCharacterPhoto"
                     @open-photo="openDescriptionPhoto">
-                <picture-frame v-for="(photo, index) in selectedCharacter.photos" :key="photo.id"
+                <picture-frame v-for="(photo, index) in selectedCharacter.pictures" :key="photo.id"
                     :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" editable="true"></picture-frame>
             </picture-box>
             <collapsible-panel v-if="typeof selectedCharacter !== 'undefined'" label="Identification">
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name" /></div>
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameEN" /></div>
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.nameCN" /></div>
+                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.FR" /></div>
+                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></div>
+                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></div>
                 <label class="item-property">Detail</label>
                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
             </collapsible-panel>
@@ -45,7 +45,7 @@
                             <li class="medium-padding" v-for="state in parentStates" :key="state.id">
                                 <label>
                                     <input type="radio" :checked="selectedCharacter.inherentState ? selectedCharacter.inherentState.id === state.id : false" name="inherent-state" @change="setInherentState(state)" />
-                                    {{ state.name }}
+                                    {{ state.name.S }}
                                 </label>
                             </li>
                         </ul>
@@ -56,7 +56,7 @@
                             <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                 <label>
                                     <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
-                                    {{ state.name }}
+                                    {{ state.name.S }}
                                 </label>
                             </li>
                         </ul>
@@ -67,7 +67,7 @@
                             <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                 <label>
                                 <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
-                                {{ state.name }}
+                                {{ state.name.S }}
                                 </label>
                             </li>
                         </ul>
@@ -82,9 +82,9 @@
                         <li v-for="state in dataset.charactersHierarchy.characterStates(selectedCharacter) || []" :key="state.id" class="display-contents">
                             <label class="medium-padding rounded nowrap horizontal-flexbox">
                                 <div class="form-grid">
-                                    <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name" />
-                                    <div>EN</div><input type="text" class="flex-grow-1" v-model="state.nameEN" />
-                                    <div>CN</div><input type="text" class="flex-grow-1" v-model="state.nameCN" />
+                                    <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name.S" />
+                                    <div>EN</div><input type="text" class="flex-grow-1" v-model="state.name.EN" />
+                                    <div>CN</div><input type="text" class="flex-grow-1" v-model="state.name.CN" />
                                     <label>Color</label><input type="color" v-model="state.color">
                                     <div>Description</div>
                                     <textarea v-model="state.description" class="input-text" pleceholder="description"></textarea>
@@ -96,7 +96,7 @@
                                         @set-photo="setStatePhoto(state, $event)"
                                         @delete-photo="deleteStatePhoto(state, $event)"
                                         @open-photo="openStatePhoto(state, $event)">
-                                    <picture-frame v-for="(photo, index) in state.photos" :key="photo.id"      
+                                    <picture-frame v-for="(photo, index) in state.pictures" :key="photo.id"      
                                         :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true">
                                     </picture-frame>
                                 </picture-box>
@@ -185,7 +185,7 @@ export default Vue.extend({
         },
         addCharacterPhoto(e: {detail: {value: string[]}}) {
             const [url, label] = e.detail.value;
-            const numberOfPhotos = this.selectedCharacter!.photos.length;
+            const numberOfPhotos = this.selectedCharacter!.pictures.length;
             this.$store.commit("addCharacterPicture", {
                 character: this.selectedCharacter,
                 picture: {
@@ -199,14 +199,14 @@ export default Vue.extend({
             this.$store.commit("setCharacterPicture", {
                 character: this.selectedCharacter,
                 index: e.detail.index,
-                picture: { ...this.selectedCharacter?.photos[e.detail.index], url: e.detail.value }
+                picture: { ...this.selectedCharacter?.pictures[e.detail.index], url: e.detail.value }
             });
         },
         deleteCharacterPhoto(e: {detail: {index: number}}) {
             this.$store.commit("removeCharacterPicture", { character: this.selectedCharacter, index: e.detail.index });
         },
         addStatePhoto(state: State, e: {detail: {value: string}}) {
-            const numberOfPhotos = state.photos.length;
+            const numberOfPhotos = state.pictures.length;
             this.$store.commit("addStatePicture", {
                 state: state,
                 picture: {
@@ -221,7 +221,7 @@ export default Vue.extend({
                 this.$store.commit("setStatePicture", {
                     state: state,
                     index: e.detail.index,
-                    picture: { ...state.photos[e.detail.index], url: e.detail.value },
+                    picture: { ...state.pictures[e.detail.index], url: e.detail.value },
                 });
             }
         },
@@ -231,12 +231,12 @@ export default Vue.extend({
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
             e.stopPropagation();
             this.showBigImage = true;
-            this.bigImages = state.photos;
+            this.bigImages = state.pictures;
         },
         addCharacter(e: { value: string[], parentId: string }) {
             const [name, nameCN] = e.value;
             this.$store.commit("addCharacter", new Character({
-                ...new DetailData({ id: "", name, nameCN }),
+                ...new DetailData({ id: "", name: { S: name, FR: name, CN: nameCN } }),
                 parentId: e.parentId,
             }));
         },
@@ -254,12 +254,10 @@ export default Vue.extend({
             this.$store.commit("addState", {
                 state: {
                     id: "",
-                    name,
-                    nameEN,
-                    nameCN,
+                    name: { S: name, FR: name, EN: nameEN, CN: nameCN },
                     color,
                     description,
-                    photos: []
+                    pictures: []
                 },
                 character: this.selectedCharacter,
             });
@@ -270,7 +268,7 @@ export default Vue.extend({
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();
             this.showBigImage = true;
-            this.bigImages = this.selectedCharacter!.photos;
+            this.bigImages = this.selectedCharacter!.pictures;
         },
     }
 });

@@ -3,11 +3,21 @@ import { standardBooks } from "@/datatypes/stdcontent";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { CharactersHierarchy } from "../datatypes/CharactersHierarchy";
 
+type EncodedState = {
+	id: string;
+	name: string;
+	nameEN: string;
+	nameCN: string;
+	photos: Picture[];
+	description?: string;
+	color?: string;
+};
+
 export interface EncodedDataset {
 	id: string
 	taxons: ReturnType<typeof encodeTaxon>[];
 	characters: ReturnType<typeof encodeCharacter>[];
-	states: State[];
+	states: EncodedState[];
 	books: Book[];
 	extraFields: Field[];
 	dictionaryEntries: Partial<Record<string, DictionaryEntry>>;
@@ -21,7 +31,7 @@ interface AlreadyEncodedDataset extends Omit<EncodedDataset, "characters"> {
 	characters?:  EncodedCharacter[];
 }
 
-function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>) {
+function encodeHierarchicalItem(item: HierarchicalItem<any>) {
 	const children = new Set<string>();
 
 	for (const childId of item.childrenOrder ?? []) {
@@ -33,12 +43,12 @@ function encodeHierarchicalItem<T extends DetailData>(item: HierarchicalItem<T>)
 		parentId: item.parentId,
 		topLevel: item.topLevel,
 		children: [...children],
-		name: item.name,
-		nameEN: item.nameEN,
-		nameCN: item.nameCN,
-		photos: item.photos,
+		name: item.name.S,
+		nameEN: item.name.EN,
+		nameCN: item.name.CN,
+		photos: item.pictures,
 		author: item.author,
-		vernacularName: item.vernacularName,
+		vernacularName: item.name.V,
 		vernacularName2: item.vernacularName2,
 		name2: item.name2,
 		meaning: item.meaning,
@@ -75,21 +85,57 @@ function encodeCharacter(dataset: Dataset, character: Character) {
 	};
 }
 
+function decodeState(encoded: EncodedState): State {
+	return {
+		id: encoded.id,
+		name: {
+			S: encoded.name,
+			CN: encoded.nameCN,
+			EN: encoded.nameEN,	
+		},
+		pictures: encoded.photos,
+		description: encoded.description,
+		color: encoded.color,		
+	}
+}
+
+function encodeState(state: State): EncodedState {
+	return {
+		id: state.id,
+		name: state.name.S,
+		nameEN: state.name.EN ?? "",
+		nameCN: state.name.CN ?? "",
+		photos: state.pictures,
+		description: state.description,
+		color: state.color,
+	};
+}
+
 export function encodeDataset(dataset: Dataset): EncodedDataset {
 	const characters = dataset.charactersHierarchy.allItems;
 	return {
 		id: dataset.id,
 		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, dataset)),
 		characters: Array.from(characters).map(character => encodeCharacter(dataset, character)),
-		states: Array.from(dataset.charactersHierarchy.allStates),
+		states: Array.from(dataset.charactersHierarchy.allStates).map(encodeState),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
 		dictionaryEntries: Object.fromEntries(dataset.dictionaryEntries.entries()),
 	};
 }
 
-function decodeHierarchicalItem<T>(item: EncodedHierarchicalItem): HierarchicalItem<T> {
-	return new HierarchicalItem(item);
+function decodeHierarchicalItem(item: EncodedHierarchicalItem): HierarchicalItem<any> {
+	return new HierarchicalItem({
+		...item,
+		name: {
+			S: item.name,
+			V: item.vernacularName,
+			CN: item.nameCN,
+			EN: item.nameEN,
+			FR: item.name,
+		},
+		pictures: item.photos,
+	});
 }
 
 function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]): Taxon {
@@ -138,7 +184,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const characters = new CharactersHierarchy("c", new makeMap(), states, statesByCharacters);
 	
 	for (const state of dataset?.states ?? []) {
-		states.set(state.id, state);
+		states.set(state.id, decodeState(state));
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
 		characters.add(decodeCharacter(character, states));

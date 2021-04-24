@@ -15,9 +15,9 @@ export class TexExporter {
         this.pictureNameByUrl = new Map();
         this.photos = [];
         for (const taxon of dataset.taxons) {
-            if (taxon.photos.length > 0) {
-                const photo = taxon.photos[0];
-                this.pictureNameByUrl.set(photo.url, generateFileName(taxon.name) + ".jpg");
+            if (taxon.pictures.length > 0) {
+                const photo = taxon.pictures[0];
+                this.pictureNameByUrl.set(photo.url, generateFileName(taxon.name.S) + ".jpg");
                 this.photos.push(photo.url);
             }
         }
@@ -45,13 +45,13 @@ export class TexExporter {
         const taxonTemplate = (taxon: Taxon) => `
             \\begin{frame}
             \\frametitle{${taxon.name}}
-            \\framesubtitle{${taxon.vernacularName}}
+            \\framesubtitle{${taxon.name.V}}
             \\begin{block}{Identification}
-            ${ this.photos.length > 0 ? `\\includegraphics[width=3cm,height=3cm]{${this.picture(taxon.photos)}}` : "" }
+            ${ this.photos.length > 0 ? `\\includegraphics[width=3cm,height=3cm]{${this.picture(taxon.pictures)}}` : "" }
             \\begin{itemize}
             \\item name: ${taxon.name}
-            \\item vernacular name: ${taxon.vernacularName}
-            \\item chinese name: ${taxon.nameCN}
+            \\item vernacular name: ${taxon.name.V}
+            \\item chinese name: ${taxon.name.CN}
             \\end{itemize}
             \\end{block}
             \\begin{block}{Description}

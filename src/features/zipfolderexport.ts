@@ -5,7 +5,7 @@ import generateFileName from "./generatefilename";
 
 function getEntries(hierarchy: Hierarchy<Taxon>, entries: Iterable<Taxon>, zip: JSZip, path = "") {
 	for (const entry of entries) {
-		const entryName = generateFileName(entry.name);
+		const entryName = generateFileName(entry.name.S);
 		const currentPath = path + encodeURI(entryName) + "/";
 		zip.folder(currentPath);
 		getEntries(hierarchy, hierarchy.childrenOf(entry), zip, currentPath);

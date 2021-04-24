@@ -1,14 +1,11 @@
-import { BasicInfo, Picture } from "./types";
+import { BasicInfo, MultilangText, Picture } from "./types";
 import { picturesFromPhotos } from './picture';
 
 export interface DetailDataInit {
 	id: string;
-	name?: string;
+	name?: MultilangText;
 	author?: string;
-	nameEN?: string;
-	nameCN?: string;
 	name2?: string;
-	vernacularName?: string;
 	vernacularName2?: string;
 	meaning?: string;
 	herbariumPicture?: string;
@@ -17,18 +14,15 @@ export interface DetailDataInit {
 	fasc?: number;
 	page?: number;
 	detail?: string;
-	photos?: Picture[]|string[];
+	pictures?: Picture[]|string[];
 	extra?: Record<string, any>;
 }
 
 export class DetailData implements BasicInfo {
 	id: string;
-	name: string;
-	nameEN: string;
-	nameCN: string;
-	photos: Picture[];
+	name: MultilangText;
+	pictures: Picture[];
 	author: string;
-	vernacularName: string;
 	vernacularName2: string;
 	name2: string;
 	meaning: string;
@@ -42,12 +36,9 @@ export class DetailData implements BasicInfo {
 
 	constructor(init: DetailDataInit) {
 		this.id = init.id;
-		this.name = init.name ?? "";
+		this.name = init.name ?? { S: "", V: "" };
 		this.author = init.author ?? "";
-		this.nameEN = init.nameEN ?? "";
-		this.nameCN = init.nameCN ?? "";
 		this.name2 = init.name2 ?? "";
-		this.vernacularName = init.vernacularName ?? "";
 		this.vernacularName2 = init.vernacularName2 ?? "";
 		this.meaning = init.meaning ?? "";
 		this.herbariumPicture = init.herbariumPicture ?? "";
@@ -56,7 +47,7 @@ export class DetailData implements BasicInfo {
 		this.fasc = init.fasc;
 		this.page = init.page;
 		this.detail = init.detail ?? "";
-		this.photos = picturesFromPhotos(init.photos ?? []);
+		this.pictures = picturesFromPhotos(init.pictures ?? []);
 		this.extra = init.extra ?? {};
 	}
 }

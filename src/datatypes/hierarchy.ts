@@ -121,23 +121,23 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     extractHierarchy(item: T, hierarchy: Hierarchy<T>|null = null): Hierarchy<T> {
-        const extractHierarchyParent = (item: T, hierarchy: Hierarchy<T>|null, parentId: string|undefined) => {
+        const extractHierarchyParent = (item: T, hierarchy: Hierarchy<T>|null, parent: T|undefined) => {
             if (hierarchy === null) hierarchy = new (Object.getPrototypeOf(this).constructor as any)(this.idPrefix, new Map<string, T>());
     
             const newItem = this.cloneNewItem(item);
-            newItem.parentId = parentId;
+            newItem.parentId = parent?.id;
             hierarchy!.add(newItem);
-            hierarchy!.onCloneFrom(this, item, newItem);
+            hierarchy!.onCloneFrom(this, item, newItem, parent);
     
             for (const child of this.childrenOf(item)) {
-                extractHierarchyParent(child, hierarchy, newItem.id);
+                extractHierarchyParent(child, hierarchy, newItem);
             }
             return hierarchy!;
         }
         return extractHierarchyParent(item, hierarchy, undefined);
     }
 
-    protected onCloneFrom(hierarchy: Hierarchy<T>, item: T, clone: T) {}
+    protected onCloneFrom(hierarchy: Hierarchy<T>, item: T, clone: T, newParent: T|undefined) {}
 
     addHierarchy(hierarchy: Hierarchy<T>, targetId: string|undefined): void {
         for (const oldItem of [...hierarchy.allItems]) {
@@ -147,7 +147,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             item.id = "";
             item.childrenOrder = [];
             this.add(item);
-            this.onCloneFrom(hierarchy, oldItem, item);
+            this.onCloneFrom(hierarchy, oldItem, item, undefined);
             for (const child of children) {
                 child.parentId = item.id;
             }

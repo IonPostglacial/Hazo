@@ -6,7 +6,6 @@ import { createStore } from "./store";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
-import IdentificationTab from "./components/IdentificationTab.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import debounce from "./tools/debounce";
 import "./components";
@@ -34,7 +33,6 @@ const router = new VueRouter({
         { path: "/taxons/:id?", component: TaxonsTab },
         { path: "/characters/:id?", component: CharactersTab },
         { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: store.state.dataset.charactersHierarchy }) },
-        { path: "/identification", component: IdentificationTab },
         { path: "/dictionary", component: WordsDictionary },
     ]
 });

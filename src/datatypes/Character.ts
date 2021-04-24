@@ -15,4 +15,8 @@ export class Character extends HierarchicalItem<Character> {
 		this.inapplicableStates = init.inapplicableStates ?? [];
 		this.requiredStates = init.requiredStates ?? [];
 	}
+
+	clone(): Character {
+		return new Character(this);
+	}
 }
