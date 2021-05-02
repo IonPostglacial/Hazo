@@ -11,23 +11,23 @@ interface Callback {
 export class CharactersHierarchy extends Hierarchy<Character> {
     private states: IMap<State>;
     private statesByCharacter: OneToManyBimap;
-    #stateAdditionCallbacks: Set<Callback>;
-    #stateRemovalCallbacks: Set<Callback>;
+    private stateAdditionCallbacks: Set<Callback>;
+    private stateRemovalCallbacks: Set<Callback>;
 
     constructor(idPrefix: string, characters: IMap<Character>, statesById: IMap<State>|undefined, statesByCharacter: OneToManyBimap|undefined, charactersOrder: string[]|undefined = undefined) {
         super(idPrefix, characters, charactersOrder);
         this.states = statesById ?? new Map();
         this.statesByCharacter = statesByCharacter ?? new OneToManyBimap(Map);
-        this.#stateAdditionCallbacks = new Set();
-        this.#stateRemovalCallbacks = new Set();
+        this.stateAdditionCallbacks = new Set();
+        this.stateRemovalCallbacks = new Set();
     }
 
     onStateAdded(callback: Callback) {
-        this.#stateAdditionCallbacks.add(callback);
+        this.stateAdditionCallbacks.add(callback);
     }
 
     onStateRemoved(callback: Callback) {
-        this.#stateRemovalCallbacks.add(callback);
+        this.stateRemovalCallbacks.add(callback);
     }
 
     add(character: Character): Character {
@@ -64,7 +64,7 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         }
 		this.states.set(state.id, state);
 		this.statesByCharacter.add(character.id, state.id);
-        for (const callback of this.#stateAdditionCallbacks) {
+        for (const callback of this.stateAdditionCallbacks) {
             callback({ state, character });
         }
     }
@@ -85,7 +85,7 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         if (character.inherentState?.id === state.id) {
             character.inherentState = undefined;
         }
-        for (const callback of this.#stateRemovalCallbacks) {
+        for (const callback of this.stateRemovalCallbacks) {
             callback({ state, character });
         }
     }

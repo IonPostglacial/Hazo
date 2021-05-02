@@ -8,7 +8,7 @@ template.innerHTML = `<link rel="stylesheet" href="style.css" />
     </div>`;
 
 export class AddItem extends HTMLElement {
-    #isMultiline = false;
+    private _isMultiline = false;
 
     constructor() {
         super();
@@ -16,11 +16,11 @@ export class AddItem extends HTMLElement {
     }
 
     get isMultiline() {
-        return this.#isMultiline;
+        return this._isMultiline;
     }
 
     set isMultiline(isMultiline: boolean) {
-        this.#isMultiline = isMultiline;
+        this._isMultiline = isMultiline;
 
         if (isMultiline) {
             this._getSingleLineInput().classList.add("invisible");

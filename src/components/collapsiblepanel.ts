@@ -13,9 +13,9 @@ template.innerHTML = `<link rel="stylesheet" href="style.css" />
     </div>`;
 
 export class CollapsiblePanel extends HTMLElement {
-    #label = "";
-    #open = true;
-    #headerText: HTMLElement|null = null;
+    private _label = "";
+    private _open = true;
+    private _headerText: HTMLElement|null = null;
 
     static get observedAttributes() { return ["label"]; }
 
@@ -24,20 +24,20 @@ export class CollapsiblePanel extends HTMLElement {
         this.attachShadow({ mode: "open" });
     }
 
-    get label() { return this.#label; }
-    get open() { return this.#open; }
+    get label() { return this._label; }
+    get open() { return this._open; }
 
     set label(newLabel) {
-        this.#label = newLabel;
-        if (this.#headerText !== null) {
-            this.#headerText.textContent = this.label;
+        this._label = newLabel;
+        if (this._headerText !== null) {
+            this._headerText.textContent = this.label;
         }
     }
 
     set open(isOpen) {
-        this.#open = isOpen;
-        this.shadowRoot!.getElementById("open-button-arrow")!.className = this.#open ? "bottom-arrow" : "left-arrow";
-        if (this.#open) {
+        this._open = isOpen;
+        this.shadowRoot!.getElementById("open-button-arrow")!.className = this._open ? "bottom-arrow" : "left-arrow";
+        if (this._open) {
             this.shadowRoot!.getElementById("panel")?.classList.remove("invisible");
         } else {
             this.shadowRoot!.getElementById("panel")?.classList.add("invisible");
@@ -48,9 +48,9 @@ export class CollapsiblePanel extends HTMLElement {
         this.className = "thin-border medium-margin white-background vertical-flexbox flex-grow-1";
         
         this.shadowRoot!.appendChild(template.content.cloneNode(true));
-        this.#headerText = this.shadowRoot?.getElementById("header-text") ?? null;
+        this._headerText = this.shadowRoot?.getElementById("header-text") ?? null;
         
-        this.label = this.getAttribute("label") ?? this.#label;
+        this.label = this.getAttribute("label") ?? this._label;
         this.shadowRoot!.getElementById("open-button")!.onclick = () => {
             this.open = !this.open;
         }

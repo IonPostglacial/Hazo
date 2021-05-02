@@ -60,8 +60,8 @@ async function photoSelected(photoUrl: string) {
 }
 
 class PictureFrame extends HTMLElement {
-    #editable = false;
-    #picture: Picture|undefined = undefined;
+    private _editable = false;
+    private _picture: Picture|undefined = undefined;
     index = 0;
 
     static get observedAttributes() { return ["editable", "pictureid", "url", "label", "index"]; }
@@ -71,8 +71,8 @@ class PictureFrame extends HTMLElement {
         this.attachShadow({ mode: "open" });
     }
 
-    get picture() { return this.#picture; }
-    get editable() { return this.#editable; }
+    get picture() { return this._picture; }
+    get editable() { return this._editable; }
 
     private refreshEditable() {
         const deletePhoto = this.shadowRoot!.getElementById("delete-photo");
@@ -99,12 +99,12 @@ class PictureFrame extends HTMLElement {
     }
 
     set picture(newPicture: Picture|undefined) {
-        this.#picture = newPicture;
+        this._picture = newPicture;
         this.refreshPicture();
     }
 
     set editable(editable: boolean) {
-        this.#editable = editable;
+        this._editable = editable;
         this.refreshEditable();
     }
 
@@ -113,8 +113,8 @@ class PictureFrame extends HTMLElement {
         const id = this.getAttribute("pictureid") ?? "";
         const url = this.getAttribute("url") ?? "";
         const label = this.getAttribute("label") ?? "";
-        this.#editable = !!this.getAttribute("editable");
-        this.#picture = { id, url, label };
+        this._editable = !!this.getAttribute("editable");
+        this._picture = { id, url, label };
 
         this.shadowRoot!.appendChild(frameTemplate.content.cloneNode(true));
         
@@ -174,8 +174,8 @@ class PictureFrame extends HTMLElement {
 }
 
 class PictureBox extends HTMLElement {
-    #editable = false;
-    #selectedPhotoIndex = 0;
+    private _editable = false;
+    private _selectedPhotoIndex = 0;
 
     constructor() {
         super();
@@ -184,9 +184,9 @@ class PictureBox extends HTMLElement {
 
     static get observedAttributes() { return ["editable"]; }
 
-    get editable() { return this.#editable; }
+    get editable() { return this._editable; }
     set editable(editable) {
-        this.#editable = editable;
+        this._editable = editable;
         this.refreshEditable();
     }
 
@@ -202,9 +202,9 @@ class PictureBox extends HTMLElement {
         return this.children.length > 1 ? `${this.selectedPhotoIndex + 1} / ${this.children.length}` : "";
     }
 
-    get selectedPhotoIndex() { return this.#selectedPhotoIndex; }
+    get selectedPhotoIndex() { return this._selectedPhotoIndex; }
     set selectedPhotoIndex(index: number) {
-        this.#selectedPhotoIndex = index;
+        this._selectedPhotoIndex = index;
         this.indexTextElement.innerHTML = this.indexText;
         Array.from(this.children).forEach((f, i) => {
             if (i === index) f.classList.remove("invisible"); else f.classList.add("invisible");
@@ -235,8 +235,8 @@ class PictureBox extends HTMLElement {
     }
 
     connectedCallback() {
-        this.#editable = !!this.getAttribute("editable");
-        this.#selectedPhotoIndex = parseInt(this.getAttribute("photoindex") ?? "0");
+        this._editable = !!this.getAttribute("editable");
+        this._selectedPhotoIndex = parseInt(this.getAttribute("photoindex") ?? "0");
 
         this.shadowRoot!.appendChild(boxTemplate.content.cloneNode(true));
         const addPhoto = this.shadowRoot?.getElementById("add-photo") as AddItem|null;

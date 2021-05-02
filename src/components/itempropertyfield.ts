@@ -14,9 +14,9 @@ templateNonEditable.innerHTML = template(`
 `);
 
 export class ItemPropertyField extends HTMLElement {
-    #icon = "";
-    #editable = false;
-    #value = "";
+    private _icon = "";
+    private _editable = false;
+    private _value = "";
     property = "";
 
     static get observedAttributes() { return ["icon", "editable", "property", "value"]; }
@@ -26,37 +26,37 @@ export class ItemPropertyField extends HTMLElement {
         this.attachShadow({ mode: "open" });
     }
 
-    get icon() { return this.#icon; }
-    get editable() { return this.#editable; }
-    get value() { return this.#value; }
+    get icon() { return this._icon; }
+    get editable() { return this._editable; }
+    get value() { return this._value; }
 
     private refreshIcon(root: Element) {
         let existingIcon = root!.querySelector("#icon") ?? null;
-        if (this.#icon === "" && existingIcon !== null) {
+        if (this._icon === "" && existingIcon !== null) {
             root!.removeChild(existingIcon);
             return;
         }
-        if (this.#icon !== "" && existingIcon === null) {
+        if (this._icon !== "" && existingIcon === null) {
             existingIcon = document.createElement("img");
             existingIcon.setAttribute("width", "18");
             existingIcon.setAttribute("height", "18");
             root!.querySelector("#root")!.prepend(existingIcon);
         }
         if (existingIcon) {
-            existingIcon.setAttribute("src", "icons/" + this.#icon);
+            existingIcon.setAttribute("src", "icons/" + this._icon);
         }
     }
 
     private refreshValue(root: Element) {
         if (this.editable) {
             const valueInput = root!.querySelector("#value-input");
-            if (valueInput instanceof HTMLInputElement && valueInput.value !== this.#value) {
-                valueInput.value = this.#value;
+            if (valueInput instanceof HTMLInputElement && valueInput.value !== this._value) {
+                valueInput.value = this._value;
             }
         } else {
             const valueText = root!.querySelector("#value-text");
             if (valueText instanceof HTMLElement) {
-                valueText.innerText = this.#value;
+                valueText.innerText = this._value;
             }
         }
     }
@@ -90,9 +90,9 @@ export class ItemPropertyField extends HTMLElement {
     }
 
     set icon(iconUrl: string) {
-        if (this.#icon === iconUrl) return;
+        if (this._icon === iconUrl) return;
 
-        this.#icon = iconUrl;
+        this._icon = iconUrl;
 
         const root = this.getRoot();
         if (root) {
@@ -101,9 +101,9 @@ export class ItemPropertyField extends HTMLElement {
     }
 
     set value(newValue: string) {
-        if (this.#value === newValue) return;
+        if (this._value === newValue) return;
 
-        this.#value = newValue;
+        this._value = newValue;
 
         const root = this.getRoot();
         if (root) {
@@ -112,7 +112,7 @@ export class ItemPropertyField extends HTMLElement {
     }
 
     set editable(isEditable) {
-        this.#editable = isEditable;
+        this._editable = isEditable;
 
         this.shadowRoot!.innerHTML = "";
         this.shadowRoot!.appendChild(this.makeRootElement());
