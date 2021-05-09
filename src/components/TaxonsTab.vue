@@ -178,6 +178,7 @@ export default Vue.extend({
     components: { SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
     data() {
         return {
+            store: Hazo.store,
             showLeftMenu: true,
             showFields: false,
             showBigImage: false,
@@ -198,7 +199,7 @@ export default Vue.extend({
     },
     computed: {
         dataset(): Dataset {
-            return this.$store.state.dataset;
+            return this.store.dataset;
         },
         editable(): boolean {
             return this.mode === "edit-item";
@@ -216,17 +217,19 @@ export default Vue.extend({
     },
     methods: {
         async importKml(e: InputEvent) {
-            if (!(e.target instanceof HTMLInputElement)) return;
+            if (!(e.target instanceof HTMLInputElement) || !this.selectedTaxon) return;
             
             const positions = await importKml((e.target.files ?? [])[0]);
 
-            this.$store.commit("setTaxonLocations", { taxon: this.selectedTaxon, positions });
+            this.store.setTaxonLocations({ taxon: this.selectedTaxon, positions });
         },
         copyItem() {
-            this.$store.commit("copyTaxon", this.selectedTaxon);
+            if (this.selectedTaxon) {
+                this.store.copyTaxon(this.selectedTaxon);
+            }
         },
         pasteItem() {
-            this.$store.commit("pasteTaxon", this.selectedTaxonId);
+            this.store.pasteTaxon(this.selectedTaxonId);
         },
         openSelectParentDropdown() {
             this.selectingParent = true;
@@ -235,7 +238,9 @@ export default Vue.extend({
             this.selectingParent = false;
         },
         changeSelectedTaxonParent(id: string) {
-            this.$store.commit("changeTaxonParent", { taxon: this.selectedTaxon, newParentId: id });
+            if (this.selectedTaxon) {
+                this.store.changeTaxonParent({ taxon: this.selectedTaxon, newParentId: id });
+            }
             this.selectingParent = false;
         },
         selectTaxon(id: string) {
@@ -243,14 +248,17 @@ export default Vue.extend({
         },
         addTaxon(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;
-            this.$store.commit("addTaxon", new Taxon({
+            this.store.addTaxon(new Taxon({
                 ...new DetailData({ id: "", name: { S: name, V: vernacularName, CN: nameCN}, pictures: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
             }));
         },
         removeTaxon(e: { itemId: string }) {
-            this.$store.commit("removeTaxon", this.dataset.taxonsHierarchy?.itemWithId(e.itemId));
+            const taxonToRemove = this.dataset.taxonsHierarchy?.itemWithId(e.itemId);
+            if (taxonToRemove) {
+                this.store.removeTaxon(taxonToRemove);
+            }
         },
         setProperty(e: { detail: { property: string, value: string } }) {
             (this.selectedTaxon as any)[e.detail.property] = e.detail.value;
@@ -270,7 +278,7 @@ export default Vue.extend({
 
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
                 const selected = !this.dataset.hasTaxonState(this.selectedTaxon, stateToAdd);
-                this.$store.commit("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
+                this.store.setTaxonState({ taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
         },
         openCharacter(e: { item: Character }) {
@@ -284,17 +292,21 @@ export default Vue.extend({
                 return;
             }
             const numberOfPhotos = this.selectedTaxon.pictures.length;
-            this.$store.commit("addTaxonPicture", { taxon: this.selectedTaxon, picture: { id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value } });
+            this.store.addTaxonPicture({ taxon: this.selectedTaxon, picture: { id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value } });
         },
         setItemPhoto(e: {detail: {index: number, value: string}}) {
-            this.$store.commit("setTaxonPicture", {
+            if (!this.selectedTaxon) { return; }
+
+            this.store.setTaxonPicture({
                 taxon: this.selectedTaxon,
                 index: e.detail.index,
                 picture: { ...this.selectedTaxon!.pictures[e.detail.index], url: e.detail.value },
             });
         },
         deleteItemPhoto(e: {detail: { index: number }}) {
-            this.$store.commit("removeTaxonPicture", { taxon: this.selectedTaxon, index: e.detail.index });
+            if (!this.selectedTaxon) { return; }
+
+            this.store.removeTaxonPicture({ taxon: this.selectedTaxon, index: e.detail.index });
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();

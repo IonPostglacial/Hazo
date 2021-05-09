@@ -1,5 +1,4 @@
 import Vue from "vue";
-import Vuex from "vuex";
 import VueRouter from "vue-router";
 import App from "./App.vue";
 import { createStore } from "./store";
@@ -17,29 +16,37 @@ Vue.use(VueGoogleMap, {
         apiKey: "AIzaSyClYri6lQql5nQkCwktcq2DJsjBDpmP_nU",
         libraries: [/* rest of libraries */]
     }
-})
-
+});
 
 Vue.config.productionTip = false;
 Vue.config.ignoredElements = ["add-item"];
 
-Vue.use(Vuex);
 Vue.use(VueRouter);
 
-const store = createStore();
+declare global {
+    namespace globalThis {
+        namespace Hazo {
+            export const store: ReturnType<typeof createStore>
+        }
+    }
+}
+
+globalThis.Hazo = {
+    store: createStore()
+};
+
 const router = new VueRouter({
     routes: [
         { path: "/", component: TaxonsTab },
         { path: "/taxons/:id?", component: TaxonsTab },
         { path: "/characters/:id?", component: CharactersTab },
-        { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: store.state.dataset.charactersHierarchy }) },
+        { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
         { path: "/dictionary", component: WordsDictionary },
     ]
 });
 
 new Vue({
     render: h => h(App),
-    store: store,
     router: router,
 }).$mount("#app");
 

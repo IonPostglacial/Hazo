@@ -226,13 +226,14 @@ export default Vue.extend({
         const langFR = { name: "FR", field: "FR" }, langEN = { name: "EN", field: "EN" }, langCN = { name: "CN", field: "CN" };
 
         return {
+            store: Hazo.store,
             languageList: [langFR, langEN, langCN],
             lang: 0,
         };
     },
     computed: {
         dataset(): Dataset {
-            return this.$store.state.dataset;
+            return this.store.dataset;
         },
         selectedLang(): { name: string, field: string } {
             return this.languageList[this.lang];
@@ -253,7 +254,7 @@ export default Vue.extend({
                             (s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
                     ].map(child => hierarchyToD3(hierarchy, child)) };
             };
-            const hierarchy = this.$store.state.dataset.charactersHierarchy.extractHierarchy(this.selectedCharacter);
+            const hierarchy = this.store.dataset.charactersHierarchy.extractHierarchy(this.selectedCharacter);
             const topLevelItems = Array.from(hierarchy.topLevelItems);
             if (topLevelItems.length === 1) {
                 return hierarchyToD3(hierarchy, topLevelItems[0]);

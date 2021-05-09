@@ -21,7 +21,7 @@
                 </table>
                 <add-item @add-item="addEntry"></add-item>
             </div>
-            <div v-if="typeof selectedEntry !== 'undefined'" class="white-background medium-padding scroll height-full">
+            <div v-if="(typeof selectedEntry !== 'undefined')" class="white-background medium-padding scroll height-full">
                 <div class="horizontal-flexbox">
                     <div>
                         <label class="item-property">名词</label>
@@ -54,7 +54,7 @@ import parseCSV from "@/tools/parse-csv";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import Vue, { PropType } from "vue";  // eslint-disable-line no-unused-vars
+import Vue from "vue";  // eslint-disable-line no-unused-vars
 import download from "@/tools/download";
 import { DictionaryEntry, IMap } from "@/datatypes";  // eslint-disable-line no-unused-vars
 import { filter } from "@/tools/iter";
@@ -66,6 +66,7 @@ export default Vue.extend({
     },
     data() {
         return {
+            store: Hazo.store,
             selectedEntryId: "",
             editor: ClassicEditor,
             editorConfig: {},
@@ -74,7 +75,7 @@ export default Vue.extend({
     },
     computed: {
         dictionaryEntries(): IMap<DictionaryEntry> {
-            return this.$store.state.dataset.dictionaryEntries;
+            return this.store.dataset.dictionaryEntries;
         },
         selectedEntry(): DictionaryEntry|undefined {
             return this.dictionaryEntries.get(this.selectedEntryId);
@@ -114,7 +115,7 @@ export default Vue.extend({
         addEntry(e: { detail: string[] }) {
             const [nameCN, nameEN, defCN, defEN, nameFR, defFR] = e.detail;
             const id = Date.now();
-            this.$store.commit("addDictionaryEntry", {
+            this.store.addDictionaryEntry({
                 id: id.toString(), nameCN: nameCN ?? "", nameEN: nameEN ?? "", defCN: defCN ?? "",
                 defEN: defEN ?? "", nameFR: nameFR ?? "", defFR: defFR ?? "", url: ""
             });

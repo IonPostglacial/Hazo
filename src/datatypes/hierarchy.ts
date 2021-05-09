@@ -120,10 +120,11 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return newItem;
     }
 
-    extractHierarchy(item: T, hierarchy: Hierarchy<T>|null = null): Hierarchy<T> {
-        const extractHierarchyParent = (item: T, hierarchy: Hierarchy<T>|null, parent: T|undefined) => {
-            if (hierarchy === null) hierarchy = new (Object.getPrototypeOf(this).constructor as any)(this.idPrefix, new Map<string, T>());
-    
+    extractHierarchy(item: T|undefined, hierarchy: Hierarchy<T>|null = null): Hierarchy<T> {
+        const extractHierarchyParent = (item: T|undefined, hierarchy: Hierarchy<T>|null, parent: T|undefined) => {
+            if (hierarchy === null || !item) hierarchy = new (Object.getPrototypeOf(this).constructor as any)(this.idPrefix, new Map<string, T>());
+            if (!item) return hierarchy!;
+
             const newItem = this.cloneNewItem(item);
             newItem.parentId = parent?.id;
             hierarchy!.add(newItem);

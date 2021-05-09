@@ -14,13 +14,13 @@
             <div class="horizontal-flexbox medium-padding thin-border">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                 <div class="button-group">
-                    <button v-if="typeof selectedCharacter !== 'undefined'" type="button" @click="copyItem">Copy</button>
+                    <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
-                    <button v-if="typeof selectedCharacter !== 'undefined'" type="button" @click="copyStates">Copy States</button>
+                    <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyStates">Copy States</button>
                     <button type="button" @click="pasteStates">Paste States</button>
                 </div>
             </div>
-            <picture-box v-if="typeof selectedCharacter !== 'undefined'" editable="editable"
+            <picture-box v-if="(typeof selectedCharacter !== 'undefined')" editable="editable"
                     @add-photo="addCharacterPhoto"
                     @set-photo="setCharacterPhoto"
                     @delete-photo="deleteCharacterPhoto"
@@ -28,7 +28,7 @@
                 <picture-frame v-for="(photo, index) in selectedCharacter.pictures" :key="photo.id"
                     :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" editable="true"></picture-frame>
             </picture-box>
-            <collapsible-panel v-if="typeof selectedCharacter !== 'undefined'" label="Identification">
+            <collapsible-panel v-if="(typeof selectedCharacter !== 'undefined')" label="Identification">
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.FR" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></div>
                 <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></div>
@@ -75,7 +75,7 @@
                 </div>
             </collapsible-panel>
         </section>
-        <section v-if="typeof selectedCharacter !== 'undefined'" class="scroll relative horizontal-flexbox">
+        <section v-if="(typeof selectedCharacter !== 'undefined')" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
@@ -118,12 +118,14 @@ import CharactersTree from "./CharactersTree.vue";
 import PopupGalery from "./PopupGalery.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Dataset, DetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
 
 export default Vue.extend({
     name: "CharactersTab",
     components: { PopupGalery, TreeMenu, CharactersTree },
     data() {
         return {
+            store: Hazo.store,
             showLeftMenu: true,
             showBigImage: false,
             bigImages: [{id: "", url: "", label: ""}],
@@ -137,10 +139,10 @@ export default Vue.extend({
     },
     computed: {
         dataset(): Dataset {
-            return this.$store.state.dataset;
+            return this.store.dataset;
         },
-        charactersHierarchy() {
-            return this.$store.state.dataset.charactersHierarchy;
+        charactersHierarchy(): CharactersHierarchy {
+            return this.store.dataset.charactersHierarchy;
         },
         selectedCharacter(): Character|undefined {
             return this.charactersHierarchy?.itemWithId(this.selectedCharacterId);
@@ -160,33 +162,37 @@ export default Vue.extend({
     },
     methods: {
         copyItem() {
-            this.$store.commit("copyCharacter", this.selectedCharacter);
+            if (this.selectedCharacter) {
+                this.store.copyCharacter(this.selectedCharacter);
+            }
         },
         pasteItem() {
-            this.$store.commit("pasteCharacter", this.selectedCharacterId);
+            this.store.pasteCharacter(this.selectedCharacterId);
         },
         copyStates() {
-            this.$store.commit("copyStates", Array.from(this.dataset.charactersHierarchy.characterStates(this.selectedCharacter)));
+            this.store.copyStates(Array.from(this.dataset.charactersHierarchy.characterStates(this.selectedCharacter)));
         },
         pasteStates() {
-            this.$store.commit("pasteStates", this.selectedCharacterId);
+            this.store.pasteStates(this.selectedCharacterId);
         },
         setInapplicableState(state: State, selected: boolean) {
-            this.$store.commit("setInapplicableState", { state, selected });
+            this.store.setInapplicableState({ state, selected });
         },
         setRequiredState(state: State, selected: boolean) {
-            this.$store.commit("setRequiredState", { state, selected });
+            this.store.setRequiredState({ state, selected });
         },
         setInherentState(state: State) {
-            this.$store.commit("setInherentState", { state });
+            this.store.setInherentState({ state });
         },
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
         },
         addCharacterPhoto(e: {detail: {value: string[]}}) {
+            if (!this.selectedCharacter) { return; }
+
             const [url, label] = e.detail.value;
             const numberOfPhotos = this.selectedCharacter!.pictures.length;
-            this.$store.commit("addCharacterPicture", {
+            this.store.addCharacterPicture({
                 character: this.selectedCharacter,
                 picture: {
                     id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
@@ -196,18 +202,22 @@ export default Vue.extend({
             });
         },
         setCharacterPhoto(e: {detail: {index: number, value: string}}) {
-            this.$store.commit("setCharacterPicture", {
+            if (!this.selectedCharacter) { return; }
+
+            this.store.setCharacterPicture({
                 character: this.selectedCharacter,
                 index: e.detail.index,
                 picture: { ...this.selectedCharacter?.pictures[e.detail.index], url: e.detail.value }
             });
         },
         deleteCharacterPhoto(e: {detail: {index: number}}) {
-            this.$store.commit("removeCharacterPicture", { character: this.selectedCharacter, index: e.detail.index });
+            if (!this.selectedCharacter) { return; }
+
+            this.store.removeCharacterPicture({ character: this.selectedCharacter, index: e.detail.index });
         },
         addStatePhoto(state: State, e: {detail: {value: string}}) {
             const numberOfPhotos = state.pictures.length;
-            this.$store.commit("addStatePicture", {
+            this.store.addStatePicture({
                 state: state,
                 picture: {
                     id: `${state.id}-${numberOfPhotos}`,
@@ -218,7 +228,7 @@ export default Vue.extend({
         },
         setStatePhoto(state: State, e: {detail: {index: number, value: string}}) {
             if (state) {
-                this.$store.commit("setStatePicture", {
+                this.store.setStatePicture({
                     state: state,
                     index: e.detail.index,
                     picture: { ...state.pictures[e.detail.index], url: e.detail.value },
@@ -226,7 +236,7 @@ export default Vue.extend({
             }
         },
         deleteStatePhoto(state: State, e: {detail: {index: number}}) {
-            this.$store.commit("removeStatePicture", { state: state, index: e.detail.index });
+            this.store.removeStatePicture({ state: state, index: e.detail.index });
         },
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
             e.stopPropagation();
@@ -235,7 +245,7 @@ export default Vue.extend({
         },
         addCharacter(e: { value: string[], parentId: string }) {
             const [name, nameCN] = e.value;
-            this.$store.commit("addCharacter", new Character({
+            this.store.addCharacter(new Character({
                 ...new DetailData({ id: "", name: { S: name, FR: name, CN: nameCN } }),
                 parentId: e.parentId,
             }));
@@ -243,7 +253,7 @@ export default Vue.extend({
         deleteCharacter(e: { itemId: string}) {
             const characterToDelete = this.charactersHierarchy?.itemWithId(e.itemId);
             if (typeof characterToDelete !== "undefined") {
-                this.$store.commit("removeCharacter", characterToDelete);
+                this.store.removeCharacter(characterToDelete);
             } else {
                 console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }
@@ -251,7 +261,7 @@ export default Vue.extend({
         addState(e: {detail: string[]}) {
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
             const [name, nameEN, nameCN, color, description] = e.detail;
-            this.$store.commit("addState", {
+            this.store.addState({
                 state: {
                     id: "",
                     name: { S: name, FR: name, EN: nameEN, CN: nameCN },
@@ -263,7 +273,7 @@ export default Vue.extend({
             });
         },
         removeState(state: State) {
-            this.$store.commit("removeState", state);
+            this.store.removeState(state);
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();

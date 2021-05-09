@@ -29,12 +29,17 @@ import Vue from "vue";
 
 export default Vue.extend({
     props: { showFields: Boolean, extraFields: Array },
+    data() {
+        return {
+            store: Hazo.store,
+        }
+    },
     methods: {
         addExtraField(e: { detail: string[] }) {
-            this.$store.commit("addExtraField", e.detail[0]);
+            this.store.addExtraField({ detail: e.detail[0] });
         },
         removeExtraField(id: string) {
-            this.$store.commit("removeExtraField", id);
+            this.store.removeExtraField(id);
         },
         close() {
             this.$emit("closed");

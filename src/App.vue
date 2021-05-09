@@ -50,18 +50,18 @@
 import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails } from "@/features";
 import DB from "./db-storage";
-import { mapState } from "vuex";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
-import { HazoVue } from "./store";
 import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
+import Vue from "vue";
 
-export default HazoVue.extend({
+export default Vue.extend({
     name: "App",
     data() {
         return {
+            store: Hazo.store,
             datasetIds: [] as string[],
             selectedBase: "",
         };
@@ -69,12 +69,12 @@ export default HazoVue.extend({
     mounted() {
         fetch(Config.datasetRegistry).then(res => {
             if (res.ok) {
-                this.$store.commit("setConnectedToHub", true);
+                this.store.setConnectedToHub(true);
             } else {
                 const timerId = window.setInterval(() => {
                     fetch(Config.datasetRegistry).then(res => {
                         if (res.ok) {
-                            this.$store.commit("setConnectedToHub", true);
+                            this.store.setConnectedToHub(true);
                             window.clearInterval(timerId);
                         }
                     })
@@ -92,7 +92,7 @@ export default HazoVue.extend({
                         this.datasetIds.push(fetchedDataset.id);
                     }
                     DB.store(fetchedDataset).then(() => {
-                        this.$store.commit("setDataset", decodeDataset(ObservableMap, fetchedDataset));
+                        this.store.setDataset(decodeDataset(ObservableMap, fetchedDataset));
                         this.selectedBase = fetchedDataset.id;
                     });
                 });
@@ -106,7 +106,12 @@ export default HazoVue.extend({
         });
     },
     computed: {
-        ...mapState(["dataset", "connectedToHub"]),
+        dataset(): Dataset {
+            return this.store.dataset;
+        },
+        connectedToHub(): boolean {
+            return this.store.connectedToHub;
+        },
     },
     watch: {
         selectedBase(val) {
@@ -136,13 +141,13 @@ export default HazoVue.extend({
             } else {
                 const json = await res.json();
                 this.resetData();
-                this.$store.commit("setDataset", decodeDataset(ObservableMap, json));
+                this.store.setDataset(decodeDataset(ObservableMap, json));
             }
         },
         loadBase(id: string) {
             DB.load(id).then(savedDataset => {
                 this.resetData();
-                this.$store.commit("setDataset", decodeDataset(ObservableMap, savedDataset ?? { id }));
+                this.store.setDataset(decodeDataset(ObservableMap, savedDataset ?? { id }));
             });
         },
         print() {
@@ -198,7 +203,7 @@ export default HazoVue.extend({
             }
         },
         resetData() {
-            this.$store.commit("resetData");
+            this.store.resetData();
         },
         importFile() {
             document.getElementById("import-data")?.click();
@@ -213,11 +218,11 @@ export default HazoVue.extend({
 
             for (const taxon of this.dataset.taxons) {
                 const newDetail = taxon.detail.replace(re, replacement);
-                this.$store.commit("addTaxon", Object.assign({}, taxon, { detail: newDetail }));
+                this.store.addTaxon(Object.assign({}, taxon, { detail: newDetail }));
             }
             for (const character of this.dataset.characters) {
                 const newDetail = character.detail.replace(re, replacement);
-                this.$store.commit("addCharacter", Object.assign({}, character, { detail: newDetail }));
+                this.store.addCharacter(Object.assign({}, character, { detail: newDetail }));
             }
         },
         async fileRead(file: File): Promise<Dataset | null> {
@@ -241,7 +246,7 @@ export default HazoVue.extend({
                 resultsByName[item.name] = item;
             }
             for (const item of this.dataset.taxons) {
-                const newInfo: any = resultsByName[item.name], anyItem: any = item;
+                const newInfo: any = resultsByName[item.name.S], anyItem: any = item;
                 if (typeof newInfo !== "undefined") {
                     for (const prop of propertiesToMerge) {
                         const value: any = newInfo[prop];
@@ -260,10 +265,10 @@ export default HazoVue.extend({
 
             if (result !== null) {
                 for (const taxon of result.taxonsHierarchy.topLevelItems) {
-                    this.$store.commit("addTaxonHierarchy", result.taxonsHierarchy.extractHierarchy(taxon));
+                    this.store.addTaxonHierarchy(result.taxonsHierarchy.extractHierarchy(taxon));
                 }
                 for (const character of result.charactersHierarchy.topLevelItems) {
-                    this.$store.commit("addCharacterHierarchy", result.charactersHierarchy.extractHierarchy(character));
+                    this.store.addCharacterHierarchy(result.charactersHierarchy.extractHierarchy(character));
                 }
             }
         },
@@ -274,7 +279,7 @@ export default HazoVue.extend({
             if (typeof result === "undefined" || result === null) return;
 
             result.id = this.selectedBase;
-            this.$store.commit("setDataset", result);
+            this.store.setDataset(result);
         },
         boldUpload(file: File): Promise<null> {
             return new Promise((resolve, reject) => {
