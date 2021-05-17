@@ -187,7 +187,7 @@ export default Vue.extend({
             const a = window.open('', '', 'height=800, width=600');
             if (!a) return;
             a.document.write('<html>');
-            a.document.write('<head><link rel="stylesheet" href="style.css"></head>');
+            a.document.write('<head><link rel="stylesheet" href="/Hazo/style.css"></head>');
             a.document.write('<body>');
             a.document.write(divContents);
             a.document.write('</body></html>');
