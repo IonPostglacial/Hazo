@@ -1,29 +1,29 @@
 <template>
-    <div v-if="typeof selectedTaxon !== 'undefined'" class="scroll flex-grow-1">
+    <div v-if="(typeof selectedTaxon !== 'undefined')" class="scroll flex-grow-1">
         <article style="max-width: 100ch" class="centered white-background medium-padding">
             <div class="no-print horizontal-flexbox">
                 <label v-for="parent in hierarchy" :key="parent.id"><input type="checkbox" v-model="isParentSelected[parent.id]" checked>{{ parent.name }}</label>
             </div>
-            <h1><div v-for="parent in hierarchyToDisplay" :key="parent.id">{{ parent.name }}</div></h1>
+            <h1><div v-for="parent in hierarchyToDisplay" :key="parent.id">{{ parent.name.S }}</div></h1>
             <section v-for="taxon in itemsToDisplay" :key="taxon.id" class="page-break">
-                <h2><i>{{ taxon.name }}</i> {{ taxon.author }}</h2>
+                <h2><i>{{ taxon.name.S }}</i> {{ taxon.author }}</h2>
                 <div class="horizontal-flexbox">
                     <div class="flex-grow-1">
                         <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox space-between limited-width">
                             <div class="horizontal-flexbox small-height">
                                 <div v-for="state in description.states" :key="'img-' + state.id" class="horizontal-flexbox">
-                                    <img v-for="photo in state.photos" class="small-height medium-max-width thin-border" :key="photo.id" :src="photo.url">
+                                    <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="photo.url">
                                 </div>
                             </div>
                             <div class="horizontal-flexbox">
-                                <div>{{ description.character.name }}<span class="spaced">is</span></div>
+                                <div>{{ description.character.name.S }}<span class="spaced">is</span></div>
                                 <div v-for="(state, index) in description.states" :key="state.id">
-                                    <span v-if="index > 0" class="spaced">or</span> {{ state.name }}
+                                    <span v-if="index > 0" class="spaced">or</span> {{ state.name.S }}
                                 </div>
                             </div>
                         </section>
                     </div>
-                    <img v-if="taxon.photos[0]" class="medium-max-width fit-contain" :src="taxon.photos[0].url"/>
+                    <img v-if="taxon.pictures[0]" class="medium-max-width fit-contain" :src="taxon.pictures[0].url"/>
                 </div>
                 <hr class="no-print">
             </section>

@@ -9,10 +9,17 @@
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </TreeMenu>
         </nav>
+        <div v-if="(typeof selectedCharacter !== 'undefined')" ref="printtemplate" class="invisible">
+            <characters-presentation v-if="(typeof selectedCharacter !== 'undefined')"
+                :dataset="dataset"
+                :character="selectedCharacter">
+            </characters-presentation>
+        </div>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
         <section class="scroll vertical-flexbox flex-grow-1">
             <div class="horizontal-flexbox medium-padding thin-border">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
+                <button type="button" @click="printPresentation">Print</button>
                 <div class="button-group">
                     <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
@@ -29,9 +36,20 @@
                     :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" editable="true"></picture-frame>
             </picture-box>
             <collapsible-panel v-if="(typeof selectedCharacter !== 'undefined')" label="Identification">
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name FR</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.FR" /></div>
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name EN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></div>
-                <div class="horizontal-flexbox center-items"><label class="medium-margin-horizontal">Name CN</label><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></div>
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>FR</th>
+                        <th>EN</th>
+                        <th>CN</th>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.FR" /></td>
+                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></td>
+                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></td>
+                    </tr>
+                </table>
                 <label class="item-property">Detail</label>
                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
             </collapsible-panel>
@@ -116,13 +134,14 @@
 import TreeMenu from "./TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
 import PopupGalery from "./PopupGalery.vue";
+import CharactersPresentation from "./CharactersPresentation.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Dataset, DetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { PopupGalery, TreeMenu, CharactersTree },
+    components: { PopupGalery, TreeMenu, CharactersTree, CharactersPresentation },
     data() {
         return {
             store: Hazo.store,
@@ -161,6 +180,20 @@ export default Vue.extend({
         },
     },
     methods: {
+        printPresentation() {
+            console.log(this.$refs);
+            const divContents = (this.$refs.printtemplate as HTMLElement).innerHTML;
+            if (!divContents) return;
+            const a = window.open('', '', 'height=800, width=600');
+            if (!a) return;
+            a.document.write('<html>');
+            a.document.write('<head><link rel="stylesheet" href="style.css"></head>');
+            a.document.write('<body>');
+            a.document.write(divContents);
+            a.document.write('</body></html>');
+            a.document.close();
+            a.addEventListener("load", () => a.print());
+        },
         copyItem() {
             if (this.selectedCharacter) {
                 this.store.copyCharacter(this.selectedCharacter);
