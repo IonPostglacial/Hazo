@@ -221,15 +221,15 @@ export default Vue.extend({
             
             const positions = await importKml((e.target.files ?? [])[0]);
 
-            this.store.setTaxonLocations({ taxon: this.selectedTaxon, positions });
+            this.store.do("setTaxonLocations", { taxon: this.selectedTaxon, positions });
         },
         copyItem() {
             if (this.selectedTaxon) {
-                this.store.copyTaxon(this.selectedTaxon);
+                this.store.do("copyTaxon", this.selectedTaxon);
             }
         },
         pasteItem() {
-            this.store.pasteTaxon(this.selectedTaxonId);
+            this.store.do("pasteTaxon", this.selectedTaxonId);
         },
         openSelectParentDropdown() {
             this.selectingParent = true;
@@ -239,7 +239,7 @@ export default Vue.extend({
         },
         changeSelectedTaxonParent(id: string) {
             if (this.selectedTaxon) {
-                this.store.changeTaxonParent({ taxon: this.selectedTaxon, newParentId: id });
+                this.store.do("changeTaxonParent", { taxon: this.selectedTaxon, newParentId: id });
             }
             this.selectingParent = false;
         },
@@ -248,7 +248,7 @@ export default Vue.extend({
         },
         addTaxon(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;
-            this.store.addTaxon(new Taxon({
+            this.store.do("addTaxon", new Taxon({
                 ...new DetailData({ id: "", name: { S: name, V: vernacularName, CN: nameCN}, pictures: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
@@ -257,7 +257,7 @@ export default Vue.extend({
         removeTaxon(e: { itemId: string }) {
             const taxonToRemove = this.dataset.taxonsHierarchy?.itemWithId(e.itemId);
             if (taxonToRemove) {
-                this.store.removeTaxon(taxonToRemove);
+                this.store.do("removeTaxon", taxonToRemove);
             }
         },
         setProperty(e: { detail: { property: string, value: string } }) {
@@ -278,7 +278,7 @@ export default Vue.extend({
 
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
                 const selected = !this.dataset.hasTaxonState(this.selectedTaxon, stateToAdd);
-                this.store.setTaxonState({ taxon: this.selectedTaxon, state: stateToAdd, has: selected });
+                this.store.do("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
         },
         openCharacter(e: { item: Character }) {
@@ -292,12 +292,12 @@ export default Vue.extend({
                 return;
             }
             const numberOfPhotos = this.selectedTaxon.pictures.length;
-            this.store.addTaxonPicture({ taxon: this.selectedTaxon, picture: { id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value } });
+            this.store.do("addTaxonPicture", { taxon: this.selectedTaxon, picture: { id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value } });
         },
         setItemPhoto(e: {detail: {index: number, value: string}}) {
             if (!this.selectedTaxon) { return; }
 
-            this.store.setTaxonPicture({
+            this.store.do("setTaxonPicture", {
                 taxon: this.selectedTaxon,
                 index: e.detail.index,
                 picture: { ...this.selectedTaxon!.pictures[e.detail.index], url: e.detail.value },
@@ -306,7 +306,7 @@ export default Vue.extend({
         deleteItemPhoto(e: {detail: { index: number }}) {
             if (!this.selectedTaxon) { return; }
 
-            this.store.removeTaxonPicture({ taxon: this.selectedTaxon, index: e.detail.index });
+            this.store.do("removeTaxonPicture", { taxon: this.selectedTaxon, index: e.detail.index });
         },
         openPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();

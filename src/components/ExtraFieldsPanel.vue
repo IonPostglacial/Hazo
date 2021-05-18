@@ -36,10 +36,10 @@ export default Vue.extend({
     },
     methods: {
         addExtraField(e: { detail: string[] }) {
-            this.store.addExtraField({ detail: e.detail[0] });
+            this.store.do("addExtraField", { detail: e.detail[0] });
         },
         removeExtraField(id: string) {
-            this.store.removeExtraField(id);
+            this.store.do("removeExtraField", id);
         },
         close() {
             this.$emit("closed");

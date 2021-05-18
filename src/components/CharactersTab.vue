@@ -181,7 +181,6 @@ export default Vue.extend({
     },
     methods: {
         printPresentation() {
-            console.log(this.$refs);
             const divContents = (this.$refs.printtemplate as HTMLElement).innerHTML;
             if (!divContents) return;
             const a = window.open('', '', 'height=800, width=600');
@@ -196,26 +195,26 @@ export default Vue.extend({
         },
         copyItem() {
             if (this.selectedCharacter) {
-                this.store.copyCharacter(this.selectedCharacter);
+                this.store.do("copyCharacter", this.selectedCharacter);
             }
         },
         pasteItem() {
-            this.store.pasteCharacter(this.selectedCharacterId);
+            this.store.do("pasteCharacter", this.selectedCharacterId);
         },
         copyStates() {
-            this.store.copyStates(Array.from(this.dataset.charactersHierarchy.characterStates(this.selectedCharacter)));
+            this.store.do("copyStates", Array.from(this.dataset.charactersHierarchy.characterStates(this.selectedCharacter)));
         },
         pasteStates() {
-            this.store.pasteStates(this.selectedCharacterId);
+            this.store.do("pasteStates", this.selectedCharacterId);
         },
         setInapplicableState(state: State, selected: boolean) {
-            this.store.setInapplicableState({ state, selected });
+            this.store.do("setInapplicableState", { state, selected });
         },
         setRequiredState(state: State, selected: boolean) {
-            this.store.setRequiredState({ state, selected });
+            this.store.do("setRequiredState", { state, selected });
         },
         setInherentState(state: State) {
-            this.store.setInherentState({ state });
+            this.store.do("setInherentState", { state });
         },
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
@@ -225,7 +224,7 @@ export default Vue.extend({
 
             const [url, label] = e.detail.value;
             const numberOfPhotos = this.selectedCharacter!.pictures.length;
-            this.store.addCharacterPicture({
+            this.store.do("addCharacterPicture", {
                 character: this.selectedCharacter,
                 picture: {
                     id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
@@ -237,7 +236,7 @@ export default Vue.extend({
         setCharacterPhoto(e: {detail: {index: number, value: string}}) {
             if (!this.selectedCharacter) { return; }
 
-            this.store.setCharacterPicture({
+            this.store.do("setCharacterPicture", {
                 character: this.selectedCharacter,
                 index: e.detail.index,
                 picture: { ...this.selectedCharacter?.pictures[e.detail.index], url: e.detail.value }
@@ -246,11 +245,11 @@ export default Vue.extend({
         deleteCharacterPhoto(e: {detail: {index: number}}) {
             if (!this.selectedCharacter) { return; }
 
-            this.store.removeCharacterPicture({ character: this.selectedCharacter, index: e.detail.index });
+            this.store.do("removeCharacterPicture", { character: this.selectedCharacter, index: e.detail.index });
         },
         addStatePhoto(state: State, e: {detail: {value: string}}) {
             const numberOfPhotos = state.pictures.length;
-            this.store.addStatePicture({
+            this.store.do("addStatePicture", {
                 state: state,
                 picture: {
                     id: `${state.id}-${numberOfPhotos}`,
@@ -261,7 +260,7 @@ export default Vue.extend({
         },
         setStatePhoto(state: State, e: {detail: {index: number, value: string}}) {
             if (state) {
-                this.store.setStatePicture({
+                this.store.do("setStatePicture", {
                     state: state,
                     index: e.detail.index,
                     picture: { ...state.pictures[e.detail.index], url: e.detail.value },
@@ -269,7 +268,7 @@ export default Vue.extend({
             }
         },
         deleteStatePhoto(state: State, e: {detail: {index: number}}) {
-            this.store.removeStatePicture({ state: state, index: e.detail.index });
+            this.store.do("removeStatePicture", { state: state, index: e.detail.index });
         },
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
             e.stopPropagation();
@@ -278,7 +277,7 @@ export default Vue.extend({
         },
         addCharacter(e: { value: string[], parentId: string }) {
             const [name, nameCN] = e.value;
-            this.store.addCharacter(new Character({
+            this.store.do("addCharacter", new Character({
                 ...new DetailData({ id: "", name: { S: name, FR: name, CN: nameCN } }),
                 parentId: e.parentId,
             }));
@@ -286,7 +285,7 @@ export default Vue.extend({
         deleteCharacter(e: { itemId: string}) {
             const characterToDelete = this.charactersHierarchy?.itemWithId(e.itemId);
             if (typeof characterToDelete !== "undefined") {
-                this.store.removeCharacter(characterToDelete);
+                this.store.do("removeCharacter", characterToDelete);
             } else {
                 console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }
@@ -294,7 +293,7 @@ export default Vue.extend({
         addState(e: {detail: string[]}) {
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
             const [name, nameEN, nameCN, color, description] = e.detail;
-            this.store.addState({
+            this.store.do("addState", {
                 state: {
                     id: "",
                     name: { S: name, FR: name, EN: nameEN, CN: nameCN },
@@ -306,7 +305,7 @@ export default Vue.extend({
             });
         },
         removeState(state: State) {
-            this.store.removeState(state);
+            this.store.do("removeState", state);
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             e.stopPropagation();

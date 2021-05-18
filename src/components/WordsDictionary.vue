@@ -115,7 +115,7 @@ export default Vue.extend({
         addEntry(e: { detail: string[] }) {
             const [nameCN, nameEN, defCN, defEN, nameFR, defFR] = e.detail;
             const id = Date.now();
-            this.store.addDictionaryEntry({
+            this.store.do("addDictionaryEntry", {
                 id: id.toString(), nameCN: nameCN ?? "", nameEN: nameEN ?? "", defCN: defCN ?? "",
                 defEN: defEN ?? "", nameFR: nameFR ?? "", defFR: defFR ?? "", url: ""
             });

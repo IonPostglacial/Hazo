@@ -69,12 +69,12 @@ export default Vue.extend({
     mounted() {
         fetch(Config.datasetRegistry).then(res => {
             if (res.ok) {
-                this.store.setConnectedToHub(true);
+                this.store.do("setConnectedToHub", true);
             } else {
                 const timerId = window.setInterval(() => {
                     fetch(Config.datasetRegistry).then(res => {
                         if (res.ok) {
-                            this.store.setConnectedToHub(true);
+                            this.store.do("setConnectedToHub", true);
                             window.clearInterval(timerId);
                         }
                     })
@@ -92,7 +92,7 @@ export default Vue.extend({
                         this.datasetIds.push(fetchedDataset.id);
                     }
                     DB.store(fetchedDataset).then(() => {
-                        this.store.setDataset(decodeDataset(ObservableMap, fetchedDataset));
+                        this.store.do("setDataset", decodeDataset(ObservableMap, fetchedDataset));
                         this.selectedBase = fetchedDataset.id;
                     });
                 });
@@ -141,13 +141,13 @@ export default Vue.extend({
             } else {
                 const json = await res.json();
                 this.resetData();
-                this.store.setDataset(decodeDataset(ObservableMap, json));
+                this.store.do("setDataset", decodeDataset(ObservableMap, json));
             }
         },
         loadBase(id: string) {
             DB.load(id).then(savedDataset => {
                 this.resetData();
-                this.store.setDataset(decodeDataset(ObservableMap, savedDataset ?? { id }));
+                this.store.do("setDataset", decodeDataset(ObservableMap, savedDataset ?? { id }));
             });
         },
         print() {
@@ -203,7 +203,7 @@ export default Vue.extend({
             }
         },
         resetData() {
-            this.store.resetData();
+            this.store.do("resetData");
         },
         importFile() {
             document.getElementById("import-data")?.click();
@@ -218,11 +218,11 @@ export default Vue.extend({
 
             for (const taxon of this.dataset.taxons) {
                 const newDetail = taxon.detail.replace(re, replacement);
-                this.store.addTaxon(Object.assign({}, taxon, { detail: newDetail }));
+                this.store.do("addTaxon", Object.assign({}, taxon, { detail: newDetail }));
             }
             for (const character of this.dataset.characters) {
                 const newDetail = character.detail.replace(re, replacement);
-                this.store.addCharacter(Object.assign({}, character, { detail: newDetail }));
+                this.store.do("addCharacter", Object.assign({}, character, { detail: newDetail }));
             }
         },
         async fileRead(file: File): Promise<Dataset | null> {
@@ -265,10 +265,10 @@ export default Vue.extend({
 
             if (result !== null) {
                 for (const taxon of result.taxonsHierarchy.topLevelItems) {
-                    this.store.addTaxonHierarchy(result.taxonsHierarchy.extractHierarchy(taxon));
+                    this.store.do("addTaxonHierarchy", result.taxonsHierarchy.extractHierarchy(taxon));
                 }
                 for (const character of result.charactersHierarchy.topLevelItems) {
-                    this.store.addCharacterHierarchy(result.charactersHierarchy.extractHierarchy(character));
+                    this.store.do("addCharacterHierarchy", result.charactersHierarchy.extractHierarchy(character));
                 }
             }
         },
@@ -279,7 +279,7 @@ export default Vue.extend({
             if (typeof result === "undefined" || result === null) return;
 
             result.id = this.selectedBase;
-            this.store.setDataset(result);
+            this.store.do("setDataset", result);
         },
         boldUpload(file: File): Promise<null> {
             return new Promise((resolve, reject) => {
