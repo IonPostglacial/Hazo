@@ -211,10 +211,5 @@ export function createStore() {
             }
         },
     };
-    document.addEventListener("keydown", function(e) {
-        if (e.ctrlKey && e.key == "z") {
-            store.undo();
-        }
-    });
     return store;
 }

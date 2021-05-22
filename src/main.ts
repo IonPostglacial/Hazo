@@ -54,6 +54,12 @@ function adaptSize() {
     document.documentElement.style.setProperty("--viewport-height", `${0.01 * window.innerHeight}px`);
 }
 
+document.addEventListener("keydown", function(e) {
+    if (e.ctrlKey && e.key == "z") {
+        Hazo.store.undo();
+    }
+});
+
 window.addEventListener("load", function (e) {
     adaptSize();
 });
