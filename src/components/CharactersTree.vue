@@ -254,7 +254,9 @@ export default Vue.extend({
                             (s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
                     ].map(child => hierarchyToD3(hierarchy, child)) };
             };
-            const hierarchy = this.store.dataset.charactersHierarchy.extractHierarchy(this.selectedCharacter);
+            const hierarchy = !this.selectedCharacter ?
+                this.store.dataset.charactersHierarchy.clone() :
+                this.store.dataset.charactersHierarchy.extractHierarchy(this.selectedCharacter);
             const topLevelItems = Array.from(hierarchy.topLevelItems);
             if (topLevelItems.length === 1) {
                 return hierarchyToD3(hierarchy, topLevelItems[0]);

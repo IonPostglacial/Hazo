@@ -32,8 +32,8 @@
                     @set-photo="setCharacterPhoto"
                     @delete-photo="deleteCharacterPhoto"
                     @open-photo="openDescriptionPhoto">
-                <picture-frame v-for="(photo, index) in selectedCharacter.pictures" :key="photo.id"
-                    :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" editable="true"></picture-frame>
+                <picture-frame v-for="photo in selectedCharacter.pictures" :key="photo.id"
+                    :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="photo.url" editable="true"></picture-frame>
             </picture-box>
             <collapsible-panel v-if="(typeof selectedCharacter !== 'undefined')" label="Identification">
                 <table>
@@ -53,7 +53,7 @@
                 <label class="item-property">Detail</label>
                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
             </collapsible-panel>
-            <characters-tree v-if="selectedCharacter" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+            <characters-tree class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
             </characters-tree>
             <collapsible-panel v-if="selectedCharacter && selectedCharacter.parentId" label="Dependencies">
                 <div class="horizontal-flexbox">

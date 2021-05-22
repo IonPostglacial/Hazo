@@ -3,7 +3,17 @@ import { createVuePlugin } from 'vite-plugin-vue2';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [ createVuePlugin({ vueTemplateOptions: { compilerOptions: { whitespace: "condense" } } }) ],
+  plugins: [ createVuePlugin({ vueTemplateOptions: {
+    compilerOptions: {
+      whitespace: "condense",
+      isCustomElement: tag =>
+        tag === "add-item" ||
+        tag === "collapsible-panel" ||
+        tag === "item-property-field" ||
+        tag === "picture-box" ||
+        tag === "picture-frame"
+    }
+  } }) ],
   server: {
     port: 8080
   },
