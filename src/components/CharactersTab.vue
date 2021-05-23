@@ -1,13 +1,13 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
         <nav v-if="showLeftMenu" class="scroll white-background">
-            <TreeMenu editable :items="charactersHierarchy" name="description"
+            <tree-menu editable :items="charactersHierarchy" name="description"
                 :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
                 @add-item="addCharacter"
                 @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
-            </TreeMenu>
+            </tree-menu>
         </nav>
         <div v-if="(typeof selectedCharacter !== 'undefined')" ref="printtemplate" class="invisible">
             <characters-presentation v-if="(typeof selectedCharacter !== 'undefined')"

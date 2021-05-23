@@ -9,7 +9,7 @@
             </div>
             <button @click="exportMarkdown">Export to Markdown</button>
         </div>
-        <div id="interactive-tree">
+        <div ref="interactive-tree">
         </div>
     </div>
 </template>
@@ -25,7 +25,7 @@ type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, c
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
 
 function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy) {
-    const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = element.clientHeight;
+    const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = Math.max(element.clientHeight, 400);
 
     const margin = { top: 20, right: 90, bottom: 30, left: 90 },
         width = MAX_WIDTH - margin.left - margin.right,
@@ -34,8 +34,8 @@ function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy) {
     // append the svg object to the body of the page
     // appends a "group" element to "svg"
     // moves the "group" element to the top left margin
-    d3.select("#interactive-tree").selectAll("svg").remove();
-    const svg = d3.select("#interactive-tree").append("svg")
+    d3.select(element).selectAll("svg").remove();
+    const svg = d3.select(element).append("svg")
         .attr("width", width + margin.right + margin.left)
         .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -66,22 +66,21 @@ function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy) {
     }
 
     function update(source: D3HierarchyNode & { x0?: number, y0?: number, x?: number, y?: number }) {
-
         // Assigns the x and y position for the nodes
-        const treeData = treemap(root);
+        const tree = treemap(root);
 
         // Compute the new tree layout.
-        const nodes = treeData.descendants(),
-            links = treeData.descendants().slice(1);
+        const pointNodes = tree.descendants(),
+            links = tree.descendants().slice(1);
 
         // Normalize for fixed-depth.
-        nodes.forEach(function (d) { d.y = d.depth * 180});
+        pointNodes.forEach(function (d) { d.y = d.depth * 180});
 
         // ****************** Nodes section ***************************
 
         // Update the nodes...
         const node = svg.selectAll("g.node")
-            .data(nodes, function(d) { return (d as any).id || ((d as any).id = ++i); });
+            .data(pointNodes, function(d) { return (d as any).id || ((d as any).id = ++i); });
 
         // Enter any new modes at the parent"s previous position.
         const nodeEnter = node.enter().append("g")
@@ -178,7 +177,7 @@ function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy) {
             .remove();
 
         // Store the old positions for transition.
-        nodes.forEach(function(d: any){
+        pointNodes.forEach(function(d: any){
             d.x0 = d.x;
             d.y0 = d.y;
         });
@@ -242,17 +241,11 @@ export default Vue.extend({
             const hierarchyToD3 = (hierarchy: Hierarchy<any>, h: any): D3Hierarchy => {
                 const langFieldName = this.selectedLang.field;
                 const charChildren = hierarchy.childrenOf(h);
-                const charChildrenStatesNames = Array.from(charChildren).map(h => h.inherentState?.name.S);
                 return {
                     name: h.name ? h.name[langFieldName] : "",
                     url: (h.id ? ("characters/" + h.id) : undefined),
                     color: h.color,
-                    children: [
-                        ...charChildren,
-                        ...map(filter(this.dataset.charactersHierarchy.characterStates(h),
-                            s => !charChildrenStatesNames.includes(s.name.S)),
-                            (s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
-                    ].map(child => hierarchyToD3(hierarchy, child)) };
+                    children: [...map(charChildren, child => hierarchyToD3(hierarchy, child))]};
             };
             const hierarchy = !this.selectedCharacter ?
                 this.store.dataset.charactersHierarchy.clone() :
@@ -266,11 +259,10 @@ export default Vue.extend({
         },
     },
     mounted() {
-        updateD3(this, this.$el, this.treeData);
+        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData);
     },
     updated() {
-        console.log("updated !!!");
-        updateD3(this, this.$el, this.treeData);
+        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData);
     },
     methods: {
         exportMarkdown() {
