@@ -6,10 +6,6 @@ export default defineConfig({
   plugins: [ createVuePlugin({ vueTemplateOptions: {
     compilerOptions: {
       whitespace: "condense",
-      isCustomElement: tag =>
-        tag === "add-item" ||
-        tag === "collapsible-panel" ||
-        tag === "item-property-field"
     }
   } }) ],
   server: {

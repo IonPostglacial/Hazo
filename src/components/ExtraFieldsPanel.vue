@@ -26,8 +26,10 @@
 
 <script lang="ts">
 import Vue from "vue";
+import AddItem from "./AddItem.vue";
 
 export default Vue.extend({
+    components: { AddItem },
     props: { showFields: Boolean, extraFields: Array },
     data() {
         return {

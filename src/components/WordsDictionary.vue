@@ -52,6 +52,7 @@
 import parseCSV from "@/tools/parse-csv";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
+import AddItem from "./AddItem.vue";
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue from "vue";  // eslint-disable-line no-unused-vars
@@ -63,6 +64,7 @@ export default Vue.extend({
     name: "WordsDictionary",
     components: {
         ckeditor: CKEditor.component,
+        AddItem,
     },
     data() {
         return {

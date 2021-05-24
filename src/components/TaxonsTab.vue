@@ -1,11 +1,11 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <nav v-if="showLeftMenu" class="scroll white-background no-print">
-            <TreeMenu :editable="editable" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+            <tree-menu :editable="editable" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
                 @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
-            </TreeMenu>
+            </tree-menu>
         </nav>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
         <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
@@ -27,10 +27,10 @@
                     <div v-if="selectingParent">
                         <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
                         <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
-                            <TreeMenu :items="dataset.taxonsHierarchy"
+                            <tree-menu :items="dataset.taxonsHierarchy"
                                 :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
                                 @select-item="changeSelectedTaxonParent">
-                            </TreeMenu>
+                            </tree-menu>
                         </div>
                     </div>
                     <div v-if="!selectingParent" class="button-group">
@@ -77,8 +77,7 @@
                         :pictures="selectedTaxon.pictures">
                     </picture-box>
                     <div class="horizontal-flexbox start-align relative">
-                        <collapsible-panel label="Properties" 
-                                v-on:set-property="setProperty" v-on:push-to-children="pushToChildren">
+                        <collapsible-panel label="Properties">
                             <div class="scroll large-max-width">
                                 <div v-if="!editable">
                                     <label class="item-property">NS</label>
@@ -90,13 +89,13 @@
                                     <label class="item-property">Author</label>
                                     <input type="text" v-model="selectedTaxon.author" />
                                 </div>
-                                <item-property-field property="name2" :value="selectedTaxon.name2" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.name2" :editable="editable">
                                     Synonymous</item-property-field>
-                                <item-property-field property="nameCN" :value="selectedTaxon.name.CN" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.name.CN" :editable="editable">
                                     中文名</item-property-field>
-                                <item-property-field property="vernacularName" :value="selectedTaxon.name.V" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.name.V" :editable="editable">
                                     NV</item-property-field>
-                                <item-property-field property="vernacularName2" :value="selectedTaxon.vernacularName2" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editable">
                                     NV 2</item-property-field>
 
                                 <label class="item-property">Website</label>
@@ -104,14 +103,14 @@
                                 <a v-if="!editable" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a><br/>
 
                                 <label class="item-property">Meaning</label>
-                                <textarea :readonly="!editable"  v-model="selectedTaxon.meaning"></textarea><br/>
+                                <textarea :readonly="!editable" v-model="selectedTaxon.meaning"></textarea><br/>
 
-                                <item-property-field property="noHerbier" :value="selectedTaxon.noHerbier" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.noHerbier" :editable="editable">
                                     N° Herbier</item-property-field>
-                                <item-property-field property="herbariumPicture" :value="selectedTaxon.herbariumPicture" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editable">
                                     Herbarium Picture</item-property-field>
                                 <div v-for="extraField in dataset.extraFields" :key="extraField.id">
-                                    <item-property-field :property="extraField.id" :icon="extraField.icon" :value="selectedTaxon.extra[extraField.id]" :editable="editable">
+                                    <item-property-field :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editable">
                                         {{ extraField.label }}</item-property-field>
                                 </div>
                             </div>
@@ -166,7 +165,9 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, Dataset, DetailData, HierarchicalItem, Hierarchy, Picture, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import Vue from "vue";
+import CollapsiblePanel from "./CollapsiblePanel.vue";
+import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
@@ -174,7 +175,7 @@ import { TexExporter, exportZipFolder, importKml } from "@/features";
 
 export default Vue.extend({
     name: "TaxonsTab",
-    components: { PictureBox, SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
+    components: { CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
     data() {
         return {
             store: Hazo.store,
@@ -308,8 +309,6 @@ export default Vue.extend({
             this.store.do("removeTaxonPicture", { taxon: this.selectedTaxon, index: e.detail.index });
         },
         openPhoto(e: Event & {detail: { index: number }}) {
-            e.stopPropagation();
-            console.log("open my photo");
             this.bigImages = this.selectedTaxon!.pictures;
             this.showBigImage = true;
         },

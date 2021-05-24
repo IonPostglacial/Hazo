@@ -7,7 +7,6 @@ import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import WordsDictionary from "./components/WordsDictionary.vue";
 import debounce from "./tools/debounce";
-import "./components";
 import VueGoogleMap from "vuejs-google-maps"
 import "vuejs-google-maps/dist/vuejs-google-maps.css"
 
@@ -19,7 +18,6 @@ Vue.use(VueGoogleMap, {
 });
 
 Vue.config.productionTip = false;
-Vue.config.ignoredElements = ["add-item"];
 
 Vue.use(VueRouter);
 

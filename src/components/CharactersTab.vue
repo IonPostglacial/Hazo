@@ -128,8 +128,10 @@
     </div>
 </template>
 <script lang="ts">
+import AddItem from "./AddItem.vue";
 import TreeMenu from "./TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
+import CollapsiblePanel from "./CollapsiblePanel.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import PictureBox from "./PictureBox.vue";
@@ -139,7 +141,7 @@ import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation },
+    components: { AddItem, CollapsiblePanel, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation },
     data() {
         return {
             store: Hazo.store,
@@ -269,7 +271,6 @@ export default Vue.extend({
             this.store.do("removeStatePicture", { state: state, index: e.detail.index });
         },
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
-            e.stopPropagation();
             this.showBigImage = true;
             this.bigImages = state.pictures;
         },
@@ -306,7 +307,6 @@ export default Vue.extend({
             this.store.do("removeState", state);
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
-            e.stopPropagation();
             this.showBigImage = true;
             this.bigImages = this.selectedCharacter!.pictures;
         },

@@ -44,10 +44,12 @@
 import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub"; // eslint-disable-line no-unused-vars
+import AddItem from "./AddItem.vue";
 
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
 export default Vue.extend({
+    components: { AddItem },
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,

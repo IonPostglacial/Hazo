@@ -39,6 +39,7 @@
 <script lang="ts">
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub";
+import AddItem from "./AddItem.vue";
 import TreeMenuItem from "./TreeMenuItem.vue";
 import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
@@ -53,7 +54,7 @@ export default Vue.extend({
         selectedItem: String,
         initOpen: Boolean,
     },
-    components:  { TreeMenuItem },
+    components:  { AddItem, TreeMenuItem },
     data() {
         const initOpenItems: string[] = [];
         let itemId = this.items?.itemWithId(this.selectedItem)?.parentId;

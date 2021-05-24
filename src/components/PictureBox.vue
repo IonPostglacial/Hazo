@@ -1,6 +1,12 @@
 <template>
     <collapsible-panel label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
-        <picture-frame v-if="picture" :key="picture.id" :editable="editable" :index="selectedPhotoIndex" :picture="picture" @delete-photo="deletePicture">
+        <picture-frame v-if="picture" :key="picture.id"
+            :editable="editable"
+            :index="selectedPhotoIndex"
+            :picture="picture"
+            @delete-photo="deletePicture"
+            @open-photo="openPhoto"
+            @set-photo="setPhoto">
         </picture-frame>
         <div class="horizontal-flexbox space-between relative">
             <div class="button-group">
@@ -25,11 +31,13 @@
 <script lang="ts">
 import { Picture } from "@/datatypes";
 import Vue, { PropType } from "vue";
+import AddItem from "./AddItem.vue";
 import PictureFrame from "./PictureFrame.vue";
+import CollapsiblePanel from "./CollapsiblePanel.vue";
 import { Config } from "@/tools/config";
 
 export default Vue.extend({
-  components: { PictureFrame },
+  components: { AddItem, CollapsiblePanel, PictureFrame },
     props: {
         editable: Boolean,
         pictures: Array as PropType<Picture[]|undefined>
@@ -82,16 +90,20 @@ export default Vue.extend({
         },
         addPicture(ev: Event & { detail: string[] }) {
             this.$emit("add-photo", { detail: { value: [ev.detail] } });
-            this.selectedPhotoIndex++;
+            this.selectedPhotoIndex = this.pics.length - 1;
         },
         deletePicture(e: Event & { detail: string[] }) {
-            this.selectedPhotoIndex = this.pics.length - 1;
             this.$emit("delete-photo", e);
+            if (this.selectedPhotoIndex > 0) {
+                this.selectedPhotoIndex--;
+            }
         },
+        openPhoto(e: Event) {
+            this.$emit("open-photo", e);
+        },
+        setPhoto(e: Event) {
+            this.$emit("set-photo", e);
+        }
     }
 })
 </script>
-
-<style>
-
-</style>
