@@ -319,5 +319,5 @@ class PictureBox extends HTMLElement {
     }
 }
 
-customElements.define("picture-frame", PictureFrame);
-customElements.define("picture-box", PictureBox);
+// customElements.define("picture-frame", PictureFrame);
+// customElements.define("picture-box", PictureBox);

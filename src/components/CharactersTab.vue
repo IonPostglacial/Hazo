@@ -28,12 +28,11 @@
                 </div>
             </div>
             <picture-box v-if="(typeof selectedCharacter !== 'undefined')" editable="editable"
-                    @add-photo="addCharacterPhoto"
-                    @set-photo="setCharacterPhoto"
-                    @delete-photo="deleteCharacterPhoto"
-                    @open-photo="openDescriptionPhoto">
-                <picture-frame v-for="photo in selectedCharacter.pictures" :key="photo.id"
-                    :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="photo.url" editable="true"></picture-frame>
+                @add-photo="addCharacterPhoto"
+                @set-photo="setCharacterPhoto"
+                @delete-photo="deleteCharacterPhoto"
+                @open-photo="openDescriptionPhoto"
+                :pictures="selectedCharacter.pictures">
             </picture-box>
             <collapsible-panel v-if="(typeof selectedCharacter !== 'undefined')" label="Identification">
                 <table>
@@ -108,15 +107,13 @@
                                     <textarea v-model="state.description" class="input-text" pleceholder="description"></textarea>
                                 </div>
                                 <picture-box
-                                        class="scroll"
-                                        editable="true"
-                                        @add-photo="addStatePhoto(state, $event)"
-                                        @set-photo="setStatePhoto(state, $event)"
-                                        @delete-photo="deleteStatePhoto(state, $event)"
-                                        @open-photo="openStatePhoto(state, $event)">
-                                    <picture-frame v-for="(photo, index) in state.pictures" :key="photo.id"      
-                                        :pictureid="photo.id" :url="photo.url" :label="photo.label" :index="index" :editable="true">
-                                    </picture-frame>
+                                    class="scroll"
+                                    :editable="true"
+                                    @add-photo="addStatePhoto(state, $event)"
+                                    @set-photo="setStatePhoto(state, $event)"
+                                    @delete-photo="deleteStatePhoto(state, $event)"
+                                    @open-photo="openStatePhoto(state, $event)"
+                                    :pictures="state.pictures">
                                 </picture-box>
                                 <div class="close" @click="removeState(state)"></div>
                             </label>
@@ -135,13 +132,14 @@ import TreeMenu from "./TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Dataset, DetailData, Character, HierarchicalItem, Hierarchy, Picture, State } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import PictureBox from "./PictureBox.vue";
+import Vue from "vue";
+import { Dataset, DetailData, Character, State } from "@/datatypes";
 import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { PopupGalery, TreeMenu, CharactersTree, CharactersPresentation },
+    components: { PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation },
     data() {
         return {
             store: Hazo.store,

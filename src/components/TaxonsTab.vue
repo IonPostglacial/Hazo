@@ -69,14 +69,12 @@
             </taxon-presentation>
             <section v-if="(mode !== 'present-item' && typeof selectedTaxon !== 'undefined')" class="flex-grow-1 horizontal-flexbox scroll">
                 <div class="vertical-flexbox scroll">
-                    <picture-box :editable="editable ? 'editable' : ''"
-                            @open-photo="openPhoto"
-                            @add-photo="addItemPhoto"
-                            @set-photo="setItemPhoto"
-                            @delete-photo="deleteItemPhoto">
-                        <picture-frame v-for="(photo, index) in selectedTaxon.pictures" :key="photo.id"
-                            :index="index" :editable="editable ? 'editable' : ''" :pictureid="photo.id" :url="photo.url" :label="photo.label">
-                        </picture-frame>
+                    <picture-box :editable="editable"
+                        @open-photo="openPhoto"
+                        @add-photo="addItemPhoto"
+                        @set-photo="setItemPhoto"
+                        @delete-photo="deleteItemPhoto"
+                        :pictures="selectedTaxon.pictures">
                     </picture-box>
                     <div class="horizontal-flexbox start-align relative">
                         <collapsible-panel label="Properties" 
@@ -162,6 +160,7 @@ import TreeMenu from "./TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
+import PictureBox from "./PictureBox.vue";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
@@ -175,7 +174,7 @@ import { TexExporter, exportZipFolder, importKml } from "@/features";
 
 export default Vue.extend({
     name: "TaxonsTab",
-    components: { SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
+    components: { PictureBox, SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
     data() {
         return {
             store: Hazo.store,

@@ -9,9 +9,7 @@ export default defineConfig({
       isCustomElement: tag =>
         tag === "add-item" ||
         tag === "collapsible-panel" ||
-        tag === "item-property-field" ||
-        tag === "picture-box" ||
-        tag === "picture-frame"
+        tag === "item-property-field"
     }
   } }) ],
   server: {
