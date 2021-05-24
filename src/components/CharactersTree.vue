@@ -257,8 +257,6 @@ export default Vue.extend({
             };
             const hierarchy = this.store.dataset.charactersHierarchy;
             const topLevelItems = Array.from(hierarchy.topLevelItems);
-            console.log("selected", this.selectedCharacter);
-            console.log("toplevel", topLevelItems);
             if (this.selectedCharacter) {
                 return hierarchyToD3(hierarchy, this.selectedCharacter);
             } else {
