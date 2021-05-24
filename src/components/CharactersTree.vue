@@ -20,6 +20,7 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
 import { filter, map } from "@/tools/iter";
+import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
 
 type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
@@ -222,7 +223,7 @@ export default Vue.extend({
         selectedCharacter: Object as PropType<Character|undefined>,
     },
     data() {
-        const langFR = { name: "FR", field: "FR" }, langEN = { name: "EN", field: "EN" }, langCN = { name: "CN", field: "CN" };
+        const langFR = { name: "FR", field: "S" }, langEN = { name: "EN", field: "EN" }, langCN = { name: "CN", field: "CN" };
 
         return {
             store: Hazo.store,
@@ -238,21 +239,28 @@ export default Vue.extend({
             return this.languageList[this.lang];
         },
         treeData(): D3Hierarchy {
-            const hierarchyToD3 = (hierarchy: Hierarchy<any>, h: any): D3Hierarchy => {
+            const hierarchyToD3 = (hierarchy: CharactersHierarchy, item: any): D3Hierarchy => {
                 const langFieldName = this.selectedLang.field;
-                const charChildren = hierarchy.childrenOf(h);
+                const charChildren = item ? hierarchy.childrenOf(item) : [];
+                const charChildrenStatesNames = Array.from(charChildren).map(h => (h.inherentState?.name as any ?? {})[langFieldName])
+                    .filter(s => typeof s === "undefined");
                 return {
-                    name: h.name ? h.name[langFieldName] : "",
-                    url: (h.id ? ("characters/" + h.id) : undefined),
-                    color: h.color,
-                    children: [...map(charChildren, child => hierarchyToD3(hierarchy, child))]};
+                    name: item.name ? item.name[langFieldName] : "",
+                    url: (item.id ? ("characters/" + item.id) : undefined),
+                    color: item.color,
+                    children: [
+                        ...map(charChildren, child => hierarchyToD3(hierarchy, child)),
+                        ...map(filter(hierarchy.characterStates(item),
+                            (s: any) => !charChildrenStatesNames.includes(s.name[langFieldName])),
+                            (s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
+                    ]};
             };
-            const hierarchy = !this.selectedCharacter ?
-                this.store.dataset.charactersHierarchy.clone() :
-                this.store.dataset.charactersHierarchy.extractHierarchy(this.selectedCharacter);
+            const hierarchy = this.store.dataset.charactersHierarchy;
             const topLevelItems = Array.from(hierarchy.topLevelItems);
-            if (topLevelItems.length === 1) {
-                return hierarchyToD3(hierarchy, topLevelItems[0]);
+            console.log("selected", this.selectedCharacter);
+            console.log("toplevel", topLevelItems);
+            if (this.selectedCharacter) {
+                return hierarchyToD3(hierarchy, this.selectedCharacter);
             } else {
                 return { name: "Characters", children: topLevelItems.map(ch => hierarchyToD3(hierarchy, ch)) };
             }
