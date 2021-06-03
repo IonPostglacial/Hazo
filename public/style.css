@@ -172,7 +172,6 @@ input[type="search"] {
 
 input[type="text"] {
     border-radius: 8px;
-    width: 120px;
 }
 
 .form-grid {
@@ -640,12 +639,6 @@ div.invisible {
 
 .width-1-3 {
     width: 33%;
-}
-
-.item-property {
-    display: inline-block;
-    padding: 8px;
-    width: 100px;
 }
 
 .selector {

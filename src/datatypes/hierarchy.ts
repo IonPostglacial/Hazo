@@ -16,20 +16,16 @@ export interface IMap<T> {
 export class Hierarchy<T extends HierarchicalItem<T>> {
     private idPrefix: string;
     private items: IMap<T>;
-    private itemsOrder: string[];
+    private ordersByItemIds: IMap<string[]>;
+    private count: number;
 
-    constructor(idPrefix: string, items: IMap<T>, itemsOrder: string[]|undefined = undefined) {
+    constructor(idPrefix: string, items: IMap<T>) {
         this.idPrefix = idPrefix;
         this.items = items;
-        if (typeof itemsOrder === "undefined") {
-            this.itemsOrder = [];
-            for (const item of items.values()) {
-                if (item.topLevel) {
-                    this.itemsOrder.push(item.id);
-                }
-            }
-        } else {
-            this.itemsOrder = itemsOrder;
+        this.count = 0;
+        this.ordersByItemIds = new (Object.getPrototypeOf(items).constructor)();
+        for (const item of items.values()) {
+            this.add(item);
         }
     }
 
@@ -45,7 +41,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     get topLevelItems(): Iterable<T> {
-        const items = this.items, itemsOrders = this.itemsOrder;
+        const items = this.items, itemsOrders = this.ordersByItemIds.get("") ?? [];
         return {
             *[Symbol.iterator]() {
                 for (let i = 0; i < itemsOrders.length; i++) {
@@ -57,9 +53,8 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
 
     add(item: T): T {
         let newId = item.id;
-        const isNewEntry = !this.itemsOrder.includes(newId);
-        if (item.id === "") {
-            let nextId = this.itemsOrder.length;
+        if (newId === "") {
+            let nextId = this.count + 1;
             while (this.items.has(this.idPrefix + nextId)) {
                 nextId++;
             }
@@ -67,24 +62,13 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         }
         const newItem = Object.assign(item, { id: newId }) as T;
         this.items.set(newId, newItem);
-
-        if (typeof newItem.parentId === "undefined") {
-            if (isNewEntry) {
-                this.itemsOrder.push(newId);
-            }
-        } else {
-            const parent = this.items.get(newItem.parentId);
-            if (typeof parent !== "undefined") {
-                if(typeof parent.childrenOrder === "undefined") {
-                    parent.childrenOrder = [newId];
-                } else {
-                    const order = parent.childrenOrder.indexOf(newId);
-                    if (order === -1) {
-                        parent.childrenOrder.push(newId);
-                    }
-                }
-            }
+        let parentOrder = this.ordersByItemIds.get(item.parentId ?? "");
+        if (typeof parentOrder === "undefined") {
+            parentOrder = [];
+            this.ordersByItemIds.set(item.parentId ?? "", parentOrder);
         }
+        parentOrder.push(newId);
+        this.count++;
         return newItem;
     }
 
@@ -93,8 +77,17 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         return this.items.get(id);
     }
 
+    private childrenOrder(item: T|undefined): string[] {
+        if (typeof item === "undefined") {
+            return [];
+        } else {
+            return this.ordersByItemIds.get(item.id ?? "") ?? [];
+        }
+    }
+
     hasChildren(item: T|undefined): boolean {
-        return typeof item?.childrenOrder !== "undefined" && item.childrenOrder.length > 0;
+        const childrenOrder = this.childrenOrder(item);
+        return typeof childrenOrder !== "undefined" && childrenOrder.length > 0;
     }
 
     childrenOf(item: T|undefined): Iterable<T> {
@@ -102,7 +95,7 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
         const self = this;
         return {
             *[Symbol.iterator]() {
-                for (const childId of item.childrenOrder ?? []) {
+                for (const childId of self.childrenOrder(item)) {
                     const child = self.items.get(childId);
                     if (typeof child !== "undefined") {
                         yield child;
@@ -115,7 +108,6 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     protected cloneNewItem(item: T): T {
         const newItem = clone(item);
         newItem.id = "";
-        newItem.childrenOrder = [];
 
         return newItem;
     }
@@ -146,7 +138,6 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
             if (typeof item.parentId === "undefined") item.parentId = targetId;
             const children = [...hierarchy.childrenOf(oldItem)];
             item.id = "";
-            item.childrenOrder = [];
             this.add(item);
             this.onCloneFrom(hierarchy, oldItem, item, undefined);
             for (const child of children) {
@@ -198,70 +189,54 @@ export class Hierarchy<T extends HierarchicalItem<T>> {
     }
 
     remove(item: T): void {
-        if (typeof item.childrenOrder !== "undefined") {
-            for (const childId of item.childrenOrder) {
-                const child = this.itemWithId(childId);
-                if (typeof child !== "undefined") {
-                    this.remove(child);
-                }
+        for (const childId of this.childrenOrder(item)) {
+            const child = this.itemWithId(childId);
+            if (typeof child !== "undefined") {
+                this.remove(child);
             }
         }
         this.items.delete(item.id);
-        const order = this.itemsOrder.indexOf(item.id);
-        if (order >= 0) {
-            this.itemsOrder.splice(order, 1);
-        }
-        if (typeof item.parentId !== "undefined") {
-            const parent = this.items.get(item.parentId);
-            if (typeof parent === "undefined") {
-                console.error(`Trying to remove an item with a parent that doesn't exist: ${item.parentId}`);
-            } else {
-                if (typeof parent.childrenOrder === "undefined") return;
-                const childOrder = parent.childrenOrder.indexOf(item.id);
-                parent.childrenOrder.splice(childOrder, 1);
-            }
+        const orders = this.ordersByItemIds.get(item.parentId ?? "") ?? [];
+        const index =  orders.indexOf(item.id);
+        if (index >= 0) {
+            orders.splice(index, 1);
+        } else {
+            console.error(`Trying to remove an item with a parent that doesn't exist: ${item.parentId}`);
         }
     }
 
     moveUp(item: T): void {
-        let orders: Array<string>;
-        if (typeof item.parentId === "undefined") {
-            orders = this.itemsOrder
-        } else {
-            orders = this.items.get(item.parentId)?.childrenOrder ?? [];
+        const orders = this.ordersByItemIds.get(item.parentId ?? "") ?? [];
+        const index = orders.indexOf(item.id);
+        if (index > 0) {
+            const tmp = orders[index - 1];
+            orders[index - 1] = orders[index];
+            orders[index] = tmp;
         }
-        const order = orders.indexOf(item.id);
-        if (order > 0) {
-            const tmp = orders[order - 1];
-            orders[order - 1] = orders[order];
-            orders[order] = tmp;
-        }
-        this.add({...item});
+        this.items.set(item.id, clone(item));
     }
 
     moveDown(item: T): void {
-        let orders: Array<string>;
-        if (typeof item.parentId === "undefined") {
-            orders = this.itemsOrder
-        } else {
-            orders = this.items.get(item.parentId)?.childrenOrder ?? [];
+        const orders = this.ordersByItemIds.get(item.parentId ?? "") ?? [];
+        const index = orders.indexOf(item.id);
+        if (index < orders.length - 1) {
+            const tmp = orders[index + 1];
+            orders[index + 1] = orders[index];
+            orders[index] = tmp;
         }
-        const order = orders.indexOf(item.id);
-        if (order < orders.length - 1) {
-            const tmp = orders[order + 1];
-            orders[order + 1] = orders[order];
-            orders[order] = tmp;
-        }
-        this.add({...item});
+        this.items.set(item.id, clone(item));
     }
 
     clear() {
         this.items.clear();
-        this.itemsOrder = [];
+        this.ordersByItemIds.clear();
     }
 
     clone(): Hierarchy<T> {
-        return new Hierarchy<T>(this.idPrefix, clone(this.items), this.itemsOrder.slice());
+        const c = new Hierarchy<T>(this.idPrefix, clone(this.items));
+        c.count = this.count;
+        c.ordersByItemIds = clone(this.ordersByItemIds);
+        return c;
     }
 
     toObject(): any {

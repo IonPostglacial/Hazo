@@ -31,10 +31,10 @@ interface AlreadyEncodedDataset extends Omit<EncodedDataset, "characters"> {
 	characters?:  EncodedCharacter[];
 }
 
-function encodeHierarchicalItem(item: HierarchicalItem<any>) {
+function encodeHierarchicalItem(hierarchy: Hierarchy<any>, item: HierarchicalItem<any>) {
 	const children = new Set<string>();
 
-	for (const childId of item.childrenOrder ?? []) {
+	for (const childId of hierarchy.childrenOf(item)) {
 		children.add(childId);
 	}
 	return {
@@ -71,7 +71,7 @@ function encodeTaxon(taxon: Taxon, dataset: Dataset) {
 		bookInfoByIds: taxon.bookInfoByIds,
 		specimenLocations: taxon.specimenLocations,
 		descriptions: [...dataset.taxonDescriptions(taxon)].map(d => encodeDescription(d.character.id, d.states.map(s => s.id))),
-		...encodeHierarchicalItem(taxon),
+		...encodeHierarchicalItem(dataset.taxonsHierarchy, taxon),
 	};
 }
 
@@ -81,7 +81,7 @@ function encodeCharacter(dataset: Dataset, character: Character) {
 		inherentStateId: character.inherentState?.id,
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),
-		...encodeHierarchicalItem(character),
+		...encodeHierarchicalItem(dataset.charactersHierarchy, character),
 	};
 }
 
@@ -197,12 +197,6 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 			}
 		});
 		taxons.add(decodeTaxon(taxon, books));
-	}
-	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
-		characters.itemWithId(character.id)?.reorderChildren(character.children);
-	}
-	for (const taxon of dataset?.taxons ?? []) {
-		taxons.itemWithId(taxon.id)?.reorderChildren(taxon.children);
 	}
 	const dictionaryEntries = new makeMap();
 	for (const entry of Object.values(dataset?.dictionaryEntries ?? {})) {

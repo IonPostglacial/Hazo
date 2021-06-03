@@ -63,10 +63,10 @@ export class Loader {
 
 	loadDataset(datasetElement: Element): Dataset {
 		const mediaObjectsById = this.loadMediaObjects(datasetElement);
-		const charsAndStatesById = this.loadDatasetCharacters(datasetElement, mediaObjectsById);
+		const charsAndStatesById = this.loadCharacters(datasetElement, mediaObjectsById);
 
 		return {
-			taxons: [...this.loadDatasetTaxons(datasetElement, mediaObjectsById, charsAndStatesById.charactersById).values()],
+			taxons: [...this.loadTaxons(datasetElement, mediaObjectsById, charsAndStatesById.charactersById).values()],
 			characters: [...charsAndStatesById.charactersById.values()],
 			states: [...charsAndStatesById.statesById.values()],
 			mediaObjects: [...mediaObjectsById.values()],
@@ -125,7 +125,7 @@ export class Loader {
 		this.exceptionLog.push(exception.toString());
 	}
 
-	loadDatasetTaxons(datasetElement: Element, mediaObjectsById:Map<string, MediaObject>, charactersById:Map<string, Character>):Map<string, Taxon> {
+	loadTaxons(datasetElement: Element, mediaObjectsById:Map<string, MediaObject>, charactersById:Map<string, Character>):Map<string, Taxon> {
 		const taxonsById = new Map<string, Taxon>();
 		const taxonNamesElement = firstChildNamed(datasetElement, "TaxonNames");
 
@@ -251,7 +251,7 @@ export class Loader {
 		return taxonsById;
 	}
 
-	loadDatasetCharacters(datasetElement: Element, mediaObjectsById:Map<string, MediaObject>): CharactersAndStatesById {
+	loadCharacters(datasetElement: Element, mediaObjectsById:Map<string, MediaObject>): CharactersAndStatesById {
 		const charactersById = new Map<string, Character>();
 		const charactersElements = firstChildNamed(datasetElement, "Characters");
 		const statesById = new Map<string, State>();

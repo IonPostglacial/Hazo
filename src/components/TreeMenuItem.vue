@@ -111,11 +111,9 @@ export default Vue.extend({
             this.$emit("button-click", { buttonId, parentId: this.item?.parentId, id: this.item?.id, itemId: this.item?.id });
         },
         moveUp() {
-            console.log("up");
             this.$emit("move-item-up", this.item);
         },
         moveDown() {
-            console.log("down");
             this.$emit("move-item-down", this.item);
         }
     }

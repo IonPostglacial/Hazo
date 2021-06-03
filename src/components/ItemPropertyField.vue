@@ -1,10 +1,9 @@
 <template>
-    <div class="nowrap">
+    <div class="display-contents">
         <img v-if="icon" width="18" height="18" :src="'icons/'+icon" alt="">
-        <label class="item-property"><slot></slot></label>
+        <label><slot></slot></label>
         <div v-if="!editable" class="inline-block medium-padding medium-margin" target="_blank">{{ text }}</div>
         <input v-if="editable" type="text" :value="text" @input="setValue" />
-        <button v-if="editable" @click="pushToChildren" title="Push the value to children">🡆</button>
     </div>
 </template>
 
@@ -27,9 +26,6 @@ export default Vue.extend({
             this.text = e.target.value;
             this.$emit("input", this.text);
         },
-        pushToChildren() {
-            this.$emit("push-to-children", { detail: this.text });
-        }
     }
 });
 </script>

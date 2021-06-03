@@ -1,7 +1,7 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <nav v-if="showLeftMenu" class="scroll white-background no-print">
-            <tree-menu :editable="editable" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+            <tree-menu :editable="true" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
                 @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
@@ -16,12 +16,12 @@
                         <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                         <button type="button" @click="showMap = !showMap">Map</button>
                     </div>
-                    <span class="medium-margin">Mode:</span>
+                    <span class="medium-margin">Edit:</span>
                     <div class="button-group">
-                        <button type="button" :class="{ 'selected-tab': mode === 'view-item' }" @click="mode = 'view-item'">View</button>
-                        <button type="button" :class="{ 'selected-tab': mode === 'edit-item' }" @click="mode = 'edit-item'">Edit</button>
-                        <button type="button" :class="{ 'selected-tab': mode === 'present-item' }" @click="mode = 'present-item'">Print</button>
+                        <button type="button" :class="{ 'selected-tab': editProperties }" @click="switchEditMode">Properties</button>
+                        <button type="button" :class="{ 'selected-tab': editDescriptors }" @click="switchEditMode">Descriptors</button>
                     </div>
+                    <button type="button" @click="printPresentation">Print</button>
                 </div>
                 <div v-if="selectedTaxon" class="relative">
                     <div v-if="selectingParent">
@@ -63,13 +63,16 @@
                     :position="position"
                 />
             </google-map>
-            <taxon-presentation v-if="mode === 'present-item'"
-                @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-                :selected-taxon-id="selectedTaxonId" :dataset="dataset">
-            </taxon-presentation>
-            <section v-if="(mode !== 'present-item' && typeof selectedTaxon !== 'undefined')" class="flex-grow-1 horizontal-flexbox scroll">
-                <div class="vertical-flexbox scroll">
-                    <picture-box :editable="editable"
+                <div v-if="(typeof selectedTaxon !== 'undefined')" ref="printtemplate" class="invisible">
+                    <taxon-presentation
+                        @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
+                        :selected-taxon-id="selectedTaxonId" :dataset="dataset">
+                    </taxon-presentation>
+                </div>
+
+            <section v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
+                <div :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': !editDescriptors }]">
+                    <picture-box :editable="editProperties"
                         @open-photo="openPhoto"
                         @add-photo="addItemPhoto"
                         @set-photo="setItemPhoto"
@@ -78,39 +81,39 @@
                     </picture-box>
                     <div class="horizontal-flexbox start-align relative">
                         <collapsible-panel label="Properties">
-                            <div class="scroll large-max-width">
-                                <div v-if="!editable">
-                                    <label class="item-property">NS</label>
+                            <div class="scroll large-max-width form-grid medium-padding">
+                                <div v-if="!editProperties" class="display-contents">
+                                    <label>NS</label>
                                     <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                                 </div>
-                                <div v-if="editable">
-                                    <label class="item-property">NS</label>
-                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" /><br>
-                                    <label class="item-property">Author</label>
+                                <div v-if="editProperties" class="display-contents">
+                                    <label>NS</label>
+                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" />
+                                    <label>Author</label>
                                     <input type="text" v-model="selectedTaxon.author" />
                                 </div>
-                                <item-property-field v-model="selectedTaxon.name2" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.name2" :editable="editProperties">
                                     Synonymous</item-property-field>
-                                <item-property-field v-model="selectedTaxon.name.CN" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.name.CN" :editable="editProperties">
                                     中文名</item-property-field>
-                                <item-property-field v-model="selectedTaxon.name.V" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.name.V" :editable="editProperties">
                                     NV</item-property-field>
-                                <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editProperties">
                                     NV 2</item-property-field>
 
-                                <label class="item-property">Website</label>
-                                <input v-if="editable" type="text" v-model="selectedTaxon.website" />
-                                <a v-if="!editable" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a><br/>
+                                <label>Website</label>
+                                <input v-if="editProperties" type="text" v-model="selectedTaxon.website" />
+                                <a v-if="!editProperties" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a>
 
-                                <label class="item-property">Meaning</label>
-                                <textarea :readonly="!editable" v-model="selectedTaxon.meaning"></textarea><br/>
+                                <label>Meaning</label>
+                                <textarea :readonly="!editProperties" v-model="selectedTaxon.meaning"></textarea>
 
-                                <item-property-field v-model="selectedTaxon.noHerbier" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.noHerbier" :editable="editProperties">
                                     N° Herbier</item-property-field>
-                                <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editable">
+                                <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
                                     Herbarium Picture</item-property-field>
                                 <div v-for="extraField in dataset.extraFields" :key="extraField.id">
-                                    <item-property-field :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editable">
+                                    <item-property-field :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
                                         {{ extraField.label }}</item-property-field>
                                 </div>
                             </div>
@@ -121,31 +124,31 @@
                             <div v-if="selectedTaxon.bookInfoByIds[book.id]">
                                 <label class="medium-margin">
                                     book:&nbsp;
-                                    <input v-if="editable" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].fasc" />
-                                    <div class="inline-block medium-padding medium-margin" v-if="!editable">
+                                    <input v-if="editProperties" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].fasc" />
+                                    <div class="inline-block medium-padding medium-margin" v-if="!editProperties">
                                         {{ selectedTaxon.bookInfoByIds[book.id].fasc }}
                                     </div>
                                 </label>
                                 <label class="medium-margin">
                                     page:&nbsp;
-                                    <input v-if="editable" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].page" />
-                                    <div class="inline-block medium-padding medium-margin" v-if="!editable">
+                                    <input v-if="editProperties" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].page" />
+                                    <div class="inline-block medium-padding medium-margin" v-if="!editProperties">
                                         {{ selectedTaxon.bookInfoByIds[book.id].page }}
                                     </div>
                                 </label>
-                                <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
-                                <div v-if="!editable" class="limited-width medium-padding" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
+                                <ckeditor v-if="editProperties" :editor="editor" v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
+                                <div v-if="!editProperties" class="limited-width medium-padding" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
                             </div>
                         </div>
                     </collapsible-panel>
                     <collapsible-panel label="Additional Text" id="item-detail">
-                        <ckeditor v-if="editable" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
-                        <div v-if="!editable" class="limited-width" v-html="selectedTaxon.detail"></div>
+                        <ckeditor v-if="editProperties" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
+                        <div v-if="!editProperties" class="limited-width" v-html="selectedTaxon.detail"></div>
                     </collapsible-panel>
                 </div>
-                <div class="vertical-flexbox scroll flex-grow-1">
+                <div v-if="editDescriptors" class="vertical-flexbox scroll flex-grow-1">
                     <collapsible-panel label="Description">
-                        <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editable" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                        <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                     </collapsible-panel>
                 </div>
             </section>
@@ -184,7 +187,8 @@ export default Vue.extend({
             showBigImage: false,
             showMap: false,
             bigImages: [{ id: "", url: "", label: "" }],
-            mode: "edit-item",
+            editProperties: true,
+            editDescriptors: false,
             editor: ClassicEditor,
             editorConfig: {},
             latexProgressText: "",
@@ -201,9 +205,6 @@ export default Vue.extend({
         dataset(): Dataset {
             return this.store.dataset;
         },
-        editable(): boolean {
-            return this.mode === "edit-item";
-        },
         selectedTaxon(): Taxon|undefined {
             return this.dataset.taxonsHierarchy.itemWithId(this.selectedTaxonId);
         },
@@ -216,6 +217,23 @@ export default Vue.extend({
         },
     },
     methods: {
+        printPresentation() {
+            const divContents = (this.$refs.printtemplate as HTMLElement).innerHTML;
+            if (!divContents) return;
+            const a = window.open('', '', 'height=800, width=600');
+            if (!a) return;
+            a.document.write('<html>');
+            a.document.write('<head><link rel="stylesheet" href="/Hazo/style.css"></head>');
+            a.document.write('<body>');
+            a.document.write(divContents);
+            a.document.write('</body></html>');
+            a.document.close();
+            a.addEventListener("load", () => a.print());
+        },
+        switchEditMode() {
+            this.editProperties = !this.editProperties;
+            this.editDescriptors = !this.editDescriptors;
+        },
         async importKml(e: InputEvent) {
             if (!(e.target instanceof HTMLInputElement) || !this.selectedTaxon) return;
             
@@ -265,12 +283,6 @@ export default Vue.extend({
         },
         setExtraProperty(e: { detail: { property: string, value: string } }) {
             this.selectedTaxon!.extra[e.detail.property] = e.detail.value;
-        },
-        pushToChildren(e: { detail: string }) {
-            for (const child of this.dataset.taxonsHierarchy!.childrenOf(this.selectedTaxon)) {
-                const anyChild: any = child, anyItem: any = this.selectedTaxon;
-                anyChild[e.detail] = anyItem[e.detail];
-            }
         },
         taxonStateToggle(e: { item: State|Character }) {
             const isCharacter = (e.item as Character).type === "character";

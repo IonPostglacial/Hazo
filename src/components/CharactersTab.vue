@@ -10,7 +10,7 @@
             </tree-menu>
         </nav>
         <div v-if="(typeof selectedCharacter !== 'undefined')" ref="printtemplate" class="invisible">
-            <characters-presentation v-if="(typeof selectedCharacter !== 'undefined')"
+            <characters-presentation
                 :dataset="dataset"
                 :character="selectedCharacter">
             </characters-presentation>
