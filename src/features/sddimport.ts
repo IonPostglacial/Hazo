@@ -102,7 +102,8 @@ function extractStatesByTaxons(makeMap: MapContructor<string[]>, sddContent: sdd
 function extractStatesByCharacters(makeMap: MapContructor<string[]>, sddContent: sdd_Dataset): OneToManyBimap {
     const statesByCharacters = new OneToManyBimap(makeMap);
     for (const character of sddContent.characters) {
-        for (const sddState of sddContent.states) {
+        character.states
+        for (const sddState of character.states) {
             statesByCharacters.add(character.id, sddState.id);
         }
     }

@@ -1,5 +1,6 @@
 import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
 import { Character, Dataset, DetailData, Field, State, Taxon } from "@/datatypes";
+import { map } from "@/tools/iter";
 
 interface SddStateData {
     state: sdd_State;
@@ -53,7 +54,7 @@ function characterToSdd(dataset: Dataset, character: Character, extraFields: Fie
 			parentId: character.parentId,
 			states: states,
 			inapplicableStatesRefs: character.inapplicableStates.map(s => ({ ref: s.id })),
-			childrenIds: character.childrenOrder?.slice() ?? [],
+			childrenIds: [...map(dataset.charactersHierarchy.childrenOf(character), c => c.id)],
 			...detailDataToSdd(character, extraFields),
 		},
 		states: states,
@@ -67,7 +68,7 @@ function taxonToSdd(taxon: Taxon, dataset: Dataset): SddTaxonData {
         hid: taxon.id,
         parentId: taxon.parentId,
         ...detailDataToSdd(taxon, dataset.extraFields),
-        childrenIds: taxon.childrenOrder?.slice() ?? [],
+        childrenIds: [...map(dataset.taxonsHierarchy.childrenOf(taxon), t => t.id)],
         categoricals: [...dataset.taxonDescriptions(taxon)].map(d => ({
             ref: d.character.id,
             stateRefs: d.states.map(s => ({ ref: s.id }))
