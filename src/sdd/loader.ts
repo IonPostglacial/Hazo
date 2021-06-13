@@ -280,7 +280,7 @@ export class Loader {
 
 				charactersById.set(characterId,
                     Object.assign({ id: characterId, states, inapplicableStatesRefs: [], childrenIds: [] },
-                        this.loadRepresentation(firstChildNamed(characterElement, "Representation"), mediaObjectsById), states));
+                        this.loadRepresentation(firstChildNamed(characterElement, "Representation"), mediaObjectsById)));
 			} catch (e) {
 				if (this.strictMode) {
 					throw e;
