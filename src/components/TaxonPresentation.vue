@@ -1,10 +1,6 @@
 <template>
-    <div v-if="(typeof selectedTaxon !== 'undefined')" class="scroll flex-grow-1">
+    <div class="scroll flex-grow-1">
         <article style="max-width: 100ch" class="centered white-background medium-padding">
-            <div class="no-print horizontal-flexbox">
-                <label v-for="parent in hierarchy" :key="parent.id"><input type="checkbox" v-model="isParentSelected[parent.id]" checked>{{ parent.name }}</label>
-            </div>
-            <h1><div v-for="parent in hierarchyToDisplay" :key="parent.id">{{ parent.name.S }}</div></h1>
             <section v-for="taxon in itemsToDisplay" :key="taxon.id" class="page-break">
                 <h2><i>{{ taxon.name.S }}</i> {{ taxon.author }}</h2>
                 <div class="horizontal-flexbox">
@@ -31,7 +27,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Character, Dataset, Description, Hierarchy, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
+import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 export default Vue.extend({
@@ -51,18 +47,11 @@ export default Vue.extend({
             return this.dataset.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
         },
         itemsToDisplay(): Iterable<Taxon> {
-            return this.dataset.taxonsHierarchy?.getLeaves(this.selectedTaxon) ?? [];
-        },
-        hierarchyToDisplay(): Taxon[] {
-            return this.hierarchy.filter(parent => this.isParentSelected[parent.id]);
-        },
-        hierarchy(): Taxon[] {
-            const hierarchy = this.dataset.taxonsHierarchy?.parentsOf(this.selectedTaxon) ?? [];
-            hierarchy.forEach(parent =>  {
-                if (typeof this.isParentSelected[parent.id] === "undefined")
-                    Vue.set(this.isParentSelected, parent.id, true);
-            });
-            return hierarchy;
+            if (typeof this.selectedTaxon !== "undefined") {
+                return this.dataset.taxonsHierarchy?.getLeaves(this.selectedTaxon);
+            } else {
+                return this.dataset.taxonsHierarchy?.allItems;
+            }
         },
     },
     methods: {

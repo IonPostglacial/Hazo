@@ -63,7 +63,7 @@
                     :position="position"
                 />
             </google-map>
-                <div v-if="(typeof selectedTaxon !== 'undefined')" ref="printtemplate" class="invisible">
+                <div ref="printtemplate" class="invisible">
                     <taxon-presentation
                         @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
                         :selected-taxon-id="selectedTaxonId" :dataset="dataset">
@@ -112,10 +112,10 @@
                                     N° Herbier</item-property-field>
                                 <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
                                     Herbarium Picture</item-property-field>
-                                <div v-for="extraField in dataset.extraFields" :key="extraField.id">
-                                    <item-property-field :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
-                                        {{ extraField.label }}</item-property-field>
-                                </div>
+                                <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
+                                        :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
+                                    {{ extraField.label }}
+                                </item-property-field>
                             </div>
                         </collapsible-panel>
                     </div>
