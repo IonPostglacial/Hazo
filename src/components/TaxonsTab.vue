@@ -79,46 +79,53 @@
                         @delete-photo="deleteItemPhoto"
                         :pictures="selectedTaxon.pictures">
                     </picture-box>
-                    <div class="horizontal-flexbox start-align relative">
-                        <collapsible-panel label="Properties">
-                            <div class="scroll large-max-width form-grid medium-padding">
-                                <div v-if="!editProperties" class="display-contents">
-                                    <label>NS</label>
-                                    <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
-                                </div>
-                                <div v-if="editProperties" class="display-contents">
-                                    <label>NS</label>
-                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" />
-                                    <label>Author</label>
-                                    <input type="text" v-model="selectedTaxon.author" />
-                                </div>
-                                <item-property-field v-model="selectedTaxon.name2" :editable="editProperties">
-                                    Synonymous</item-property-field>
-                                <item-property-field v-model="selectedTaxon.name.CN" :editable="editProperties">
-                                    中文名</item-property-field>
-                                <item-property-field v-model="selectedTaxon.name.V" :editable="editProperties">
-                                    NV</item-property-field>
-                                <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editProperties">
-                                    NV 2</item-property-field>
-
-                                <label>Website</label>
-                                <input v-if="editProperties" type="text" v-model="selectedTaxon.website" />
-                                <a v-if="!editProperties" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a>
-
-                                <label>Meaning</label>
-                                <textarea :readonly="!editProperties" v-model="selectedTaxon.meaning"></textarea>
-
-                                <item-property-field v-model="selectedTaxon.noHerbier" :editable="editProperties">
-                                    N° Herbier</item-property-field>
-                                <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
-                                    Herbarium Picture</item-property-field>
-                                <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
-                                        :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
-                                    {{ extraField.label }}
-                                </item-property-field>
+                    <collapsible-panel v-if="editProperties" label="Properties">
+                        <div class="scroll large-max-width form-grid medium-padding">
+                            <div v-if="editProperties" class="display-contents">
+                                <label>NS</label>
+                                <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" />
+                                <label>Author</label>
+                                <input type="text" v-model="selectedTaxon.author" />
                             </div>
-                        </collapsible-panel>
-                    </div>
+                            <item-property-field v-model="selectedTaxon.name2" :editable="editProperties">
+                                Synonymous</item-property-field>
+                            <item-property-field v-model="selectedTaxon.name.CN" :editable="editProperties">
+                                中文名</item-property-field>
+                            <item-property-field v-model="selectedTaxon.name.V" :editable="editProperties">
+                                NV</item-property-field>
+                            <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editProperties">
+                                NV 2</item-property-field>
+
+                            <label>Website</label>
+                            <input v-if="editProperties" type="text" v-model="selectedTaxon.website" />
+                            <a v-if="!editProperties" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a>
+
+                            <label>Meaning</label>
+                            <textarea :readonly="!editProperties" v-model="selectedTaxon.meaning"></textarea>
+
+                            <item-property-field v-model="selectedTaxon.noHerbier" :editable="editProperties">
+                                N° Herbier</item-property-field>
+                            <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
+                                Herbarium Picture</item-property-field>
+                            <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
+                                    :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
+                                {{ extraField.label }}
+                            </item-property-field>
+                        </div>
+                    </collapsible-panel>
+                    <collapsible-panel v-if="!editProperties" label="Description">
+                        <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
+                        <ul>
+                            <li v-for="desc in itemDescription" :key="desc.character.id">
+                                {{ desc.character.name.S }}
+                                <ul v-if="desc.states.length > 0" class="indented">
+                                    <li v-for="state in desc.states" :key="state.id">
+                                        {{ state.name.S }}
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </collapsible-panel>
                     <collapsible-panel v-for="book in dataset.books" :key="book.id" :label="book.label">
                         <div v-if="selectedTaxon.bookInfoByIds">
                             <div v-if="selectedTaxon.bookInfoByIds[book.id]">
@@ -174,6 +181,7 @@ import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
+import { Description } from "@/datatypes/Description";
 
 
 export default Vue.extend({
@@ -215,6 +223,13 @@ export default Vue.extend({
                 return new Hierarchy("", new Map());
             }
         },
+        itemDescription(): Iterable<Description> {
+            if (typeof this.selectedTaxon === "undefined") {
+                return [];
+            } else {
+                return this.dataset.taxonDescriptions(this.selectedTaxon);
+            }
+        }
     },
     methods: {
         printPresentation() {
