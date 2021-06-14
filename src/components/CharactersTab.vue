@@ -1,6 +1,6 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
-        <nav v-if="showLeftMenu" class="scroll white-background">
+        <resizable-panel v-if="showLeftMenu" class="scroll white-background">
             <tree-menu editable :items="charactersHierarchy" name="description"
                 :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
@@ -8,7 +8,7 @@
                 @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </tree-menu>
-        </nav>
+        </resizable-panel>
         <div v-if="(typeof selectedCharacter !== 'undefined')" ref="printtemplate" class="invisible">
             <characters-presentation
                 :dataset="dataset"
@@ -131,6 +131,7 @@
 import AddItem from "./AddItem.vue";
 import TreeMenu from "./TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
+import ResizablePanel from "./ResizablePanel.vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
@@ -141,7 +142,7 @@ import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { AddItem, CollapsiblePanel, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation },
+    components: { AddItem, CollapsiblePanel, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, ResizablePanel },
     data() {
         return {
             store: Hazo.store,

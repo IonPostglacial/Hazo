@@ -14,8 +14,8 @@ export class CharactersHierarchy extends Hierarchy<Character> {
     private stateAdditionCallbacks: Set<Callback>;
     private stateRemovalCallbacks: Set<Callback>;
 
-    constructor(idPrefix: string, characters: IMap<Character>, statesById: IMap<State>|undefined, statesByCharacter: OneToManyBimap|undefined, charactersOrder: string[]|undefined = undefined) {
-        super(idPrefix, characters, charactersOrder);
+    constructor(idPrefix: string, characters: IMap<Character>, statesById: IMap<State>|undefined, statesByCharacter: OneToManyBimap|undefined) {
+        super(idPrefix, characters);
         this.states = statesById ?? new Map();
         this.statesByCharacter = statesByCharacter ?? new OneToManyBimap(Map);
         this.stateAdditionCallbacks = new Set();

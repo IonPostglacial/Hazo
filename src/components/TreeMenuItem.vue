@@ -6,12 +6,12 @@
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
             </label>
-            <div class="horizontal-flexbox flex-centered">{{ prettyId }}</div>
+            <div class="horizontal-flexbox flex-centered unselectable">{{ prettyId }}</div>
         </div>
         <div v-for="nameField in fieldNames" :key="nameField.propertyName"
                 :class="['medium-line-height', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', 'cell', 'blue-hover-line', { 'background-color-1': selected }]">
             <div class="horizontal-flexbox center-items flex-grow-1 medium-height">
-                <label class="horizontal-flexbox flex-grow-1" v-on:click="select">
+                <label class="horizontal-flexbox flex-grow-1 unselectable" v-on:click="select">
                     <slot v-bind:item="{id: item.id, name: item.name[nameField.propertyName] }">
                         <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ item[nameField.propertyName] }}</div>
                     </slot>

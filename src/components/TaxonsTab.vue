@@ -1,12 +1,12 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <nav v-if="showLeftMenu" class="scroll white-background no-print">
+        <resizable-panel v-if="showLeftMenu" class="scroll white-background no-print">
             <tree-menu :editable="true" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
                 @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </tree-menu>
-        </nav>
+        </resizable-panel>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
         <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
         <div class="vertical-flexbox flex-grow-1">
@@ -177,6 +177,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, Dataset, DetailData, HierarchicalItem, Hierarchy, Picture, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
+import ResizablePanel from "./ResizablePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
@@ -186,7 +187,10 @@ import { Description } from "@/datatypes/Description";
 
 export default Vue.extend({
     name: "TaxonsTab",
-    components: { CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component, ExtraFieldsPanel, PopupGalery, TreeMenu, TaxonPresentation },
+    components: {
+        CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
+        ExtraFieldsPanel, PopupGalery, ResizablePanel, TreeMenu, TaxonPresentation
+    },
     data() {
         return {
             store: Hazo.store,
