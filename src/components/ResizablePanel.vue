@@ -1,13 +1,16 @@
 <template>
-    <div :style="'width:'+width+'px'" @mousedown="startResize" @mouseup="endResize" @mouseleave="endResize" @mousemove="resize" class="hover-right-border-10">
-        <slot></slot>
+    <div :style="Number.isNaN(width) ? '' : ('min-width:' + width + 'px')" class="panel horizontal-flexbox space-between">
+        <div class="flex-grow-1">
+            <slot></slot>
+        </div>
+        <div class="right-border-10 no-shrink" @mousedown="startResize"></div>
     </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import debounce from "@/tools/debounce"
-
+// @mousedown="startResize" @mouseup="endResize" @mouseleave="endResize" @mousemove="resize"
 export default Vue.extend({
     props: {
         defaultWidth: Number
@@ -16,40 +19,40 @@ export default Vue.extend({
         return {
             width: this.defaultWidth,
             resizing: false,
+            dragStartingX: 0,
+            ondrag: debounce(5, function (this: any, e: MouseEvent) {
+                if (this.resizing) {
+                    console.log("delta", e.pageX - this.dragStartingX);
+                    this.width = e.pageX;
+                }
+            }).bind(this)
         };
+    },
+    created() {
+        window.addEventListener("mousemove", this.ondrag);
+        window.addEventListener("mouseleave", this.endResize.bind(this));
+        window.addEventListener("mouseup", this.endResize.bind(this));
+    },
+    destroyed() {
+        window.removeEventListener("mousemove", this.ondrag);
     },
     methods: {
         startResize(e: MouseEvent & { target: Element }) {
             const clickX = e.pageX;
-            const panelRightX = e.target.getBoundingClientRect().right;
-            if (clickX >= panelRightX - 10) {
-                this.resizing = true;
-            }
+
+            this.resizing = true;
+            this.dragStartingX = clickX;
         },
         endResize() {
             this.resizing = false;
-        },
-        resize: debounce(5, function (this: any, e: Array<MouseEvent & { target: Element }>) {
-            if (!this.resizing) return;
-
-            const clickX = e[0].pageX;
-            const panelRightX = e[0].target.getBoundingClientRect().right;
-
-            if (clickX >= panelRightX - 10) {
-                this.width = clickX;
-            }
-
-            e[0].stopPropagation();
-        })
+            this.dragStartingX = 0;
+        }
     }
 });
 </script>
 
 <style scoped>
-    .hover-right-border-10 {
-        transition: border-right 50ms;
-    }
-    .hover-right-border-10:hover {
+    .panel:hover .right-border-10 {
         border-right: 10px solid #0000007a;
     }
 </style>

@@ -145,6 +145,10 @@ ul {
     height: 120px;
 }
 
+.no-shrink {
+    flex-shrink: 0;
+}
+
 input[type="search"],
 input[type="text"],
 .input-text {

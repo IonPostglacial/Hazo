@@ -53,7 +53,7 @@ export default Vue.extend({
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,
-        item: Object as PropType<HierarchicalItem<any>>,
+        item: Object as PropType<HierarchicalItem>,
         itemsHierarchy: Object as PropType<Hierarchy<any>>,
         buttons: Array as PropType<Array<Button>>,
         fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,

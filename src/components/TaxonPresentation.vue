@@ -5,6 +5,12 @@
                 <h2><i>{{ taxon.name.S }}</i> {{ taxon.author }}</h2>
                 <div class="horizontal-flexbox">
                     <div class="flex-grow-1">
+                        <div>
+                            <div>Synonymous <span>{{ taxon.name2 }}</span></div>
+                            <div>中文名 <span>{{ taxon.name.CN }}</span></div>
+                            <div>NV <span>{{ taxon.name.V }}</span></div>
+                            <div>NV 2 <span>{{ taxon.vernacularName2 }}</span></div>
+                        </div>
                         <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox space-between limited-width">
                             <div class="horizontal-flexbox small-height">
                                 <div v-for="state in description.states" :key="'img-' + state.id" class="horizontal-flexbox">

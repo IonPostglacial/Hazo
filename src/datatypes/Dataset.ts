@@ -1,5 +1,5 @@
 import { Book, DictionaryEntry, Field, State } from "./types";
-import { Character } from "./Character";
+import { Character, CharacterType } from "./Character";
 import { Description } from "./Description";
 import { Taxon } from "./Taxon";
 import { standardBooks } from "./stdcontent";
@@ -81,7 +81,7 @@ export class Dataset {
 		return taxonHasAllRequiredStates && taxonHasNoInapplicableState;
 	}
 
-	taxonStatesForCharacter(taxon: { id: string }, character: { id: string }): State[] {
+	taxonStatesForCharacter(taxon: { id: string }, character: { id: string, charType: CharacterType }): State[] {
 		const stateIds: string[] = [];
 
 		this.statesByTaxons.getRightIdsByLeftId(taxon.id)?.forEach(stateId => {
@@ -117,7 +117,7 @@ export class Dataset {
 				const characterStates = map(this.charactersHierarchy.characterStates(character),
 					(s: State) => Object.assign({
 						type: "state",
-						parentId: this.charactersHierarchy.stateCharacter(s)?.id,
+						parentId: character.id,
 						selected: this.hasTaxonState(taxon, s),
 					}, s));
 				const characterChildren = [...dependencyHierarchy.childrenOf(character)];

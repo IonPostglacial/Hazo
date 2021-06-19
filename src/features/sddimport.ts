@@ -1,8 +1,12 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, CharactersHierarchy, Dataset, DetailData, Field, Hierarchy, IMap, State, Taxon } from "@/datatypes";
+import { Character, CharactersHierarchy, Dataset, Field, Hierarchy, IMap, State, Taxon } from "@/datatypes";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { ManyToManyBimap, OneToManyBimap } from '@/tools/bimaps';
+import { createCharacter } from "@/datatypes/Character";
+import { createTaxon } from "@/datatypes/Taxon";
+import { HierarchicalItem } from "@/datatypes/types";
+import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 
 type MapContructor<T> = { new (): IMap<T> };
 
@@ -44,47 +48,51 @@ function removeFromDescription(description: string, sections:Array<String>) {
     return desc;
 }
 
-function detailDataFromSdd(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): DetailData {
+function hierarchicalItemFromSdd(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): HierarchicalItem {
     const names = representation.label.split("/");
-    const name = names[0], author = names[1], nameCN = names[2];
+    const name = names[0], nameCN = names[2];
+    const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);
+    const data = createHierarchicalItem({ id: id, name: { S: name, CN: nameCN }, type: "", pictures: picturesFromPhotos(photos) });
 
+    return data;
+}
+
+function characterFromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: IMap<State>): Character {
+    return createCharacter({
+        ...hierarchicalItemFromSdd(character.id, character, [], photosByRef),
+        detail: character.detail,
+        inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById.get(s.ref)!),
+    });
+}
+
+function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>): Taxon {
+    const names = taxon.label.split("/");
+    const author = names[1];
     const fields = standardFields.concat(extraFields);
     const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s+(\d*)\s*<br>\s*page\s+(null|\d*)/i;
     let fasc: number|undefined = undefined, page: number|undefined = undefined;
-    const match = representation.detail.match(floreRe);
+    const match = taxon.detail.match(floreRe);
 
     if (match) {
         fasc = parseInt(match[1]);
         page = parseInt(match[2]);
     }
-    let detail = removeFromDescription(representation.detail, fields.map(field => field.label)).replace(floreRe, "");
+    let detail = removeFromDescription(taxon.detail, fields.map(field => field.label)).replace(floreRe, "");
 
     const emptyParagraphRe = /<p>(\n|\t|\s|<br>|&nbsp;)*<\/p>/gi;
     if (detail.match(emptyParagraphRe)) {
         detail = detail.replace(emptyParagraphRe, "");
     }
-    const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);
-    const data = new DetailData({ id: id, name: { S: name, CN: nameCN }, author: author, fasc: fasc, page: page, detail: detail, pictures: photos });
 
-    for (const field of fields) {
-        ((field.std) ? data : data.extra)[field.id] = findInDescription(representation.detail, field.label);
-    }
-    return data;
-}
-
-function characterFromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: IMap<State>): Character {
-    return new Character({
-        parentId: character.parentId,
-        inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById.get(s.ref)!),
-        ...detailDataFromSdd(character.id, character, [], photosByRef),
-    });
-}
-
-function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record<string, string>): Taxon {
-    return new Taxon({
+    const t = createTaxon({
+        ...hierarchicalItemFromSdd(taxon.id, taxon, extraFields, photosByRef),
+        author: author, fasc: fasc, page: page, detail: detail, 
         parentId: taxon.parentId,
-        ...detailDataFromSdd(taxon.id, taxon, extraFields, photosByRef)
     });
+    for (const field of fields) {
+        ((field.std) ? t : t.extra)[field.id] = findInDescription(taxon.detail, field.label);
+    }
+    return t;
 }
 
 function extractStatesByTaxons(makeMap: MapContructor<string[]>, sddContent: sdd_Dataset): ManyToManyBimap {

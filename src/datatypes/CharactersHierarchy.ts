@@ -1,5 +1,5 @@
-import { State } from "./types";
-import { Character } from "./Character";
+import { Character, CharacterType, State } from "./types";
+import { floweringStates } from "./Character";
 import { Hierarchy, IMap } from "./hierarchy";
 import { OneToManyBimap } from "@/tools/bimaps";
 import clone from "@/tools/clone";
@@ -90,18 +90,22 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         }
     }
 
-    characterHasState(character: { id: string }|undefined, state: { id: string }|undefined): boolean {
+    characterHasState(character: { id: string, charType: CharacterType }|undefined, state: { id: string }|undefined): boolean {
         return typeof character !== "undefined" &&
             typeof state !== "undefined" &&
-            this.statesByCharacter.has(character.id, state.id);
+            (character.charType === "flowering" || this.statesByCharacter.has(character.id, state.id));
     }
 
 	*characterStates(character: Character|undefined): Iterable<State> {
 		if (typeof character === "undefined") return [];
-		for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {
-			const state = this.states.get(stateId);
-			if (typeof state !== "undefined") yield state;
-		}
+        if (character.charType === "flowering") {
+            yield* floweringStates;
+        } else {
+            for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {
+                const state = this.states.get(stateId);
+                if (typeof state !== "undefined") yield state;
+            }
+        }
     }
 
 	stateCharacter(state: {id: string}): Character|undefined {

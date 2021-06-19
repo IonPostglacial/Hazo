@@ -48,6 +48,43 @@ export interface State extends BasicInfo {
 	color?: string;
 }
 
+export interface HierarchicalItem extends BasicInfo {
+	parentId?: string;
+	type: string;
+	hidden: boolean;
+}
+
+export interface Taxon extends HierarchicalItem {
+	author: string;
+	vernacularName2: string;
+	name2: string;
+	meaning: string;
+	herbariumPicture: string;
+	website: string;
+	noHerbier: number|undefined;
+	fasc: number|undefined;
+	page: number|undefined;
+	detail : string;
+	bookInfoByIds?: Record<string, BookInfo>
+	specimenLocations?: { lat: number, lng: number }[];
+	extra: Record<string, any>;
+}
+
+export type CharacterType = "std" | "flowering";
+
+export interface Character extends HierarchicalItem {
+	detail : string;
+	inherentState?: State;
+	inapplicableStates: State[];
+	requiredStates: State[];
+	charType: CharacterType;
+}
+
+export interface Description {
+    character: Character;
+    states: State[];
+}
+
 export interface DictionaryEntry {
 	id: string,
 	nameCN: string;

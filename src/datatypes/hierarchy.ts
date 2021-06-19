@@ -1,4 +1,4 @@
-import { HierarchicalItem } from "./HierarchicalItem";
+import { HierarchicalItem } from "./types";
 import clone from "../tools/clone";
 
 export interface IMap<T> {
@@ -13,7 +13,7 @@ export interface IMap<T> {
     entries(): Iterable<[string, T]>;
 }
 
-export class Hierarchy<T extends HierarchicalItem<T>> {
+export class Hierarchy<T extends HierarchicalItem> {
     private idPrefix: string;
     private items: IMap<T>;
     private ordersByItemIds: IMap<string[]>;

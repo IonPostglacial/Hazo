@@ -22,11 +22,12 @@
 <script lang="ts">
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
-
-type ItemType = HierarchicalItem<any> & { selected?: boolean };
+import Flowering from "./Flowering.vue";
+type ItemType = HierarchicalItem & { selected?: boolean };
 
 export default Vue.extend({
     name: "SquareTreeViewer",
+    components: { Flowering },
     props: {
         editable: Boolean,
         rootItems: Object as PropType<Hierarchy<ItemType>>,
@@ -36,7 +37,7 @@ export default Vue.extend({
         return {
             isRoot: true,
             currentItems: [...this.rootItems!.topLevelItems],
-            breadCrumbs: [] as HierarchicalItem<any>[],
+            breadCrumbs: [] as HierarchicalItem[],
             menuFilter: "",
         }
     },
@@ -50,9 +51,9 @@ export default Vue.extend({
         }
     },
     computed: {
-        itemsToDisplay(): Iterable<HierarchicalItem<any>> {
+        itemsToDisplay(): Iterable<HierarchicalItem> {
             if (!this.currentItems) return [];
-            const shouldDisplayItem = (item: HierarchicalItem<any> & { selected?: boolean }) => {
+            const shouldDisplayItem = (item: HierarchicalItem & { selected?: boolean }) => {
                 if (!this.editable && item.selected === false) {
                     return false;
                 }
@@ -69,16 +70,16 @@ export default Vue.extend({
         nameFieldsForItem(item: any): Iterable<string> {
             return this.nameFields?.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
         },
-        isClickable(item: HierarchicalItem<any>): boolean {
+        isClickable(item: HierarchicalItem): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
-        isSelectable(item: HierarchicalItem<any> & { selected?: boolean }): boolean {
+        isSelectable(item: HierarchicalItem & { selected?: boolean }): boolean {
             return this.editable && !this.rootItems!.hasChildren(item);
         },
-        hasChildren(item: HierarchicalItem<any>): boolean {
+        hasChildren(item: HierarchicalItem): boolean {
             return this.rootItems?.hasChildren(item) ?? false;
         },
-        openItem(item: HierarchicalItem<any> & { selected?: boolean }) {
+        openItem(item: HierarchicalItem & { selected?: boolean }) {
             this.isRoot = false;
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
@@ -94,7 +95,7 @@ export default Vue.extend({
             this.currentItems = [...this.rootItems!.topLevelItems];
             this.breadCrumbs = [];
         },
-        goToBreadCrumb(breadCrumb: HierarchicalItem<any>) {
+        goToBreadCrumb(breadCrumb: HierarchicalItem) {
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
             this.currentItems = [...this.rootItems!.childrenOf(breadCrumb)];

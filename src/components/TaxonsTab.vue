@@ -111,6 +111,7 @@
                                     :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
                                 {{ extraField.label }}
                             </item-property-field>
+                            <flowering v-model="flowering"></flowering>
                         </div>
                     </collapsible-panel>
                     <collapsible-panel v-if="!editProperties" label="Description">
@@ -174,25 +175,29 @@ import PictureBox from "./PictureBox.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, Dataset, DetailData, HierarchicalItem, Hierarchy, Picture, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Dataset, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
+import Flowering from "./Flowering.vue";
 import ResizablePanel from "./ResizablePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
 import { Description } from "@/datatypes/Description";
+import { createTaxon } from "@/datatypes/Taxon";
+import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 
 
 export default Vue.extend({
     name: "TaxonsTab",
     components: {
         CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
-        ExtraFieldsPanel, PopupGalery, ResizablePanel, TreeMenu, TaxonPresentation
+        ExtraFieldsPanel, Flowering, PopupGalery, ResizablePanel, TreeMenu, TaxonPresentation
     },
     data() {
         return {
+            flowering: 0,
             store: Hazo.store,
             showLeftMenu: true,
             showFields: false,
@@ -285,8 +290,8 @@ export default Vue.extend({
         },
         addTaxon(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;
-            this.store.do("addTaxon", new Taxon({
-                ...new DetailData({ id: "", name: { S: name, V: vernacularName, CN: nameCN}, pictures: [], }),
+            this.store.do("addTaxon", createTaxon({
+                ...createHierarchicalItem({ id: "", type: "", name: { S: name, V: vernacularName, CN: nameCN}, pictures: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
             }));

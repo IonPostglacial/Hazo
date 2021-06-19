@@ -96,7 +96,7 @@
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
-                        <li v-for="state in dataset.charactersHierarchy.characterStates(selectedCharacter) || []" :key="state.id" class="display-contents">
+                        <li v-for="state in dataset.charactersHierarchy.characterStates(selectedCharacter)" :key="state.id" class="display-contents">
                             <label class="medium-padding rounded nowrap horizontal-flexbox">
                                 <div class="form-grid">
                                     <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name.S" />
@@ -137,8 +137,9 @@ import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import PictureBox from "./PictureBox.vue";
 import Vue from "vue";
-import { Dataset, DetailData, Character, State } from "@/datatypes";
+import { Dataset, Character, State } from "@/datatypes";
 import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
+import { createCharacter } from "@/datatypes/Character";
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -277,8 +278,8 @@ export default Vue.extend({
         },
         addCharacter(e: { value: string[], parentId: string }) {
             const [name, nameCN] = e.value;
-            this.store.do("addCharacter", new Character({
-                ...new DetailData({ id: "", name: { S: name, FR: name, CN: nameCN } }),
+            this.store.do("addCharacter", createCharacter({
+                name: { S: name, FR: name, CN: nameCN }, 
                 parentId: e.parentId,
             }));
         },

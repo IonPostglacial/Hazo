@@ -47,7 +47,7 @@ import debounce from "@/tools/debounce";
 export default Vue.extend({
     name: "TreeMenu",
     props: {
-        items: Hierarchy as PropType<Hierarchy<HierarchicalItem<any>>>,
+        items: Hierarchy as PropType<Hierarchy<HierarchicalItem>>,
         buttons: Array as PropType<Button[]>,
         editable: Boolean,
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
@@ -74,7 +74,7 @@ export default Vue.extend({
         columnsToDisplay(): { label: string, propertyName: string }[] {
             return this.nameFields?.filter(nameField => this.visibleColumns[nameField.propertyName]) ?? [];
         },
-        itemsToDisplay(): Iterable<HierarchicalItem<any>> {
+        itemsToDisplay(): Iterable<HierarchicalItem> {
             if (!this.items) return [];
             if (this.menuFilter !== "") {
                 const self = this;
@@ -120,10 +120,10 @@ export default Vue.extend({
         deleteItem(e: string) {
             this.$emit("delete-item", e);
         },
-        moveItemUp(item: HierarchicalItem<any>) {
+        moveItemUp(item: HierarchicalItem) {
             this.items?.moveUp(item);
         },
-        moveItemDown(item: HierarchicalItem<any>) {
+        moveItemDown(item: HierarchicalItem) {
             this.items?.moveDown(item);
         },
         buttonClicked(e: string) {
