@@ -71,11 +71,14 @@ export default Vue.extend({
             const [centerX, centerY] = elementCenter(wheel);
             const [clickX, clickY] = eventDocumentPosition(e);
             const angle = trigoAngle(centerX, centerY, clickX, clickY);
-            const selectedMonth = 1 << (angle * ZONE_RATIO | 0);
+            const monthIndex = (angle * ZONE_RATIO | 0);
+            const selectedMonth = 1 << monthIndex;
             let newVal = 0;
             if (Months.has(this.value, selectedMonth)) {
+                this.$emit("month-unselected", monthIndex);
                 newVal = Months.without(this.value, selectedMonth);
             } else {
+                this.$emit("month-selected", monthIndex);
                 newVal = Months.with(this.value, selectedMonth);
             }
             this.$emit("input", newVal);

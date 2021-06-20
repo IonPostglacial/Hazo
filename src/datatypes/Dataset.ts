@@ -1,7 +1,4 @@
-import { Book, DictionaryEntry, Field, State } from "./types";
-import { Character, CharacterType } from "./Character";
-import { Description } from "./Description";
-import { Taxon } from "./Taxon";
+import { Book, Character, CharacterType, Description, DictionaryEntry, Field, State, Taxon } from "./types";
 import { standardBooks } from "./stdcontent";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { Hierarchy, IMap } from './hierarchy';

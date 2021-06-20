@@ -1,11 +1,12 @@
 <template>
     <div class="vertical-flexbox">
+        {{floweringMode}}
         <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
         <div class="horizontal-flexbox flex-wrap button-group">
             <button v-if="currentItems !== rootItems" type="button" @click="backToTop">Top</button>
             <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
         </div>
-        <div class="horizontal-flexbox flex-wrap relative">
+        <div v-if="!floweringMode" class="horizontal-flexbox flex-wrap relative">
             <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
                     :style="item.pictures.length > 0 ? 'background-image: url(' + item.pictures[0].url + ')' : ''"
                     @click="openItem(item)">
@@ -16,6 +17,9 @@
                 </div>
             </component>
         </div>
+        <div v-if="floweringMode">
+            <flowering v-model="flowering"></flowering>
+        </div>
     </div>
 </template>
 
@@ -23,6 +27,7 @@
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
+import { Character } from "@/datatypes";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
 export default Vue.extend({
@@ -35,6 +40,8 @@ export default Vue.extend({
     },
     data() {
         return {
+            flowering: 0,
+            floweringMode: false,
             isRoot: true,
             currentItems: [...this.rootItems!.topLevelItems],
             breadCrumbs: [] as HierarchicalItem[],
@@ -46,6 +53,7 @@ export default Vue.extend({
             if (this.breadCrumbs.length - 1 < 0) return;
             const currentlyOpenItem = newRootItems.itemWithId(this.breadCrumbs[this.breadCrumbs.length - 1].id);
             if (typeof currentlyOpenItem !== "undefined") {
+                this.floweringMode = currentlyOpenItem.type === "character" && (currentlyOpenItem as Character).charType === "flowering";
                 this.currentItems = [...this.rootItems!.childrenOf(currentlyOpenItem)];
             }
         }
@@ -81,6 +89,7 @@ export default Vue.extend({
         },
         openItem(item: HierarchicalItem & { selected?: boolean }) {
             this.isRoot = false;
+            this.floweringMode = item.type === "character" && (item as Character).charType === "flowering";
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...this.rootItems!.childrenOf(item)];
@@ -92,6 +101,7 @@ export default Vue.extend({
         },
         backToTop() {
             this.isRoot = true;
+            this.floweringMode = false;
             this.currentItems = [...this.rootItems!.topLevelItems];
             this.breadCrumbs = [];
         },

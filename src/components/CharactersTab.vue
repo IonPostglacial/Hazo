@@ -17,7 +17,7 @@
         </div>
         <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
         <section class="scroll vertical-flexbox flex-grow-1">
-            <div class="horizontal-flexbox medium-padding thin-border">
+            <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                 <button type="button" @click="printPresentation">Print</button>
                 <div class="button-group">
@@ -50,10 +50,16 @@
                     </tr>
                 </table>
                 <label class="item-property">Detail</label>
+                <label><input type="radio" name="character-type" value="std" v-model="selectedCharacter.charType">Standard</label>
+                <label><input type="radio" name="character-type" value="flowering" v-model="selectedCharacter.charType">Flowering</label>
                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
             </collapsible-panel>
-            <characters-tree class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+            <characters-tree v-if="selectedCharacter && selectedCharacter.charType === 'std'" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
             </characters-tree>
+            <div class="centered-text medium-margin thin-border medium-padding white-background">
+                <flowering v-if="selectedCharacter && selectedCharacter.charType === 'flowering'">
+                </flowering>
+            </div>
             <collapsible-panel v-if="selectedCharacter && selectedCharacter.parentId" label="Dependencies">
                 <div class="horizontal-flexbox">
                     <section class="medium-margin medium-padding thin-border flex-grow-1">
@@ -92,7 +98,7 @@
                 </div>
             </collapsible-panel>
         </section>
-        <section v-if="(typeof selectedCharacter !== 'undefined')" class="scroll relative horizontal-flexbox">
+        <section v-if="selectedCharacter && selectedCharacter.charType === 'std'" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
@@ -135,6 +141,7 @@ import ResizablePanel from "./ResizablePanel.vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
+import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
 import Vue from "vue";
 import { Dataset, Character, State } from "@/datatypes";
@@ -143,7 +150,7 @@ import { createCharacter } from "@/datatypes/Character";
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { AddItem, CollapsiblePanel, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, ResizablePanel },
+    components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, ResizablePanel },
     data() {
         return {
             store: Hazo.store,

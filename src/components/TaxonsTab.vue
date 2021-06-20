@@ -111,7 +111,6 @@
                                     :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
                                 {{ extraField.label }}
                             </item-property-field>
-                            <flowering v-model="flowering"></flowering>
                         </div>
                     </collapsible-panel>
                     <collapsible-panel v-if="!editProperties" label="Description">
@@ -178,7 +177,6 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, Dataset, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
-import Flowering from "./Flowering.vue";
 import ResizablePanel from "./ResizablePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
@@ -193,11 +191,10 @@ export default Vue.extend({
     name: "TaxonsTab",
     components: {
         CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
-        ExtraFieldsPanel, Flowering, PopupGalery, ResizablePanel, TreeMenu, TaxonPresentation
+        ExtraFieldsPanel, PopupGalery, ResizablePanel, TreeMenu, TaxonPresentation
     },
     data() {
         return {
-            flowering: 0,
             store: Hazo.store,
             showLeftMenu: true,
             showFields: false,
@@ -216,7 +213,7 @@ export default Vue.extend({
     watch: {
         $route(to: any) {
             this.selectedTaxonId = to.params.id;
-        }
+        },
     },
     computed: {
         dataset(): Dataset {
