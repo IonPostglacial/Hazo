@@ -174,7 +174,7 @@ import PictureBox from "./PictureBox.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, Dataset, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Dataset, Description, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ResizablePanel from "./ResizablePanel.vue";
@@ -182,7 +182,6 @@ import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
-import { Description } from "@/datatypes/Description";
 import { createTaxon } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 
