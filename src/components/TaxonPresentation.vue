@@ -10,6 +10,7 @@
                             <div>中文名 <span>{{ taxon.name.CN }}</span></div>
                             <div>NV <span>{{ taxon.name.V }}</span></div>
                             <div>NV 2 <span>{{ taxon.vernacularName2 }}</span></div>
+                            <div>Website <span>{{ taxon.website }}</span></div>
                         </div>
                         <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox space-between limited-width">
                             <div class="horizontal-flexbox small-height">

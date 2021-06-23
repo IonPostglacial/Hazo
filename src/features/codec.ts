@@ -157,16 +157,22 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 		}
 	}
 	const item = decodeHierarchicalItem(encodedTaxon);
-	const statesSelection: Record<string, boolean> = {};
-    for (const description of encodedTaxon.descriptions) {
-        for (const stateId of description.statesIds) {
-            statesSelection[stateId] = true;
-        }
-    }
+
 	return createTaxon({
 		...item,
 		specimenLocations: encodedTaxon.specimenLocations,
 		bookInfoByIds,
+		author: encodedTaxon.author,
+		vernacularName2: encodedTaxon.vernacularName2,
+		name2: encodedTaxon.name2,
+		meaning: encodedTaxon.meaning,
+		herbariumPicture: encodedTaxon.herbariumPicture,
+		website: encodedTaxon.website,
+		noHerbier: encodedTaxon.noHerbier,
+		fasc: encodedTaxon.fasc,
+		page: encodedTaxon.page,
+		detail : encodedTaxon.detail,
+		extra: encodedTaxon.extra,
 	});
 }
 
