@@ -258,7 +258,7 @@ export default Vue.extend({
                 }
             }
         },
-        async fileMerge(e: InputEvent) {
+        async fileMergeHierarchies(e: InputEvent) {
             if (!(e.target instanceof HTMLInputElement)) return;
 
             const result = await this.fileRead((e.target.files ?? [])[0]);
@@ -269,6 +269,40 @@ export default Vue.extend({
                 }
                 for (const character of result.charactersHierarchy.topLevelItems) {
                     this.store.do("addCharacterHierarchy", result.charactersHierarchy.extractHierarchy(character));
+                }
+            }
+        },
+        async fileMerge(e: InputEvent) {
+            if (!(e.target instanceof HTMLInputElement)) return;
+
+            const result = await this.fileRead((e.target.files ?? [])[0]);
+
+            if (result !== null) {
+                for (const taxon of result.taxonsHierarchy.allItems) {
+                    const existing = this.dataset.taxonsHierarchy.itemWithId(taxon.id);
+                    if (typeof existing !== "undefined") {
+                        existing.name.S ??= taxon.name.S;
+                        existing.name.EN ??= taxon.name.EN;
+                        existing.name.CN ??= taxon.name.CN;
+                        existing.pictures ??= taxon.pictures;
+                        existing.name.V ??= taxon.name.V;
+                        existing.bookInfoByIds ??= taxon.bookInfoByIds;
+                        existing.specimenLocations ??= taxon.specimenLocations;
+                        existing.author ??= taxon.author;
+                        existing.vernacularName2 ??= taxon.vernacularName2;
+                        existing.name2 ??= taxon.name2;
+                        existing.meaning ??= taxon.meaning;
+                        existing.herbariumPicture ??= taxon.herbariumPicture;
+                        existing.website ??= taxon.website;
+                        existing.noHerbier ??= taxon.noHerbier;
+                        existing.fasc ??= taxon.fasc;
+                        existing.page ??= taxon.page;
+                        existing.detail ??= taxon.detail;
+                        existing.extra ??= taxon.extra;
+                        for (const state of result.taxonStates(taxon)) {
+                            this.dataset.statesByTaxons.add(existing.id, state.id);
+                        }
+                    }
                 }
             }
         },
