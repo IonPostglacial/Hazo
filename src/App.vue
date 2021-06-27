@@ -275,7 +275,16 @@ export default Vue.extend({
         async fileMerge(e: InputEvent) {
             if (!(e.target instanceof HTMLInputElement)) return;
 
-            const result = await this.fileRead((e.target.files ?? [])[0]);
+            const file = (e.target.files ?? [])[0];
+
+            if (typeof file === "undefined") return;
+
+            if (file.name.endsWith(".csv")) {
+                this.mergeCsv(file);
+                return;
+            }
+
+            const result = await this.fileRead(file);
 
             if (result !== null) {
                 for (const taxon of result.taxonsHierarchy.allItems) {
@@ -321,6 +330,35 @@ export default Vue.extend({
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
                         highlightTaxonsDetails(fileReader.result, this.dataset.taxonsHierarchy.toObject());
+                    }
+                    resolve(null);
+                };
+                fileReader.onerror = function () {
+                    reject(fileReader.error);
+                }
+                fileReader.readAsText(file);
+            });
+        },
+        mergeCsv(file: File): Promise<null> {
+            return new Promise((resolve, reject) => {
+                const fileReader = new FileReader();
+                fileReader.onload = () => {
+                    if (typeof fileReader.result === "string") {
+                        const lines = fileReader.result.split("\n");
+                        const infosByName: Partial<Record<string, { author: string, url: string }>> = {};
+                        for (const line of lines) {
+                            const [name, author, url] = line.split(";");
+                            if (name && author && url) {
+                                infosByName[name] = { author, url };
+                            }
+                        }
+                        for (const taxon of this.dataset.taxonsHierarchy.allItems) {
+                            const info = infosByName[taxon.name.S];
+                            if (info) {
+                                taxon.author = info.author;
+                                taxon.website = info.url;
+                            }
+                        }
                     }
                     resolve(null);
                 };
