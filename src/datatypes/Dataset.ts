@@ -16,7 +16,51 @@ export class Dataset {
 			public dictionaryEntries: IMap<DictionaryEntry>,
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = []) {
+		this.charactersHierarchy.onAdd(this.onAddCharacter.bind(this));
+		this.charactersHierarchy.onClone(this.onCharacterCloned.bind(this));
+		this.charactersHierarchy.onRemove(character => this.charactersHierarchy.statesByCharacter.removeLeft(character.id));
+		this.charactersHierarchy.onClear(() => this.charactersHierarchy.states.clear())
 		this.charactersHierarchy.onStateRemoved(e => this.statesByTaxons.removeRight(e.state.id));
+	}
+
+	onAddCharacter(character: Character, autoid: boolean) {
+		if (autoid) {
+            const parentCharacter = this.charactersHierarchy.itemWithId(character.parentId);
+            if(typeof character.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
+                const newState: State = {
+                    id: "s-auto-" + character.id,
+                    name: Object.assign({}, character.name), pictures: []
+                };
+                this.charactersHierarchy.addState(newState, parentCharacter);
+                character.inherentState = newState;
+            }
+		}
+	}
+
+	onCharacterCloned(hierarchy: Hierarchy<Character>, character: Character, clonedCharacter: Character, newParent: Character|undefined) {
+		if (!(hierarchy instanceof CharactersHierarchy)) throw "Hierarchy should be a CharactersHierarchy";
+		clonedCharacter.requiredStates = [];
+        clonedCharacter.inapplicableStates = [];
+        clonedCharacter.inherentState = undefined;
+        const oldParent = hierarchy.itemWithId(character.parentId);
+        const oldStates = hierarchy.characterStates(character);
+        const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
+        const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
+        for (const oldState of oldStates) {
+            const newState = clone(oldState);
+            newState.id = "";
+            this.charactersHierarchy.addState(newState, clonedCharacter);
+            if (oldRequiredStatesIds.includes(oldState.id)) {
+                clonedCharacter.requiredStates.push(newState);
+            }
+            if (oldInapplicableStatesIds.includes(oldState.id)) {
+                clonedCharacter.inapplicableStates.push(newState);
+            }
+        }
+        if (newParent && character.inherentState?.id) {
+            const oldInherentStateIndex = Array.from(hierarchy.characterStates(oldParent)).findIndex(s => s.id === character.inherentState?.id);
+            clonedCharacter.inherentState = Array.from(this.charactersHierarchy.characterStates(newParent))[oldInherentStateIndex];
+        }
 	}
 
 	addTaxon(taxon: Taxon) {

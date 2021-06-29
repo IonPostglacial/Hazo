@@ -20,6 +20,10 @@ export class ObservableMap<T> {
         Vue.delete(this.r, key);
     }
 
+    get size(): number {
+        return Object.keys(this.r).length;
+    }
+
     [Symbol.iterator](): Iterator<[string, T]> {
         return Object.entries(this.r)[Symbol.iterator]();
     }
