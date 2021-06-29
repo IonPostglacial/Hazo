@@ -194,13 +194,25 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const statesByTaxons = new ManyToManyBimap(makeMap);
 	const statesByCharacters = new OneToManyBimap(makeMap);
 	const characters = new CharactersHierarchy("c", new makeMap(), states, statesByCharacters);
+	const dictionaryEntries = new makeMap();
+	const ds = new Dataset(
+		dataset?.id ?? "0",
+		taxons,
+		characters,
+		statesByTaxons,
+		dictionaryEntries,
+		books,
+		dataset?.extraFields ?? [],
+	);
 	
 	for (const state of dataset?.states ?? []) {
 		states.set(state.id, decodeState(state));
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
 		characters.add(decodeCharacter(character, states));
-		character.states.forEach(id => statesByCharacters.add(character.id, id));
+		if (character.charType === "std" || !character.charType) {
+			character.states.forEach(id => statesByCharacters.add(character.id, id));
+		}
 	}
 	for (const taxon of dataset?.taxons ?? []) {
 		taxon.descriptions.forEach(d => {
@@ -210,19 +222,10 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		});
 		taxons.add(decodeTaxon(taxon, books));
 	}
-	const dictionaryEntries = new makeMap();
 	for (const entry of Object.values(dataset?.dictionaryEntries ?? {})) {
 		if (typeof entry !== "undefined") {
 			dictionaryEntries.set(entry.id, entry);
 		}
 	}
-	return new Dataset(
-		dataset?.id ?? "0",
-		taxons,
-		characters,
-		statesByTaxons,
-		dictionaryEntries,
-		books,
-		dataset?.extraFields ?? [],
-	);
+	return ds;
 }

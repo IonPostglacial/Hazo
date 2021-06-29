@@ -185,9 +185,13 @@ export function createStore() {
         },
     };
     function perform<Action extends keyof typeof actions>(action: Action, ...params: Parameters<typeof actions[Action]>) {
+        if (store.dbg) {
+            console.log("Store: '" + action + "' " + params.map(p => JSON.stringify(p)).join(" "));
+        }
         (actions[action] as any).apply(self, params);
     }
     const store = {
+        dbg: false,
         dataset: new Dataset("",
             new Hierarchy<Taxon>("t", new ObservableMap()),
             new CharactersHierarchy("d", new ObservableMap(), new ObservableMap(), new OneToManyBimap(ObservableMap)),

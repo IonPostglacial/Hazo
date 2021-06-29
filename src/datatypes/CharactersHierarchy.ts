@@ -20,6 +20,9 @@ export class CharactersHierarchy extends Hierarchy<Character> {
         this.statesByCharacter = statesByCharacter ?? new OneToManyBimap(Map);
         this.stateAdditionCallbacks = new Set();
         this.stateRemovalCallbacks = new Set();
+        for (const state of floweringStates) {
+            this.states.set(state.id, state);
+        }
     }
 
     onStateAdded(callback: Callback) {

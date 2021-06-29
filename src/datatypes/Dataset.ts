@@ -5,9 +5,12 @@ import { Hierarchy, IMap } from './hierarchy';
 import { CharactersHierarchy } from './CharactersHierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
+import { floweringStates } from "./Character";
 
 
 export class Dataset {
+	private floweringCharacter: Character|undefined = undefined;
+
 	constructor(
 			public id: string,
 			public taxonsHierarchy: Hierarchy<Taxon>,
@@ -34,6 +37,9 @@ export class Dataset {
                 this.charactersHierarchy.addState(newState, parentCharacter);
                 character.inherentState = newState;
             }
+		}
+		if (character.charType === "flowering") {
+			this.floweringCharacter = character;
 		}
 	}
 
@@ -140,12 +146,16 @@ export class Dataset {
 			const character = this.charactersHierarchy.stateCharacter({id: stateId});
 			if (typeof character !== "undefined") {
 				statesByCharacter.add(character.id, stateId);
+			} else if (this.floweringCharacter && floweringStates.find(s => s.id === stateId)) {
+				statesByCharacter.add(this.floweringCharacter.id, stateId);
 			}
 		}
 		for (const [characterId, stateIds] of statesByCharacter.rightIdsGroupedByLeftId()) {
 			const character = this.charactersHierarchy.itemWithId(characterId);
 			if (typeof character !== "undefined") {
 				yield { character, states: this.charactersHierarchy.statesFromIds(stateIds) };
+			} else if (this.floweringCharacter) {
+				yield { character: this.floweringCharacter, states: this.charactersHierarchy.statesFromIds(stateIds) };
 			}
 		}
 	}
