@@ -20,7 +20,6 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
 import { filter, map } from "@/tools/iter";
-import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
 
 type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
@@ -239,7 +238,7 @@ export default Vue.extend({
             return this.languageList[this.lang];
         },
         treeData(): D3Hierarchy {
-            const hierarchyToD3 = (hierarchy: CharactersHierarchy, item: any): D3Hierarchy => {
+            const hierarchyToD3 = (hierarchy: Hierarchy<Character>, item: any): D3Hierarchy => {
                 const langFieldName = this.selectedLang.field;
                 const charChildren = item ? hierarchy.childrenOf(item) : [];
                 const charChildrenStatesNames = Array.from(charChildren).map(h => (h.inherentState?.name as any ?? {})[langFieldName])
@@ -250,7 +249,7 @@ export default Vue.extend({
                     color: item.color,
                     children: [
                         ...map(charChildren, child => hierarchyToD3(hierarchy, child)),
-                        ...map(filter(hierarchy.characterStates(item),
+                        ...map(filter(this.dataset.characterStates(item),
                             (s: any) => !charChildrenStatesNames.includes(s.name[langFieldName])),
                             (s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
                     ]};

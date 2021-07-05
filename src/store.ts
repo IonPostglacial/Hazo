@@ -1,6 +1,6 @@
 import Vue from "vue";
 
-import { Character, CharactersHierarchy, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon } from "./datatypes";
+import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon } from "./datatypes";
 import { Dataset } from './datatypes/Dataset';
 import { State } from "./datatypes/types";
 import { ManyToManyBimap, OneToManyBimap } from './tools/bimaps';
@@ -84,7 +84,7 @@ export function createStore() {
                 const stateToAdd = clone(s);
                 const character = store.dataset.charactersHierarchy.itemWithId(characterId);
                 if (typeof character !== "undefined") {
-                    store.dataset.charactersHierarchy.addState(stateToAdd, character);
+                    store.dataset.addState(stateToAdd, character);
                 }
             }
         },
@@ -116,10 +116,10 @@ export function createStore() {
             Object.assign(store.dataset, dataset);
         },
         addState(payload: { state: State, character: Character }) {
-            store.dataset.charactersHierarchy.addState(payload.state, payload.character);
+            store.dataset.addState(payload.state, payload.character);
         },
         removeState(hazoState: State) {
-            store.dataset.charactersHierarchy.removeState(hazoState);
+            store.dataset.removeState(hazoState);
         },
         addStatePicture(payload: { state: State, picture: Picture }) {
             payload.state.pictures.push(payload.picture);
@@ -131,21 +131,21 @@ export function createStore() {
             payload.state.pictures.splice(payload.index, 1);
         },
         setInapplicableState(payload: { state: State, selected: boolean }) {
-            const character = store.dataset.charactersHierarchy.stateCharacter(payload.state);
+            const character = store.dataset.stateCharacter(payload.state);
             if (typeof character === "undefined") return;
 
             setState(character.inapplicableStates, payload.state, payload.selected);
             store.dataset.charactersHierarchy.add(clone(character));
         },
         setRequiredState(payload: { state: State, selected: boolean }) {
-            const character = store.dataset.charactersHierarchy.stateCharacter(payload.state);
+            const character = store.dataset.stateCharacter(payload.state);
             if (typeof character === "undefined") return;
 
             setState(character.requiredStates, payload.state, payload.selected);
             store.dataset.charactersHierarchy.add(clone(character));
         },
         setInherentState(payload: { state: State }) {
-            const character = store.dataset.charactersHierarchy.stateCharacter(payload.state);
+            const character = store.dataset.stateCharacter(payload.state);
             if (typeof character === "undefined") return;
 
             character.inherentState = payload.state;
@@ -194,11 +194,13 @@ export function createStore() {
         dbg: false,
         dataset: new Dataset("",
             new Hierarchy<Taxon>("t", new ObservableMap()),
-            new CharactersHierarchy("d", new ObservableMap(), new ObservableMap(), new OneToManyBimap(ObservableMap)),
+            new Hierarchy<Character>("d", new ObservableMap()),
             new ManyToManyBimap(ObservableMap),
             new ObservableMap(),
             standardBooks,
             new Array<Field>(),
+            new ObservableMap(),
+            new OneToManyBimap(ObservableMap),
         ),
         connectedToHub: false,
         copiedTaxon: null as null | Hierarchy<Taxon>,

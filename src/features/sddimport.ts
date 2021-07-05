@@ -1,5 +1,5 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, CharactersHierarchy, Dataset, Field, Hierarchy, IMap, State, Taxon } from "@/datatypes";
+import { Character, Dataset, Field, Hierarchy, IMap, State, Taxon } from "@/datatypes";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { ManyToManyBimap, OneToManyBimap } from '@/tools/bimaps';
@@ -135,9 +135,9 @@ function extractTaxonsHierarchy(makeMap: MapContructor<Taxon>, sddContent: sdd_D
 	return taxons;
 }
 
-function extractCharactersHierarchy(makeMap: MapContructor<any>, sddContent: sdd_Dataset, statesById: IMap<State>, photosByRef: Record<string, string>): CharactersHierarchy {
-    const statesByCharacters = extractStatesByCharacters(makeMap, sddContent);
-	const characters = new CharactersHierarchy("c", new makeMap(), statesById, statesByCharacters);
+function extractCharactersHierarchy(makeMap: MapContructor<any>, sddContent: sdd_Dataset, statesById: IMap<State>, photosByRef: Record<string, string>): Hierarchy<Character> {
+
+	const characters = new Hierarchy<Character>("c", new makeMap());
 
 	for (const character of sddContent.characters) {
 		characters.add(characterFromSdd(character, photosByRef, statesById));
@@ -160,6 +160,6 @@ export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset
     const taxons = extractTaxonsHierarchy(makeMap, dataset, extraFields, photosByRef);
     const statesByTaxons = extractStatesByTaxons(makeMap, dataset);
 	const descriptors = extractCharactersHierarchy(makeMap, dataset, statesById, photosByRef);
-
-	return new Dataset("0", taxons, descriptors, statesByTaxons, new makeMap());
+    const statesByCharacters = extractStatesByCharacters(makeMap, dataset);
+	return new Dataset("0", taxons, descriptors, statesByTaxons, new makeMap(), [], [], statesById, statesByCharacters);
 }

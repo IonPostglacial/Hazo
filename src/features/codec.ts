@@ -2,9 +2,7 @@ import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo,
 import { createCharacter } from "@/datatypes/Character";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
-import { Description } from "@/datatypes/types";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
-import { CharactersHierarchy } from "../datatypes/CharactersHierarchy";
 
 type EncodedState = {
 	id: string;
@@ -81,7 +79,7 @@ function encodeTaxon(taxon: Taxon, dataset: Dataset) {
 
 function encodeCharacter(dataset: Dataset, character: Character) {
 	return {
-		states: Array.from(dataset.charactersHierarchy.characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
+		states: Array.from(dataset.characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
 		charType: character.charType,
 		inherentStateId: character.inherentState?.id,
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
@@ -122,7 +120,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 		id: dataset.id,
 		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, dataset)),
 		characters: Array.from(characters).map(character => encodeCharacter(dataset, character)),
-		states: Array.from(dataset.charactersHierarchy.allStates).map(encodeState),
+		states: Array.from(dataset.allStates).map(encodeState),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
 		dictionaryEntries: Object.fromEntries(dataset.dictionaryEntries.entries()),
@@ -193,7 +191,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const books = standardBooks.slice();
 	const statesByTaxons = new ManyToManyBimap(makeMap);
 	const statesByCharacters = new OneToManyBimap(makeMap);
-	const characters = new CharactersHierarchy("c", new makeMap(), states, statesByCharacters);
+	const characters = new Hierarchy<Character>("c", new makeMap());
 	const dictionaryEntries = new makeMap();
 	const ds = new Dataset(
 		dataset?.id ?? "0",
@@ -203,6 +201,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		dictionaryEntries,
 		books,
 		dataset?.extraFields ?? [],
+		states, statesByCharacters
 	);
 	
 	for (const state of dataset?.states ?? []) {

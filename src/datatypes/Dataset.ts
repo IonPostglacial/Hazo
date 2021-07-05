@@ -2,28 +2,39 @@ import { Book, Character, CharacterType, Description, DictionaryEntry, Field, St
 import { standardBooks } from "./stdcontent";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { Hierarchy, IMap } from './hierarchy';
-import { CharactersHierarchy } from './CharactersHierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
 import { floweringStates } from "./Character";
+import { generateId } from "@/tools/generateid";
 
+interface StateCallback {
+    (e: { state: State, character: Character }): void;
+}
 
 export class Dataset {
 	private floweringCharacter: Character|undefined = undefined;
+	private stateAdditionCallbacks = new Set<StateCallback>();
+    private stateRemovalCallbacks = new Set<StateCallback>();
+	private states: IMap<State>;
+    private statesByCharacter: OneToManyBimap;
 
 	constructor(
 			public id: string,
 			public taxonsHierarchy: Hierarchy<Taxon>,
-			public charactersHierarchy: CharactersHierarchy,
+			public charactersHierarchy: Hierarchy<Character>,
 			public statesByTaxons: ManyToManyBimap,
 			public dictionaryEntries: IMap<DictionaryEntry>,
 			public books: Book[] = standardBooks.slice(),
-			public extraFields: Field[] = []) {
+			public extraFields: Field[] = [],
+			statesById: IMap<State>|undefined, statesByCharacter: OneToManyBimap|undefined) {
+		this.states = statesById ?? new Map();
+		this.statesByCharacter = statesByCharacter ?? new OneToManyBimap(Map);
+		for (const state of floweringStates) {
+            this.states.set(state.id, state);
+        }
 		this.charactersHierarchy.onAdd(this.onAddCharacter.bind(this));
 		this.charactersHierarchy.onClone(this.onCharacterCloned.bind(this));
-		this.charactersHierarchy.onRemove(character => this.charactersHierarchy.statesByCharacter.removeLeft(character.id));
-		this.charactersHierarchy.onClear(() => this.charactersHierarchy.states.clear())
-		this.charactersHierarchy.onStateRemoved(e => this.statesByTaxons.removeRight(e.state.id));
+		this.charactersHierarchy.onClear(() => this.states.clear());
 	}
 
 	onAddCharacter(character: Character, autoid: boolean) {
@@ -34,7 +45,7 @@ export class Dataset {
                     id: "s-auto-" + character.id,
                     name: Object.assign({}, character.name), pictures: []
                 };
-                this.charactersHierarchy.addState(newState, parentCharacter);
+                this.addState(newState, parentCharacter);
                 character.inherentState = newState;
             }
 		}
@@ -44,18 +55,17 @@ export class Dataset {
 	}
 
 	onCharacterCloned(hierarchy: Hierarchy<Character>, character: Character, clonedCharacter: Character, newParent: Character|undefined) {
-		if (!(hierarchy instanceof CharactersHierarchy)) throw "Hierarchy should be a CharactersHierarchy";
 		clonedCharacter.requiredStates = [];
         clonedCharacter.inapplicableStates = [];
         clonedCharacter.inherentState = undefined;
         const oldParent = hierarchy.itemWithId(character.parentId);
-        const oldStates = hierarchy.characterStates(character);
+        const oldStates = this.characterStates(character);
         const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
         const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
         for (const oldState of oldStates) {
             const newState = clone(oldState);
             newState.id = "";
-            this.charactersHierarchy.addState(newState, clonedCharacter);
+            this.addState(newState, clonedCharacter);
             if (oldRequiredStatesIds.includes(oldState.id)) {
                 clonedCharacter.requiredStates.push(newState);
             }
@@ -64,8 +74,8 @@ export class Dataset {
             }
         }
         if (newParent && character.inherentState?.id) {
-            const oldInherentStateIndex = Array.from(hierarchy.characterStates(oldParent)).findIndex(s => s.id === character.inherentState?.id);
-            clonedCharacter.inherentState = Array.from(this.charactersHierarchy.characterStates(newParent))[oldInherentStateIndex];
+            const oldInherentStateIndex = Array.from(this.characterStates(oldParent)).findIndex(s => s.id === character.inherentState?.id);
+            clonedCharacter.inherentState = Array.from(this.characterStates(newParent))[oldInherentStateIndex];
         }
 	}
 
@@ -100,6 +110,7 @@ export class Dataset {
 
 	removeCharacter(character: Character) {
 		this.charactersHierarchy.remove(character);
+		this.statesByCharacter.removeLeft(character.id)
 	}
 
 	get characters() {
@@ -112,7 +123,7 @@ export class Dataset {
 
 	taxonStates(taxon: Taxon|undefined): State[] {
 		if (typeof taxon === "undefined") return [];
-		else return this.charactersHierarchy.statesFromIds(this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []);
+		else return this.statesFromIds(this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []);
 	}
 
 	stateTaxons(state: State|undefined): Taxon[] {
@@ -132,18 +143,18 @@ export class Dataset {
 		const stateIds: string[] = [];
 
 		this.statesByTaxons.getRightIdsByLeftId(taxon.id)?.forEach(stateId => {
-			if (this.charactersHierarchy.characterHasState(character, { id: stateId })) {
+			if (this.characterHasState(character, { id: stateId })) {
 				stateIds.push(stateId);
 			}
 		});
-		return this.charactersHierarchy.statesFromIds(stateIds);
+		return this.statesFromIds(stateIds);
 	}
 
 	*taxonDescriptions(taxon: Taxon): Iterable<Description> {
 		const statesByCharacter = new OneToManyBimap(Map);
 	
 		for (const stateId of this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []) {
-			const character = this.charactersHierarchy.stateCharacter({id: stateId});
+			const character = this.stateCharacter({id: stateId});
 			if (typeof character !== "undefined") {
 				statesByCharacter.add(character.id, stateId);
 			} else if (this.floweringCharacter && floweringStates.find(s => s.id === stateId)) {
@@ -153,9 +164,9 @@ export class Dataset {
 		for (const [characterId, stateIds] of statesByCharacter.rightIdsGroupedByLeftId()) {
 			const character = this.charactersHierarchy.itemWithId(characterId);
 			if (typeof character !== "undefined") {
-				yield { character, states: this.charactersHierarchy.statesFromIds(stateIds) };
+				yield { character, states: this.statesFromIds(stateIds) };
 			} else if (this.floweringCharacter) {
-				yield { character: this.floweringCharacter, states: this.charactersHierarchy.statesFromIds(stateIds) };
+				yield { character: this.floweringCharacter, states: this.statesFromIds(stateIds) };
 			}
 		}
 	}
@@ -165,7 +176,7 @@ export class Dataset {
 
 		for (const character of this.characters) {
 			if (this.isApplicable({ character, taxon })) {
-				const characterStates = map(this.charactersHierarchy.characterStates(character),
+				const characterStates = map(this.characterStates(character),
 					(s: State) => Object.assign({
 						type: "state",
 						parentId: character.id,
@@ -187,4 +198,73 @@ export class Dataset {
 		}
 		return dependencyHierarchy;
 	}
+
+	onStateAdded(callback: StateCallback) {
+        this.stateAdditionCallbacks.add(callback);
+    }
+
+    onStateRemoved(callback: StateCallback) {
+        this.stateRemovalCallbacks.add(callback);
+    }
+
+	addState(state: State, character: Character) {
+        state.id = generateId(this.states, state);
+		this.states.set(state.id, state);
+		this.statesByCharacter.add(character.id, state.id);
+        for (const callback of this.stateAdditionCallbacks) {
+            callback({ state, character });
+        }
+    }
+
+    removeState(state: State) {
+		this.states.delete(state.id);
+		this.statesByTaxons.removeRight(state.id);
+        const character = this.charactersHierarchy.itemWithId(this.statesByCharacter.getLeftIdByRightId(state.id));
+        if (typeof character === "undefined") return;
+
+        function removeStateFromArray(array: State[], state: State) {
+            const index = array.findIndex(s => s.id === state.id);
+            if (index >= 0) {
+                array.splice(index, 1);
+            }
+        }
+        removeStateFromArray(character.inapplicableStates, state);
+        removeStateFromArray(character.requiredStates, state);
+        if (character.inherentState?.id === state.id) {
+            character.inherentState = undefined;
+        }
+        for (const callback of this.stateRemovalCallbacks) {
+            callback({ state, character });
+        }
+    }
+
+    characterHasState(character: { id: string, charType: CharacterType }|undefined, state: { id: string }|undefined): boolean {
+        return typeof character !== "undefined" &&
+            typeof state !== "undefined" &&
+            (character.charType === "flowering" || this.statesByCharacter.has(character.id, state.id));
+    }
+
+	*characterStates(character: Character|undefined): Iterable<State> {
+		if (typeof character === "undefined") return [];
+        if (character.charType === "flowering") {
+            yield* floweringStates;
+        } else {
+            for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {
+                const state = this.states.get(stateId);
+                if (typeof state !== "undefined") yield state;
+            }
+        }
+    }
+
+	stateCharacter(state: {id: string}): Character|undefined {
+		return this.charactersHierarchy.itemWithId(this.statesByCharacter.getLeftIdByRightId(state.id));
+    }
+
+    get allStates(): Iterable<State> {
+        return this.states.values();
+    }
+    
+    statesFromIds(stateIds: readonly string[]): State[] {
+        return stateIds.map(id => this.states.get(id)!).filter(s => typeof s !== "undefined");
+    }
 }

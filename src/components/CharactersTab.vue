@@ -102,7 +102,7 @@
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
-                        <li v-for="state in dataset.charactersHierarchy.characterStates(selectedCharacter)" :key="state.id" class="display-contents">
+                        <li v-for="state in dataset.characterStates(selectedCharacter)" :key="state.id" class="display-contents">
                             <label class="medium-padding rounded nowrap horizontal-flexbox">
                                 <div class="form-grid">
                                     <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name.S" />
@@ -144,8 +144,7 @@ import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
 import Vue from "vue";
-import { Dataset, Character, State } from "@/datatypes";
-import { CharactersHierarchy } from "@/datatypes/CharactersHierarchy";
+import { Dataset, Character, Hierarchy, State } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 
 export default Vue.extend({
@@ -169,7 +168,7 @@ export default Vue.extend({
         dataset(): Dataset {
             return this.store.dataset;
         },
-        charactersHierarchy(): CharactersHierarchy {
+        charactersHierarchy(): Hierarchy<Character> {
             return this.store.dataset.charactersHierarchy;
         },
         selectedCharacter(): Character|undefined {
@@ -182,7 +181,7 @@ export default Vue.extend({
             const parent = this.charactersHierarchy?.itemWithId(parentId);
             if (typeof parent === "undefined")
                 return[];
-            return Array.from(this.dataset.charactersHierarchy.characterStates(parent));
+            return Array.from(this.dataset.characterStates(parent));
         },
         parentStatesExceptInherent(): State[] {
             return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
@@ -211,7 +210,7 @@ export default Vue.extend({
             this.store.do("pasteCharacter", this.selectedCharacterId);
         },
         copyStates() {
-            this.store.do("copyStates", Array.from(this.dataset.charactersHierarchy.characterStates(this.selectedCharacter)));
+            this.store.do("copyStates", Array.from(this.dataset.characterStates(this.selectedCharacter)));
         },
         pasteStates() {
             this.store.do("pasteStates", this.selectedCharacterId);

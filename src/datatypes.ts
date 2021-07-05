@@ -6,5 +6,4 @@ export * from "./datatypes/Taxon";
 export * from "./datatypes/types";
 export * from "./datatypes/stdcontent";
 export * from "./datatypes/hierarchy";
-export * from "./datatypes/CharactersHierarchy";
 export * from "./datatypes/picture";

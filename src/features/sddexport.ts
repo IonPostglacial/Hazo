@@ -22,7 +22,7 @@ export function stateToSdd(dataset: Dataset, state: State):SddStateData {
     return {
         state: {
             id: state.id,
-            characterId: dataset.charactersHierarchy.stateCharacter(state)?.id ?? "",
+            characterId: dataset.stateCharacter(state)?.id ?? "",
             label: state.name.S,
             detail: "",
             mediaObjectsRefs: [],

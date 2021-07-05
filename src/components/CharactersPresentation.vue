@@ -9,7 +9,7 @@
             </characters-tree>
         </center>
         <div class="horizontal-flexbox flex-wrap">
-            <div v-for="state in dataset.charactersHierarchy.characterStates(character)"
+            <div v-for="state in dataset.characterStates(character)"
                     :key="state.id"
                     class="thin-border medium-square space-between">
                 <img v-for="picture in state.pictures" :key="picture.id" :src="picture.url" class="medium-max-width fit-contain"/>
