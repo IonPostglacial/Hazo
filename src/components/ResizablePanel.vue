@@ -22,7 +22,6 @@ export default Vue.extend({
             dragStartingX: 0,
             ondrag: debounce(5, function (this: any, e: MouseEvent) {
                 if (this.resizing) {
-                    console.log("delta", e.pageX - this.dragStartingX);
                     this.width = e.pageX;
                 }
             }).bind(this)

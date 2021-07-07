@@ -18,11 +18,11 @@ interface SddTaxonData {
 	mediaObjects: MediaObject[];
 }
 
-export function stateToSdd(dataset: Dataset, state: State):SddStateData {
+function stateToSdd(character: Character, state: State):SddStateData {
     return {
         state: {
             id: state.id,
-            characterId: dataset.stateCharacter(state)?.id ?? "",
+            characterId: character.id ?? "",
             label: state.name.S,
             detail: "",
             mediaObjectsRefs: [],
@@ -32,7 +32,7 @@ export function stateToSdd(dataset: Dataset, state: State):SddStateData {
 }
 
 function characterToSdd(dataset: Dataset, character: Character, extraFields: Field[], mediaObjects: sdd_MediaObject[]): SddCharacterData {
-	const statesData = Array.from(dataset.characterStates(character)).map(s => stateToSdd(dataset, s));
+	const statesData = Array.from(dataset.characterStates(character)).map(s => stateToSdd(character, s));
 	const states = statesData.map(data => data.state);
 	return {
 		character: {

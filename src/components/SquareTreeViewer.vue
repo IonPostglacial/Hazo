@@ -28,14 +28,14 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import { Character } from "@/datatypes";
-import { floweringStates } from "@/datatypes/Character";
+import { presetStates } from "@/datatypes/Character";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
 function computeFlowering(currentItems: ItemType[]): number {
     let flowering = 0;
     for (const item of currentItems) {
         if (item.selected) {
-            const monthIndex = floweringStates.findIndex(s => s.id === item.id);
+            const monthIndex = presetStates.flowering.findIndex(s => s.id === item.id);
             flowering |= (1 << monthIndex);
         }
     }
@@ -66,7 +66,7 @@ export default Vue.extend({
             if (this.breadCrumbs.length - 1 < 0) return;
             const currentlyOpenItem = newRootItems.itemWithId(this.breadCrumbs[this.breadCrumbs.length - 1].id);
             if (typeof currentlyOpenItem !== "undefined") {
-                this.floweringMode = currentlyOpenItem.type === "character" && (currentlyOpenItem as Character).charType === "flowering";
+                this.floweringMode = currentlyOpenItem.type === "character" && (currentlyOpenItem as Character).preset === "flowering";
                 this.currentItems = [...this.rootItems!.childrenOf(currentlyOpenItem)];
                 this.flowering = computeFlowering(this.currentItems);
             }
@@ -106,7 +106,7 @@ export default Vue.extend({
         },
         openItem(item: HierarchicalItem & { selected?: boolean }) {
             this.isRoot = false;
-            this.floweringMode = item.type === "character" && (item as Character).charType === "flowering";
+            this.floweringMode = item.type === "character" && (item as Character).preset === "flowering";
             if (this.hasChildren(item)) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...this.rootItems!.childrenOf(item)];
@@ -117,7 +117,7 @@ export default Vue.extend({
             }
         },
         monthToggled(monthIndex: number) {
-            this.$emit("item-selection-toggled", { item: floweringStates[monthIndex] });
+            this.$emit("item-selection-toggled", { item: presetStates.flowering[monthIndex] });
         },
         backToTop() {
             this.isRoot = true;

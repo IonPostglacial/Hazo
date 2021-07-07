@@ -118,8 +118,8 @@ export function createStore() {
         addState(payload: { state: State, character: Character }) {
             store.dataset.addState(payload.state, payload.character);
         },
-        removeState(hazoState: State) {
-            store.dataset.removeState(hazoState);
+        removeState(payload: { state: State, character: Character }) {
+            store.dataset.removeState(payload.state, payload.character);
         },
         addStatePicture(payload: { state: State, picture: Picture }) {
             payload.state.pictures.push(payload.picture);
@@ -130,28 +130,19 @@ export function createStore() {
         removeStatePicture(payload: { state: State, index: number }) {
             payload.state.pictures.splice(payload.index, 1);
         },
-        setInapplicableState(payload: { state: State, selected: boolean }) {
-            const character = store.dataset.stateCharacter(payload.state);
-            if (typeof character === "undefined") return;
-
-            setState(character.inapplicableStates, payload.state, payload.selected);
-            store.dataset.charactersHierarchy.add(clone(character));
+        setInapplicableState(payload: { character: Character, state: State, selected: boolean }) {
+            setState(payload.character.inapplicableStates, payload.state, payload.selected);
+            store.dataset.charactersHierarchy.add(clone(payload.character));
         },
-        setRequiredState(payload: { state: State, selected: boolean }) {
-            const character = store.dataset.stateCharacter(payload.state);
-            if (typeof character === "undefined") return;
-
-            setState(character.requiredStates, payload.state, payload.selected);
-            store.dataset.charactersHierarchy.add(clone(character));
+        setRequiredState(payload: { character: Character, state: State, selected: boolean }) {
+            setState(payload.character.requiredStates, payload.state, payload.selected);
+            store.dataset.charactersHierarchy.add(clone(payload.character));
         },
-        setInherentState(payload: { state: State }) {
-            const character = store.dataset.stateCharacter(payload.state);
-            if (typeof character === "undefined") return;
+        setInherentState(payload: { character: Character, state: State }) {
+            payload.character.inherentState = payload.state;
 
-            character.inherentState = payload.state;
-
-            setState(character.requiredStates, payload.state, false);
-            setState(character.inapplicableStates, payload.state, false);
+            setState(payload.character.requiredStates, payload.state, false);
+            setState(payload.character.inapplicableStates, payload.state, false);
         },
         setTaxonState(p: { taxon: Taxon, state: State, has: boolean }) {
             if (p.has) {
@@ -199,7 +190,6 @@ export function createStore() {
             new ObservableMap(),
             standardBooks,
             new Array<Field>(),
-            new ObservableMap(),
             new ObservableMap(),
         ),
         connectedToHub: false,

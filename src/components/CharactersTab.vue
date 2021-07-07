@@ -50,14 +50,18 @@
                     </tr>
                 </table>
                 <label class="item-property">Detail</label>
-                <label><input type="radio" name="character-type" value="std" v-model="selectedCharacter.charType">Standard</label>
-                <label><input type="radio" name="character-type" value="flowering" v-model="selectedCharacter.charType">Flowering</label>
                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
+                <div>
+                    <label class="item-property">Preset</label>
+                    <label><input type="radio" name="character-type" value="" v-model="selectedCharacter.preset">None</label>
+                    <label><input type="radio" name="character-type" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
+                    <label><input type="radio" name="character-type" value="family" v-model="selectedCharacter.preset">Family</label>
+                </div>
             </collapsible-panel>
-            <characters-tree v-if="selectedCharacter && selectedCharacter.charType === 'std'" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+            <characters-tree v-if="selectedCharacter && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
             </characters-tree>
             <div class="centered-text medium-margin thin-border medium-padding white-background">
-                <flowering v-if="selectedCharacter && selectedCharacter.charType === 'flowering'">
+                <flowering v-if="selectedCharacter && selectedCharacter.preset === 'flowering'">
                 </flowering>
             </div>
             <collapsible-panel v-if="selectedCharacter && selectedCharacter.parentId" label="Dependencies">
@@ -98,7 +102,7 @@
                 </div>
             </collapsible-panel>
         </section>
-        <section v-if="selectedCharacter && selectedCharacter.charType === 'std'" class="scroll relative horizontal-flexbox">
+        <section v-if="selectedCharacter && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
@@ -216,13 +220,13 @@ export default Vue.extend({
             this.store.do("pasteStates", this.selectedCharacterId);
         },
         setInapplicableState(state: State, selected: boolean) {
-            this.store.do("setInapplicableState", { state, selected });
+            this.store.do("setInapplicableState", { character: this.selectedCharacter!, state, selected });
         },
         setRequiredState(state: State, selected: boolean) {
-            this.store.do("setRequiredState", { state, selected });
+            this.store.do("setRequiredState", { character: this.selectedCharacter!, state, selected });
         },
         setInherentState(state: State) {
-            this.store.do("setInherentState", { state });
+            this.store.do("setInherentState", { character: this.selectedCharacter!, state });
         },
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
@@ -312,7 +316,7 @@ export default Vue.extend({
             });
         },
         removeState(state: State) {
-            this.store.do("removeState", state);
+            this.store.do("removeState", { character: this.selectedCharacter!, state });
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {
             this.showBigImage = true;

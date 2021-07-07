@@ -70,7 +70,7 @@ export interface Taxon extends HierarchicalItem {
 	extra: Record<string, any>;
 }
 
-export type CharacterType = "std" | "flowering";
+export type CharacterPreset = "flowering" | "family";
 
 export interface Character extends HierarchicalItem {
 	detail : string;
@@ -78,7 +78,7 @@ export interface Character extends HierarchicalItem {
 	inherentState?: State;
 	inapplicableStates: State[];
 	requiredStates: State[];
-	charType: CharacterType;
+	preset: CharacterPreset|undefined;
 }
 
 export interface Description {

@@ -164,5 +164,5 @@ export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset
     const statesByTaxons = extractStatesByTaxons(makeMap, dataset);
 	const charactersHierarchy = extractCharactersHierarchy(makeMap, dataset, statesById, photosByRef);
     const statesByCharacters = extractCharacterByStateId(makeMap, dataset, charactersHierarchy);
-	return new Dataset("0", taxonsHierarchy, charactersHierarchy, statesByTaxons, new makeMap(), [], [], statesById, statesByCharacters);
+	return new Dataset("0", taxonsHierarchy, charactersHierarchy, statesByTaxons, new makeMap(), [], [], statesById);
 }
