@@ -120,7 +120,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 		id: dataset.id,
 		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, dataset)),
 		characters: Array.from(characters).map(character => encodeCharacter(dataset, character)),
-		states: Array.from(dataset.allStates).map(encodeState),
+		states: Array.from(dataset.allStates()).map(encodeState),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
 		dictionaryEntries: Object.fromEntries(dataset.dictionaryEntries.entries()),
@@ -190,7 +190,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const taxons = new Hierarchy<Taxon>("t", new makeMap());
 	const books = standardBooks.slice();
 	const statesByTaxons = new ManyToManyBimap(makeMap);
-	const statesByCharacters = new OneToManyBimap(makeMap);
+	const characterByStateId = new makeMap();
 	const characters = new Hierarchy<Character>("c", new makeMap());
 	const dictionaryEntries = new makeMap();
 	const ds = new Dataset(
@@ -201,17 +201,23 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		dictionaryEntries,
 		books,
 		dataset?.extraFields ?? [],
-		states, statesByCharacters
+		states, characterByStateId,
 	);
-	
 	for (const state of dataset?.states ?? []) {
 		states.set(state.id, decodeState(state));
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
-		characters.add(decodeCharacter(character, states));
+		const decodedCharacter = decodeCharacter(character, states);
 		if (character.charType === "std" || !character.charType) {
-			character.states.forEach(id => statesByCharacters.add(character.id, id));
+			for (const stateId of character.states) {
+				characterByStateId.set(stateId, decodedCharacter);
+				const state = states.get(stateId);
+				if (typeof state !== "undefined") {
+					decodedCharacter.states.push(state);
+				}
+			}
 		}
+		characters.add(decodedCharacter);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
 		taxon.descriptions.forEach(d => {

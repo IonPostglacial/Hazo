@@ -3,7 +3,7 @@ export function generateId(items: { has(key: string): boolean, size: number }, i
     if (id === "") {
         let i = items.size;
         do {
-            item.id = "s" + i;
+            id = "s" + i;
             i++;
         } while(items.has(id));
     }

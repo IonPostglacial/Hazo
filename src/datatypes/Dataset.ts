@@ -235,11 +235,16 @@ export class Dataset {
                 array.splice(index, 1);
             }
         }
-        removeStateFromArray(character.inapplicableStates, state);
-        removeStateFromArray(character.requiredStates, state);
-        if (character.inherentState?.id === state.id) {
-            character.inherentState = undefined;
-        }
+		removeStateFromArray(character.states, state);
+
+		for (const characterChild of this.charactersHierarchy.childrenOf(character)) {
+			removeStateFromArray(characterChild.inapplicableStates, state);
+			removeStateFromArray(characterChild.requiredStates, state);
+			if (characterChild.inherentState?.id === state.id) {
+				characterChild.inherentState = undefined;
+			}
+		}
+
         for (const callback of this.stateRemovalCallbacks) {
             callback({ state, character });
         }
@@ -267,10 +272,6 @@ export class Dataset {
     }
 
     *allStates(): Iterable<State> {
-		for (const character of this.charactersHierarchy.allItems) {
-			for (const state of character.states) {
-				yield state;
-			}
-		}
+		return this.statesById.values();
     }
 }

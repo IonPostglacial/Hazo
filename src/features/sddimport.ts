@@ -107,12 +107,15 @@ function extractStatesByTaxons(makeMap: MapContructor<string[]>, sddContent: sdd
     return statesByTaxons;
 }
 
-function extractStatesByCharacters(makeMap: MapContructor<string[]>, sddContent: sdd_Dataset): OneToManyBimap {
-    const statesByCharacters = new OneToManyBimap(makeMap);
+function extractCharacterByStateId(makeMap: MapContructor<Character>, sddContent: sdd_Dataset, charactersHierarchy: Hierarchy<Character>): IMap<Character> {
+    const statesByCharacters = new makeMap();
     for (const character of sddContent.characters) {
         character.states
         for (const sddState of character.states) {
-            statesByCharacters.add(character.id, sddState.id);
+            const ch = charactersHierarchy.itemWithId(character.id);
+            if (typeof ch !== "undefined") {
+                statesByCharacters.set(sddState.id, ch);
+            }
         }
     }
     return statesByCharacters;
@@ -157,9 +160,9 @@ function extractPhotosByRef(sddContent: sdd_Dataset) {
 export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset, extraFields: Field[]): Dataset {
 	const photosByRef = extractPhotosByRef(dataset);
 	const statesById = extractStatesById(makeMap, dataset, photosByRef);
-    const taxons = extractTaxonsHierarchy(makeMap, dataset, extraFields, photosByRef);
+    const taxonsHierarchy = extractTaxonsHierarchy(makeMap, dataset, extraFields, photosByRef);
     const statesByTaxons = extractStatesByTaxons(makeMap, dataset);
-	const descriptors = extractCharactersHierarchy(makeMap, dataset, statesById, photosByRef);
-    const statesByCharacters = extractStatesByCharacters(makeMap, dataset);
-	return new Dataset("0", taxons, descriptors, statesByTaxons, new makeMap(), [], [], statesById, statesByCharacters);
+	const charactersHierarchy = extractCharactersHierarchy(makeMap, dataset, statesById, photosByRef);
+    const statesByCharacters = extractCharacterByStateId(makeMap, dataset, charactersHierarchy);
+	return new Dataset("0", taxonsHierarchy, charactersHierarchy, statesByTaxons, new makeMap(), [], [], statesById, statesByCharacters);
 }

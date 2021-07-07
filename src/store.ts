@@ -200,7 +200,7 @@ export function createStore() {
             standardBooks,
             new Array<Field>(),
             new ObservableMap(),
-            new OneToManyBimap(ObservableMap),
+            new ObservableMap(),
         ),
         connectedToHub: false,
         copiedTaxon: null as null | Hierarchy<Taxon>,
