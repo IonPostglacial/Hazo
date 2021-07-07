@@ -40,6 +40,7 @@
             </div>
             <div class="button-group">
                 <button type="button" @click="globalReplace">Replace Text</button>
+                <button type="button" class="no-print   " @click="displayTaxonStats">Taxons Stats</button>
                 <button type="button" class="no-print background-color-1" @click="print">Print</button>
             </div>
         </section>
@@ -383,6 +384,17 @@ export default Vue.extend({
                 }
                 fileReader.readAsText(file);
             });
+        },
+        displayTaxonStats() {
+            let familiesNumber = 0, taxonsNumber = 0;
+            for (const taxon of this.dataset.taxonsHierarchy.allItems) {
+                if (taxon.parentId) {
+                    taxonsNumber++
+                } else {
+                    familiesNumber++;
+                }
+            }
+            alert(`Families: ${familiesNumber}, Taxons: ${taxonsNumber}`);
         },
         jsonExport() {
             const json = JSON.stringify(encodeDataset(this.dataset));
