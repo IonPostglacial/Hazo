@@ -242,6 +242,7 @@ export class Dataset {
 
 	private removeStateWithoutCharacter(state: State) {
 		this.statesByTaxons.removeRight(state.id);
+		this.statesById.delete(state.id);
 	}
 
     removeState(state: State, character: Character) {
