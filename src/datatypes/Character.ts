@@ -3,7 +3,8 @@ import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
 
 type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
-	inherentState?: State, 
+	inherentState?: State,
+	states?: State[],
 	inapplicableStates?: State[],
 	requiredStates?: State[],
 	charType?: "std" | "flowering",
@@ -28,6 +29,7 @@ export const floweringStates: State[] = [
 export function createCharacter(init: CharacterInit): Character {
 	return {
 		...createHierarchicalItem({ type: "character", ...init }),
+		states: init.states ?? [],
 		inherentState: init.inherentState,
 		inapplicableStates: init.inapplicableStates ?? [],
 		requiredStates: init.requiredStates ?? [],

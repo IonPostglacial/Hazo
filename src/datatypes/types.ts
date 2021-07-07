@@ -74,6 +74,7 @@ export type CharacterType = "std" | "flowering";
 
 export interface Character extends HierarchicalItem {
 	detail : string;
+	states: State[];
 	inherentState?: State;
 	inapplicableStates: State[];
 	requiredStates: State[];

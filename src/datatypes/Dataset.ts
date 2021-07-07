@@ -15,8 +15,8 @@ export class Dataset {
 	private floweringCharacter: Character|undefined = undefined;
 	private stateAdditionCallbacks = new Set<StateCallback>();
     private stateRemovalCallbacks = new Set<StateCallback>();
-	private states: IMap<State>;
-    private statesByCharacter: OneToManyBimap;
+    private characterByStateId: IMap<Character>;
+	private statesById: IMap<State>;
 
 	constructor(
 			public id: string,
@@ -26,21 +26,26 @@ export class Dataset {
 			public dictionaryEntries: IMap<DictionaryEntry>,
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = [],
-			statesById: IMap<State>|undefined, statesByCharacter: OneToManyBimap|undefined) {
-		this.states = statesById ?? new Map();
-		this.statesByCharacter = statesByCharacter ?? new OneToManyBimap(Map);
-		for (const state of floweringStates) {
-            this.states.set(state.id, state);
-        }
+			statesById: IMap<State>|undefined, characterByStateId: IMap<Character>|undefined) {
+		this.statesById = statesById ?? new Map();
+		for (const character of charactersHierarchy.allItems) {
+			character.states.forEach(s => this.indexState(s));
+		}
+		this.characterByStateId = characterByStateId ?? new Map();
 		this.charactersHierarchy.onAdd(this.onAddCharacter.bind(this));
 		this.charactersHierarchy.onClone(this.onCharacterCloned.bind(this));
-		this.charactersHierarchy.onClear(() => this.states.clear());
+		this.charactersHierarchy.onRemove(c => c.states.forEach(s => this.statesById.delete(s.id)));
+	}
+
+	private indexState(state: State) {
+		this.statesById.set(state.id, state);
 	}
 
 	onAddCharacter(character: Character, autoid: boolean) {
+		character.states.forEach(s => this.indexState(s));
 		if (autoid) {
             const parentCharacter = this.charactersHierarchy.itemWithId(character.parentId);
-            if(typeof character.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
+            if (typeof character.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
                 const newState: State = {
                     id: "s-auto-" + character.id,
                     name: Object.assign({}, character.name), pictures: []
@@ -109,8 +114,8 @@ export class Dataset {
 	}
 
 	removeCharacter(character: Character) {
+		character.states.forEach(s => this.statesById.delete(s.id));
 		this.charactersHierarchy.remove(character);
-		this.statesByCharacter.removeLeft(character.id)
 	}
 
 	get characters() {
@@ -121,9 +126,13 @@ export class Dataset {
 		return this.statesByTaxons.has(taxon.id, state.id);
 	}
 
+	statesFromIds(stateIds: readonly string[] | undefined): State[] {
+		return stateIds?.map(id => this.statesById.get(id)).filter(s => typeof s !== "undefined") as State[] ?? [];
+	}
+
 	taxonStates(taxon: Taxon|undefined): State[] {
 		if (typeof taxon === "undefined") return [];
-		else return this.statesFromIds(this.statesByTaxons.getRightIdsByLeftId(taxon.id) ?? []);
+		else return this.statesFromIds(this.statesByTaxons.getRightIdsByLeftId(taxon.id));
 	}
 
 	stateTaxons(state: State|undefined): Taxon[] {
@@ -208,18 +217,16 @@ export class Dataset {
     }
 
 	addState(state: State, character: Character) {
-        state.id = generateId(this.states, state);
-		this.states.set(state.id, state);
-		this.statesByCharacter.add(character.id, state.id);
+        state.id = generateId(this.statesById, state);
+		this.characterByStateId.set(state.id, character);
         for (const callback of this.stateAdditionCallbacks) {
             callback({ state, character });
         }
     }
 
     removeState(state: State) {
-		this.states.delete(state.id);
 		this.statesByTaxons.removeRight(state.id);
-        const character = this.charactersHierarchy.itemWithId(this.statesByCharacter.getLeftIdByRightId(state.id));
+        const character = this.characterByStateId.get(state.id);
         if (typeof character === "undefined") return;
 
         function removeStateFromArray(array: State[], state: State) {
@@ -241,7 +248,7 @@ export class Dataset {
     characterHasState(character: { id: string, charType: CharacterType }|undefined, state: { id: string }|undefined): boolean {
         return typeof character !== "undefined" &&
             typeof state !== "undefined" &&
-            (character.charType === "flowering" || this.statesByCharacter.has(character.id, state.id));
+            (character.charType === "flowering" || (this.charactersHierarchy.itemWithId(character.id)?.states.some(s => s.id === state.id) ?? false));
     }
 
 	*characterStates(character: Character|undefined): Iterable<State> {
@@ -249,22 +256,21 @@ export class Dataset {
         if (character.charType === "flowering") {
             yield* floweringStates;
         } else {
-            for (const stateId of this.statesByCharacter.getRightIdsByLeftId(character.id) ?? []) {
-                const state = this.states.get(stateId);
-                if (typeof state !== "undefined") yield state;
+            for (const state of character.states) {
+                yield state;
             }
         }
     }
 
 	stateCharacter(state: {id: string}): Character|undefined {
-		return this.charactersHierarchy.itemWithId(this.statesByCharacter.getLeftIdByRightId(state.id));
+		return this.characterByStateId.get(state.id);
     }
 
-    get allStates(): Iterable<State> {
-        return this.states.values();
-    }
-    
-    statesFromIds(stateIds: readonly string[]): State[] {
-        return stateIds.map(id => this.states.get(id)!).filter(s => typeof s !== "undefined");
+    *allStates(): Iterable<State> {
+		for (const character of this.charactersHierarchy.allItems) {
+			for (const state of character.states) {
+				yield state;
+			}
+		}
     }
 }
