@@ -235,6 +235,8 @@ export class Dataset {
 
 	addState(state: State, character: Character) {
         state.id = generateId(this.statesById, state);
+		this.statesById.set(state.id, state);
+		character.states.push(state);
         for (const callback of this.stateAdditionCallbacks) {
             callback({ state, character });
         }
