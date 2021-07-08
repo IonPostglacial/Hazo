@@ -291,24 +291,24 @@ export default Vue.extend({
                 for (const taxon of result.taxonsHierarchy.allItems) {
                     const existing = this.dataset.taxonsHierarchy.itemWithId(taxon.id);
                     if (typeof existing !== "undefined") {
-                        existing.name.S ??= taxon.name.S;
-                        existing.name.EN ??= taxon.name.EN;
-                        existing.name.CN ??= taxon.name.CN;
-                        existing.pictures ??= taxon.pictures;
-                        existing.name.V ??= taxon.name.V;
-                        existing.bookInfoByIds ??= taxon.bookInfoByIds;
-                        existing.specimenLocations ??= taxon.specimenLocations;
-                        existing.author ??= taxon.author;
-                        existing.vernacularName2 ??= taxon.vernacularName2;
-                        existing.name2 ??= taxon.name2;
-                        existing.meaning ??= taxon.meaning;
-                        existing.herbariumPicture ??= taxon.herbariumPicture;
-                        existing.website ??= taxon.website;
-                        existing.noHerbier ??= taxon.noHerbier;
-                        existing.fasc ??= taxon.fasc;
-                        existing.page ??= taxon.page;
-                        existing.detail ??= taxon.detail;
-                        existing.extra ??= taxon.extra;
+                        existing.name.S = existing.name.S ?? taxon.name.S;
+                        existing.name.EN = existing.name.EN ?? taxon.name.EN;
+                        existing.name.CN = existing.name.CN ?? taxon.name.CN;
+                        existing.name.V = existing.name.V ?? taxon.name.V;
+                        existing.pictures = existing.pictures ?? taxon.pictures;
+                        existing.bookInfoByIds = existing.bookInfoByIds ?? taxon.bookInfoByIds;
+                        existing.specimenLocations = existing.specimenLocations ?? taxon.specimenLocations;
+                        existing.author = existing.author ?? taxon.author;
+                        existing.vernacularName2 = existing.vernacularName2 ?? taxon.vernacularName2;
+                        existing.name2 = existing.name2 ?? taxon.name2;
+                        existing.meaning = existing.meaning ?? taxon.meaning;
+                        existing.herbariumPicture = existing.herbariumPicture ?? taxon.herbariumPicture;
+                        existing.website = existing.website ?? taxon.website;
+                        existing.noHerbier = existing.noHerbier ?? taxon.noHerbier;
+                        existing.fasc = existing.fasc ?? taxon.fasc;
+                        existing.page = existing.page ?? taxon.page;
+                        existing.detail = existing.detail ?? taxon.detail;
+                        existing.extra = existing.extra ?? taxon.extra;
                         for (const state of result.taxonStates(taxon)) {
                             this.dataset.statesByTaxons.add(existing.id, state.id);
                         }
