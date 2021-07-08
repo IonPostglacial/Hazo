@@ -120,7 +120,7 @@
                                 {{ desc.character.name.S }}
                                 <ul v-if="desc.states.length > 0" class="indented">
                                     <li v-for="state in desc.states" :key="state.id">
-                                        {{ state.name.S }}
+                                        {{ state.name.S }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
                                     </li>
                                 </ul>
                             </li>
@@ -249,6 +249,11 @@ export default Vue.extend({
             a.document.write('</body></html>');
             a.document.close();
             a.addEventListener("load", () => a.print());
+        },
+        pushStateToChildren(state: State) {
+            for (const child of this.dataset.taxonsHierarchy.getOrderedChildrenTree(this.selectedTaxon)) {
+                this.dataset.statesByTaxons.add(child.id, state.id);
+            }
         },
         switchEditMode() {
             this.editProperties = !this.editProperties;
