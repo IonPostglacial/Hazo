@@ -1,20 +1,38 @@
-import { Book, Character, Description, DictionaryEntry, Field, State, Taxon } from "./types";
+import { Book, Character, CharacterPreset, Description, DictionaryEntry, Field, State, Taxon } from "./types";
 import { standardBooks } from "./stdcontent";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { Hierarchy, IMap } from './hierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
 import { generateId } from "@/tools/generateid";
-import { presetStates } from "./Character";
 
 interface StateCallback {
     (e: { state: State, character: Character }): void;
 }
 
+export const floweringStates: State[] = [
+	{ id: "s_month_jan", name: { S: "JAN" }, pictures: [], },
+	{ id: "s_month_feb", name: { S: "FEB" }, pictures: [], },
+	{ id: "s_month_mar", name: { S: "MAR" }, pictures: [], },
+	{ id: "s_month_apr", name: { S: "APR" }, pictures: [], },
+	{ id: "s_month_may", name: { S: "MAY" }, pictures: [], },
+	{ id: "s_month_jun", name: { S: "JUN" }, pictures: [], },
+	{ id: "s_month_jul", name: { S: "JUL" }, pictures: [], },
+	{ id: "s_month_aug", name: { S: "AUG" }, pictures: [], },
+	{ id: "s_month_sep", name: { S: "SEP" }, pictures: [], },
+	{ id: "s_month_oct", name: { S: "OCT" }, pictures: [], },
+	{ id: "s_month_nov", name: { S: "NOV" }, pictures: [], },
+	{ id: "s_month_dec", name: { S: "DEC" }, pictures: [], },
+];
+
 export class Dataset {
 	private stateAdditionCallbacks = new Set<StateCallback>();
     private stateRemovalCallbacks = new Set<StateCallback>();
 	private statesById: IMap<State>;
+	presetStates: Record<CharacterPreset, State[]> = {
+		flowering: floweringStates,
+		family: [],
+	};
 
 	constructor(
 			public id: string,
@@ -29,10 +47,10 @@ export class Dataset {
 		for (const character of charactersHierarchy.allItems) {
 			character.states.forEach(s => this.indexState(s));
 		}
-		function addFamilyPreset(taxon: Taxon) {
+		const addFamilyPreset = (taxon: Taxon) => {
 			if (taxon.parentId) return;
 
-			presetStates.family.push({
+			this.presetStates.family.push({
 				id: "s-auto-" + taxon.id,
 				name: clone(taxon.name),
 				pictures: clone(taxon.pictures),
@@ -47,11 +65,11 @@ export class Dataset {
 		this.taxonsHierarchy.onRemove(taxon => {
 			if (taxon.parentId) return;
 
-			const index = presetStates.family.findIndex(family => family.id === "s-auto-" + taxon.id);
+			const index = this.presetStates.family.findIndex(family => family.id === "s-auto-" + taxon.id);
 
 			if (index >= 0) {
-				this.removeStateWithoutCharacter(presetStates.family[index]);
-				presetStates.family.splice(index, 1);
+				this.removeStateWithoutCharacter(this.presetStates.family[index]);
+				this.presetStates.family.splice(index, 1);
 			}
 		});
 		this.charactersHierarchy.onAdd(this.onAddCharacter.bind(this));

@@ -1,5 +1,5 @@
 import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, DictionaryEntry, Field, Hierarchy, HierarchicalItem, IMap, Picture, State, Taxon } from "@/datatypes";
-import { createCharacter } from "@/datatypes/Character";
+import { createCharacter, CharacterPreset } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
 import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
@@ -174,7 +174,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 	});
 }
 
-function decodeCharacter(character: EncodedCharacter, states: IMap<State>): Character {
+function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, character: EncodedCharacter, states: IMap<State>): Character {
 	const item = decodeHierarchicalItem(character);
 	const charStates: State[] = [];
 	for (const stateId of character.states) {
@@ -185,6 +185,7 @@ function decodeCharacter(character: EncodedCharacter, states: IMap<State>): Char
 	}
 	return createCharacter({
 		...item,
+		presetStates,
 		states: character.preset || charStates,
 		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
@@ -213,7 +214,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		states.set(state.id, decodeState(state));
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
-		const decodedCharacter = decodeCharacter(character, states);
+		const decodedCharacter = decodeCharacter(ds.presetStates, character, states);
 		characters.add(decodedCharacter);
 	}
 	for (const taxon of dataset?.taxons ?? []) {

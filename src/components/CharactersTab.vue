@@ -289,6 +289,7 @@ export default Vue.extend({
         addCharacter(e: { value: string[], parentId: string }) {
             const [name, nameCN] = e.value;
             this.store.do("addCharacter", createCharacter({
+                presetStates: this.dataset.presetStates,
                 name: { S: name, FR: name, CN: nameCN }, 
                 parentId: e.parentId,
             }));

@@ -27,15 +27,14 @@
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
-import { Character } from "@/datatypes";
-import { presetStates } from "@/datatypes/Character";
+import { Character, floweringStates } from "@/datatypes";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
 function computeFlowering(currentItems: ItemType[]): number {
     let flowering = 0;
     for (const item of currentItems) {
         if (item.selected) {
-            const monthIndex = presetStates.flowering.findIndex(s => s.id === item.id);
+            const monthIndex = floweringStates.findIndex(s => s.id === item.id);
             flowering |= (1 << monthIndex);
         }
     }
@@ -117,7 +116,7 @@ export default Vue.extend({
             }
         },
         monthToggled(monthIndex: number) {
-            this.$emit("item-selection-toggled", { item: presetStates.flowering[monthIndex] });
+            this.$emit("item-selection-toggled", { item: floweringStates[monthIndex] });
         },
         backToTop() {
             this.isRoot = true;
