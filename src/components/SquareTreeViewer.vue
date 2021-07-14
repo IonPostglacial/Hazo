@@ -1,6 +1,5 @@
 <template>
     <div class="vertical-flexbox">
-        {{floweringMode}}
         <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
         <div class="horizontal-flexbox flex-wrap button-group">
             <button v-if="currentItems !== rootItems" type="button" @click="backToTop">Top</button>
@@ -12,9 +11,10 @@
                     @click="openItem(item)">
                 <div v-for="field in nameFieldsForItem(item)" :key="field"
                         :title="item.name[field]"
-                        :class="['thin-border', 'medium-padding', 'text-ellipsed', item.selected ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
+                        :class="['thin-border', 'medium-padding', 'text-ellipsed', isSelected(item) ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
                     {{ item.name[field] }}
                 </div>
+                <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </component>
         </div>
         <div v-if="floweringMode">
@@ -28,6 +28,8 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import { Character, floweringStates } from "@/datatypes";
+import { State } from "@/datatypes/types";
+import clone from "@/tools/clone";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
 function computeFlowering(currentItems: ItemType[]): number {
@@ -97,6 +99,9 @@ export default Vue.extend({
         isClickable(item: HierarchicalItem): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
+        isSelected(item: HierarchicalItem & { selected?: boolean }): boolean {
+            return item.selected ?? false;
+        },
         isSelectable(item: HierarchicalItem & { selected?: boolean }): boolean {
             return this.editable && !this.rootItems!.hasChildren(item);
         },
@@ -114,6 +119,16 @@ export default Vue.extend({
             if (this.isSelectable(item)) {
                 this.$emit("item-selection-toggled", { item });
             }
+        },
+        selectWithoutOpening(character: Character & { selected?: boolean }) {
+            if (typeof character.inherentState === "undefined") {
+                character.inherentState = { id: "", name: clone(character.name), pictures: [] };
+                const parentCharacter = Hazo.store.dataset.charactersHierarchy.itemWithId(character.parentId);
+                if (typeof parentCharacter !== "undefined") {
+                    Hazo.store.do("addState", { state: character.inherentState, character: parentCharacter });
+                }
+            }
+            this.$emit("item-selection-toggled", { item: character.inherentState });
         },
         monthToggled(monthIndex: number) {
             this.$emit("item-selection-toggled", { item: floweringStates[monthIndex] });
