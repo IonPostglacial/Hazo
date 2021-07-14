@@ -97,6 +97,7 @@ export class Dataset {
 	}
 
 	onCharacterCloned(hierarchy: Hierarchy<Character>, character: Character, clonedCharacter: Character, newParent: Character|undefined) {
+		clonedCharacter.states = [];
 		clonedCharacter.requiredStates = [];
         clonedCharacter.inapplicableStates = [];
         clonedCharacter.inherentState = undefined;
