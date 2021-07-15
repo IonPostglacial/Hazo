@@ -38,13 +38,13 @@
                 <table>
                     <tr>
                         <th></th>
-                        <th>FR</th>
+                        <th>S</th>
                         <th>EN</th>
                         <th>CN</th>
                     </tr>
                     <tr>
                         <th>Name</th>
-                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.FR" /></td>
+                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.S" /></td>
                         <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></td>
                         <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></td>
                     </tr>
