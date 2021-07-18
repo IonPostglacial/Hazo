@@ -63,14 +63,11 @@
                     :position="position"
                 />
             </google-map>
-                <div ref="printtemplate" class="invisible">
-                    <taxon-presentation
-                        @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-                        :selected-taxon-id="selectedTaxonId" :dataset="dataset">
-                    </taxon-presentation>
-                </div>
-
-            <section v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
+            <taxon-presentation v-if="printTaxon"
+                @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
+                :selected-taxon-id="selectedTaxonId" :dataset="dataset">
+            </taxon-presentation>
+            <section v-if="selectedTaxon && !printTaxon" class="flex-grow-1 horizontal-flexbox scroll">
                 <div :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': !editDescriptors }]">
                     <picture-box :editable="editProperties"
                         @open-photo="openPhoto"
@@ -207,6 +204,7 @@ export default Vue.extend({
             latexProgressText: "",
             selectingParent: false,
             selectedTaxonId: this.$route.params.id ?? "",
+            printTaxon: false,
         }
     },
     watch: {
@@ -236,19 +234,17 @@ export default Vue.extend({
             }
         }
     },
+    mounted() {
+        window.addEventListener("afterprint", (event) => {
+            this.printTaxon = false;
+        });
+    },
     methods: {
         printPresentation() {
-            const divContents = (this.$refs.printtemplate as HTMLElement).innerHTML;
-            if (!divContents) return;
-            const a = window.open('', '', 'height=800, width=600');
-            if (!a) return;
-            a.document.write('<html>');
-            a.document.write('<head><link rel="stylesheet" href="/Hazo/style.css"></head>');
-            a.document.write('<body>');
-            a.document.write(divContents);
-            a.document.write('</body></html>');
-            a.document.close();
-            a.addEventListener("load", () => a.print());
+            this.printTaxon = !this.printTaxon;
+            if (this.printTaxon) {
+                window.setTimeout(() => window.print(), 500);
+            }
         },
         pushStateToChildren(state: State) {
             for (const child of this.dataset.taxonsHierarchy.getOrderedChildrenTree(this.selectedTaxon)) {
