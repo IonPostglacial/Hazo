@@ -18,7 +18,9 @@
                                     <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="photo.url">
                                 </div>
                             </div>
-                            <div class="horizontal-flexbox">
+                            <flowering v-if="description.character.preset == 'flowering'" :value="monthsFromStates(description.states)">
+                            </flowering>
+                            <div v-if="description.character.preset != 'flowering'" class="horizontal-flexbox">
                                 <div>{{ description.character.name.S }}<span class="spaced">is</span></div>
                                 <div v-for="(state, index) in description.states" :key="state.id">
                                     <span v-if="index > 0" class="spaced">or</span> {{ state.name.S }}
@@ -35,10 +37,14 @@
 </template>
 <script lang="ts">
 import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
+import Months from '@/datatypes/Months';
+import { State } from '@/datatypes/types';
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import Flowering from "./Flowering.vue";
 
 export default Vue.extend({
     name: "TaxonPresentation",
+    components: { Flowering },
     props: {
         showLeftMenu: Boolean,
         selectedTaxonId: String,
@@ -64,6 +70,9 @@ export default Vue.extend({
     methods: {
         descriptions(taxon: Taxon): Iterable<Description> {
             return this.dataset.taxonDescriptions(taxon);
+        },
+        monthsFromStates(states: State[]): number {
+            return Months.fromStates(states);
         },
     }
 })

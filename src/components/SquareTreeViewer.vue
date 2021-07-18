@@ -27,21 +27,10 @@
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
-import { Character, floweringStates } from "@/datatypes";
-import { State } from "@/datatypes/types";
+import { Character } from "@/datatypes";
+import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 type ItemType = HierarchicalItem & { selected?: boolean };
-
-function computeFlowering(currentItems: ItemType[]): number {
-    let flowering = 0;
-    for (const item of currentItems) {
-        if (item.selected) {
-            const monthIndex = floweringStates.findIndex(s => s.id === item.id);
-            flowering |= (1 << monthIndex);
-        }
-    }
-    return flowering;
-}
 
 export default Vue.extend({
     name: "SquareTreeViewer",
@@ -54,7 +43,7 @@ export default Vue.extend({
     data() {
         const currentItems = [...this.rootItems!.topLevelItems];
         return {
-            flowering: computeFlowering(currentItems),
+            flowering: Months.fromStates(currentItems.filter(item => item.selected)),
             floweringMode: false,
             isRoot: true,
             currentItems: currentItems,
@@ -69,11 +58,11 @@ export default Vue.extend({
             if (typeof currentlyOpenItem !== "undefined") {
                 this.floweringMode = currentlyOpenItem.type === "character" && (currentlyOpenItem as Character).preset === "flowering";
                 this.currentItems = [...this.rootItems!.childrenOf(currentlyOpenItem)];
-                this.flowering = computeFlowering(this.currentItems);
+                this.flowering = Months.fromStates(this.currentItems.filter(item => item.selected));
             }
         },
         currentItems(items: ItemType[]) {
-            this.flowering = computeFlowering(items);
+            this.flowering = Months.fromStates(items.filter(item => item.selected));
         }
     },
     computed: {
@@ -131,7 +120,7 @@ export default Vue.extend({
             this.$emit("item-selection-toggled", { item: character.inherentState });
         },
         monthToggled(monthIndex: number) {
-            this.$emit("item-selection-toggled", { item: floweringStates[monthIndex] });
+            this.$emit("item-selection-toggled", { item: Months.floweringStates[monthIndex] });
         },
         backToTop() {
             this.isRoot = true;

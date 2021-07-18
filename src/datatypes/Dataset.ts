@@ -5,32 +5,18 @@ import { Hierarchy, IMap } from './hierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
 import { generateId } from "@/tools/generateid";
+import Month from "./Months";
 
 interface StateCallback {
     (e: { state: State, character: Character }): void;
 }
-
-export const floweringStates: State[] = [
-	{ id: "s_month_jan", name: { S: "JAN" }, pictures: [], },
-	{ id: "s_month_feb", name: { S: "FEB" }, pictures: [], },
-	{ id: "s_month_mar", name: { S: "MAR" }, pictures: [], },
-	{ id: "s_month_apr", name: { S: "APR" }, pictures: [], },
-	{ id: "s_month_may", name: { S: "MAY" }, pictures: [], },
-	{ id: "s_month_jun", name: { S: "JUN" }, pictures: [], },
-	{ id: "s_month_jul", name: { S: "JUL" }, pictures: [], },
-	{ id: "s_month_aug", name: { S: "AUG" }, pictures: [], },
-	{ id: "s_month_sep", name: { S: "SEP" }, pictures: [], },
-	{ id: "s_month_oct", name: { S: "OCT" }, pictures: [], },
-	{ id: "s_month_nov", name: { S: "NOV" }, pictures: [], },
-	{ id: "s_month_dec", name: { S: "DEC" }, pictures: [], },
-];
 
 export class Dataset {
 	private stateAdditionCallbacks = new Set<StateCallback>();
     private stateRemovalCallbacks = new Set<StateCallback>();
 	private statesById: IMap<State>;
 	presetStates: Record<CharacterPreset, State[]> = {
-		flowering: floweringStates,
+		flowering: Month.floweringStates,
 		family: [],
 	};
 
