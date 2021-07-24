@@ -21,7 +21,7 @@
                         <button type="button" :class="{ 'selected-tab': editProperties }" @click="switchEditMode">Properties</button>
                         <button type="button" :class="{ 'selected-tab': editDescriptors }" @click="switchEditMode">Descriptors</button>
                     </div>
-                    <button type="button" @click="printPresentation">Print</button>
+                    <button type="button" :class="{ 'background-color-1': printTaxon }" @click="printPresentation">Print</button>
                 </div>
                 <div v-if="selectedTaxon" class="relative">
                     <div v-if="selectingParent">
@@ -233,11 +233,6 @@ export default Vue.extend({
                 return this.dataset.taxonDescriptions(this.selectedTaxon);
             }
         }
-    },
-    mounted() {
-        window.addEventListener("afterprint", (event) => {
-            this.printTaxon = false;
-        });
     },
     methods: {
         printPresentation() {
