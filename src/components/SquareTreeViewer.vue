@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import { Character } from "@/datatypes";
@@ -32,7 +32,7 @@ import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
-export default Vue.extend({
+export default defineComponent({
     name: "SquareTreeViewer",
     components: { Flowering },
     props: {

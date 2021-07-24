@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import type { Character, Dataset, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
 import { filter, map } from "@/tools/iter";
@@ -216,7 +216,7 @@ function hierarchyToMarkdown(data: D3Hierarchy, indentation=-1): string {
     return content;
 }
 
-export default Vue.extend({
+export default defineComponent({
     name: "CharactersTree",
     props: {
         selectedCharacter: Object as PropType<Character|undefined>,

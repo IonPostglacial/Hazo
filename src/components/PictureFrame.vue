@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from "vue";
+import { defineComponent, PropType } from "vue";
 import { Picture } from "@/datatypes";
 import { Config } from "@/tools/config";
 
@@ -39,7 +39,7 @@ async function photoSelected(photoUrl: string) {
     }
 }
 
-export default Vue.extend({
+export default defineComponent({
     props: {
         index: Number,
         editable: Boolean,

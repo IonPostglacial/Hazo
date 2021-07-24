@@ -39,10 +39,10 @@
 import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
 import Months from '@/datatypes/Months';
 import { State } from '@/datatypes/types';
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 
-export default Vue.extend({
+export default defineComponent({
     name: "TaxonPresentation",
     components: { Flowering },
     props: {

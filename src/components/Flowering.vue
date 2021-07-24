@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+import { defineComponent } from "vue";
 import Months from "@/datatypes/Months";
 
 const ZONE_RATIO = 12 / (2 * Math.PI);
@@ -57,9 +57,9 @@ function eventDocumentPosition(e: MouseEvent) {
     ];
 }
 
-export default Vue.extend({
+export default defineComponent({
     props: {
-        value: Number,
+        value: { type: Number, required: true },
     },
     methods: {
         hasMonth(month: number): boolean {

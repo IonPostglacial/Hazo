@@ -21,10 +21,10 @@
 
 <script lang="ts">
 import { Character, Dataset } from "@/datatypes";
-import Vue, { PropType } from "vue";
+import { defineComponent, PropType } from "vue";
 import CharactersTree from "./CharactersTree.vue";
 
-export default Vue.extend({
+export default defineComponent({
     components: { CharactersTree },
     props: {
         dataset: Object as PropType<Dataset>,

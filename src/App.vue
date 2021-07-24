@@ -56,9 +56,9 @@ import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
 import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
-import Vue from "vue";
+import { defineComponent } from "vue";
 
-export default Vue.extend({
+export default defineComponent({
     name: "App",
     data() {
         return {
@@ -108,7 +108,7 @@ export default Vue.extend({
     },
     computed: {
         dataset(): Dataset {
-            return this.store.dataset;
+            return this.store.dataset as Dataset;
         },
         connectedToHub(): boolean {
             return this.store.connectedToHub;

@@ -30,13 +30,13 @@
 
 <script lang="ts">
 import { Picture } from "@/datatypes";
-import Vue, { PropType } from "vue";
+import { defineComponent, PropType } from "vue";
 import AddItem from "./AddItem.vue";
 import PictureFrame from "./PictureFrame.vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import { Config } from "@/tools/config";
 
-export default Vue.extend({
+export default defineComponent({
   components: { AddItem, CollapsiblePanel, PictureFrame },
     props: {
         editable: Boolean,

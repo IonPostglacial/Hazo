@@ -55,12 +55,12 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 import AddItem from "./AddItem.vue";
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import Vue from "vue";  // eslint-disable-line no-unused-vars
+import { defineComponent } from "vue";  // eslint-disable-line no-unused-vars
 import download from "@/tools/download";
 import { DictionaryEntry, IMap } from "@/datatypes";  // eslint-disable-line no-unused-vars
 import { filter } from "@/tools/iter";
 
-export default Vue.extend({
+export default defineComponent({
     name: "WordsDictionary",
     components: {
         ckeditor: CKEditor.component,

@@ -3,7 +3,7 @@ import Vue from "vue";
 import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon } from "./datatypes";
 import { Dataset } from './datatypes/Dataset';
 import { State } from "./datatypes/types";
-import { ManyToManyBimap, OneToManyBimap } from './tools/bimaps';
+import { ManyToManyBimap } from './tools/bimaps';
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";

@@ -1,26 +1,31 @@
 import { defineConfig } from 'vite';
-import { createVuePlugin } from 'vite-plugin-vue2';
+import vue from '@vitejs/plugin-vue'
 import path from 'path';
 
 export default defineConfig({
-  plugins: [ createVuePlugin({ vueTemplateOptions: {
-    compilerOptions: {
-      whitespace: "condense",
-    }
-  } }) ],
-  server: {
-    port: 8080
-  },
   resolve: {
-    alias: [
-      {
-        find: '@',
-        replacement: path.resolve(__dirname, 'src')
-      }
-    ]
+    alias: {
+      //vue: '@vue/compat',
+      "@": path.resolve(__dirname, 'src')
+    }
   },
-  build: {
-    chunkSizeWarningLimit: 600,
-    cssCodeSplit: false
-  }
+  plugins: [
+    vue({
+      server: {
+        port: 8080
+      },
+      build: {
+        chunkSizeWarningLimit: 600,
+        cssCodeSplit: false
+      },
+      template: {
+        compilerOptions: {
+          compatConfig: {
+            whitespace: "condense",
+            MODE: 2
+          }
+        }
+      }
+    })
+  ]
 });

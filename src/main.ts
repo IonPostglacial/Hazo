@@ -1,5 +1,5 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createApp, h } from "vue";
+import { createRouter } from 'vue-router';
 import App from "./App.vue";
 import { createStore } from "./store";
 import TaxonsTab from "./components/TaxonsTab.vue";
@@ -9,17 +9,6 @@ import WordsDictionary from "./components/WordsDictionary.vue";
 import debounce from "./tools/debounce";
 import VueGoogleMap from "vuejs-google-maps"
 import "vuejs-google-maps/dist/vuejs-google-maps.css"
-
-Vue.use(VueGoogleMap, {
-    load: {
-        apiKey: "AIzaSyClYri6lQql5nQkCwktcq2DJsjBDpmP_nU",
-        libraries: [/* rest of libraries */]
-    }
-});
-
-Vue.config.productionTip = false;
-
-Vue.use(VueRouter);
 
 declare global {
     namespace globalThis {
@@ -33,7 +22,7 @@ globalThis.Hazo = {
     store: createStore()
 };
 
-const router = new VueRouter({
+const router = createRouter({
     routes: [
         { path: "/", component: TaxonsTab },
         { path: "/taxons/:id?", component: TaxonsTab },
@@ -43,10 +32,19 @@ const router = new VueRouter({
     ]
 });
 
-new Vue({
-    render: h => h(App),
-    router: router,
-}).$mount("#app");
+const app = createApp({
+    render() {
+        return h(App);
+    }
+});
+app.use(router);
+app.use(VueGoogleMap, {
+    load: {
+        apiKey: "AIzaSyClYri6lQql5nQkCwktcq2DJsjBDpmP_nU",
+        libraries: [/* rest of libraries */]
+    }
+});
+app.mount("#app");
 
 function adaptSize() {
     document.documentElement.style.setProperty("--viewport-height", `${0.01 * window.innerHeight}px`);

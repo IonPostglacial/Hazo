@@ -172,7 +172,7 @@ import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, Dataset, Description, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue from "vue";
+import { defineComponent } from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ResizablePanel from "./ResizablePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
@@ -183,7 +183,7 @@ import { createTaxon } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 
 
-export default Vue.extend({
+export default defineComponent({
     name: "TaxonsTab",
     components: {
         CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
@@ -203,7 +203,7 @@ export default Vue.extend({
             editorConfig: {},
             latexProgressText: "",
             selectingParent: false,
-            selectedTaxonId: this.$route.params.id ?? "",
+            selectedTaxonId: (this.$route.params.id as string) ?? "",
             printTaxon: false,
         }
     },

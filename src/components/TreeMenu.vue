@@ -37,14 +37,14 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub";
 import AddItem from "./AddItem.vue";
 import TreeMenuItem from "./TreeMenuItem.vue";
 import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
 
-export default Vue.extend({
+export default defineComponent({
     name: "TreeMenu",
     props: {
         items: Hierarchy as PropType<Hierarchy<HierarchicalItem>>,

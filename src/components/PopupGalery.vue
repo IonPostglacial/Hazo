@@ -12,13 +12,13 @@
 </template>
 <script lang="ts">
 import { Picture } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { defineComponent, PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 
-export default Vue.extend({
+export default defineComponent({
     name: "PopupGalery",
     props: {
-        images: Array as PropType<Picture[]>,
+        images: { type: Array as PropType<Picture[]>, required: true },
         open: Boolean,
     },
     data() {

@@ -147,11 +147,11 @@ import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import Vue from "vue";
+import { defineComponent } from "vue";
 import { Dataset, Character, Hierarchy, State } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 
-export default Vue.extend({
+export default defineComponent({
     name: "CharactersTab",
     components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, ResizablePanel },
     data() {
@@ -160,7 +160,7 @@ export default Vue.extend({
             showLeftMenu: true,
             showBigImage: false,
             bigImages: [{id: "", url: "", label: ""}],
-            selectedCharacterId: this.$route.params.id ?? "",
+            selectedCharacterId: (this.$route.params.id as string) ?? "",
         };
     },
     watch: {
@@ -170,10 +170,10 @@ export default Vue.extend({
     },
     computed: {
         dataset(): Dataset {
-            return this.store.dataset;
+            return this.store.dataset as Dataset;
         },
         charactersHierarchy(): Hierarchy<Character> {
-            return this.store.dataset.charactersHierarchy;
+            return this.store.dataset.charactersHierarchy as Hierarchy<Character>;
         },
         selectedCharacter(): Character|undefined {
             return this.charactersHierarchy?.itemWithId(this.selectedCharacterId);
