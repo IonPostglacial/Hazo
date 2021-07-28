@@ -118,6 +118,22 @@ export function createStore() {
         addState(payload: { state: State, character: Character }) {
             store.dataset.addState(payload.state, payload.character);
         },
+        moveStateUp(payload: { state: State, character: Character }) {
+            const index = payload.character.states.findIndex(s => s.id === payload.state.id);
+            if (index > 0) {
+                payload.character.states[index] = payload.character.states[index-1];
+                payload.character.states[index-1] = payload.state;
+                payload.character.states = [...payload.character.states];
+            }
+        },
+        moveStateDown(payload: { state: State, character: Character }) {
+            const index = payload.character.states.findIndex(s => s.id === payload.state.id);
+            if (index < payload.character.states.length - 1) {
+                payload.character.states[index] = payload.character.states[index+1];
+                payload.character.states[index+1] = payload.state;
+                payload.character.states = [...payload.character.states];
+            }
+        },
         removeState(payload: { state: State, character: Character }) {
             store.dataset.removeState(payload.state, payload.character);
         },

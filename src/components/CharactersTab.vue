@@ -106,7 +106,11 @@
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
-                        <li v-for="state in dataset.characterStates(selectedCharacter)" :key="state.id" class="display-contents">
+                        <li v-for="state in dataset.characterStates(selectedCharacter)" :key="state.id" class="horizontal-flexbox">
+                            <div class="vertical-flexbox thin-border">
+                                <div @click="moveStateUp(state)" class="move-up">🡡</div>
+                                <div @click="moveStateDown(state)" class="move-down">🡣</div>
+                            </div>
                             <label class="medium-padding rounded nowrap horizontal-flexbox">
                                 <div class="form-grid">
                                     <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name.S" />
@@ -315,6 +319,14 @@ export default Vue.extend({
                 },
                 character: this.selectedCharacter,
             });
+        },
+        moveStateUp(state: State) {
+            if (typeof this.selectedCharacter === "undefined") return;
+            this.store.do("moveStateUp", { character: this.selectedCharacter, state });
+        },
+        moveStateDown(state: State) {
+            if (typeof this.selectedCharacter === "undefined") return;
+            this.store.do("moveStateDown", { character: this.selectedCharacter, state });
         },
         removeState(state: State) {
             this.store.do("removeState", { character: this.selectedCharacter!, state });
