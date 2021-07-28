@@ -12,7 +12,7 @@
                             <div>NV 2 <span>{{ taxon.vernacularName2 }}</span></div>
                             <div>Website <a target="_blank" :href="taxon.website">{{ taxon.website }}</a></div>
                         </div>
-                        <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox space-between limited-width">
+                        <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox limited-width">
                             <div class="horizontal-flexbox small-height">
                                 <div v-for="state in description.states" :key="'img-' + state.id" class="horizontal-flexbox">
                                     <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="photo.url">
@@ -21,14 +21,14 @@
                             <flowering v-if="description.character.preset == 'flowering'" :value="monthsFromStates(description.states)">
                             </flowering>
                             <div v-if="description.character.preset != 'flowering'" class="horizontal-flexbox">
-                                <div>{{ description.character.name.S }}<span class="spaced">is</span></div>
+                                <div>{{ description.character.name.S }}<span class="spaced">:</span></div>
                                 <div v-for="(state, index) in description.states" :key="state.id">
-                                    <span v-if="index > 0" class="spaced">or</span> {{ state.name.S }}
+                                    <span v-if="index > 0" class="spaced">/</span> {{ state.name.S }}
                                 </div>
                             </div>
                         </section>
                     </div>
-                    <img v-if="taxon.pictures[0]" class="medium-max-width fit-contain" :src="taxon.pictures[0].url"/>
+                    <img v-if="taxon.pictures[0]" class="medium-max-width medium-max-height fit-contain" :src="taxon.pictures[0].url"/>
                 </div>
                 <hr class="no-print">
             </section>
