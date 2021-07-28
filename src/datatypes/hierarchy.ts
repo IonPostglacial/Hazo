@@ -114,6 +114,11 @@ export class Hierarchy<T extends HierarchicalItem> {
         return typeof childrenOrder !== "undefined" && childrenOrder.length > 0;
     }
 
+    numberOfChildren(item: T|undefined): number {
+        if (typeof item === "undefined") return 0;
+        return this.childrenOrder(item).length;
+    }
+
     childrenOf(item: T|undefined): Iterable<T> {
         if (typeof item === "undefined") return [];
         const self = this;
