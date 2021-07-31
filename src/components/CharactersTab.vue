@@ -1,6 +1,6 @@
 <template>
     <div class="horizontal-flexbox start-align flex-grow-1 scroll">
-        <resizable-panel v-if="showLeftMenu" class="scroll white-background">
+        <resizable-panel v-if="showLeftMenu" class="scroll white-background no-print">
             <tree-menu editable :items="charactersHierarchy" name="description"
                 :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
                 @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
@@ -9,17 +9,11 @@
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </tree-menu>
         </resizable-panel>
-        <div v-if="(typeof selectedCharacter !== 'undefined')" ref="printtemplate" class="invisible">
-            <characters-presentation
-                :dataset="dataset"
-                :character="selectedCharacter">
-            </characters-presentation>
-        </div>
-        <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
+        <popup-galery v-if="!printMode" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
         <section class="scroll vertical-flexbox flex-grow-1">
-            <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1">
+            <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1 no-print">
                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                <button type="button" @click="printPresentation">Print</button>
+                <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">Print</button>
                 <div class="button-group">
                     <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
                     <button type="button" @click="pasteItem">Paste</button>
@@ -27,14 +21,20 @@
                     <button type="button" @click="pasteStates">Paste States</button>
                 </div>
             </div>
-            <picture-box v-if="(typeof selectedCharacter !== 'undefined')" editable="editable"
+            <div v-if="(typeof selectedCharacter !== 'undefined' && printMode)" class="white-background">
+                <characters-presentation
+                    :dataset="dataset"
+                    :character="selectedCharacter">
+                </characters-presentation>
+            </div>
+            <picture-box v-if="!printMode && (typeof selectedCharacter !== 'undefined')" editable="editable"
                 @add-photo="addCharacterPhoto"
                 @set-photo="setCharacterPhoto"
                 @delete-photo="deleteCharacterPhoto"
                 @open-photo="openDescriptionPhoto"
                 :pictures="selectedCharacter.pictures">
             </picture-box>
-            <collapsible-panel v-if="(typeof selectedCharacter !== 'undefined')" label="Identification">
+            <collapsible-panel v-if="!printMode && (typeof selectedCharacter !== 'undefined')" label="Identification">
                 <table>
                     <tr>
                         <th></th>
@@ -58,13 +58,13 @@
                     <label><input type="radio" name="character-type" value="family" v-model="selectedCharacter.preset">Family</label>
                 </div>
             </collapsible-panel>
-            <characters-tree v-if="selectedCharacter && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+            <characters-tree v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
             </characters-tree>
-            <div class="centered-text medium-margin thin-border medium-padding white-background">
+            <div v-if="!printMode" class="centered-text medium-margin thin-border medium-padding white-background">
                 <flowering v-if="selectedCharacter && selectedCharacter.preset === 'flowering'">
                 </flowering>
             </div>
-            <collapsible-panel v-if="selectedCharacter && selectedCharacter.parentId" label="Dependencies">
+            <collapsible-panel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
                 <div class="horizontal-flexbox">
                     <section class="medium-margin medium-padding thin-border flex-grow-1">
                         <label>Inherent State</label>
@@ -102,7 +102,7 @@
                 </div>
             </collapsible-panel>
         </section>
-        <section v-if="selectedCharacter && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
+        <section v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
@@ -165,6 +165,7 @@ export default Vue.extend({
             showBigImage: false,
             bigImages: [{id: "", url: "", label: ""}],
             selectedCharacterId: this.$route.params.id ?? "",
+            printMode: false,
         };
     },
     watch: {
@@ -197,17 +198,10 @@ export default Vue.extend({
     },
     methods: {
         printPresentation() {
-            const divContents = (this.$refs.printtemplate as HTMLElement).innerHTML;
-            if (!divContents) return;
-            const a = window.open('', '', 'height=800, width=600');
-            if (!a) return;
-            a.document.write('<html>');
-            a.document.write('<head><link rel="stylesheet" href="/Hazo/style.css"></head>');
-            a.document.write('<body>');
-            a.document.write(divContents);
-            a.document.write('</body></html>');
-            a.document.close();
-            a.addEventListener("load", () => a.print());
+            this.printMode = !this.printMode;
+            if (this.printMode) {
+                window.setTimeout(() => window.print(), 500);
+            }
         },
         copyItem() {
             if (this.selectedCharacter) {

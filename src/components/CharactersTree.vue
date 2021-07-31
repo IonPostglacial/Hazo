@@ -1,6 +1,6 @@
 <template>
     <div :data-c="selectedCharacter ? selectedCharacter.id : ''">
-        <div class="horizontal-flexbox">
+        <div class="horizontal-flexbox no-print">
             <div class="horizontal-flexbox">
                 <label for="lang-selector">Language</label>
                 <select name="lang" id="lang-selector" v-model="lang">

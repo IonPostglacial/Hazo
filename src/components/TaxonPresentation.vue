@@ -2,7 +2,9 @@
     <div class="scroll flex-grow-1">
         <article style="max-width: 100ch" class="centered white-background medium-padding">
             <section v-for="taxon in itemsToDisplay" :key="taxon.id" class="page-break">
-                <h2 class="horizontal-flexbox space-between"><div><i>{{ taxon.name.S }}</i> {{ taxon.author }}</div>subtaxa: {{ numberOfChildren(taxon) }}</h2>
+                <h2 class="horizontal-flexbox space-between">
+                    <div><i>{{ taxon.name.S }}</i> {{ taxon.author }}</div>
+                    <div v-if="numberOfChildren(taxon) !== 0">subtaxa: {{ numberOfChildren(taxon) }}</div></h2>
                 <div class="horizontal-flexbox">
                     <div class="flex-grow-1">
                         <div>
