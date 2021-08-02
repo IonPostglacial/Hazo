@@ -386,15 +386,23 @@ export default Vue.extend({
             });
         },
         displayTaxonStats() {
-            let familiesNumber = 0, taxonsNumber = 0;
-            for (const taxon of this.dataset.taxonsHierarchy.allItems) {
-                if (taxon.parentId) {
-                    taxonsNumber++
-                } else {
-                    familiesNumber++;
+            let csv = new Map<string, [string, string, string, string, any]>();
+            csv.set("", ["Path", "NS", "NV", "名字", "subtaxa n°"]);
+            const self = this;
+            function pushCsvLine(taxon: Taxon, path: string[]) {
+                const childrenNo = self.dataset.taxonsHierarchy.numberOfChildren(taxon);
+                for (const taxonName of path) {
+                    csv.get(taxonName)![4] += childrenNo;
+                }
+                csv.set(taxon.name.S, [path.join(" > "), taxon.name.S, taxon.name.V ?? "", taxon.name.CN ?? "", childrenNo]);
+                for (const child of self.dataset.taxonsHierarchy.childrenOf(taxon)) {
+                    pushCsvLine(child, [...path, taxon.name.S]);
                 }
             }
-            alert(`Families: ${familiesNumber}, Taxons: ${taxonsNumber}`);
+            for (const taxon of this.dataset.taxonsHierarchy.topLevelItems) {
+                pushCsvLine(taxon, []);
+            }
+            download([...csv.values()].map(line => line.join(",")).join("\n"), "stats.csv", this.dataset.id);
         },
         jsonExport() {
             const json = JSON.stringify(encodeDataset(this.dataset));
