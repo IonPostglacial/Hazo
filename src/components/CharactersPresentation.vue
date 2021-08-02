@@ -11,9 +11,13 @@
         <div class="horizontal-flexbox flex-wrap">
             <div v-for="state in dataset.characterStates(character)"
                     :key="state.id"
-                    class="thin-border medium-square space-between">
-                <img v-for="picture in state.pictures" :key="picture.id" :src="picture.url" class="medium-max-width  medium-max-height fit-contain"/>
-                <div>{{ state.name.S }}</div>
+                    class="medium-square space-between">
+                <p v-for="picture in state.pictures" :key="picture.id">
+                    <img class="thin-border medium-max-width medium-max-height fit-contain" :src="picture.url"/>
+                </p>
+                <center>{{ state.name.S }}</center>
+                <center>{{ state.name.EN }}</center>
+                <center>{{ state.name.CN }}</center>
             </div>
         </div>
     </div>
