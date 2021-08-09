@@ -12,7 +12,7 @@
                 <div v-for="field in nameFieldsForItem(item)" :key="field"
                         :title="item.name[field]"
                         :class="['thin-border', 'medium-padding', 'text-ellipsed', isSelected(item) ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
-                    {{ item.name[field] }}
+                    {{ item.id }}{{ item.name[field] }}
                 </div>
                 <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </component>
@@ -30,6 +30,7 @@ import Flowering from "./Flowering.vue";
 import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
+import makeid from "@/tools/makeid";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
 export default Vue.extend({
@@ -110,14 +111,16 @@ export default Vue.extend({
             }
         },
         selectWithoutOpening(character: Character & { selected?: boolean }) {
-            if (typeof character.inherentState === "undefined") {
-                character.inherentState = { id: "", name: clone(character.name), pictures: [] };
+            let inherentState = character.inherentState;
+            if (typeof inherentState === "undefined") {
                 const parentCharacter = Hazo.store.dataset.charactersHierarchy.itemWithId(character.parentId);
                 if (typeof parentCharacter !== "undefined") {
-                    Hazo.store.do("addState", { state: character.inherentState, character: parentCharacter });
+                    inherentState = { id: "s" + makeid(8), name: clone(character.name), pictures: [] };
+                    Hazo.store.do("addState", { state: inherentState, character: parentCharacter });
+                    Hazo.store.do("setInherentState", { state: inherentState, character });
                 }
             }
-            this.$emit("item-selection-toggled", { item: character.inherentState });
+            this.$emit("item-selection-toggled", { item: inherentState });
         },
         monthToggled(monthIndex: number) {
             this.$emit("item-selection-toggled", { item: Months.floweringStates[monthIndex] });

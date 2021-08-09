@@ -155,10 +155,12 @@ export function createStore() {
             store.dataset.charactersHierarchy.add(clone(payload.character));
         },
         setInherentState(payload: { character: Character, state: State }) {
-            payload.character.inherentState = payload.state;
-
-            setState(payload.character.requiredStates, payload.state, false);
-            setState(payload.character.inapplicableStates, payload.state, false);
+            const ch = store.dataset.charactersHierarchy.itemWithId(payload.character.id);
+            if (typeof ch !== "undefined") {
+                ch.inherentState = payload.state;
+                setState(ch.requiredStates, payload.state, false);
+                setState(ch.inapplicableStates, payload.state, false);
+            }
         },
         setTaxonState(p: { taxon: Taxon, state: State, has: boolean }) {
             if (p.has) {
