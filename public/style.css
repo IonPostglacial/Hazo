@@ -433,6 +433,10 @@ div.invisible {
     padding-bottom: 200px;
 }
 
+.width-m {
+    width: 200px;
+}
+
 .text-ellipsed {
     overflow: hidden;
     text-overflow: ellipsis;
