@@ -12,7 +12,7 @@
                 <div v-for="field in nameFieldsForItem(item)" :key="field"
                         :title="item.name[field]"
                         :class="['thin-border', 'medium-padding', 'text-ellipsed', isSelected(item) ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
-                    {{ item.id }}{{ item.name[field] }}
+                    {{ item.name[field] }}
                 </div>
                 <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </component>
