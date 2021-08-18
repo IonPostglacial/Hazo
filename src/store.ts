@@ -3,7 +3,7 @@ import Vue from "vue";
 import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon } from "./datatypes";
 import { Dataset } from './datatypes/Dataset';
 import { State } from "./datatypes/types";
-import { ManyToManyBimap, OneToManyBimap } from './tools/bimaps';
+import { ManyToManyBimap } from './tools/bimaps';
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";
@@ -164,13 +164,10 @@ export function createStore() {
         },
         setTaxonState(p: { taxon: Taxon, state: State, has: boolean }) {
             if (p.has) {
-                store.dataset.statesByTaxons.add(p.taxon.id, p.state.id);
+                store.dataset.setTaxonState(p.taxon, p.state);
             } else {
-                store.dataset.statesByTaxons.remove(p.taxon.id, p.state.id);
+                store.dataset.removeTaxonState(p.taxon, p.state);
             }
-        },
-        setStatesByTaxons(statesByTaxons: ManyToManyBimap) {
-            store.dataset.statesByTaxons = statesByTaxons;
         },
         addDictionaryEntry(entry: DictionaryEntry) {
             Vue.set(store.dataset.dictionaryEntries, entry.id, entry);
@@ -190,7 +187,6 @@ export function createStore() {
         resetData() {
             store.dataset.taxonsHierarchy.clear();
             store.dataset.charactersHierarchy.clear();
-            store.dataset.statesByTaxons.clear();
         },
     };
     function perform<Action extends keyof typeof actions>(action: Action, ...params: Parameters<typeof actions[Action]>) {
@@ -204,7 +200,6 @@ export function createStore() {
         dataset: new Dataset("",
             new Hierarchy<Taxon>("t", new ObservableMap()),
             new Hierarchy<Character>("d", new ObservableMap()),
-            new ManyToManyBimap(ObservableMap),
             new ObservableMap(),
             standardBooks,
             new Array<Field>(),

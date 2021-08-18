@@ -2,7 +2,6 @@ import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo,
 import { createCharacter, CharacterPreset } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
-import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
 import { map } from "@/tools/iter";
 import clone from "@/tools/clone";
 
@@ -221,14 +220,12 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const states: IMap<State> = new makeMap();
 	const taxons = new Hierarchy<Taxon>("t", new makeMap());
 	const books = standardBooks.slice();
-	const statesByTaxons = new ManyToManyBimap(makeMap);
 	const characters = new Hierarchy<Character>("c", new makeMap());
 	const dictionaryEntries = new makeMap();
 	const ds = new Dataset(
 		dataset?.id ?? "0",
 		taxons,
 		characters,
-		statesByTaxons,
 		dictionaryEntries,
 		books,
 		dataset?.extraFields ?? [],
@@ -242,12 +239,16 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		characters.add(decodedCharacter);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
+		taxons.add(decodeTaxon(taxon, books));
 		taxon.descriptions.forEach(d => {
 			for (const stateId of d.statesIds) {
-				statesByTaxons.add(taxon.id, stateId);
+				const t = taxons.itemWithId(taxon.id);
+				const state = states.get(stateId);
+				if (typeof t !== "undefined" && typeof state !== "undefined") {
+					ds.setTaxonState(t, state);
+				}
 			}
 		});
-		taxons.add(decodeTaxon(taxon, books));
 	}
 	for (const entry of Object.values(dataset?.dictionaryEntries ?? {})) {
 		if (typeof entry !== "undefined") {

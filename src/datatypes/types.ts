@@ -55,6 +55,7 @@ export interface HierarchicalItem extends BasicInfo {
 }
 
 export interface Taxon extends HierarchicalItem {
+	states: State[];
 	author: string;
 	vernacularName2: string;
 	name2: string;

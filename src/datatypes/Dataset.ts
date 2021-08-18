@@ -1,6 +1,6 @@
 import { Book, Character, CharacterPreset, Description, DictionaryEntry, Field, State, Taxon } from "./types";
 import { standardBooks } from "./stdcontent";
-import { ManyToManyBimap, OneToManyBimap } from "@/tools/bimaps";
+import { OneToManyBimap } from "@/tools/bimaps";
 import { Hierarchy, IMap } from './hierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
@@ -24,7 +24,6 @@ export class Dataset {
 			public id: string,
 			public taxonsHierarchy: Hierarchy<Taxon>,
 			public charactersHierarchy: Hierarchy<Character>,
-			public statesByTaxons: ManyToManyBimap,
 			public dictionaryEntries: IMap<DictionaryEntry>,
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = [],
@@ -147,7 +146,24 @@ export class Dataset {
 	}
 
 	hasTaxonState(taxon: Taxon, state: State) {
-		return this.statesByTaxons.has(taxon.id, state.id);
+		return this.taxonsHierarchy.itemWithId(taxon.id)?.states.some(s => s.id === state.id);
+	}
+
+	setTaxonState(taxon: Taxon, state: State) {
+		const s = this.statesById.get(state.id);
+		if (typeof s !== "undefined") {
+			this.taxonsHierarchy.itemWithId(taxon.id)?.states.push(s);
+		}
+	}
+
+	removeTaxonState(taxon: Taxon, state: State) {
+		const t = this.taxonsHierarchy.itemWithId(taxon.id);
+		if (typeof t !== "undefined") {
+			const stateIndex = t.states.findIndex(s => s.id === state.id);
+			if (stateIndex >= 0) {
+				t.states.splice(stateIndex, 1);
+			}
+		}
 	}
 
 	statesFromIds(stateIds: readonly string[] | undefined): State[] {
@@ -155,13 +171,7 @@ export class Dataset {
 	}
 
 	taxonStates(taxon: Taxon|undefined): State[] {
-		if (typeof taxon === "undefined") return [];
-		else return this.statesFromIds(this.statesByTaxons.getRightIdsByLeftId(taxon.id));
-	}
-
-	stateTaxons(state: State|undefined): Taxon[] {
-		if (typeof state === "undefined") return [];
-		else return this.statesByTaxons.getLeftIdsByRightId(state.id)?.map(id => this.taxonsHierarchy.itemWithId(id)!)?.filter(t => typeof t !== "undefined") ?? [];
+		return this.taxonsHierarchy.itemWithId(taxon?.id)?.states ?? [];
 	}
 
 	private isApplicable({character, taxon}: { character: Character, taxon: Taxon|undefined }): boolean {
@@ -173,23 +183,22 @@ export class Dataset {
 	}
 
 	taxonStatesForCharacter(taxon: { id: string }, character: { id: string }): State[] {
-		const stateIds: string[] = [];
+		const states: State[] = [];
 
-		this.statesByTaxons.getRightIdsByLeftId(taxon.id)?.forEach(stateId => {
-			if (this.characterHasState(character, { id: stateId })) {
-				stateIds.push(stateId);
+		this.taxonsHierarchy.itemWithId(taxon.id)?.states.forEach(state => {
+			if (this.characterHasState(character, state)) {
+				states.push(state);
 			}
 		});
-		return this.statesFromIds(stateIds);
+		return states;
 	}
 
 	*taxonDescriptions(taxon: Taxon): Iterable<Description> {
 		const statesByCharacter = new OneToManyBimap(Map);
-		const taxonStates = this.statesByTaxons.getRightIdsByLeftId(taxon.id);
 	
 		for (const character of this.charactersHierarchy.allItems) {
 			for (const state of character.states) {
-				if (taxonStates?.includes(state.id)) {
+				if (taxon.states.some(s => s.id === state.id)) {
 					statesByCharacter.add(character.id, state.id);
 				}
 			}
@@ -248,7 +257,6 @@ export class Dataset {
     }
 
 	private removeStateWithoutCharacter(state: State) {
-		this.statesByTaxons.removeRight(state.id);
 		this.statesById.delete(state.id);
 	}
 
