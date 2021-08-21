@@ -1,9 +1,11 @@
 <template>
     <div class="vertical-flexbox">
-        <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-        <div class="horizontal-flexbox flex-wrap button-group">
-            <button v-if="currentItems !== rootItems" type="button" @click="backToTop">Top</button>
-            <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
+        <div class="vertical-flexbox stick-to-top white-background">
+            <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
+            <div class="horizontal-flexbox flex-wrap button-group">
+                <button v-if="currentItems !== rootItems" type="button" @click="backToTop">Top</button>
+                <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
+            </div>
         </div>
         <div v-if="!floweringMode" class="horizontal-flexbox flex-wrap relative">
             <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
