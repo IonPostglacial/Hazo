@@ -48,13 +48,22 @@ export interface State extends BasicInfo {
 	color?: string;
 }
 
-export interface HierarchicalItem extends BasicInfo {
-	parentId?: string;
-	type: string;
+export type HierarchicalItem = {
+	id: string,
+	type: "taxon" | "character" | "state";
+	name: MultilangText;
 	hidden: boolean;
-}
+	children: HierarchicalItem[];
+};
 
-export interface Taxon extends HierarchicalItem {
+export type SelectableHierarchicalItem = HierarchicalItem & {
+	selected?: boolean,
+	children: SelectableHierarchicalItem[]
+};
+
+export type HierarchicalItemInit = Partial<HierarchicalItem> & { type: "taxon" | "character" | "state", name: MultilangText };
+
+export interface TaxonProps extends BasicInfo {
 	states: State[];
 	author: string;
 	vernacularName2: string;
@@ -73,7 +82,7 @@ export interface Taxon extends HierarchicalItem {
 
 export type CharacterPreset = "flowering" | "family";
 
-export interface Character extends HierarchicalItem {
+export interface CharacterProps extends BasicInfo {
 	detail : string;
 	states: State[];
 	inherentState?: State;
@@ -83,7 +92,7 @@ export interface Character extends HierarchicalItem {
 }
 
 export interface Description {
-    character: Character;
+    character: HierarchicalItem;
     states: State[];
 }
 
