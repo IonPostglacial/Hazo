@@ -309,9 +309,6 @@ export default Vue.extend({
                         existing.page = existing.page ?? taxon.page;
                         existing.detail = existing.detail ?? taxon.detail;
                         existing.extra = existing.extra ?? taxon.extra;
-                        for (const state of result.taxonStates(taxon)) {
-                            this.dataset.statesByTaxons.add(existing.id, state.id);
-                        }
                     }
                 }
             }
