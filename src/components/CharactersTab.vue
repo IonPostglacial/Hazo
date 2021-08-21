@@ -1,107 +1,107 @@
 <template>
-    <div class="horizontal-flexbox start-align flex-grow-1 scroll">
-        <resizable-panel v-if="showLeftMenu" class="scroll white-background no-print">
-            <tree-menu editable :items="charactersHierarchy" name="description"
-                :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
-                @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
-                @add-item="addCharacter"
-                @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
-                <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
-            </tree-menu>
-        </resizable-panel>
-        <popup-galery v-if="!printMode" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
-        <section class="scroll vertical-flexbox flex-grow-1">
-            <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1 no-print">
-                <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">Print</button>
-                <div class="button-group">
-                    <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
-                    <button type="button" @click="pasteItem">Paste</button>
-                    <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyStates">Copy States</button>
-                    <button type="button" @click="pasteStates">Paste States</button>
+    <split-panel class="start-align flex-grow-1 scroll">
+        <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
+            :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
+            @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
+            @add-item="addCharacter"
+            @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
+            <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
+        </tree-menu>
+        <div class="scroll flex-grow-1">
+            <popup-galery v-if="!printMode" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
+            <section class="scroll vertical-flexbox flex-grow-1">
+                <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1 no-print">
+                    <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
+                    <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">Print</button>
+                    <div class="button-group">
+                        <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
+                        <button type="button" @click="pasteItem">Paste</button>
+                        <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyStates">Copy States</button>
+                        <button type="button" @click="pasteStates">Paste States</button>
+                    </div>
                 </div>
-            </div>
-            <div v-if="(typeof selectedCharacter !== 'undefined' && printMode)" class="white-background">
-                <characters-presentation
-                    :dataset="dataset"
-                    :character="selectedCharacter">
-                </characters-presentation>
-            </div>
-            <picture-box v-if="!printMode && (typeof selectedCharacter !== 'undefined')" editable="editable"
-                @add-photo="addCharacterPhoto"
-                @set-photo="setCharacterPhoto"
-                @delete-photo="deleteCharacterPhoto"
-                @open-photo="openDescriptionPhoto"
-                :pictures="selectedCharacter.pictures">
-            </picture-box>
-            <collapsible-panel v-if="!printMode && (typeof selectedCharacter !== 'undefined')" label="Identification">
-                <table>
-                    <tr>
-                        <th></th>
-                        <th>S</th>
-                        <th>EN</th>
-                        <th>CN</th>
-                    </tr>
-                    <tr>
-                        <th>Name</th>
-                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.S" /></td>
-                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></td>
-                        <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></td>
-                    </tr>
-                </table>
-                <label class="item-property">Detail</label>
-                <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
-                <div>
-                    <label class="item-property">Preset</label>
-                    <label><input type="radio" name="character-type" value="" v-model="selectedCharacter.preset">None</label>
-                    <label><input type="radio" name="character-type" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
-                    <label><input type="radio" name="character-type" value="family" v-model="selectedCharacter.preset">Family</label>
+                <div v-if="(typeof selectedCharacter !== 'undefined' && printMode)" class="white-background">
+                    <characters-presentation
+                        :dataset="dataset"
+                        :character="selectedCharacter">
+                    </characters-presentation>
                 </div>
-            </collapsible-panel>
-            <characters-tree v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
-            </characters-tree>
-            <div v-if="!printMode" class="centered-text medium-margin thin-border medium-padding white-background">
-                <flowering v-if="selectedCharacter && selectedCharacter.preset === 'flowering'">
-                </flowering>
-            </div>
-            <collapsible-panel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
-                <div class="horizontal-flexbox">
-                    <section class="medium-margin medium-padding thin-border flex-grow-1">
-                        <label>Inherent State</label>
-                        <ul class="indented no-list-style">
-                            <li class="medium-padding" v-for="state in parentStates" :key="state.id">
-                                <label>
-                                    <input type="radio" :checked="selectedCharacter.inherentState ? selectedCharacter.inherentState.id === state.id : false" name="inherent-state" @change="setInherentState(state)" />
+                <picture-box v-if="!printMode && (typeof selectedCharacter !== 'undefined')" editable="editable"
+                    @add-photo="addCharacterPhoto"
+                    @set-photo="setCharacterPhoto"
+                    @delete-photo="deleteCharacterPhoto"
+                    @open-photo="openDescriptionPhoto"
+                    :pictures="selectedCharacter.pictures">
+                </picture-box>
+                <collapsible-panel v-if="!printMode && (typeof selectedCharacter !== 'undefined')" label="Identification">
+                    <table>
+                        <tr>
+                            <th></th>
+                            <th>S</th>
+                            <th>EN</th>
+                            <th>CN</th>
+                        </tr>
+                        <tr>
+                            <th>Name</th>
+                            <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.S" /></td>
+                            <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></td>
+                            <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></td>
+                        </tr>
+                    </table>
+                    <label class="item-property">Detail</label>
+                    <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
+                    <div>
+                        <label class="item-property">Preset</label>
+                        <label><input type="radio" name="character-type" value="" v-model="selectedCharacter.preset">None</label>
+                        <label><input type="radio" name="character-type" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
+                        <label><input type="radio" name="character-type" value="family" v-model="selectedCharacter.preset">Family</label>
+                    </div>
+                </collapsible-panel>
+                <characters-tree v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+                </characters-tree>
+                <div v-if="!printMode" class="centered-text medium-margin thin-border medium-padding white-background">
+                    <flowering v-if="selectedCharacter && selectedCharacter.preset === 'flowering'">
+                    </flowering>
+                </div>
+                <collapsible-panel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
+                    <div class="horizontal-flexbox">
+                        <section class="medium-margin medium-padding thin-border flex-grow-1">
+                            <label>Inherent State</label>
+                            <ul class="indented no-list-style">
+                                <li class="medium-padding" v-for="state in parentStates" :key="state.id">
+                                    <label>
+                                        <input type="radio" :checked="selectedCharacter.inherentState ? selectedCharacter.inherentState.id === state.id : false" name="inherent-state" @change="setInherentState(state)" />
+                                        {{ state.name.S }}
+                                    </label>
+                                </li>
+                            </ul>
+                        </section>
+                        <section class="medium-margin medium-padding thin-border flex-grow-1">
+                            <label>Only Applicable If</label>
+                            <ul class="indented no-list-style">
+                                <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
+                                    <label>
+                                        <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
+                                        {{ state.name.S }}
+                                    </label>
+                                </li>
+                            </ul>
+                        </section>
+                        <section class="medium-margin medium-padding thin-border flex-grow-1">
+                            <label>Inapplicable If</label>
+                            <ul class="indented no-list-style">
+                                <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
+                                    <label>
+                                    <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
                                     {{ state.name.S }}
-                                </label>
-                            </li>
-                        </ul>
-                    </section>
-                    <section class="medium-margin medium-padding thin-border flex-grow-1">
-                        <label>Only Applicable If</label>
-                        <ul class="indented no-list-style">
-                            <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
-                                <label>
-                                    <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
-                                    {{ state.name.S }}
-                                </label>
-                            </li>
-                        </ul>
-                    </section>
-                    <section class="medium-margin medium-padding thin-border flex-grow-1">
-                        <label>Inapplicable If</label>
-                        <ul class="indented no-list-style">
-                            <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
-                                <label>
-                                <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
-                                {{ state.name.S }}
-                                </label>
-                            </li>
-                        </ul>
-                    </section>
-                </div>
-            </collapsible-panel>
-        </section>
+                                    </label>
+                                </li>
+                            </ul>
+                        </section>
+                    </div>
+                </collapsible-panel>
+            </section>
+        </div>
         <section v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
@@ -139,13 +139,13 @@
                 </div>
             </collapsible-panel>
         </section>
-    </div>
+    </split-panel>
 </template>
 <script lang="ts">
 import AddItem from "./AddItem.vue";
 import TreeMenu from "./TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
-import ResizablePanel from "./ResizablePanel.vue";
+import SplitPanel from "./SplitPanel.vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
@@ -157,7 +157,7 @@ import { createCharacter } from "@/datatypes/Character";
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, ResizablePanel },
+    components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel },
     data() {
         return {
             store: Hazo.store,
