@@ -1,7 +1,7 @@
-import { createHierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
-import { BookInfo, Taxon } from "./types";
+import { BookInfo, HierarchyInit, Picture, Taxon } from "./types";
 
-interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
+export type TaxonPropsInit = {
+	pictures?: Picture[],
 	bookInfoByIds?: Record<string, BookInfo>
 	specimenLocations?: { lat: number, lng: number }[];
 	author?: string;
@@ -17,9 +17,9 @@ interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
 	extra?: Record<string, any>;
 }
 
-export function createTaxon(init: TaxonInit): Taxon {
+export function createTaxon(init: TaxonPropsInit): Taxon {
 	return {
-		...createHierarchicalItem({ type: "taxon", ...init }),
+		pictures: init.pictures ?? [],
 		states: [],
 		bookInfoByIds: init.bookInfoByIds ?? {},
 		specimenLocations: init.specimenLocations ?? [],
@@ -35,4 +35,10 @@ export function createTaxon(init: TaxonInit): Taxon {
 		detail: init.detail ?? "",
 		extra: init.extra ?? {},
 	};
+}
+
+export type TaxonInit = {
+	h: HierarchyInit,
+	props: TaxonPropsInit,
+	at: number[],
 }

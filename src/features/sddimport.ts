@@ -2,11 +2,10 @@ import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, Sta
 import { Character, Dataset, Field, Hierarchy, IMap, State, Taxon } from "@/datatypes";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
-import { ManyToManyBimap, OneToManyBimap } from '@/tools/bimaps';
 import { createCharacter } from "@/datatypes/Character";
 import { createTaxon } from "@/datatypes/Taxon";
-import { CharacterPreset, HierarchicalItem } from "@/datatypes/types";
-import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
+import { CharacterPreset } from "@/datatypes/types";
+import { createHierarchy} from "@/datatypes/hierarchy";
 
 type MapContructor<T> = { new (): IMap<T> };
 
@@ -48,7 +47,7 @@ function removeFromDescription(description: string, sections:Array<String>) {
     return desc;
 }
 
-function hierarchicalItemFromSdd(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): HierarchicalItem {
+function hierarchicalItemFromSdd(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): Hierarchy {
     const names = representation.label.split("/");
     const name = names[0], nameCN = names[2];
     const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);

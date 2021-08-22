@@ -1,41 +1,38 @@
-import { Book, CharacterProps, CharacterPreset, Description, DictionaryEntry, Field, HierarchicalItem, State, TaxonProps, HierarchicalItemInit, SelectableHierarchicalItem } from "./types";
-import { createHierarchicalItem, filterHierarchy, forEachItem, mapHierarchy, updateIn } from "./HierarchicalItem";
+import { Book, Character, CharacterPreset, Description, DictionaryEntry, Field, Hierarchy, IMap, State, Taxon, HierarchyInit, SelectableHierarchy } from "./types";
+import { createHierarchy, filterHierarchy, forEachItem, mapHierarchy, updateIn, getIn, getParent, removeIn } from "./hierarchy";
 import { standardBooks } from "./stdcontent";
-import { Hierarchy, IMap } from './hierarchy';
 import clone from "@/tools/clone";
 import { map } from "@/tools/iter";
 import { generateId, itemWithIdNotIn } from "@/tools/generateid";
 import Month from "./Months";
-import { getIn, getParent, removeIn } from "./HierarchicalItem";
+import { CharacterInit, createCharacter } from "./Character";
+import { createTaxon, TaxonInit } from "./Taxon";
 
 export class Dataset {
-	private statesById: IMap<State>;
 	presetStates: Record<CharacterPreset, State[]> = {
 		flowering: Month.floweringStates,
 		family: [],
 	};
+	public taxonsHierarchy: Hierarchy;
+	public charactersHierarchy: Hierarchy;
+	public taxonsProps: IMap<Taxon>;
+	public charProps: IMap<Character>;
+	public dictionaryEntries: IMap<DictionaryEntry>;
 
 	constructor(
 			public id: string,
-			public taxonsHierarchy: HierarchicalItem,
-			public charactersHierarchy: HierarchicalItem,
-			public taxonsProps: IMap<TaxonProps>,
-			public charProps: IMap<CharacterProps>,
-			public dictionaryEntries: IMap<DictionaryEntry>,
+			makeMap: new () => IMap<any>,
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = [],
-			statesById: IMap<State>|undefined) {
-		this.statesById = statesById ?? new Map();
-		for (const character of charProps.values()) {
-			character.states = character.states.map(itemWithIdNotIn(this.statesById));
-			character.states.forEach(s => this.statesById.set(s.id, s));
-		}
-		for (const taxon of taxonsHierarchy.children) {
-			this.addFamilyPreset(taxon);
-		}
+			private statesById: IMap<State> = new makeMap()) {
+		this.taxonsHierarchy = createHierarchy("t", new Set(), { id: "", type: "taxon", name: { S: "TOP" } });
+		this.charactersHierarchy = createHierarchy("c", new Set(), { id: "", type: "character", name: { S: "TOP" } });
+		this.taxonsProps = new makeMap();
+		this.charProps = new makeMap();
+		this.dictionaryEntries = new makeMap();
 	}
 
-	private addFamilyPreset(taxon: HierarchicalItem) {
+	private addFamilyPreset(taxon: Hierarchy) {
 		this.presetStates.family.push({
 			id: "s-auto-" + taxon.id,
 			name: clone(taxon.name),
@@ -43,12 +40,13 @@ export class Dataset {
 		});
 	}
 
-	addTaxon(taxonInit: HierarchicalItemInit, props: TaxonProps, path: number[] = []) {
-		const taxon = createHierarchicalItem("t", this.taxonsProps, taxonInit);
-		this.taxonsProps.set(taxon.id, props);
-		getIn(this.taxonsHierarchy, path).children.push(taxon);
-		if (path.length === 0) {
-			this.addFamilyPreset(taxon);
+	addTaxon(init: TaxonInit) {
+		const item = createHierarchy("t", this.taxonsProps, init.h);
+		const taxon = createTaxon(init.props);
+		this.taxonsProps.set(item.id, taxon);
+		getIn(this.taxonsHierarchy, init.at).children.push(item);
+		if (init.at.length === 0) {
+			this.addFamilyPreset(item);
 		}
 	}
 
@@ -66,26 +64,27 @@ export class Dataset {
 
 	changeTaxonParent(taxonPath: number[], newParentPath: number[]) {
 		const taxon = removeIn(this.taxonsHierarchy, taxonPath);
-		const newParent = getIn(this.taxonsHierarchy, newParentPath);
 		updateIn(this.taxonsHierarchy, newParentPath, parent => {
 			const taxonIndex = parent.children.findIndex(t => t.id === taxon.id);
 			if (taxonIndex >= 0) {
-				parent.children.splice()
+				parent.children.splice(taxonIndex, 1);
 			}
+			return parent;
 		});
 	}
 
-	addCharacter(charInit: HierarchicalItemInit, props: CharacterProps, path: number[] = []) {
-		const character = createHierarchicalItem("c", this.charProps, charInit);
-		this.charProps.set(character.id, props);
-		getIn(this.charactersHierarchy, path).children.push(character);
-		props.states = props.states.map(itemWithIdNotIn(this.statesById));
-		if (typeof charInit.id === "undefined") {
-			const parentCharacter = getParent(this.charactersHierarchy, path);
+	addCharacter(init: CharacterInit) {
+		const item = createHierarchy("c", this.charProps, init.h);
+		const character = createCharacter(init.props);
+		this.charProps.set(item.id, character);
+		getIn(this.charactersHierarchy, init.at).children.push(item);
+		character.states = character.states.map(itemWithIdNotIn(this.statesById));
+		if (typeof init.h.id === "undefined") {
+			const parentCharacter = getParent(this.charactersHierarchy, init.at);
 			if (typeof parentCharacter !== "undefined") {
-                const newState: State = itemWithIdNotIn<State>(this.statesById)({id: "", name: clone(character.name), pictures: []});
+                const newState: State = itemWithIdNotIn<State>(this.statesById)({id: "", name: clone(item.name), pictures: []});
                 this.addState(newState, parentCharacter.id);
-                props.inherentState = newState;
+                character.inherentState = newState;
             }
 		}
 	}
@@ -121,7 +120,7 @@ export class Dataset {
 		}
 	}
 
-	removeTaxonState(taxon: HierarchicalItem, state: State) {
+	removeTaxonState(taxon: Hierarchy, state: State) {
 		const props = this.taxonsProps.get(taxon.id);
 		if (typeof props !== "undefined") {
 			const stateIndex = props.states.findIndex(s => s.id === state.id);
@@ -135,7 +134,7 @@ export class Dataset {
 		return stateIds?.map(id => this.statesById.get(id)).filter(s => typeof s !== "undefined") as State[] ?? [];
 	}
 
-	taxonStates(taxon: HierarchicalItem|undefined): State[] {
+	taxonStates(taxon: Hierarchy|undefined): State[] {
 		if (typeof taxon === "undefined") {
 			return [];
 		} else {
@@ -165,17 +164,17 @@ export class Dataset {
 		return states;
 	}
 
-	*taxonDescriptions(taxon: TaxonProps): Iterable<Description> {
-		const statesByCharacter = new Map<string, { character: HierarchicalItem, states: State[] }>();
+	*taxonDescriptions(taxon: Taxon): Iterable<Description> {
+		const statesByCharacter = new Map<string, { character: Hierarchy, states: State[] }>();
 	
 		forEachItem(this.charactersHierarchy, item => {
 			const character = this.charProps.get(item.id)!;
 			for (const state of character.states) {
 				if (taxon.states.some(s => s.id === state.id)) {
-					let entry = statesByCharacter.get(character.id);
+					let entry = statesByCharacter.get(item.id);
 					if (typeof entry === "undefined") {
 						entry = { character: item, states: [] };
-						statesByCharacter.set(character.id, entry);
+						statesByCharacter.set(item.id, entry);
 					}
 					entry.states.push(state);
 				}
@@ -184,7 +183,7 @@ export class Dataset {
 		return statesByCharacter.values();
 	}
 
-	taxonCharactersTree(taxonId: string): SelectableHierarchicalItem {
+	taxonCharactersTree(taxonId: string): SelectableHierarchy {
 		return (
 			filterHierarchy(character => this.isApplicable({ characterId: character.id, taxonId }))(
 			mapHierarchy(character => {
@@ -198,7 +197,7 @@ export class Dataset {
 					}, s));
 				
 				for (const state of characterStates) {
-					const inherentCharacter: SelectableHierarchicalItem|undefined =
+					const inherentCharacter: SelectableHierarchy|undefined =
 						newChar.children.find(characterChild => this.charProps.get(characterChild.id)?.inherentState?.id === state.id);
 					if (typeof inherentCharacter === "undefined") {
 						newChar.children.push(state);

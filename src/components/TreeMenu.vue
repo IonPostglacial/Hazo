@@ -41,26 +41,28 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub";
 import AddItem from "./AddItem.vue";
 import TreeMenuItem from "./TreeMenuItem.vue";
-import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Button, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
+import { allItems, moveDown, moveUp } from "@/datatypes/hierarchy";
 
 export default Vue.extend({
     name: "TreeMenu",
     props: {
-        items: Hierarchy as PropType<Hierarchy<HierarchicalItem>>,
+        items: Object as PropType<Hierarchy>,
         buttons: Array as PropType<Button[]>,
         editable: Boolean,
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
-        selectedItem: String,
+        selectedItem: Array as PropType<number[]>,
         initOpen: Boolean,
     },
     components:  { AddItem, TreeMenuItem },
     data() {
         const initOpenItems: string[] = [];
-        let itemId = this.items?.itemWithId(this.selectedItem)?.parentId;
-        while (typeof itemId !== "undefined") {
-            initOpenItems.push(itemId);
-            itemId = this.items?.itemWithId(itemId)?.parentId;
+        
+        let item = this.items;
+        for (const index of this.selectedItem) {
+            initOpenItems.push(item.id);
+            item = item.children[index];
         }
         return {
             menuFilter: "",
@@ -74,23 +76,18 @@ export default Vue.extend({
         columnsToDisplay(): { label: string, propertyName: string }[] {
             return this.nameFields?.filter(nameField => this.visibleColumns[nameField.propertyName]) ?? [];
         },
-        itemsToDisplay(): Iterable<HierarchicalItem> {
-            if (!this.items) return [];
-            if (this.menuFilter !== "") {
-                const self = this;
-                return {
-                    *[Symbol.iterator]() {
-                        for (const item of self.items!.allItems) {
-                            if (self.nameFields!.
-                                    map(field => (item.name as any)[field.propertyName]).
-                                    some(name => name?.toUpperCase().includes(self.menuFilter?.toUpperCase()) ?? false)) {
-                                yield item;
-                            }
-                        }
-                    }
-                };
+        itemsToDisplay(): Hierarchy {
+            if (this.menuFilter === "") {
+                return this.items;
             } else {
-                return this.items.topLevelItems;
+                const self = this;
+                const filteredHierarchy = {...this.items};
+                filteredHierarchy.children =
+                    allItems(this.items).
+                        filter(item => self.nameFields!.
+                        map(field => (item.name as any)[field.propertyName]).
+                        some(name => name?.toUpperCase().includes(self.menuFilter?.toUpperCase()) ?? false));
+                return filteredHierarchy;
             }
         },
     },
@@ -120,11 +117,11 @@ export default Vue.extend({
         deleteItem(e: string) {
             this.$emit("delete-item", e);
         },
-        moveItemUp(item: HierarchicalItem) {
-            this.items?.moveUp(item);
+        moveItemUp(path: number[]) {
+            moveUp(this.items, path);
         },
-        moveItemDown(item: HierarchicalItem) {
-            this.items?.moveDown(item);
+        moveItemDown(path: number[]) {
+            moveDown(this.items, path);
         },
         buttonClicked(e: string) {
             this.$emit("button-click", e);

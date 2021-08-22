@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Character, Dataset, Hierarchy, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails } from "@/features";
 import DB from "./db-storage";
 import { loadSDD } from "./sdd-load";
@@ -57,6 +57,7 @@ import download from "@/tools/download";
 import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
 import Vue from "vue";
+import { forEachItem } from "./datatypes/hierarchy";
 
 export default Vue.extend({
     name: "App",
@@ -163,14 +164,6 @@ export default Vue.extend({
             this.selectedBase = manualId;
         },
         saveData() {
-            const taxons: Record<string, Taxon> = {};
-            const characters: Record<string, Character> = {};
-            for (const taxon of this.dataset.taxons) {
-                taxons[taxon.id] = taxon;
-            }
-            for (const character of this.dataset.characters) {
-                characters[character.id] = character;
-            }
             DB.store(encodeDataset(this.dataset)).then(() => {
                 if (this.connectedToHub) {
                     this.push();
@@ -217,14 +210,16 @@ export default Vue.extend({
             const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
 
-            for (const taxon of this.dataset.taxons) {
-                const newDetail = taxon.detail.replace(re, replacement);
+            forEachItem(this.dataset.taxonsHierarchy, item => {
+                const taxon = this.dataset.taxonsProps.get(item.id);
+                const newDetail = taxon?.detail.replace(re, replacement);
                 this.store.do("addTaxon", Object.assign({}, taxon, { detail: newDetail }));
-            }
-            for (const character of this.dataset.characters) {
-                const newDetail = character.detail.replace(re, replacement);
+            });
+            forEachItem(this.dataset.charactersHierarchy, item => {
+                const character = this.dataset.charProps.get(item.id);
+                const newDetail = character?.detail.replace(re, replacement);
                 this.store.do("addCharacter", Object.assign({}, character, { detail: newDetail }));
-            }
+            });
         },
         async fileRead(file: File): Promise<Dataset | null> {
             let result: Dataset | null = null;
@@ -236,42 +231,6 @@ export default Vue.extend({
                 result = await this.boldUpload(file);
             }
             return result;
-        },
-        async mergeProperties(e: InputEvent) {
-            if (!(e.target instanceof HTMLInputElement)) return;
-
-            const result = await this.fileRead((e.target.files ?? [])[0]);
-            const propertiesToMerge = (window.prompt("Properties to merge ?") ?? "").split(",");
-            const resultsByName: Record<string, Taxon> = {};
-            for (const item of Object.values(result?.taxons ?? {})) {
-                resultsByName[item.name] = item;
-            }
-            for (const item of this.dataset.taxons) {
-                const newInfo: any = resultsByName[item.name.S], anyItem: any = item;
-                if (typeof newInfo !== "undefined") {
-                    for (const prop of propertiesToMerge) {
-                        const value: any = newInfo[prop];
-                        const oldValue: any = anyItem[prop];
-                        if (typeof oldValue === "undefined" || oldValue === null || oldValue === "" && typeof value !== "undefined" && value !== null) {
-                            anyItem[prop] = value;
-                        }
-                    }
-                }
-            }
-        },
-        async fileMergeHierarchies(e: InputEvent) {
-            if (!(e.target instanceof HTMLInputElement)) return;
-
-            const result = await this.fileRead((e.target.files ?? [])[0]);
-
-            if (result !== null) {
-                for (const taxon of result.taxonsHierarchy.topLevelItems) {
-                    this.store.do("addTaxonHierarchy", result.taxonsHierarchy.extractHierarchy(taxon));
-                }
-                for (const character of result.charactersHierarchy.topLevelItems) {
-                    this.store.do("addCharacterHierarchy", result.charactersHierarchy.extractHierarchy(character));
-                }
-            }
         },
         async fileMerge(e: InputEvent) {
             if (!(e.target instanceof HTMLInputElement)) return;
@@ -288,32 +247,30 @@ export default Vue.extend({
             const result = await this.fileRead(file);
 
             if (result !== null) {
-                for (const taxon of result.taxonsHierarchy.allItems) {
-                    const existing = this.dataset.taxonsHierarchy.itemWithId(taxon.id);
+                forEachItem(result.taxonsHierarchy, item => {
+                    const taxon = result.taxonsProps.get(item.id);
+                    const existing = this.dataset.taxonsProps.get(item.id);
                     if (typeof existing !== "undefined") {
-                        existing.name.S = existing.name.S ?? taxon.name.S;
-                        existing.name.EN = existing.name.EN ?? taxon.name.EN;
-                        existing.name.CN = existing.name.CN ?? taxon.name.CN;
-                        existing.name.V = existing.name.V ?? taxon.name.V;
-                        existing.pictures = existing.pictures ?? taxon.pictures;
-                        existing.bookInfoByIds = existing.bookInfoByIds ?? taxon.bookInfoByIds;
-                        existing.specimenLocations = existing.specimenLocations ?? taxon.specimenLocations;
-                        existing.author = existing.author ?? taxon.author;
-                        existing.vernacularName2 = existing.vernacularName2 ?? taxon.vernacularName2;
-                        existing.name2 = existing.name2 ?? taxon.name2;
-                        existing.meaning = existing.meaning ?? taxon.meaning;
-                        existing.herbariumPicture = existing.herbariumPicture ?? taxon.herbariumPicture;
-                        existing.website = existing.website ?? taxon.website;
-                        existing.noHerbier = existing.noHerbier ?? taxon.noHerbier;
-                        existing.fasc = existing.fasc ?? taxon.fasc;
-                        existing.page = existing.page ?? taxon.page;
-                        existing.detail = existing.detail ?? taxon.detail;
-                        existing.extra = existing.extra ?? taxon.extra;
-                        for (const state of result.taxonStates(taxon)) {
-                            this.dataset.statesByTaxons.add(existing.id, state.id);
+                        // TODO: set names somehow
+                        existing.pictures = existing.pictures ?? taxon?.pictures;
+                        existing.bookInfoByIds = existing.bookInfoByIds ?? taxon?.bookInfoByIds;
+                        existing.specimenLocations = existing.specimenLocations ?? taxon?.specimenLocations;
+                        existing.author = existing.author ?? taxon?.author;
+                        existing.vernacularName2 = existing.vernacularName2 ?? taxon?.vernacularName2;
+                        existing.name2 = existing.name2 ?? taxon?.name2;
+                        existing.meaning = existing.meaning ?? taxon?.meaning;
+                        existing.herbariumPicture = existing.herbariumPicture ?? taxon?.herbariumPicture;
+                        existing.website = existing.website ?? taxon?.website;
+                        existing.noHerbier = existing.noHerbier ?? taxon?.noHerbier;
+                        existing.fasc = existing.fasc ?? taxon?.fasc;
+                        existing.page = existing.page ?? taxon?.page;
+                        existing.detail = existing.detail ?? taxon?.detail;
+                        existing.extra = existing.extra ?? taxon?.extra;
+                        for (const state of result.taxonStates(item)) {
+                            this.dataset.setTaxonState(item.id, state);
                         }
                     }
-                }
+                });
             }
         },
         async fileUpload(e: InputEvent) {
@@ -330,7 +287,7 @@ export default Vue.extend({
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
-                        highlightTaxonsDetails(fileReader.result, this.dataset.taxonsHierarchy.toObject());
+                        highlightTaxonsDetails(fileReader.result, Object.fromEntries(this.dataset.taxonsProps.entries()));
                     }
                     resolve(null);
                 };
@@ -353,13 +310,14 @@ export default Vue.extend({
                                 infosByName[name] = { author, url };
                             }
                         }
-                        for (const taxon of this.dataset.taxonsHierarchy.allItems) {
-                            const info = infosByName[taxon.name.S];
-                            if (info) {
+                        forEachItem(this.dataset.taxonsHierarchy, item => {
+                            const taxon = this.dataset.taxonsProps.get(item.id);
+                            const info = infosByName[item.name.S];
+                            if (taxon && info) {
                                 taxon.author = info.author;
                                 taxon.website = info.url;
                             }
-                        }
+                        });
                     }
                     resolve(null);
                 };
@@ -388,18 +346,17 @@ export default Vue.extend({
         displayTaxonStats() {
             let csv = new Map<string, [string, string, string, string, any]>();
             csv.set("", ["Path", "NS", "NV", "名字", "subtaxa n°"]);
-            const self = this;
-            function pushCsvLine(taxon: Taxon, path: string[]) {
-                const childrenNo = self.dataset.taxonsHierarchy.numberOfChildren(taxon);
+            function pushCsvLine(taxon: Hierarchy, path: string[]) {
+                const childrenNo = taxon.children.length;
                 for (const taxonName of path) {
                     csv.get(taxonName)![4] += childrenNo;
                 }
                 csv.set(taxon.name.S, [path.join(" > "), taxon.name.S, taxon.name.V ?? "", taxon.name.CN ?? "", childrenNo]);
-                for (const child of self.dataset.taxonsHierarchy.childrenOf(taxon)) {
+                for (const child of taxon.children) {
                     pushCsvLine(child, [...path, taxon.name.S]);
                 }
             }
-            for (const taxon of this.dataset.taxonsHierarchy.topLevelItems) {
+            for (const taxon of this.dataset.taxonsHierarchy.children) {
                 pushCsvLine(taxon, []);
             }
             download([...csv.values()].map(line => line.join(",")).join("\n"), "stats.csv", this.dataset.id);
@@ -409,11 +366,7 @@ export default Vue.extend({
             download(json, "hazo.json", this.dataset.id);
         },
         exportSDD() {
-            const xml = saveSDD({
-                items: this.dataset.taxonsHierarchy.toObject(),
-                descriptors: this.dataset.charactersHierarchy.toObject(),
-                extraFields: this.dataset.extraFields,
-            });
+            const xml = saveSDD(this.dataset);
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }

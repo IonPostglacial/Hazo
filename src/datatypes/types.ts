@@ -37,33 +37,33 @@ export interface MultilangText {
 	FR?: string;
 }
 
-export interface BasicInfo {
+export interface State {
 	id: string;
 	name: MultilangText;
 	pictures: Picture[];
-}
-
-export interface State extends BasicInfo {
 	description?: string;
 	color?: string;
 }
 
-export type HierarchicalItem = {
+export type Hierarchy = {
 	id: string,
 	type: "taxon" | "character" | "state";
 	name: MultilangText;
 	hidden: boolean;
-	children: HierarchicalItem[];
+	children: Hierarchy[];
 };
 
-export type SelectableHierarchicalItem = HierarchicalItem & {
+export type SelectableHierarchy = Hierarchy & {
 	selected?: boolean,
-	children: SelectableHierarchicalItem[]
+	children: SelectableHierarchy[]
 };
 
-export type HierarchicalItemInit = Partial<HierarchicalItem> & { type: "taxon" | "character" | "state", name: MultilangText };
+export type ItemType = "taxon" | "character" | "state";
 
-export interface TaxonProps extends BasicInfo {
+export type HierarchyInit = Partial<Hierarchy> & { type: ItemType, name: MultilangText };
+
+export interface Taxon {
+	pictures: Picture[];
 	states: State[];
 	author: string;
 	vernacularName2: string;
@@ -82,7 +82,8 @@ export interface TaxonProps extends BasicInfo {
 
 export type CharacterPreset = "flowering" | "family";
 
-export interface CharacterProps extends BasicInfo {
+export interface Character {
+	pictures: Picture[];
 	detail : string;
 	states: State[];
 	inherentState?: State;
@@ -92,7 +93,7 @@ export interface CharacterProps extends BasicInfo {
 }
 
 export interface Description {
-    character: HierarchicalItem;
+    character: Hierarchy;
     states: State[];
 }
 
@@ -105,4 +106,17 @@ export interface DictionaryEntry {
 	defEN: string;
 	defFR: string;
 	url: string;
+}
+
+export interface IMap<T> {
+    get(key: string): T|undefined;
+    has(key: string): boolean;
+    set(key: string, value: T): void;
+    delete(key: string): void;
+    size: number;
+    [Symbol.iterator](): Iterator<[string, T]>;
+    keys(): Iterable<string>;
+    values(): Iterable<T>;
+    clear(): void;
+    entries(): Iterable<[string, T]>;
 }

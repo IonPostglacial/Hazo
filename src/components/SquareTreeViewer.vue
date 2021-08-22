@@ -27,20 +27,20 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-type ItemType = HierarchicalItem & { selected?: boolean };
+type ItemType = Hierarchy & { selected?: boolean };
 
 export default Vue.extend({
     name: "SquareTreeViewer",
     components: { Flowering },
     props: {
         editable: Boolean,
-        rootItems: Object as PropType<Hierarchy<ItemType>>,
+        rootItems: Object as PropType<Hierarchy>,
         nameFields: Array as PropType<Array<string>>,
     },
     data() {
@@ -50,7 +50,7 @@ export default Vue.extend({
             floweringMode: false,
             isRoot: true,
             currentItems: currentItems,
-            breadCrumbs: [] as HierarchicalItem[],
+            breadCrumbs: [] as number[],
             menuFilter: "",
         }
     },
