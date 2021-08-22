@@ -1,4 +1,4 @@
-import { BookInfo, HierarchyInit, Picture, Taxon } from "./types";
+import { BookInfo, Hierarchy, HierarchyInit, Picture, Taxon } from "./types";
 
 export type TaxonPropsInit = {
 	pictures?: Picture[],
@@ -41,4 +41,9 @@ export type TaxonInit = {
 	h: HierarchyInit,
 	props: TaxonPropsInit,
 	at: number[],
-}
+};
+
+export type FullTaxon = {
+	h: Hierarchy,
+	props: Taxon,
+};

@@ -17,7 +17,7 @@
         </div>
         <ul :class="['menu', 'flex-grow-1', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
             <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
-                :item="item" :items-hierarchy="items"
+                :item="item"
                 :editable="editable" :buttons="buttons"
                 :field-names="columnsToDisplay"
                 :selected-item="selectedItem"
@@ -76,18 +76,14 @@ export default Vue.extend({
         columnsToDisplay(): { label: string, propertyName: string }[] {
             return this.nameFields?.filter(nameField => this.visibleColumns[nameField.propertyName]) ?? [];
         },
-        itemsToDisplay(): Hierarchy {
+        itemsToDisplay(): Hierarchy[] {
             if (this.menuFilter === "") {
-                return this.items;
+                return this.items.children;
             } else {
-                const self = this;
-                const filteredHierarchy = {...this.items};
-                filteredHierarchy.children =
-                    allItems(this.items).
-                        filter(item => self.nameFields!.
+                return allItems(this.items).
+                        filter(item => this.nameFields!.
                         map(field => (item.name as any)[field.propertyName]).
-                        some(name => name?.toUpperCase().includes(self.menuFilter?.toUpperCase()) ?? false));
-                return filteredHierarchy;
+                        some(name => name?.toUpperCase().includes(this.menuFilter?.toUpperCase()) ?? false));
             }
         },
     },

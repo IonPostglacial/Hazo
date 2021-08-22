@@ -1,4 +1,4 @@
-import { Book, Character, CharacterPreset, Description, DictionaryEntry, Field, Hierarchy, IMap, State, Taxon, HierarchyInit, SelectableHierarchy } from "./types";
+import type { Book, Character, CharacterPreset, Description, DictionaryEntry, Field, Hierarchy, IMap, State, Taxon, HierarchyInit, SelectableHierarchy } from "./types";
 import { createHierarchy, filterHierarchy, forEachItem, mapHierarchy, updateIn, getIn, getParent, removeIn } from "./hierarchy";
 import { standardBooks } from "./stdcontent";
 import clone from "@/tools/clone";
@@ -44,7 +44,7 @@ export class Dataset {
 		const item = createHierarchy("t", this.taxonsProps, init.h);
 		const taxon = createTaxon(init.props);
 		this.taxonsProps.set(item.id, taxon);
-		getIn(this.taxonsHierarchy, init.at).children.push(item);
+		getIn(this.taxonsHierarchy, init.at)?.children.push(item);
 		if (init.at.length === 0) {
 			this.addFamilyPreset(item);
 		}
@@ -77,7 +77,7 @@ export class Dataset {
 		const item = createHierarchy("c", this.charProps, init.h);
 		const character = createCharacter(init.props);
 		this.charProps.set(item.id, character);
-		getIn(this.charactersHierarchy, init.at).children.push(item);
+		getIn(this.charactersHierarchy, init.at)?.children.push(item);
 		character.states = character.states.map(itemWithIdNotIn(this.statesById));
 		if (typeof init.h.id === "undefined") {
 			const parentCharacter = getParent(this.charactersHierarchy, init.at);
@@ -120,8 +120,8 @@ export class Dataset {
 		}
 	}
 
-	removeTaxonState(taxon: Hierarchy, state: State) {
-		const props = this.taxonsProps.get(taxon.id);
+	removeTaxonState(taxonId: string, state: State) {
+		const props = this.taxonsProps.get(taxonId);
 		if (typeof props !== "undefined") {
 			const stateIndex = props.states.findIndex(s => s.id === state.id);
 			if (stateIndex >= 0) {
@@ -229,6 +229,9 @@ export class Dataset {
             }
         }
 		const item = getIn(this.charactersHierarchy, path);
+
+		if(!item) throw "Item not found";
+
 		const character = this.charProps.get(item.id);
 		if (typeof character !== "undefined") {
 			removeStateFromArray(character.states, state);

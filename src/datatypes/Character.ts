@@ -1,4 +1,4 @@
-import { Character, CharacterPreset, HierarchyInit, Picture, State } from "./types";
+import { Character, CharacterPreset, Hierarchy, HierarchyInit, Picture, State } from "./types";
 
 export type CharacterPropsInit = {
 	pictures: Picture[],
@@ -28,4 +28,9 @@ export type CharacterInit = {
 	h: HierarchyInit,
 	props: CharacterPropsInit,
 	at: number[],
-}
+};
+
+export type FullCharacter = {
+	h: Hierarchy,
+	props: Character,
+};

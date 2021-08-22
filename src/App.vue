@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Hierarchy, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import type { Character, Dataset, Hierarchy, Taxon } from "@/datatypes";
 import { encodeDataset, decodeDataset, highlightTaxonsDetails } from "@/features";
 import DB from "./db-storage";
 import { loadSDD } from "./sdd-load";

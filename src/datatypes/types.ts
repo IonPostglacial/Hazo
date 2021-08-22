@@ -45,22 +45,7 @@ export interface State {
 	color?: string;
 }
 
-export type Hierarchy = {
-	id: string,
-	type: "taxon" | "character" | "state";
-	name: MultilangText;
-	hidden: boolean;
-	children: Hierarchy[];
-};
-
-export type SelectableHierarchy = Hierarchy & {
-	selected?: boolean,
-	children: SelectableHierarchy[]
-};
-
 export type ItemType = "taxon" | "character" | "state";
-
-export type HierarchyInit = Partial<Hierarchy> & { type: ItemType, name: MultilangText };
 
 export interface Taxon {
 	pictures: Picture[];
@@ -92,8 +77,23 @@ export interface Character {
 	preset: CharacterPreset|undefined;
 }
 
+export type Hierarchy = {
+	id: string;
+	type: ItemType;
+	name: MultilangText;
+	hidden: boolean;
+	children: Hierarchy[];
+};
+
+export type SelectableHierarchy = Hierarchy & {
+	selected?: boolean,
+	children: SelectableHierarchy[]
+};
+
+export type HierarchyInit = Partial<Hierarchy> & { type: ItemType, name: MultilangText };
+
 export interface Description {
-    character: Hierarchy;
+    character: { id: string, name: MultilangText };
     states: State[];
 }
 

@@ -1,6 +1,6 @@
 <template>
     <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+        <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxonPath ? selectedTaxonPath : []" 
             :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
             @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
@@ -171,7 +171,7 @@ import PictureBox from "./PictureBox.vue";
 import CKEditor from '@ckeditor/ckeditor5-vue';
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Book, Character, Dataset, Description, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import type { Book, Character, Dataset, Description, Hierarchy, State } from "@/datatypes";
 import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
@@ -179,7 +179,7 @@ import download from "@/tools/download";
 import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
 import { createTaxon } from "@/datatypes/Taxon";
-import { createHierarchy } from "@/datatypes/hierarchy";
+import { createHierarchy, getIn } from "@/datatypes/hierarchy";
 
 
 export default Vue.extend({
@@ -202,21 +202,21 @@ export default Vue.extend({
             editorConfig: {},
             latexProgressText: "",
             selectingParent: false,
-            selectedTaxonId: this.$route.params.id ?? "",
+            selectedTaxonPath: this.$route.params.path?.split(".").map(n => parseInt(n)) ?? [],
             printTaxon: false,
         }
     },
     watch: {
         $route(to: any) {
-            this.selectedTaxonId = to.params.id;
+            this.selectedTaxonPath = to.params.path.split(".");
         },
     },
     computed: {
         dataset(): Dataset {
             return this.store.dataset;
         },
-        selectedTaxon(): Taxon|undefined {
-            return this.dataset.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+        selectedTaxon(): Hierarchy|undefined {
+            return getIn(this.dataset.taxonsHierarchy, this.selectedTaxonPath);
         },
         itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
             if (typeof this.selectedTaxon !== "undefined") {

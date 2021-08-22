@@ -1,5 +1,6 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, Dataset, Field, Hierarchy, IMap, State, Taxon } from "@/datatypes";
+import type { Character,Field, IMap, State, Taxon } from "@/datatypes";
+import { Dataset } from "@/datatypes/Dataset";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { createCharacter } from "@/datatypes/Character";

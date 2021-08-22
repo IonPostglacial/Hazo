@@ -12,15 +12,17 @@ export function createHierarchy(prefix: string, items: SetLike, init : Hierarchy
 	};
 }
 
-export function getIn(h: Hierarchy, path: number[]): Hierarchy {
+export function getIn(h: Hierarchy|undefined, path: number[]): Hierarchy|undefined {
 	const [head, ...tail] = path;
 	if (typeof tail === "undefined") {
 		if (typeof head === "undefined") {
 			return h;
 		} else {
-			return h.children[head];
+			return h?.children[head];
 		}
-	} else {
+	} else if (typeof h === "undefined") {
+        return undefined;
+    } else {
 		return getIn(h.children[head], tail);
 	}
 }
@@ -97,7 +99,7 @@ export function filterHierarchy(cb: (item: Hierarchy) => boolean) {
 }
 
 export function mergeIn(h: Hierarchy, items: SetLike, path: number[], other: Hierarchy) {
-	getIn(h, path).children.push(mapHierarchy(itemWithIdNotIn(items))(other));
+	getIn(h, path)?.children.push(mapHierarchy(itemWithIdNotIn(items))(other));
 }
 
 export function moveUp(h: Hierarchy, path: number[]) {

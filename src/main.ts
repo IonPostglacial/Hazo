@@ -36,7 +36,7 @@ globalThis.Hazo = {
 const router = new VueRouter({
     routes: [
         { path: "/", component: TaxonsTab },
-        { path: "/taxons/:id?", component: TaxonsTab },
+        { path: "/taxons/:path?", component: TaxonsTab },
         { path: "/characters/:id?", component: CharactersTab },
         { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
         { path: "/dictionary", component: WordsDictionary },

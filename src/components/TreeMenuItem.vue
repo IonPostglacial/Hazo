@@ -25,11 +25,11 @@
             <div class="close" @click="deleteItem"></div>
         </div>
         <ul v-if="open" class="flex-grow-1">
-            <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
+            <TreeMenuItem v-for="child in item.children" :item-bus="itemBus" :key="child.id" :editable="editable"       
                 :init-open="initOpen"
                 :selected-item="selectedItem"
                 :init-open-items="initOpenItems"
-                :field-names="fieldNames" :items-hierarchy="itemsHierarchy" :item="child" :buttons="buttons" 
+                :field-names="fieldNames" :item="child" :buttons="buttons" 
                 v-on="$listeners" :parent-id="item.id" v-slot:default="menuItemProps">
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
@@ -88,9 +88,6 @@ export default Vue.extend({
         },
         hasArrows(): boolean {
             return (this.item.children.length > 0 || this.editable);
-        },
-        childrenToDisplay(): Array<any> {
-            return Array.from(this.item.children) ?? []
         },
     },
     methods: {

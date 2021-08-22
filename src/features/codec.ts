@@ -71,8 +71,8 @@ function encodeHierarchy(hierarchy: Hierarchy, picIds: Set<string>) {
 	};
 }
 
-function encodeDescription(character: Hierarchy, states: State[]): EncodedDescription {
-	return { descriptorId: character.id, statesIds: states.map(s => s.id) };
+function encodeDescription(characterId: string, states: State[]): EncodedDescription {
+	return { descriptorId: characterId, statesIds: states.map(s => s.id) };
 }
 
 function encodeTaxon(dataset: Dataset, h: Hierarchy, picIds: Set<string>) {
@@ -82,7 +82,7 @@ function encodeTaxon(dataset: Dataset, h: Hierarchy, picIds: Set<string>) {
 		photos: deduplicatePicsIds(taxon?.pictures ?? [], picIds),
 		bookInfoByIds: taxon?.bookInfoByIds,
 		specimenLocations: taxon?.specimenLocations,
-		descriptions: taxon ? [...dataset.taxonDescriptions(taxon)].map(d => encodeDescription(d.character, d.states)) : [],
+		descriptions: taxon ? [...dataset.taxonDescriptions(taxon)].map(d => encodeDescription(d.character.id, d.states)) : [],
 		author: taxon?.author,
 		vernacularName2: taxon?.vernacularName2,
 		name2: taxon?.name2,
