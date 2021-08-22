@@ -64,9 +64,9 @@ export function removeIn(h: Hierarchy, path: number[]): Hierarchy {
 	}
 }
 
-export function forEachItem(h: Hierarchy, cb: (item: Hierarchy) => void) {
-	cb(h);
-	h.children.forEach(child => forEachItem(child, cb));
+export function forEachItem(h: Hierarchy, cb: (item: Hierarchy, path: number[]) => void, path: number[] = []) {
+	cb(h, path);
+	h.children.forEach((child, i) => forEachItem(child, cb, [...path, i]));
 }
 
 export function allItems(h: Hierarchy): Hierarchy[] {

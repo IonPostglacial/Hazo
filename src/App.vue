@@ -209,16 +209,20 @@ export default Vue.extend({
             const pattern = window.prompt("Text pattern to replace") ?? "";
             const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
-
-            forEachItem(this.dataset.taxonsHierarchy, item => {
+ 
+            forEachItem(this.dataset.taxonsHierarchy, (item, path) => {
                 const taxon = this.dataset.taxonsProps.get(item.id);
-                const newDetail = taxon?.detail.replace(re, replacement);
-                this.store.do("addTaxon", Object.assign({}, taxon, { detail: newDetail }));
+                if (taxon) {
+                    taxon.detail = taxon.detail.replace(re, replacement);
+                    this.store.do("addTaxon", { h: item, props: taxon, at: path });
+                }
             });
-            forEachItem(this.dataset.charactersHierarchy, item => {
+            forEachItem(this.dataset.charactersHierarchy, (item, path) => {
                 const character = this.dataset.charProps.get(item.id);
-                const newDetail = character?.detail.replace(re, replacement);
-                this.store.do("addCharacter", Object.assign({}, character, { detail: newDetail }));
+                if (character) {
+                    character.detail = character.detail.replace(re, replacement);
+                    this.store.do("addCharacter", { h: item, props: character, at: path });
+                }
             });
         },
         async fileRead(file: File): Promise<Dataset | null> {
