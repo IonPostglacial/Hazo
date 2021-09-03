@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import App from "./App.vue";
 import { createStore } from "./store";
+import TaxonPresentation from "./components/TaxonPresentation.vue";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
@@ -37,6 +38,7 @@ const router = new VueRouter({
     routes: [
         { path: "/", component: TaxonsTab },
         { path: "/taxons/:id?", component: TaxonsTab },
+        { path: "/print-taxons/:id?", component: TaxonPresentation },
         { path: "/characters/:id?", component: CharactersTab },
         { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
         { path: "/dictionary", component: WordsDictionary },

@@ -1,5 +1,9 @@
 <template>
     <div class="scroll flex-grow-1">
+        <div class="horizontal-flexbox no-print">
+            <router-link class="button" :to="'/taxons/' + this.selectedTaxonId">Back to Taxon</router-link>
+             <button type="button" class="background-color-1" @click="print">Print</button>
+        </div>
         <article style="max-width: 100ch" class="centered white-background medium-padding">
             <section v-for="taxon in itemsToDisplay" :key="taxon.id" class="page-break">
                 <h2 class="horizontal-flexbox space-between">
@@ -47,17 +51,22 @@ import Flowering from "./Flowering.vue";
 export default Vue.extend({
     name: "TaxonPresentation",
     components: { Flowering },
-    props: {
-        showLeftMenu: Boolean,
-        selectedTaxonId: String,
-        dataset: Object as PropType<Dataset>,
-    },
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,
+            store: Hazo.store,
+            selectedTaxonId: this.$route.params.id ?? "",
         }
     },
+    watch: {
+        $route(to: any) {
+            this.selectedTaxonId = to.params.id;
+        },
+    },
     computed: {
+        dataset(): Dataset {
+            return this.store.dataset;
+        },
         selectedTaxon(): Taxon|undefined {
             return this.dataset.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
         },
@@ -70,6 +79,9 @@ export default Vue.extend({
         },
     },
     methods: {
+        print() {
+            window.print();
+        },
         numberOfChildren(taxon: Taxon): number {
             return this.dataset.taxonsHierarchy.numberOfChildren(taxon);
         },

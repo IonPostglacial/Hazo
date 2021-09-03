@@ -20,7 +20,7 @@
                             <button type="button" :class="{ 'selected-tab': editProperties }" @click="switchEditMode">Properties</button>
                             <button type="button" :class="{ 'selected-tab': editDescriptors }" @click="switchEditMode">Descriptors</button>
                         </div>
-                        <button type="button" :class="{ 'background-color-1': printTaxon }" @click="printPresentation">Print</button>
+                        <router-link class="button" :to="'/print-taxons/' + this.selectedTaxonId">Print</router-link>
                     </div>
                     <div v-if="selectedTaxon" class="relative">
                         <div v-if="selectingParent">
@@ -61,11 +61,7 @@
                         :position="position"
                     />
                 </google-map>
-                <taxon-presentation v-if="printTaxon"
-                    @taxon-selected="selectTaxon" :show-left-menu="showLeftMenu"
-                    :selected-taxon-id="selectedTaxonId" :dataset="dataset">
-                </taxon-presentation>
-                <split-panel v-if="selectedTaxon && !printTaxon" class="flex-grow-1 horizontal-flexbox scroll">
+                <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
                     <div :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': !editDescriptors }]">
                         <picture-box :editable="editProperties"
                             @open-photo="openPhoto"
@@ -203,7 +199,6 @@ export default Vue.extend({
             latexProgressText: "",
             selectingParent: false,
             selectedTaxonId: this.$route.params.id ?? "",
-            printTaxon: false,
         }
     },
     watch: {
@@ -234,12 +229,6 @@ export default Vue.extend({
         }
     },
     methods: {
-        printPresentation() {
-            this.printTaxon = !this.printTaxon;
-            if (this.printTaxon) {
-                window.setTimeout(() => window.print(), 500);
-            }
-        },
         pushStateToChildren(state: State) {
             for (const child of this.dataset.taxonsHierarchy.getOrderedChildrenTree(this.selectedTaxon)) {
                 this.dataset.setTaxonState(child, state);
