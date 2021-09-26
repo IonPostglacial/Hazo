@@ -106,7 +106,7 @@
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <ul class="no-list-style medium-padding medium-margin">
-                        <li v-for="state in dataset.characterStates(selectedCharacter)" :key="state.id" class="horizontal-flexbox">
+                        <li v-for="state in statesToDisplay" :key="state.id" class="horizontal-flexbox">
                             <div class="vertical-flexbox thin-border">
                                 <div @click="moveStateUp(state)" class="move-up">🡡</div>
                                 <div @click="moveStateDown(state)" class="move-down">🡣</div>
@@ -154,6 +154,7 @@ import PictureBox from "./PictureBox.vue";
 import Vue from "vue";
 import { Dataset, Character, Hierarchy, State } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
+import { filter, map } from "@/tools/iter";
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -195,6 +196,11 @@ export default Vue.extend({
         parentStatesExceptInherent(): State[] {
             return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
         },
+        statesToDisplay(): Iterable<State> {
+            const childrenInherentStateIds = Array.from(filter(map(this.charactersHierarchy.childrenOf(this.selectedCharacter), 
+                (c:Character) => c.inherentState?.id), s => typeof s !== "undefined"));
+            return filter(this.dataset.characterStates(this.selectedCharacter), s => !childrenInherentStateIds.includes(s.id));
+        }
     },
     methods: {
         printPresentation() {

@@ -113,7 +113,8 @@ export default Vue.extend({
             }
         },
         selectWithoutOpening(character: Character & { selected?: boolean }) {
-            let inherentState = character.inherentState;
+            const ch = Hazo.store.dataset.charactersHierarchy.itemWithId(character.id);
+            let inherentState = ch?.inherentState;
             if (typeof inherentState === "undefined") {
                 const parentCharacter = Hazo.store.dataset.charactersHierarchy.itemWithId(character.parentId);
                 if (typeof parentCharacter !== "undefined") {
