@@ -70,7 +70,7 @@
                             @delete-photo="deleteItemPhoto"
                             :pictures="selectedTaxon.pictures">
                         </picture-box>
-                        <collapsible-panel v-if="editProperties" class="scroll" label="Properties">
+                        <collapsible-panel v-if="editProperties" label="Properties">
                             <div class="scroll large-max-width form-grid medium-padding">
                                 <div v-if="editProperties" class="display-contents">
                                     <label>NS</label>

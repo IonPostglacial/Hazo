@@ -105,6 +105,7 @@
         <section v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
+                    <button class="background-color-1" @click="exportStates">Copy</button>
                     <ul class="no-list-style medium-padding medium-margin">
                         <li v-for="state in statesToDisplay" :key="state.id" class="horizontal-flexbox">
                             <div class="vertical-flexbox thin-border">
@@ -196,13 +197,21 @@ export default Vue.extend({
         parentStatesExceptInherent(): State[] {
             return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
         },
-        statesToDisplay(): Iterable<State> {
+        statesToDisplay(): Array<State> {
             const childrenInherentStateIds = Array.from(filter(map(this.charactersHierarchy.childrenOf(this.selectedCharacter), 
                 (c:Character) => c.inherentState?.id), s => typeof s !== "undefined"));
-            return filter(this.dataset.characterStates(this.selectedCharacter), s => !childrenInherentStateIds.includes(s.id));
+            return Array.from(this.dataset.characterStates(this.selectedCharacter)).
+                filter(s => !childrenInherentStateIds.includes(s.id));
         }
     },
     methods: {
+        exportStates() {
+            if (this.selectedCharacter) {
+                navigator.clipboard.writeText(this.statesToDisplay.map(s => `${s.name.S??""}\n${s.name.EN??""}\n${s.name.CN??""}\n`).join("\n"));
+            } else {
+                alert("No states");
+            }
+        },
         printPresentation() {
             this.printMode = !this.printMode;
             if (this.printMode) {
