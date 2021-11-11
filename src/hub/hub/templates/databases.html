@@ -75,12 +75,12 @@
                         data-file="{{ file_name }}"
                         data-state="{% if file_name in sharings_by_file_path %}shared{% else %}unshared{% endif %}">
                     <a class="private-link" href="private/{{ file_name }}">{{ file_name }}</a>
-                    <a class="button" href="../#/?from={{ 'private/' | urlencode }}{{ file_name | urlencode }})))">Open in Hazo</a>
+                    <a class="button" href="../#/?from={{ 'private/' | urlencode }}{{ file_name | urlencode }}">Open in Hazo</a>
                     <div class="unshare-block inline-block">
                         <button type="button" class="btn-unshare" data-file="{{ file_name }}">
                             Unshare
                         </button>
-                        <a download href="../#/?from={{ 'shared/' | urlencode}}{% if file_name in sharings_by_file_path %}{{ sharings_by_file_path[file_name] }}{% endif %}">link for sharing</a>
+                        <a href="../#/?from={{ 'shared/' | urlencode}}{% if file_name in sharings_by_file_path %}{{ sharings_by_file_path[file_name] }}{% endif %}">link for sharing</a>
                     </div>
                     <div class="share-block inline-block">
                         <button type="button" class="btn-share" data-file="{{ file_name }}">
