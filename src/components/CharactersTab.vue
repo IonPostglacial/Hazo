@@ -275,6 +275,7 @@ export default Vue.extend({
         addStatePhoto(state: State, e: {detail: {value: string}}) {
             const numberOfPhotos = state.pictures.length;
             this.store.do("addStatePicture", {
+                character: this.selectedCharacter,
                 state: state,
                 picture: {
                     id: `${state.id}-${numberOfPhotos}`,
@@ -286,6 +287,7 @@ export default Vue.extend({
         setStatePhoto(state: State, e: {detail: {index: number, value: string}}) {
             if (state) {
                 this.store.do("setStatePicture", {
+                    character: this.selectedCharacter,
                     state: state,
                     index: e.detail.index,
                     picture: { ...state.pictures[e.detail.index], url: e.detail.value },
@@ -293,7 +295,7 @@ export default Vue.extend({
             }
         },
         deleteStatePhoto(state: State, e: {detail: {index: number}}) {
-            this.store.do("removeStatePicture", { state: state, index: e.detail.index });
+            this.store.do("removeStatePicture", { character: this.selectedCharacter, state: state, index: e.detail.index });
         },
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
             this.showBigImage = true;
