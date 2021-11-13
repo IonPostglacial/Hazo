@@ -136,7 +136,7 @@ export default Vue.extend({
             }
         },
         async pull() {
-            const res = await fetch(Config.datasetRegistry + "private/" + encodeURI(this.dataset.id) + ".hazo.json");
+            const res = await fetch(Config.datasetRegistry + "private/" + encodeURI(this.dataset.id.replace(" ", "_")) + ".hazo.json");
             if (res.status === 403) {
                 alert("You should connect to the Hub to be able to download files.");
             } else {

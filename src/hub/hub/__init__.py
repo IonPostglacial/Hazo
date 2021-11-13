@@ -44,6 +44,12 @@ def login_page():
         return render_template('login.html')
 
 
+@app.route("/logout", methods=['GET', 'POST'])
+def logout_page():
+    del session['login']
+    return redirect(url_for('login_page'))
+
+
 @app.route('/', methods=['GET', 'POST'])
 @connected_only
 def home_page():
@@ -147,7 +153,7 @@ def private_files(file_name: str):
     current_user = db.query(User).filter_by(login=session['login']).first()
     file_path = current_user.personal_folder / file_name
     if file_path.exists():
-        return send_file(file_path, mimetype="application/json", attachment_filename=file_name)
+        return send_file(file_path, mimetype="application/json", attachment_filename=file_name, cache_timeout=0)
     else:
         return abort(404)
 
@@ -158,7 +164,7 @@ def shared_files(share_link: str):
     if file_sharing == None:
         return abort(404)
     else:
-        return send_file(file_sharing.file_path, mimetype="application/json", attachment_filename=file_sharing.file_name)
+        return send_file(file_sharing.file_path, mimetype="application/json", attachment_filename=file_sharing.file_name, cache_timeout=0)
 
 
 @app.route('/databases', methods=['GET', 'POST'])
