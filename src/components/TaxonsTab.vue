@@ -1,7 +1,7 @@
 <template>
     <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
-            :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
+            :name-fields="nameFields"
             @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
@@ -176,6 +176,7 @@ import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
 import { createTaxon } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
+import { taxonsStats } from "@/features/hierarchystats";
 
 
 export default Vue.extend({
@@ -186,6 +187,7 @@ export default Vue.extend({
     },
     data() {
         return {
+            nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
             store: Hazo.store,
             showLeftMenu: true,
             showFields: false,
@@ -340,8 +342,27 @@ export default Vue.extend({
             });
         },
         exportStats() {
-            const csv = exportStatistics(this.dataset.taxonsHierarchy);
-            download(csv, "csv");
+            const stats = taxonsStats(this.dataset.taxonsHierarchy);
+            const chars = Array.from(this.dataset.charactersHierarchy.allItems);
+            let statesCount = 0;
+            let picsCount = 0;
+            for (const char of chars) {
+                picsCount += char.pictures.length;
+                statesCount += char.states.length;
+                for (const state of char.states) {
+                    picsCount += state.pictures.length;
+                }
+            }
+            for (const taxon of this.dataset.taxonsHierarchy.allItems) {
+                picsCount += taxon.pictures.length;
+            }
+            const text = `In our items list, ${stats.taxa} taxa were registered in our database, ${stats.families} families, ${stats.gender} genus, ${stats.species} species. Among those, ** trees, and *** shrubs, and ** herbs; ** dans dry forest, ** live in savanna, ** aquatic plants.
+In the description list, ${chars.length} characters were noted, in *** groups, with ${statesCount} states, the *** description, *** description, and *** description were the three character the most applied in this database. And the fact that integrating the family and vernacular name into description, helping users reach their aiming plant efficiently. 
+${picsCount} pictures are stored in total. In our platform, **% plants are applied by human, ** plants are used for construction and ** are eatable, that present a great use for local people and for ethnobotanic researchers.  `;
+            const w = window.open("");
+            if (w) {
+                w.document.write(text); 
+            }
         },
     }
 });
