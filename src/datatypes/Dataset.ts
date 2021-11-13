@@ -193,8 +193,9 @@ export class Dataset {
 		return states;
 	}
 
-	*taxonDescriptions(taxon: Taxon): Iterable<Description> {
+	taxonDescriptions(taxon: Taxon): Array<Description> {
 		const statesByCharacter = new OneToManyBimap(Map);
+		const descriptions = new Array<Description>();
 	
 		for (const character of this.charactersHierarchy.allItems) {
 			for (const state of character.states) {
@@ -206,9 +207,10 @@ export class Dataset {
 		for (const [characterId, stateIds] of statesByCharacter.rightIdsGroupedByLeftId()) {
 			const character = this.charactersHierarchy.itemWithId(characterId);
 			if (typeof character !== "undefined") {
-				yield { character, states: this.statesFromIds(stateIds) };
+				descriptions.push({ character, states: this.statesFromIds(stateIds) });
 			}
 		}
+		return descriptions;
 	}
 
 	taxonCharactersTree(taxon: Taxon): Hierarchy<Character & { selected?: boolean }> {

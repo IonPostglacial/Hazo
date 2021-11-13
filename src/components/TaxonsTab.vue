@@ -172,7 +172,6 @@ import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
-import exportStatistics from "@/features/exportstats";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
 import { createTaxon } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
