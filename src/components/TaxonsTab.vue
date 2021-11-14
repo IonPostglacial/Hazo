@@ -176,6 +176,7 @@ import { TexExporter, exportZipFolder, importKml } from "@/features";
 import { createTaxon } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { taxonsStats } from "@/features/hierarchystats";
+import { normalizePicture } from "@/datatypes/picture";
 
 
 export default Vue.extend({
@@ -309,15 +310,15 @@ export default Vue.extend({
                 return;
             }
             const numberOfPhotos = this.selectedTaxon.pictures.length;
-            this.store.do("addTaxonPicture", { taxon: this.selectedTaxon, picture: { id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value } });
+            this.store.do("addTaxonPicture", { taxon: this.selectedTaxon, picture: normalizePicture({ id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value, hubUrl: undefined }) });
         },
-        setItemPhoto(e: {detail: {index: number, value: string}}) {
+        setItemPhoto(e: {detail: {index: number, src: string, hubUrl: string}}) {
             if (!this.selectedTaxon) { return; }
 
             this.store.do("setTaxonPicture", {
                 taxon: this.selectedTaxon,
                 index: e.detail.index,
-                picture: { ...this.selectedTaxon!.pictures[e.detail.index], url: e.detail.value },
+                picture: normalizePicture({ ...this.selectedTaxon!.pictures[e.detail.index], url: e.detail.src, hubUrl: e.detail.hubUrl }),
             });
         },
         deleteItemPhoto(e: {detail: { index: number }}) {

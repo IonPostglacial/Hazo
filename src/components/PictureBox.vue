@@ -76,7 +76,7 @@ export default Vue.extend({
                 const data = new FormData();
                 data.append("file", fileToUpload, Math.random() * 1E6 + fileToUpload.name);
                 try {
-                    const res = await fetch(Config.datasetRegistry + "api/upload-img.php", {
+                    const res = await fetch(Config.datasetRegistry + "api/upload-img", {
                         method: "POST",
                         body: data,
                     });

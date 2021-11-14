@@ -103,10 +103,17 @@ def api_upload_image():
         file_url = request.form['file-url']
         url = urllib.parse.urlparse(file_url)
         file_name = secure_filename(Path(url.path).name)
-        file_path = current_user.personal_image_path(file_url)
-        # TODO: check file size and mime type
-        urllib.request.urlretrieve(file_url, file_path)
-        return jsonify({"status": "ok", "url": str(Path('private') / current_user.login / 'pictures' / file_name)})
+        file_path = current_user.personal_image_path(file_name)
+        if not file_path.exists():
+            req = urllib.request.Request(file_url, method='GET', headers={
+                "User-Agent":"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0"})
+            # TODO: check file size and mime type
+            try:
+                with urllib.request.urlopen(req) as res, open(file_path, "wb") as out:
+                    out.write(res.read())
+            except Exception as e:
+                return jsonify({"status": "ko", "message": f"Error opening {req.method} {file_url}: {str(e)}"})
+        return jsonify({"status": "ok", "url": str(Path('picture') / current_user.login / file_name)})
     elif 'file' in request.files:
         file = request.files['file']
         if not file:
@@ -115,7 +122,7 @@ def api_upload_image():
             file_name = secure_filename(file.filename)
             file_path = current_user.personal_file_path(file_name)
             file.save(str(file_path))
-            return jsonify({"status": "ok", "url": str(Path('private') / current_user.login / 'pictures' / file_name)})
+            return jsonify({"status": "ok", "url": str(Path('picture') / current_user.login / file_name)})
     else:
         return jsonify({"status": "ko", "message": "no file provided"})
 
@@ -137,7 +144,7 @@ def api_share_file():
                 file_sharing = FileSharing(owner=current_user, share_link=share_link, file_path=str(file_full_path))
                 db.add(file_sharing)
                 db.commit()
-                return jsonify({"status": "ok", "linkid": file_sharing.share_link});
+                return jsonify({"status": "ok", "linkid": file_sharing.share_link})
             elif request.method == 'DELETE':
                 file_sharing = db.query(FileSharing).filter_by(file_path=str(file_full_path)).first()
                 db.delete(file_sharing)

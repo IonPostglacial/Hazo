@@ -13,7 +13,7 @@ export interface Picture {
 	id: string;
 	url: string;
 	label: string;
-	content?: string|Blob|undefined;
+	hubUrl: string|undefined;
 }
 
 export interface BookInfo {
