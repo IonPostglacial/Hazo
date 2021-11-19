@@ -35,6 +35,7 @@ import AddItem from "./AddItem.vue";
 import PictureFrame from "./PictureFrame.vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import { Config } from "@/tools/config";
+import { uploadPicture } from "@/datatypes/picture";
 
 export default Vue.extend({
   components: { AddItem, CollapsiblePanel, PictureFrame },
@@ -89,8 +90,16 @@ export default Vue.extend({
             this.displayUploadPopup = false;
         },
         addPicture(ev: Event & { detail: string[] }) {
-            this.$emit("add-photo", { detail: { value: [ev.detail] } });
-            this.selectedPhotoIndex = this.pics.length - 1;
+            this.$emit("add-photo", { detail: { value: ev.detail } });
+            console.log("before", this.selectedPhotoIndex);
+            this.selectedPhotoIndex = this.pictures?.length ?? 0 - 1;
+            console.log("after", this.selectedPhotoIndex);
+            const oldIndex = this.selectedPhotoIndex;
+            for (const remoteUrl of ev.detail) {
+                uploadPicture(remoteUrl).then(url => {
+                    this.$emit("set-photo", { detail: { src: remoteUrl, hubUrl: url, index: oldIndex } })
+                });
+            }
         },
         deletePicture(e: Event & { detail: string[] }) {
             this.$emit("delete-photo", e);
