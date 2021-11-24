@@ -18,18 +18,22 @@ class User(BaseModel):
         return Conf.PRIVATE_PATH / self.login
 
     @property
+    def personal_image_folder(self):
+        return self.personal_folder / 'pictures'
+
+    @property
     def personal_files(self):
         return self.personal_folder.iterdir()
 
     @property
     def personal_images(self):
-        return (self.personal_folder / 'pictures').iterdir()
+        return self.personal_image_folder.iterdir()
 
     def personal_file_path(self, file_path):
         return self.personal_folder / file_path
 
     def personal_image_path(self, image_path):
-        return self.personal_folder / 'pictures' / image_path
+        return self.personal_image_folder / image_path
 
 
 class FileSharing(BaseModel):
