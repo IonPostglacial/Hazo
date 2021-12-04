@@ -1,3 +1,3 @@
 export const Config = {
-    datasetRegistry: "https://nicolas.galipot.net/Hazo/hub/"
+    datasetRegistry: "https://nicolas.galipot.net/hub/"
 };

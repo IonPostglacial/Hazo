@@ -34,12 +34,12 @@
             <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
             <div class="button-group">
                 <button type="button" class="background-color-ok" @click="saveData">Save</button>
-                <select v-model="selectedBase">
+                <select v-if="!preloaded" v-model="selectedBase">
                     <option v-for="datasetId in datasetIds" :key="datasetId" :value="datasetId">{{ datasetId }}</option>
                 </select>
-                <button @click="renameDataset">Rename DB</button>
-                <button v-if="datasetIds.length > 1" @click="deleteDataset">Delete DB</button>
-                <button type="button" class="background-color-1" @click="createNewDataset">New DB</button>
+                <button v-if="!preloaded" @click="renameDataset">Rename DB</button>
+                <button v-if="!preloaded && datasetIds.length > 1" @click="deleteDataset">Delete DB</button>
+                <button v-if="!preloaded" type="button" class="background-color-1" @click="createNewDataset">New DB</button>
                 <button type="button" class="background-color-ko" @click="resetData">Reset</button>
             </div>
             <div class="button-group">
@@ -71,46 +71,64 @@ export default Vue.extend({
             selectedBase: "",
             urlsToSync: [] as string[],
             syncProgress: 0,
+            preloaded: true,
         };
     },
     mounted() {
-        fetch(Config.datasetRegistry).then(res => {
-            if (res.ok) {
-                this.store.do("setConnectedToHub", true);
-            } else {
-                const timerId = window.setInterval(() => {
-                    fetch(Config.datasetRegistry).then(res => {
-                        if (res.ok) {
-                            this.store.do("setConnectedToHub", true);
-                            window.clearInterval(timerId);
-                        }
-                    })
-                }, 300_000);
+        const preloadedDatasetEl = document.getElementById("preloaded-dataset");
+        if (preloadedDatasetEl) {
+            const preloadedDatasetText = preloadedDatasetEl.innerHTML;
+            this.preloaded = true;
+            const registry = preloadedDatasetEl.dataset.registry;
+            if (registry) {
+                Config.datasetRegistry = registry;
             }
-        });
-        DB.list().then(dbIds => {
-            this.datasetIds = dbIds;
-            const dataUrl = this.$route.query.from;
-            if (typeof dataUrl === "string") {
-                fetch(Config.datasetRegistry + dataUrl).then(async (data) => {
-                    const dataText = await data.text();
-                    const fetchedDataset = JSON.parse(dataText);
-                    if (!this.datasetIds.includes(fetchedDataset.id)) {
-                        this.datasetIds.push(fetchedDataset.id);
-                    }
-                    DB.store(fetchedDataset).then(() => {
-                        this.store.do("setDataset", decodeDataset(ObservableMap, fetchedDataset));
-                        this.selectedBase = fetchedDataset.id;
-                    });
+            const preloadedDataset = JSON.parse(preloadedDatasetText);
+            DB.store(preloadedDataset).then(() => {
+                    this.store.do("setConnectedToHub", true);
+                    this.store.do("setDataset", decodeDataset(ObservableMap, preloadedDataset));
+                    this.selectedBase = preloadedDataset.id;
                 });
-            } else {
-                if (this.datasetIds.length === 0) {
-                    this.createNewDataset();
+        } else {
+            this.preloaded = false;
+            fetch(Config.datasetRegistry).then(res => {
+                if (res.ok) {
+                    this.store.do("setConnectedToHub", true);
                 } else {
-                    this.selectedBase = this.datasetIds[0];
+                    const timerId = window.setInterval(() => {
+                        fetch(Config.datasetRegistry).then(res => {
+                            if (res.ok) {
+                                this.store.do("setConnectedToHub", true);
+                                window.clearInterval(timerId);
+                            }
+                        })
+                    }, 300_000);
                 }
-            }
-        });
+            });
+            DB.list().then(dbIds => {
+                this.datasetIds = dbIds;
+                const dataUrl = this.$route.query.from;
+                if (typeof dataUrl === "string") {
+                    fetch(Config.datasetRegistry + dataUrl).then(async (data) => {
+                        const dataText = await data.text();
+                        const fetchedDataset = JSON.parse(dataText);
+                        if (!this.datasetIds.includes(fetchedDataset.id)) {
+                            this.datasetIds.push(fetchedDataset.id);
+                        }
+                        DB.store(fetchedDataset).then(() => {
+                            this.store.do("setDataset", decodeDataset(ObservableMap, fetchedDataset));
+                            this.selectedBase = fetchedDataset.id;
+                        });
+                    });
+                } else {
+                    if (this.datasetIds.length === 0) {
+                        this.createNewDataset();
+                    } else {
+                        this.selectedBase = this.datasetIds[0];
+                    }
+                }
+            });
+        }
     },
     computed: {
         dataset(): Dataset {
