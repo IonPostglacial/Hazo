@@ -356,9 +356,12 @@ export default Vue.extend({
             for (const taxon of this.dataset.taxonsHierarchy.allItems) {
                 picsCount += taxon.pictures.length;
             }
-            const text = `In our items list, ${stats.taxa} taxa were registered in our database, ${stats.families} families, ${stats.gender} genus, ${stats.species} species. Among those, ** trees, and *** shrubs, and ** herbs; ** dans dry forest, ** live in savanna, ** aquatic plants.
+            const text = `In our items list, ${stats.taxa.length} taxa were registered in our database, ${stats.families.length} families, ${stats.gender} genus, ${stats.species.length} species. Among those, ** trees, and *** shrubs, and ** herbs; ** dans dry forest, ** live in savanna, ** aquatic plants.
 In the description list, ${chars.length} characters were noted, in *** groups, with ${statesCount} states, the *** description, *** description, and *** description were the three character the most applied in this database. And the fact that integrating the family and vernacular name into description, helping users reach their aiming plant efficiently. 
-${picsCount} pictures are stored in total. In our platform, **% plants are applied by human, ** plants are used for construction and ** are eatable, that present a great use for local people and for ethnobotanic researchers.  `;
+${picsCount} pictures are stored in total. In our platform, **% plants are applied by human, ** plants are used for construction and ** are eatable, that present a great use for local people and for ethnobotanic researchers.<br>
+<h2>Taxa</h2><ol>${stats.taxa.map(t => `<li>${t.name.S}</li>`).join("")}</ol>
+<h2>Families</h2><ol>${stats.families.map(t => `<li>${t.name.S}</li>`).join("")}</ol>
+<h2>Species</h2><ol>${stats.species.map(t => `<li>${t.name.S} <i>${t.author}</i></li>`).join("")}</ol>`;
             const w = window.open("");
             if (w) {
                 w.document.write(text); 
