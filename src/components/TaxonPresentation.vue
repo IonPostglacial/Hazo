@@ -21,7 +21,7 @@
                         <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox limited-width">
                             <div class="horizontal-flexbox small-height">
                                 <div v-for="state in description.states" :key="'img-' + state.id" class="horizontal-flexbox">
-                                    <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="photo.url">
+                                    <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
                                 </div>
                             </div>
                             <flowering v-if="description.character.preset == 'flowering'" :value="monthsFromStates(description.states)">
@@ -34,7 +34,7 @@
                             </div>
                         </section>
                     </div>
-                    <img v-if="taxon.pictures[0]" class="medium-max-width medium-max-height fit-contain" :src="taxon.pictures[0].url"/>
+                    <img v-if="taxon.pictures[0]" class="medium-max-width medium-max-height fit-contain" :src="pictureUrl(taxon.pictures[0])"/>
                 </div>
                 <hr class="no-print">
             </section>
@@ -79,6 +79,13 @@ export default Vue.extend({
         },
     },
     methods: {
+        pictureUrl(item: { url: string, hubUrl: string }): string {
+            if (item.hubUrl) {
+                return item.hubUrl; 
+            } else {
+                return item.url;
+            }
+        },
         print() {
             window.print();
         },

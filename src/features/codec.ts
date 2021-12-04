@@ -34,7 +34,7 @@ interface AlreadyEncodedDataset extends Omit<EncodedDataset, "characters"> {
 	characters?:  EncodedCharacter[];
 }
 
-function deduplicatePicsIds(pictures: Iterable<Picture>, picIds: Set<string>) {
+function deduplicatePicsIds(pictures: Iterable<Picture>, picIds: Set<string>): Picture[] {
 	const pics = new Array<Picture>();
 	for (const pic of pictures) {
 		const newPic = clone(pic);
@@ -114,7 +114,7 @@ function decodeState(encoded: EncodedState): State {
 			CN: encoded.nameCN,
 			EN: encoded.nameEN,	
 		},
-		pictures: encoded.photos,
+		pictures: picturesFromPhotos(encoded.photos),
 		description: encoded.description,
 		color: encoded.color,		
 	}

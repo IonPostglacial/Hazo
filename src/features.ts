@@ -7,3 +7,4 @@ export * from "./features/sddimport";
 export * from "./features/codec";
 export * from "./features/kmlimport";
 export * from "./features/hierarchystats";
+export * from "./features/uploadimages";

@@ -156,6 +156,7 @@ import Vue from "vue";
 import { Dataset, Character, Hierarchy, State } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { filter, map } from "@/tools/iter";
+import { normalizePicture } from "@/datatypes/picture";
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -251,20 +252,21 @@ export default Vue.extend({
             const numberOfPhotos = this.selectedCharacter!.pictures.length;
             this.store.do("addCharacterPicture", {
                 character: this.selectedCharacter,
-                picture: {
+                picture: normalizePicture({
                     id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
                     url: url,
                     label: label ?? `${this.selectedCharacter!.name} #${numberOfPhotos}`,
-                }
+                    hubUrl: undefined,
+                })
             });
         },
-        setCharacterPhoto(e: {detail: {index: number, value: string}}) {
+        setCharacterPhoto(e: {detail: {index: number, src: string, hubUrl: string}}) {
             if (!this.selectedCharacter) { return; }
 
             this.store.do("setCharacterPicture", {
                 character: this.selectedCharacter,
                 index: e.detail.index,
-                picture: { ...this.selectedCharacter?.pictures[e.detail.index], url: e.detail.value }
+                picture: normalizePicture({ ...this.selectedCharacter.pictures[e.detail.index], url: e.detail.src, hubUrl: e.detail.hubUrl })
             });
         },
         deleteCharacterPhoto(e: {detail: {index: number}}) {
@@ -275,25 +277,28 @@ export default Vue.extend({
         addStatePhoto(state: State, e: {detail: {value: string}}) {
             const numberOfPhotos = state.pictures.length;
             this.store.do("addStatePicture", {
+                character: this.selectedCharacter,
                 state: state,
-                picture: {
+                picture: normalizePicture({
                     id: `${state.id}-${numberOfPhotos}`,
                     url: e.detail.value,
                     label: e.detail.value,
-                }
+                    hubUrl: undefined,
+                })
             });
         },
-        setStatePhoto(state: State, e: {detail: {index: number, value: string}}) {
+        setStatePhoto(state: State, e: {detail: {index: number, src: string, hubUrl: string}}) {
             if (state) {
                 this.store.do("setStatePicture", {
+                    character: this.selectedCharacter,
                     state: state,
                     index: e.detail.index,
-                    picture: { ...state.pictures[e.detail.index], url: e.detail.value },
+                    picture: normalizePicture({ ...state.pictures[e.detail.index], url: e.detail.src, hubUrl: e.detail.hubUrl }),
                 });
             }
         },
         deleteStatePhoto(state: State, e: {detail: {index: number}}) {
-            this.store.do("removeStatePicture", { state: state, index: e.detail.index });
+            this.store.do("removeStatePicture", { character: this.selectedCharacter, state: state, index: e.detail.index });
         },
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
             this.showBigImage = true;

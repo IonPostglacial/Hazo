@@ -54,16 +54,23 @@ export function createStore() {
             store.dataset.changeTaxonParent(e.taxon, e.newParentId);
         },
         addTaxonPicture(payload: { taxon: Taxon, picture: Picture }) {
-            payload.taxon.pictures.push(payload.picture);
+            const t = store.dataset.taxonsHierarchy.itemWithId(payload.taxon.id);
+            if (t) t.pictures = [...t.pictures, payload.picture];
         },
         setTaxonPicture(payload: { taxon: Taxon, picture: Picture, index: number }) {
-            payload.taxon.pictures[payload.index] = payload.picture;
+            const t = store.dataset.taxonsHierarchy.itemWithId(payload.taxon.id);
+            if (t) {
+                t.pictures[payload.index] = payload.picture;
+                t.pictures = [...t.pictures];
+            }
         },
         setTaxonLocations(payload: { taxon: Taxon, positions: { lat: number, lng: number }[] }) {
-            payload.taxon.specimenLocations = payload.positions;
+            const t = store.dataset.taxonsHierarchy.itemWithId(payload.taxon.id);
+            if (t) t.specimenLocations = payload.positions;
         },
         removeTaxonPicture(payload: { taxon: Taxon, index: number }) {
-            payload.taxon.pictures.splice(payload.index, 1);
+            const t = store.dataset.taxonsHierarchy.itemWithId(payload.taxon.id);
+            if (t) t.pictures.splice(payload.index, 1);
         },
         copyCharacter(character: Character) {
             store.copiedCharacter = store.dataset.charactersHierarchy.extractHierarchy(character);
@@ -104,13 +111,19 @@ export function createStore() {
             undoStack.push(() => store.dataset.addCharacter(character));
         },
         addCharacterPicture(payload: { character: Character, picture: Picture }) {
-            payload.character.pictures.push(payload.picture);
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character.id);
+            if (c) c.pictures = [...c.pictures, payload.picture];
         },
         setCharacterPicture(payload: { character: Character, picture: Picture, index: number }) {
-            payload.character.pictures[payload.index] = payload.picture;
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character.id);
+            if (c) {
+                c.pictures[payload.index] = payload.picture;
+                c.pictures = [...c.pictures];
+            }
         },
         removeCharacterPicture(payload: { character: Character, index: number }) {
-            payload.character.pictures.splice(payload.index, 1);
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character.id);
+            if (c) c.pictures.splice(payload.index, 1);
         },
         setDataset(dataset: Dataset) {
             Object.assign(store.dataset, dataset);
@@ -119,32 +132,43 @@ export function createStore() {
             store.dataset.addState(payload.state, payload.character);
         },
         moveStateUp(payload: { state: State, character: Character }) {
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
-            if (index > 0) {
-                payload.character.states[index] = payload.character.states[index-1];
-                payload.character.states[index-1] = payload.state;
-                payload.character.states = [...payload.character.states];
+            if (index > 0 && c) {
+                c.states[index] = c.states[index-1];
+                c.states[index-1] = payload.state;
+                c.states = [...c.states];
             }
         },
         moveStateDown(payload: { state: State, character: Character }) {
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
-            if (index < payload.character.states.length - 1) {
-                payload.character.states[index] = payload.character.states[index+1];
-                payload.character.states[index+1] = payload.state;
-                payload.character.states = [...payload.character.states];
+            if (index < payload.character.states.length - 1 && c) {
+                c.states[index] = c.states[index+1];
+                c.states[index+1] = payload.state;
+                c.states = [...c.states];
             }
         },
         removeState(payload: { state: State, character: Character }) {
             store.dataset.removeState(payload.state, payload.character);
         },
-        addStatePicture(payload: { state: State, picture: Picture }) {
-            payload.state.pictures.push(payload.picture);
+        addStatePicture(payload: { character: Character|undefined, state: State, picture: Picture }) {
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character?.id);
+            const s = c?.states.find(s => s.id === payload.state.id);
+            if (s) s.pictures = [...s.pictures, payload.picture];
         },
-        setStatePicture(payload: { state: State, picture: Picture, index: number }) {
-            payload.state.pictures[payload.index] = payload.picture;
+        setStatePicture(payload: { character: Character|undefined, state: State, picture: Picture, index: number }) {
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character?.id);
+            const s = c?.states.find(s => s.id === payload.state.id);
+            if (s) {
+                s.pictures[payload.index] = payload.picture;
+                s.pictures = [...s.pictures];
+            }
         },
-        removeStatePicture(payload: { state: State, index: number }) {
-            payload.state.pictures.splice(payload.index, 1);
+        removeStatePicture(payload: { character: Character|undefined, state: State, index: number }) {
+            const c = store.dataset.charactersHierarchy.itemWithId(payload.character?.id);
+            const s = c?.states.find(s => s.id === payload.state.id);
+            if (s) s.pictures.splice(payload.index, 1);
         },
         setInapplicableState(payload: { character: Character, state: State, selected: boolean }) {
             setState(payload.character.inapplicableStates, payload.state, payload.selected);

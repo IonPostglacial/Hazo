@@ -12,6 +12,10 @@
                     <span v-if="connectedToHub"> (Connected)</span>
                     <span v-if="!connectedToHub"> (Disconnected)</span>
                 </button>
+                <button v-if="connectedToHub" type="button" @click="syncPictures" :disabled="urlsToSync.length > 0">
+                    Sync pictures
+                    <span v-if="urlsToSync.length > 0">{{ syncProgress }} / {{ urlsToSync.length }}</span>
+                </button>
                 <button v-if="connectedToHub" type="button" @click="push">Push</button>
                 <button v-if="connectedToHub" type="button" @click="pull">Pull</button>
             </div>
@@ -49,7 +53,7 @@
 
 <script lang="ts">
 import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, highlightTaxonsDetails } from "@/features";
+import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import DB from "./db-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
@@ -65,6 +69,8 @@ export default Vue.extend({
             store: Hazo.store,
             datasetIds: [] as string[],
             selectedBase: "",
+            urlsToSync: [] as string[],
+            syncProgress: 0,
         };
     },
     mounted() {
@@ -122,6 +128,20 @@ export default Vue.extend({
     methods: {
         openHub() {
             window.open(Config.datasetRegistry);
+        },
+        async syncPictures() {
+            this.urlsToSync = [];
+            for (const taxon of this.dataset.taxons) {
+                this.urlsToSync.push(...taxon.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
+            }
+            for (const character of this.dataset.characters) {
+                this.urlsToSync.push(...character.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
+            }
+            for (const state of this.dataset.allStates()) {
+                this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
+            }
+            await uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress);
+            this.urlsToSync = [];
         },
         async push() {
             const json = JSON.stringify(encodeDataset(this.dataset));
