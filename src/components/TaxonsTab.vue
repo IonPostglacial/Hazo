@@ -361,7 +361,7 @@ In the description list, ${chars.length} characters were noted, in *** groups, w
 ${picsCount} pictures are stored in total. In our platform, **% plants are applied by human, ** plants are used for construction and ** are eatable, that present a great use for local people and for ethnobotanic researchers.<br>
 <h2>Taxa</h2><ol>${stats.taxa.map(t => `<li>${t.name.S}</li>`).join("")}</ol>
 <h2>Families</h2><ol>${stats.families.map(t => `<li>${t.name.S}</li>`).join("")}</ol>
-<h2>Species</h2><ol>${stats.species.map(t => `<li>${t.name.S} <i>${t.author}</i></li>`).join("")}</ol>`;
+<h2>Species</h2><ol>${stats.species.map(t => `<li><i>${t.name.S}</i> ${t.author}</li>`).join("")}</ol>`;
             const w = window.open("");
             if (w) {
                 w.document.write(text); 
