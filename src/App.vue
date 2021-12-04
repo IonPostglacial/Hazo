@@ -44,7 +44,7 @@
             </div>
             <div class="button-group">
                 <button type="button" @click="globalReplace">Replace Text</button>
-                <button type="button" class="no-print   " @click="displayTaxonStats">Taxons Stats</button>
+                <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
                 <button type="button" class="no-print background-color-1" @click="print">Print</button>
             </div>
         </section>
@@ -421,15 +421,26 @@ export default Vue.extend({
             });
         },
         displayTaxonStats() {
-            let csv = new Map<string, [string, string, string, string, any]>();
-            csv.set("", ["Path", "NS", "NV", "名字", "subtaxa n°"]);
+            let csv = new Map<string, string[]>();
+            csv.set("", ["Path", "NS", "Author", "NV", "名字", "subtaxa n°"]);
             const self = this;
+            function escape(value: string|number): string {
+                if (typeof value === "string") {
+                    if (value.includes(",")) {
+                        return `"${value}"`;
+                    } else {
+                        return value;
+                    }
+                }
+                return ""+value;
+            }
             function pushCsvLine(taxon: Taxon, path: string[]) {
                 const childrenNo = self.dataset.taxonsHierarchy.numberOfChildren(taxon);
                 for (const taxonName of path) {
                     csv.get(taxonName)![4] += childrenNo;
                 }
-                csv.set(taxon.name.S, [path.join(" > "), taxon.name.S, taxon.name.V ?? "", taxon.name.CN ?? "", childrenNo]);
+                const cols = [path.join(" > "), taxon.name.S, taxon.author, taxon.name.V ?? "", taxon.name.CN ?? "", childrenNo];
+                csv.set(taxon.name.S, cols.map(escape));
                 for (const child of self.dataset.taxonsHierarchy.childrenOf(taxon)) {
                     pushCsvLine(child, [...path, taxon.name.S]);
                 }
