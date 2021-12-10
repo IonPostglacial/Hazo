@@ -89,9 +89,7 @@ export interface Description {
 
 export interface DictionaryEntry {
 	id: string,
-	nameCN: string;
-	nameEN: string;
-	nameFR: string;
+	name: { CN: string, EN: string, FR: string },
 	defCN: string;
 	defEN: string;
 	defFR: string;

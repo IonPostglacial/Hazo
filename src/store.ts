@@ -194,10 +194,13 @@ export function createStore() {
             }
         },
         addDictionaryEntry(entry: DictionaryEntry) {
-            Vue.set(store.dataset.dictionaryEntries, entry.id, entry);
+            store.dataset.dictionaryEntries.set(entry.id, entry);
+        },
+        removeDictionaryEntry(entry: DictionaryEntry) {
+            store.dataset.dictionaryEntries.delete(entry.id);
         },
         addDictionaryEntries(entries: Array<DictionaryEntry>) {
-            entries.forEach(e => Vue.set(store.dataset.dictionaryEntries, e.id, e));
+            entries.forEach(e => store.dataset.dictionaryEntries.set(e.id, e));
         },
         addExtraField({ detail }: { detail: string }) {
             store.dataset.extraFields.push({ id: detail, std: false, label: detail, icon: "" });

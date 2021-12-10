@@ -1,48 +1,52 @@
 <template>
-    <div>
+    <div class="flex-grow-1">
         <div class="horizontal-flexbox height-full">
             <div class="scroll height-full">
                 <div class="white-background stick-to-top horizontal-flexbox">
-                    <input type="file" class="invisible" name="csvFileChooser" id="csvFileChooser" v-on:change="uploadCSV">
                     <input type="search" v-model="entriesFilter" class="flex-grow-1" name="searchEntries" id="searchEntries" placeholder="Filter">
+                </div>
+                <table class="white-background medium-padding scroll">
+                    <tr class="white-background"><th></th><th>名词</th><th>Name</th><th>Nom</th></tr>
+                    <tr v-for="entry in entriesToDisplay" :key="entry.id" class="blue-hover relative">
+                        <td><input type="radio" name="selectedEntry" v-model="selectedEntryId" :id="'selectedEntry-' + entry.id" :value="entry.id"></td>
+                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.name.CN }}</label></td>
+                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.name.EN }}</label></td>
+                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.name.FR }}</label></td>
+                    </tr>
+                </table>
+                <add-item @add-item="addEntry"></add-item>
+            </div>
+            <div class="vertical-flexbox flex-grow-1 white-background medium-padding scroll height-full">
+                <div>
+                    <input type="file" class="invisible" name="csvFileChooser" id="csvFileChooser" v-on:change="uploadCSV">
                     <div class="button-group">
                         <button type="button" v-on:click="importCSV">Import CSV</button>
                         <button type="button" v-on:click="exportCSV">Export CSV</button>
                     </div>
                 </div>
-                <table class="white-background medium-padding">
-                    <tr class="stick-to-top white-background"><th></th><th>名词</th><th>Name</th><th>Nom</th></tr>
-                    <tr v-for="entry in entriesToDisplay" :key="entry.id" class="blue-hover relative">
-                        <td><input type="radio" name="selectedEntry" v-model="selectedEntryId" :id="'selectedEntry-' + entry.id" :value="entry.id"></td>
-                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.nameCN }}</label></td>
-                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.nameEN }}</label></td>
-                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.nameFR }}</label></td>
-                    </tr>
-                </table>
-                <add-item @add-item="addEntry"></add-item>
-            </div>
-            <div v-if="(typeof selectedEntry !== 'undefined')" class="white-background medium-padding scroll height-full">
-                <div class="horizontal-flexbox">
-                    <div>
-                        <label class="item-property">名词</label>
-                        <input type="text" spellcheck="false" v-model="selectedEntry.nameCN" /><br/>
-                        <label class="item-property">Name</label>
-                        <input type="text" spellcheck="false" v-model="selectedEntry.nameEN" /><br/>
-                        <label class="item-property">Nom</label>
-                        <input type="text" spellcheck="false" v-model="selectedEntry.nameFR" /><br/>
-                        <label class="item-property">Illustration</label>
-                        <input type="text" spellcheck="false" v-model="selectedEntry.url" /><br/>
+                <div v-if="selectedEntry">
+                    <div class="horizontal-flexbox">
+                        <div class="form-grid">
+                            <label class="item-property">名词</label>
+                            <input type="text" spellcheck="false" v-model="selectedEntry.name.CN" />
+                            <label class="item-property">Name</label>
+                            <input type="text" spellcheck="false" v-model="selectedEntry.name.EN" />
+                            <label class="item-property">Nom</label>
+                            <input type="text" spellcheck="false" v-model="selectedEntry.name.FR" />
+                            <label class="item-property">Illustration</label>
+                            <input type="text" spellcheck="false" v-model="selectedEntry.url" />
+                        </div>
+                        <div>
+                            <img class="medium-max-width medium-max-height" :src="selectedEntry.url">
+                        </div>
                     </div>
-                    <div>
-                        <img class="medium-max-width medium-max-height" :src="selectedEntry.url">
-                    </div>
+                    <label class="item-property">解释</label><br/>
+                    <ckeditor :editor="editor" :config="editorConfig" v-model="selectedEntry.defCN"></ckeditor>
+                    <label class="item-property">Definition</label><br/>
+                    <ckeditor :editor="editor" :config="editorConfig" v-model="selectedEntry.defEN"></ckeditor>
+                    <label class="item-property">Définition</label><br/>
+                    <ckeditor :editor="editor" :config="editorConfig" v-model="selectedEntry.defFN"></ckeditor>     
                 </div>
-                <label class="item-property">解释</label><br/>
-                <ckeditor :editor="editor" :config="editorConfig" v-model="selectedEntry.defCN"></ckeditor>
-                <label class="item-property">Definition</label><br/>
-                <ckeditor :editor="editor" :config="editorConfig" v-model="selectedEntry.defEN"></ckeditor>
-                <label class="item-property">Définition</label><br/>
-                <ckeditor :editor="editor" :config="editorConfig" v-model="selectedEntry.defFN"></ckeditor>
             </div>
         </div>
     </div>
@@ -53,6 +57,7 @@ import parseCSV from "@/tools/parse-csv";
 //@ts-ignore
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import AddItem from "./AddItem.vue";
+import TreeMenu from "./TreeMenu.vue";
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue from "vue";  // eslint-disable-line no-unused-vars
@@ -65,6 +70,7 @@ export default Vue.extend({
     components: {
         ckeditor: CKEditor.component,
         AddItem,
+        TreeMenu,
     },
     data() {
         return {
@@ -83,18 +89,22 @@ export default Vue.extend({
             return this.dictionaryEntries.get(this.selectedEntryId);
         },
         entriesToDisplay(): Iterable<DictionaryEntry> {
+            const entries = Array.from(this.dictionaryEntries.values());
             if (this.entriesFilter !== "") {
-                return filter(this.dictionaryEntries.values(), (entry) => {
-                    return ["nameCN", "nameEN", "nameFR"].
-                        map(field => (entry as any)[field]).
+                return entries.filter(entry => {
+                    return ["CN", "EN", "FR"].
+                        map(field => (entry.name as any)[field]).
                         some(name => name?.toUpperCase().startsWith(this.entriesFilter?.toUpperCase()) ?? false);
                 });
             } else {
-                return this.dictionaryEntries.values();
+                return entries;
             }
         },
     },
     methods: {
+        selectEntry(id: string) {
+            this.selectedEntryId = id;
+        },
         importCSV() {
             const csvFileChooser = document.getElementById("csvFileChooser")!;
             csvFileChooser.click();
@@ -109,18 +119,27 @@ export default Vue.extend({
                 }
                 return escapedValue;
             }
-            for (const { nameCN, nameEN, defCN, defEN, nameFR, defFR, url } of this.dictionaryEntries.values()) {
-                csv += [nameCN, nameEN, defCN, defEN, nameFR, defFR, url].map(escapeValue).join(",") + "\n";
+            for (const e of this.dictionaryEntries.values()) {
+                csv += [e.name.CN, e.name.EN, e.defCN, e.defEN, e.name.FR, e.defFR, e.url].map(escapeValue).join(",") + "\n";
             }
             download(csv, "csv");
         },
         addEntry(e: { detail: string[] }) {
-            const [nameCN, nameEN, defCN, defEN, nameFR, defFR] = e.detail;
+            const [nameCN, nameEN, nameFR] = e.detail;
             const id = Date.now();
             this.store.do("addDictionaryEntry", {
-                id: id.toString(), nameCN: nameCN ?? "", nameEN: nameEN ?? "", defCN: defCN ?? "",
-                defEN: defEN ?? "", nameFR: nameFR ?? "", defFR: defFR ?? "", url: ""
+                id: id.toString(), 
+                name: { CN: nameCN ?? "", EN: nameEN ?? "", FR: nameFR ?? ""}, 
+                defCN: "", defEN: "", defFR: "", url: ""
             });
+        },
+        deleteEntry(e: { itemId: string}) {
+            const entryToDelete = this.dictionaryEntries.get(e.itemId);
+            if (typeof entryToDelete !== "undefined") {
+                this.store.do("removeDictionaryEntry", entryToDelete);
+            } else {
+                console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.dictionaryEntries);
+            }
         },
         uploadCSV(e: InputEvent) {
             const target = e.target as HTMLInputElement;
@@ -131,7 +150,7 @@ export default Vue.extend({
                     const csv = parseCSV(fileReader.result);
                     for (const [id, [nameCN, nameEN, defCN, defEN]] of csv.entries()) {
                         if (id > 0) {
-                            this.dictionaryEntries.set(""+id, { id: id.toString(), nameCN, nameEN, defCN, defEN, nameFR: "", defFR: "", url: "" });
+                            this.dictionaryEntries.set(""+id, { id: id.toString(), name: {CN: nameCN, EN: nameEN, FR: ""}, defCN, defEN, defFR: "", url: "" });
                         }
                     }
                 }
@@ -141,7 +160,3 @@ export default Vue.extend({
     }
 });
 </script>
-
-<style>
-
-</style>

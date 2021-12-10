@@ -47,7 +47,7 @@ import debounce from "@/tools/debounce";
 export default Vue.extend({
     name: "TreeMenu",
     props: {
-        items: Hierarchy as PropType<Hierarchy<HierarchicalItem>>,
+        items: Object as PropType<Hierarchy<HierarchicalItem>>,
         buttons: Array as PropType<Button[]>,
         editable: Boolean,
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,

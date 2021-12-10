@@ -15,6 +15,17 @@ type EncodedState = {
 	color?: string;
 };
 
+type EncodedDictionaryEntry = {
+	id: string,
+	nameCN: string;
+	nameEN: string;
+	nameFR: string;
+	defCN: string;
+	defEN: string;
+	defFR: string;
+	url: string;
+}
+
 export interface EncodedDataset {
 	id: string
 	taxons: ReturnType<typeof encodeTaxon>[];
@@ -22,7 +33,7 @@ export interface EncodedDataset {
 	states: EncodedState[];
 	books: Book[];
 	extraFields: Field[];
-	dictionaryEntries: Partial<Record<string, DictionaryEntry>>;
+	dictionaryEntries: Partial<Record<string, EncodedDictionaryEntry>>;
 }
 
 type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { photos: string[]|Picture[] };
@@ -132,6 +143,30 @@ function encodeState(state: State, picIds: Set<string>): EncodedState {
 	};
 }
 
+function encodeEntry(e: DictionaryEntry): EncodedDictionaryEntry {
+	return {
+		id: e.id,
+		nameCN: e.name.CN,
+		nameEN: e.name.EN,
+		nameFR: e.name.FR,
+		defCN: e.defCN,
+		defEN: e.defEN,
+		defFR: e.defFR,
+		url: e.url,
+	}
+}
+
+function decodeEntry(e: EncodedDictionaryEntry): DictionaryEntry {
+	return {
+		id: e.id,
+		name: { CN: e.nameCN, EN: e.nameEN, FR: e.nameFR },
+		defCN: e.defCN,
+		defEN: e.defEN,
+		defFR: e.defFR,
+		url: e.url,
+	}
+}
+
 export function encodeDataset(dataset: Dataset): EncodedDataset {
 	const characters = dataset.charactersHierarchy.allItems;
 	const allStates = new Map<string, State>();
@@ -146,7 +181,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 		states: Array.from(map(allStates.values(), s => encodeState(s, picIds))),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
-		dictionaryEntries: Object.fromEntries(dataset.dictionaryEntries.entries()),
+		dictionaryEntries: Object.fromEntries(map(dataset.dictionaryEntries.entries(), ([k, v]) => [k, encodeEntry(v)])),
 	};
 }
 
@@ -221,7 +256,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const taxons = new Hierarchy<Taxon>("t", new makeMap());
 	const books = standardBooks.slice();
 	const characters = new Hierarchy<Character>("c", new makeMap());
-	const dictionaryEntries = new makeMap();
+	const dictionaryEntries: IMap<DictionaryEntry> = new makeMap();
 	const ds = new Dataset(
 		dataset?.id ?? "0",
 		taxons,
@@ -252,7 +287,7 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	}
 	for (const entry of Object.values(dataset?.dictionaryEntries ?? {})) {
 		if (typeof entry !== "undefined") {
-			dictionaryEntries.set(entry.id, entry);
+			dictionaryEntries.set(entry.id, decodeEntry(entry));
 		}
 	}
 	return ds;
