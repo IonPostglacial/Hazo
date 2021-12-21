@@ -1,12 +1,10 @@
-import Vue from "vue";
-
 import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon } from "./datatypes";
 import { Dataset } from './datatypes/Dataset';
 import { State } from "./datatypes/types";
-import { ManyToManyBimap } from './tools/bimaps';
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";
+import { addDictionaryEntry, deleteDictionaryEntry } from "./db-storage";
 
 export type HazoStore = ReturnType<typeof createStore>;
 
@@ -194,13 +192,17 @@ export function createStore() {
             }
         },
         addDictionaryEntry(entry: DictionaryEntry) {
-            store.dataset.dictionaryEntries.set(entry.id, entry);
+            addDictionaryEntry(entry);
+            store.dictionary.entries = [...store.dictionary.entries, entry];
         },
-        removeDictionaryEntry(entry: DictionaryEntry) {
-            store.dataset.dictionaryEntries.delete(entry.id);
+        removeDictionaryEntryAt(index: number) {
+            deleteDictionaryEntry(store.dictionary.entries[index].id);
+            store.dictionary.entries.splice(index, 1);
+            store.dictionary.entries = Array.from(store.dictionary.entries);
         },
         addDictionaryEntries(entries: Array<DictionaryEntry>) {
-            entries.forEach(e => store.dataset.dictionaryEntries.set(e.id, e));
+            entries.forEach(addDictionaryEntry);
+            store.dictionary.entries = [...store.dictionary.entries, ...entries];
         },
         addExtraField({ detail }: { detail: string }) {
             store.dataset.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
@@ -227,11 +229,11 @@ export function createStore() {
         dataset: new Dataset("",
             new Hierarchy<Taxon>("t", new ObservableMap()),
             new Hierarchy<Character>("d", new ObservableMap()),
-            new ObservableMap(),
             standardBooks,
             new Array<Field>(),
             new ObservableMap(),
         ),
+        dictionary: { entries: new Array<DictionaryEntry>() },
         connectedToHub: false,
         copiedTaxon: null as null | Hierarchy<Taxon>,
         copiedCharacter: null as null | Hierarchy<Character>,

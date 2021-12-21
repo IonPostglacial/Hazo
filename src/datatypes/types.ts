@@ -95,3 +95,7 @@ export interface DictionaryEntry {
 	defFR: string;
 	url: string;
 }
+
+export interface Dictionary {
+	entries: DictionaryEntry[],
+}

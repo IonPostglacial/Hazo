@@ -24,7 +24,6 @@ export class Dataset {
 			public id: string,
 			public taxonsHierarchy: Hierarchy<Taxon>,
 			public charactersHierarchy: Hierarchy<Character>,
-			public dictionaryEntries: IMap<DictionaryEntry>,
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = [],
 			statesById: IMap<State>|undefined) {

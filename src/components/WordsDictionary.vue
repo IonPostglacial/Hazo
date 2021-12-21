@@ -5,13 +5,14 @@
                 <div class="white-background stick-to-top horizontal-flexbox">
                     <input type="search" v-model="entriesFilter" class="flex-grow-1" name="searchEntries" id="searchEntries" placeholder="Filter">
                 </div>
-                <table class="white-background medium-padding scroll">
-                    <tr class="white-background"><th></th><th>名词</th><th>Name</th><th>Nom</th></tr>
-                    <tr v-for="entry in entriesToDisplay" :key="entry.id" class="blue-hover relative">
-                        <td><input type="radio" name="selectedEntry" v-model="selectedEntryId" :id="'selectedEntry-' + entry.id" :value="entry.id"></td>
-                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.name.CN }}</label></td>
-                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.name.EN }}</label></td>
-                        <td><label :for="'selectedEntry-' + entry.id" class="full-width">{{ entry.name.FR }}</label></td>
+                <table class="white-background medium-padding scroll full-width">
+                    <tr class="white-background"><th></th><th>名词</th><th>Name</th><th>Nom</th><th>&nbsp;</th></tr>
+                    <tr v-for="(entry, index) in entriesToDisplay" :key="entry.id" class="relative">
+                        <td class="blue-hover-line"><input type="radio" name="selectedEntry" v-model="selectedEntryIndex" :id="'selectedEntry-' + index" :value="index"></td>
+                        <td class="blue-hover-line"><label :for="'selectedEntry-' + index" class="inline-block full-width">{{ entry.name.CN }}</label></td>
+                        <td class="blue-hover-line"><label :for="'selectedEntry-' + index" class="inline-block full-width">{{ entry.name.EN }}</label></td>
+                        <td class="blue-hover-line"><label :for="'selectedEntry-' + index" class="inline-block full-width">{{ entry.name.FR }}</label></td>
+                        <td><div class="close" @click="deleteEntryAt(index)"></div></td>
                     </tr>
                 </table>
                 <add-item @add-item="addEntry"></add-item>
@@ -63,7 +64,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import Vue from "vue";  // eslint-disable-line no-unused-vars
 import download from "@/tools/download";
 import { DictionaryEntry, IMap } from "@/datatypes";  // eslint-disable-line no-unused-vars
-import { filter } from "@/tools/iter";
+
 
 export default Vue.extend({
     name: "WordsDictionary",
@@ -75,18 +76,18 @@ export default Vue.extend({
     data() {
         return {
             store: Hazo.store,
-            selectedEntryId: "",
+            selectedEntryIndex: -1,
             editor: ClassicEditor,
             editorConfig: {},
             entriesFilter: "",
         };
     },
     computed: {
-        dictionaryEntries(): IMap<DictionaryEntry> {
-            return this.store.dataset.dictionaryEntries;
+        dictionaryEntries(): Array<DictionaryEntry> {
+            return this.store.dictionary.entries;
         },
         selectedEntry(): DictionaryEntry|undefined {
-            return this.dictionaryEntries.get(this.selectedEntryId);
+            return this.dictionaryEntries[this.selectedEntryIndex];
         },
         entriesToDisplay(): Iterable<DictionaryEntry> {
             const entries = Array.from(this.dictionaryEntries.values());
@@ -102,8 +103,8 @@ export default Vue.extend({
         },
     },
     methods: {
-        selectEntry(id: string) {
-            this.selectedEntryId = id;
+        selectEntry(index: number) {
+            this.selectedEntryIndex = index;
         },
         importCSV() {
             const csvFileChooser = document.getElementById("csvFileChooser")!;
@@ -133,13 +134,8 @@ export default Vue.extend({
                 defCN: "", defEN: "", defFR: "", url: ""
             });
         },
-        deleteEntry(e: { itemId: string}) {
-            const entryToDelete = this.dictionaryEntries.get(e.itemId);
-            if (typeof entryToDelete !== "undefined") {
-                this.store.do("removeDictionaryEntry", entryToDelete);
-            } else {
-                console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.dictionaryEntries);
-            }
+        deleteEntryAt(index: number) {
+            this.store.do("removeDictionaryEntryAt", index);
         },
         uploadCSV(e: InputEvent) {
             const target = e.target as HTMLInputElement;
@@ -148,9 +144,9 @@ export default Vue.extend({
             fileReader.onload = () => {
                 if (typeof fileReader.result === "string") {
                     const csv = parseCSV(fileReader.result);
-                    for (const [id, [nameCN, nameEN, defCN, defEN]] of csv.entries()) {
+                    for (const [id, [CN,EN,defCN,defEN,FR,defFR,url]] of csv.entries()) {
                         if (id > 0) {
-                            this.dictionaryEntries.set(""+id, { id: id.toString(), name: {CN: nameCN, EN: nameEN, FR: ""}, defCN, defEN, defFR: "", url: "" });
+                            this.store.do("addDictionaryEntry", { id: id.toString(), name: {CN, EN, FR}, defCN, defEN, defFR, url });
                         }
                     }
                 }

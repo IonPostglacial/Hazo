@@ -33,7 +33,6 @@ export interface EncodedDataset {
 	states: EncodedState[];
 	books: Book[];
 	extraFields: Field[];
-	dictionaryEntries: Partial<Record<string, EncodedDictionaryEntry>>;
 }
 
 type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { photos: string[]|Picture[] };
@@ -181,7 +180,6 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 		states: Array.from(map(allStates.values(), s => encodeState(s, picIds))),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
-		dictionaryEntries: Object.fromEntries(map(dataset.dictionaryEntries.entries(), ([k, v]) => [k, encodeEntry(v)])),
 	};
 }
 
@@ -261,7 +259,6 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		dataset?.id ?? "0",
 		taxons,
 		characters,
-		dictionaryEntries,
 		books,
 		dataset?.extraFields ?? [],
 		states,
@@ -284,11 +281,6 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 				}
 			}
 		});
-	}
-	for (const entry of Object.values(dataset?.dictionaryEntries ?? {})) {
-		if (typeof entry !== "undefined") {
-			dictionaryEntries.set(entry.id, decodeEntry(entry));
-		}
 	}
 	return ds;
 }

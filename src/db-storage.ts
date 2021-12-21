@@ -1,11 +1,101 @@
+import { DictionaryEntry } from "./datatypes";
 import { EncodedDataset } from "./features/codec";
 
 const DB_NAME = "Datasets";
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 function createStore(db: IDBDatabase) {
     if (!db.objectStoreNames.contains("Datasets")) {
         db.createObjectStore("Datasets", { keyPath: "id" });
+    }
+    if (!db.objectStoreNames.contains("DictionaryEntries")) {
+        db.createObjectStore("DictionaryEntries", { keyPath: "id" });
+    }
+}
+
+export function addDictionaryEntry(entry: DictionaryEntry): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const rq = indexedDB.open(DB_NAME, DB_VERSION);
+    
+        rq.onupgradeneeded = function (event) {
+            onUpgrade(rq.result, event.oldVersion);
+        };
+        rq.onerror = function () {
+            alert("Impossible to store data on your browser.");
+            reject();
+        };
+        rq.onsuccess = function () {
+            const db = rq.result;
+    
+            const transaction = db.transaction("DictionaryEntries", "readwrite");
+            
+            transaction.oncomplete = function () {
+                // TODO: Handle success, error
+                console.log(`Write of dictionary entry #${entry.id} successful`);
+            };
+        
+            const entries = transaction.objectStore("DictionaryEntries");
+    
+            entries.put(entry);
+            resolve();
+        };
+    });
+}
+
+export function getAllDictionaryEntries(): Promise<DictionaryEntry[]> {
+    return new Promise(function (resolve, reject) {
+        const rq = indexedDB.open(DB_NAME, DB_VERSION);
+        rq.onupgradeneeded = function (event) {
+            onUpgrade(rq.result, event.oldVersion);
+        };
+        rq.onsuccess = function () {
+            const db = rq.result;
+
+            const transaction = db.transaction("DictionaryEntries", "readonly");
+            
+            transaction.oncomplete = function () {
+                // TODO: Handle success, error
+                console.log("Listing dictionary entries successful");
+            };
+        
+            const datasets = transaction.objectStore("DictionaryEntries");
+
+            const list = datasets.getAll(), result:DictionaryEntry[] = [];
+            list.onsuccess = function () {
+                for (const entry of list.result) {
+                    result.push(entry);
+                }
+                resolve(result);
+            };
+            list.onerror = function () {
+                console.log("Listing dictionary entries failed.");
+                reject(rq.result);
+            };
+        };
+        rq.onerror = function () {
+            reject(rq.result);
+        };
+    });
+}
+
+export function deleteDictionaryEntry(id: string) {
+    const rq = indexedDB.open(DB_NAME, DB_VERSION);
+    rq.onupgradeneeded = function (event) {
+        onUpgrade(rq.result, event.oldVersion);
+    };
+    rq.onsuccess = function () {
+        const db = rq.result;
+
+        const transaction = db.transaction("DictionaryEntries", "readwrite");
+
+        transaction.oncomplete = function () {
+            // TODO: Handle success, error
+            console.log(`Deletion of dictionary entry #${id} successful`);
+        };
+
+        const datasets = transaction.objectStore("DictionaryEntries");
+
+        datasets.delete(id);
     }
 }
 

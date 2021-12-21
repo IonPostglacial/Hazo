@@ -54,7 +54,7 @@
 <script lang="ts">
 import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
-import DB from "./db-storage";
+import DB, { getAllDictionaryEntries } from "./db-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
@@ -75,6 +75,9 @@ export default Vue.extend({
         };
     },
     mounted() {
+        getAllDictionaryEntries().then((entries) => {
+            this.store.do("addDictionaryEntries", entries);
+        });
         const preloadedDatasetEl = document.getElementById("preloaded-dataset");
         if (preloadedDatasetEl) {
             const preloadedDatasetText = preloadedDatasetEl.innerHTML;
