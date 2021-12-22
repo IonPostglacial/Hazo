@@ -142,32 +142,7 @@ function encodeState(state: State, picIds: Set<string>): EncodedState {
 	};
 }
 
-function encodeEntry(e: DictionaryEntry): EncodedDictionaryEntry {
-	return {
-		id: e.id,
-		nameCN: e.name.CN,
-		nameEN: e.name.EN,
-		nameFR: e.name.FR,
-		defCN: e.defCN,
-		defEN: e.defEN,
-		defFR: e.defFR,
-		url: e.url,
-	}
-}
-
-function decodeEntry(e: EncodedDictionaryEntry): DictionaryEntry {
-	return {
-		id: e.id,
-		name: { CN: e.nameCN, EN: e.nameEN, FR: e.nameFR },
-		defCN: e.defCN,
-		defEN: e.defEN,
-		defFR: e.defFR,
-		url: e.url,
-	}
-}
-
 export function encodeDataset(dataset: Dataset): EncodedDataset {
-	const characters = dataset.charactersHierarchy.allItems;
 	const allStates = new Map<string, State>();
 	const picIds = new Set<string>();
 	for (const state of dataset.allStates()) {
@@ -175,8 +150,8 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	}
 	return {
 		id: dataset.id,
-		taxons: Array.from(dataset.taxonsHierarchy.allItems).map(taxon => encodeTaxon(taxon, dataset, picIds)),
-		characters: Array.from(characters).map(character => encodeCharacter(dataset, character, picIds)),
+		taxons: Array.from(dataset.taxons).map(taxon => encodeTaxon(taxon, dataset, picIds)),
+		characters: Array.from(dataset.characters).map(character => encodeCharacter(dataset, character, picIds)),
 		states: Array.from(map(allStates.values(), s => encodeState(s, picIds))),
 		books: dataset.books,
 		extraFields: dataset.extraFields,
@@ -251,14 +226,11 @@ function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, charact
 
 export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEncodedDataset|undefined): Dataset {
 	const states: IMap<State> = new makeMap();
-	const taxons = new Hierarchy<Taxon>("t", new makeMap());
 	const books = standardBooks.slice();
-	const characters = new Hierarchy<Character>("c", new makeMap());
-	const dictionaryEntries: IMap<DictionaryEntry> = new makeMap();
 	const ds = new Dataset(
 		dataset?.id ?? "0",
-		taxons,
-		characters,
+		new Hierarchy<Taxon>("t", new makeMap()),
+		new Hierarchy<Character>("c", new makeMap()),
 		books,
 		dataset?.extraFields ?? [],
 		states,
@@ -268,13 +240,13 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
 		const decodedCharacter = decodeCharacter(ds.presetStates, character, states);
-		characters.add(decodedCharacter);
+		ds.addCharacter(decodedCharacter);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
-		taxons.add(decodeTaxon(taxon, books));
+		ds.addTaxon(decodeTaxon(taxon, books));
 		taxon.descriptions.forEach(d => {
 			for (const stateId of d.statesIds) {
-				const t = taxons.itemWithId(taxon.id);
+				const t = ds.taxonWithId(taxon.id);
 				const state = states.get(stateId);
 				if (typeof t !== "undefined" && typeof state !== "undefined") {
 					ds.setTaxonState(t, state);

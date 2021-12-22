@@ -1,11 +1,11 @@
-import { Hierarchy, Taxon } from "@/datatypes";
+import { Dataset, Taxon } from "@/datatypes";
 
 
-export default function exportStatistics(taxonsHierarchy: Hierarchy<Taxon>): string {
+export default function exportStatistics(ds: Dataset): string {
     const references = [];
     const div = document.createElement("div");
     const startsWithLetter = /^[^\W\d_]+.*/;
-    for (const item of taxonsHierarchy.allItems) {
+    for (const item of ds.taxons) {
         div.innerHTML = item.detail;
         const words = div.innerText.split(/[\s\t,;:=/."'-()]/) ?? [];
         for (const word of words) {

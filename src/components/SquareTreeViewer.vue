@@ -113,10 +113,10 @@ export default Vue.extend({
             }
         },
         selectWithoutOpening(character: Character & { selected?: boolean }) {
-            const ch = Hazo.store.dataset.charactersHierarchy.itemWithId(character.id);
+            const ch = Hazo.store.dataset.characterWithId(character.id);
             let inherentState = ch?.inherentState;
             if (typeof inherentState === "undefined") {
-                const parentCharacter = Hazo.store.dataset.charactersHierarchy.itemWithId(character.parentId);
+                const parentCharacter = Hazo.store.dataset.characterWithId(character.parentId);
                 if (typeof parentCharacter !== "undefined") {
                     inherentState = { id: "s" + makeid(8), name: clone(character.name), pictures: [] };
                     Hazo.store.do("addState", { state: inherentState, character: parentCharacter });

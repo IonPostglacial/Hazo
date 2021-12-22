@@ -19,8 +19,6 @@ export class Hierarchy<T extends HierarchicalItem> {
     private items: IMap<T>;
     private ordersByItemIds: IMap<string[]>;
     private count: number;
-    private onAddCallbacks = new Set<(item: T, autoid: boolean) => void>();
-    private onRemoveCallbacks = new Set<(item: T) => void>();
     private onClearCallbacks = new Set<() => void>();
     private onCloneCallbacks = new Set<(hierarchy: Hierarchy<T>, item: T, clone: T, newParent: T|undefined) => void>();
 
@@ -32,14 +30,6 @@ export class Hierarchy<T extends HierarchicalItem> {
         for (const item of items.values()) {
             this.add(item);
         }
-    }
-
-    onAdd(callback: (item: T, autoid: boolean) => void) {
-       this.onAddCallbacks.add(callback); 
-    }
-
-    onRemove(callback: (item: T) => void) {
-        this.onRemoveCallbacks.add(callback); 
     }
 
     onClone(callback: (hierarchy: Hierarchy<T>, item: T, clone: T, newParent: T|undefined) => void) {
@@ -90,9 +80,6 @@ export class Hierarchy<T extends HierarchicalItem> {
         }
         parentOrder.push(newId);
         this.count++;
-        for (const callback of this.onAddCallbacks) {
-            callback(newItem, item.id === "");
-        }
         return newItem;
     }
 
@@ -222,9 +209,6 @@ export class Hierarchy<T extends HierarchicalItem> {
     }
 
     remove(item: T): void {
-        for (const callback of this.onRemoveCallbacks) {
-            callback(item);
-        }
         for (const childId of this.childrenOrder(item)) {
             const child = this.itemWithId(childId);
             if (typeof child !== "undefined") {

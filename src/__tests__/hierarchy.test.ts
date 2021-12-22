@@ -1,4 +1,4 @@
-import { Taxon } from "../datatypes/Taxon";
+import { createTaxon, Taxon } from "../datatypes";
 import { Hierarchy } from "../datatypes/hierarchy";
 
 test("Empty hierarchy", () => {
@@ -10,9 +10,9 @@ test("Empty hierarchy", () => {
 
 test("Addition of items with ids", () => {
     const hierarchy = new Hierarchy<Taxon>("", new Map());
-    const taxon1 = new Taxon({ id: "1", name: { S: "" }, parentId: undefined });
-    const taxon2 = new Taxon({ id: "2", name: { S: "" }, parentId: undefined });
-    const taxon1b = new Taxon({ id: "1", name: { S: "" }, parentId: undefined });
+    const taxon1 = createTaxon({ id: "1", name: { S: "" }, parentId: undefined });
+    const taxon2 = createTaxon({ id: "2", name: { S: "" }, parentId: undefined });
+    const taxon1b = createTaxon({ id: "1", name: { S: "" }, parentId: undefined });
     hierarchy.add(taxon1);
     hierarchy.add(taxon2);
     expect(hierarchy.itemWithId("1")).toBe(taxon1);
@@ -24,8 +24,8 @@ test("Addition of items with ids", () => {
 
 test("Addition of items without ids", () => {
     const hierarchy = new Hierarchy<Taxon>("t", new Map());
-    const taxon1 = new Taxon({ id: "", name: { S: "" }, parentId: undefined });
-    const taxon2 = new Taxon({ id: "", name: { S: "" }, parentId: undefined });
+    const taxon1 = createTaxon({ id: "", name: { S: "" }, parentId: undefined });
+    const taxon2 = createTaxon({ id: "", name: { S: "" }, parentId: undefined });
     hierarchy.add(taxon1);
     hierarchy.add(taxon2);
     expect(taxon1.id).toMatch(/^t.*/);
@@ -37,9 +37,9 @@ test("Addition of items without ids", () => {
 
 test("Get top level items", () => {
     const hierarchy = new Hierarchy<Taxon>("", new Map());
-    const taxon1 = new Taxon({ id: "1", name: { S: "" }, parentId: undefined });
-    const taxon2 = new Taxon({ id: "2", name: { S: "" }, parentId: "1" });
-    const taxon3 = new Taxon({ id: "3", name: { S: "" }, parentId: "1" });
+    const taxon1 = createTaxon({ id: "1", name: { S: "" }, parentId: undefined });
+    const taxon2 = createTaxon({ id: "2", name: { S: "" }, parentId: "1" });
+    const taxon3 = createTaxon({ id: "3", name: { S: "" }, parentId: "1" });
     hierarchy.add(taxon1);
     hierarchy.add(taxon2);
     hierarchy.add(taxon3);
@@ -48,12 +48,12 @@ test("Get top level items", () => {
 
 test("Get children", () => {
     const hierarchy = new Hierarchy<Taxon>("", new Map());
-    const taxon1 = new Taxon({ id: "1", name: { S: "" }, parentId: undefined });
-    const taxon2 = new Taxon({ id: "2", name: { S: "" }, parentId: "1" });
-    const taxon3 = new Taxon({ id: "3", name: { S: "" }, parentId: "1" });
-    const taxon4 = new Taxon({ id: "4", name: { S: "" }, parentId: undefined });
-    const taxon5 = new Taxon({ id: "5", name: { S: "" }, parentId: "4" });
-    const taxon6 = new Taxon({ id: "6", name: { S: "" }, parentId: "2" });
+    const taxon1 = createTaxon({ id: "1", name: { S: "" }, parentId: undefined });
+    const taxon2 = createTaxon({ id: "2", name: { S: "" }, parentId: "1" });
+    const taxon3 = createTaxon({ id: "3", name: { S: "" }, parentId: "1" });
+    const taxon4 = createTaxon({ id: "4", name: { S: "" }, parentId: undefined });
+    const taxon5 = createTaxon({ id: "5", name: { S: "" }, parentId: "4" });
+    const taxon6 = createTaxon({ id: "6", name: { S: "" }, parentId: "2" });
     hierarchy.add(taxon1);
     hierarchy.add(taxon2);
     hierarchy.add(taxon3);
@@ -73,9 +73,9 @@ test("Get children", () => {
 
 test("Top level order", () => {
     const hierarchy = new Hierarchy<Taxon>("", new Map());
-    hierarchy.add(new Taxon({ id: "1", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "2", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "3", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "1", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "2", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "3", name: { S: "" }, parentId: undefined }));
     expect(Array.from(hierarchy.topLevelItems).map(h => h.id)).toStrictEqual(["1", "2", "3"]);
 
     hierarchy.moveUp(hierarchy.itemWithId("3")!);
@@ -92,13 +92,15 @@ test("Top level order", () => {
 
 test("Item level order", () => {
     const hierarchy = new Hierarchy<Taxon>("", new Map());
-    hierarchy.add(new Taxon({ id: "1", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "2", name: { S: "" }, parentId: "1" }));
-    hierarchy.add(new Taxon({ id: "3", name: { S: "" }, parentId: "1" }));
-    hierarchy.add(new Taxon({ id: "4", name: { S: "" }, parentId: "1" }));
-    hierarchy.add(new Taxon({ id: "5", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "6", name: { S: "" }, parentId: "5" }));
-    hierarchy.itemWithId("1")!.reorderChildren(["4", "2", "3"]);
+    const t = createTaxon({ id: "4", name: { S: "" }, parentId: "1" });
+    hierarchy.add(createTaxon({ id: "1", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "2", name: { S: "" }, parentId: "1" }));
+    hierarchy.add(createTaxon({ id: "3", name: { S: "" }, parentId: "1" }));
+    hierarchy.add(createTaxon(t));
+    hierarchy.add(createTaxon({ id: "5", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "6", name: { S: "" }, parentId: "5" }));
+    hierarchy.moveUp(t);
+    hierarchy.moveUp(t);
     expect(Array.from(hierarchy.allItems).map(h => h.id)).toStrictEqual(["1", "4", "2", "3", "5", "6"]);
     hierarchy.moveUp(hierarchy.itemWithId("2")!);
     expect(Array.from(hierarchy.allItems).map(h => h.id)).toStrictEqual(["1", "2", "4", "3", "5", "6"]);
@@ -108,12 +110,12 @@ test("Item level order", () => {
 
 test("Extract hierarchy", () => {
     const hierarchy = new Hierarchy<Taxon>("", new Map());
-    const taxon1 = new Taxon({ id: "1", name: { S: "A" }, parentId: undefined });
-    const taxon2 = new Taxon({ id: "2", name: { S: "B" }, parentId: "1" });
-    const taxon3 = new Taxon({ id: "3", name: { S: "C" }, parentId: "1" });
-    const taxon4 = new Taxon({ id: "4", name: { S: "D" }, parentId: "1" });
-    const taxon5 = new Taxon({ id: "5", name: { S: "E" }, parentId: undefined });
-    const taxon6 = new Taxon({ id: "6", name: { S: "F" }, parentId: "5" });
+    const taxon1 = createTaxon({ id: "1", name: { S: "A" }, parentId: undefined });
+    const taxon2 = createTaxon({ id: "2", name: { S: "B" }, parentId: "1" });
+    const taxon3 = createTaxon({ id: "3", name: { S: "C" }, parentId: "1" });
+    const taxon4 = createTaxon({ id: "4", name: { S: "D" }, parentId: "1" });
+    const taxon5 = createTaxon({ id: "5", name: { S: "E" }, parentId: undefined });
+    const taxon6 = createTaxon({ id: "6", name: { S: "F" }, parentId: "5" });
     hierarchy.add(taxon1);
     hierarchy.add(taxon2);
     hierarchy.add(taxon3);
@@ -137,19 +139,19 @@ test("Extract hierarchy", () => {
 
 test("Add hierarchy", () => {
     const hierarchy1 = new Hierarchy<Taxon>("t", new Map());
-    hierarchy1.add(new Taxon({ id: "1", name: { S: "A" }, parentId: undefined }));
-    hierarchy1.add(new Taxon({ id: "2", name: { S: "B" }, parentId: "1" }));
-    hierarchy1.add(new Taxon({ id: "3", name: { S: "C" }, parentId: "1" }));
+    hierarchy1.add(createTaxon({ id: "1", name: { S: "A" }, parentId: undefined }));
+    hierarchy1.add(createTaxon({ id: "2", name: { S: "B" }, parentId: "1" }));
+    hierarchy1.add(createTaxon({ id: "3", name: { S: "C" }, parentId: "1" }));
 
     const hierarchy2 = new Hierarchy<Taxon>("t", new Map());
-    hierarchy2.add(new Taxon({ id: "1", name: { S: "D" }, parentId: undefined }));
-    hierarchy2.add(new Taxon({ id: "2", name: { S: "E" }, parentId: "1" }));
-    hierarchy2.add(new Taxon({ id: "3", name: { S: "F" }, parentId: "1" }));
+    hierarchy2.add(createTaxon({ id: "1", name: { S: "D" }, parentId: undefined }));
+    hierarchy2.add(createTaxon({ id: "2", name: { S: "E" }, parentId: "1" }));
+    hierarchy2.add(createTaxon({ id: "3", name: { S: "F" }, parentId: "1" }));
 
     const hierarchy3 = new Hierarchy<Taxon>("t", new Map());
-    hierarchy3.add(new Taxon({ id: "1", name: { S: "G" }, parentId: undefined }));
-    hierarchy3.add(new Taxon({ id: "2", name: { S: "H" }, parentId: "1" }));
-    hierarchy3.add(new Taxon({ id: "3", name: { S: "I" }, parentId: "1" }));
+    hierarchy3.add(createTaxon({ id: "1", name: { S: "G" }, parentId: undefined }));
+    hierarchy3.add(createTaxon({ id: "2", name: { S: "H" }, parentId: "1" }));
+    hierarchy3.add(createTaxon({ id: "3", name: { S: "I" }, parentId: "1" }));
 
     hierarchy2.addHierarchy(hierarchy1, undefined);
     hierarchy3.addHierarchy(hierarchy1, "2");
@@ -170,11 +172,11 @@ test("Add hierarchy", () => {
 
 test("Parents of", () => {
     const hierarchy = new Hierarchy<Taxon>("t", new Map());
-    const taxon1 = new Taxon({ id: "1", name: { S: "" }, parentId: undefined }) 
-    const taxon2 = new Taxon({ id: "2", name: { S: "" }, parentId: "1" }); 
-    const taxon3 = new Taxon({ id: "3", name: { S: "" }, parentId: "2" }); 
-    const taxon4 = new Taxon({ id: "4", name: { S: "" }, parentId: "2" });
-    const taxon5 = new Taxon({ id: "5", name: { S: "" }, parentId: "1" }); 
+    const taxon1 = createTaxon({ id: "1", name: { S: "" }, parentId: undefined }) 
+    const taxon2 = createTaxon({ id: "2", name: { S: "" }, parentId: "1" }); 
+    const taxon3 = createTaxon({ id: "3", name: { S: "" }, parentId: "2" }); 
+    const taxon4 = createTaxon({ id: "4", name: { S: "" }, parentId: "2" });
+    const taxon5 = createTaxon({ id: "5", name: { S: "" }, parentId: "1" }); 
     hierarchy.add(taxon1);
     hierarchy.add(taxon2);
     hierarchy.add(taxon3);
@@ -190,12 +192,12 @@ test("Parents of", () => {
 
 test("Get ordered children tree", () => {
     const hierarchy = new Hierarchy<Taxon>("t", new Map());
-    hierarchy.add(new Taxon({ id: "1", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "2", name: { S: "" }, parentId: "1" }));
-    hierarchy.add(new Taxon({ id: "3", name: { S: "" }, parentId: "2" }));
-    hierarchy.add(new Taxon({ id: "4", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "5", name: { S: "" }, parentId: "4" }));
-    hierarchy.add(new Taxon({ id: "6", name: { S: "" }, parentId: "4" }));
+    hierarchy.add(createTaxon({ id: "1", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "2", name: { S: "" }, parentId: "1" }));
+    hierarchy.add(createTaxon({ id: "3", name: { S: "" }, parentId: "2" }));
+    hierarchy.add(createTaxon({ id: "4", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "5", name: { S: "" }, parentId: "4" }));
+    hierarchy.add(createTaxon({ id: "6", name: { S: "" }, parentId: "4" }));
 
     const childrenTree1 = Array.from(hierarchy.getOrderedChildrenTree(hierarchy.itemWithId("1")));
     expect(childrenTree1.map(t => t.id)).toStrictEqual(["1", "2", "3"]);
@@ -209,12 +211,12 @@ test("Get ordered children tree", () => {
 
 test("Get leaves", () => {
     const hierarchy = new Hierarchy<Taxon>("t", new Map());
-    hierarchy.add(new Taxon({ id: "1", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "2", name: { S: "" }, parentId: "1" }));
-    hierarchy.add(new Taxon({ id: "3", name: { S: "" }, parentId: "2" }));
-    hierarchy.add(new Taxon({ id: "4", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "5", name: { S: "" }, parentId: "4" }));
-    hierarchy.add(new Taxon({ id: "6", name: { S: "" }, parentId: "4" }));
+    hierarchy.add(createTaxon({ id: "1", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "2", name: { S: "" }, parentId: "1" }));
+    hierarchy.add(createTaxon({ id: "3", name: { S: "" }, parentId: "2" }));
+    hierarchy.add(createTaxon({ id: "4", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "5", name: { S: "" }, parentId: "4" }));
+    hierarchy.add(createTaxon({ id: "6", name: { S: "" }, parentId: "4" }));
 
     const leaves1 = Array.from(hierarchy.getLeaves(hierarchy.itemWithId("1")));
     expect(leaves1.map(t => t.id)).toStrictEqual(["3"]);
@@ -225,12 +227,12 @@ test("Get leaves", () => {
 
 test("Remove items", () => {
     const hierarchy = new Hierarchy<Taxon>("t", new Map());
-    hierarchy.add(new Taxon({ id: "1", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "2", name: { S: "" }, parentId: "1" }));
-    hierarchy.add(new Taxon({ id: "3", name: { S: "" }, parentId: "2" }));
-    hierarchy.add(new Taxon({ id: "4", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "5", name: { S: "" }, parentId: "4" }));
-    hierarchy.add(new Taxon({ id: "6", name: { S: "" }, parentId: "4" }));
+    hierarchy.add(createTaxon({ id: "1", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "2", name: { S: "" }, parentId: "1" }));
+    hierarchy.add(createTaxon({ id: "3", name: { S: "" }, parentId: "2" }));
+    hierarchy.add(createTaxon({ id: "4", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "5", name: { S: "" }, parentId: "4" }));
+    hierarchy.add(createTaxon({ id: "6", name: { S: "" }, parentId: "4" }));
 
     hierarchy.remove(hierarchy.itemWithId("6")!);
     expect(Array.from(hierarchy.allItems).map(t => t.id)).toStrictEqual(["1", "2", "3", "4", "5"]);
@@ -242,9 +244,9 @@ test("Remove items", () => {
 
 test("Clear", () => {
     const hierarchy = new Hierarchy<Taxon>("t", new Map());
-    hierarchy.add(new Taxon({ id: "1", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "2", name: { S: "" }, parentId: undefined }));
-    hierarchy.add(new Taxon({ id: "3", name: { S: "" }, parentId: "2" }));
+    hierarchy.add(createTaxon({ id: "1", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "2", name: { S: "" }, parentId: undefined }));
+    hierarchy.add(createTaxon({ id: "3", name: { S: "" }, parentId: "2" }));
     hierarchy.clear();
 
     expect(Array.from(hierarchy.allItems)).toStrictEqual([]);

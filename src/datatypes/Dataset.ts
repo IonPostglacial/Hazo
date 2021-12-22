@@ -31,53 +31,32 @@ export class Dataset {
 		for (const character of charactersHierarchy.allItems) {
 			character.states.forEach(s => this.indexState(s));
 		}
-		const addFamilyPreset = (taxon: Taxon) => {
-			if (taxon.parentId) return;
-
-			this.presetStates.family.push({
-				id: "s-auto-" + taxon.id,
-				name: clone(taxon.name),
-				pictures: clone(taxon.pictures),
-			});
-		}
 		for (const taxon of taxonsHierarchy.allItems) {
-			addFamilyPreset(taxon);
+			this.addFamilyPreset(taxon);
 		}
-		this.taxonsHierarchy.onAdd(taxon => {
-			addFamilyPreset(taxon);
-		});
-		this.taxonsHierarchy.onRemove(taxon => {
-			if (taxon.parentId) return;
-
-			const index = this.presetStates.family.findIndex(family => family.id === "s-auto-" + taxon.id);
-
-			if (index >= 0) {
-				this.removeStateWithoutCharacter(this.presetStates.family[index]);
-				this.presetStates.family.splice(index, 1);
-			}
-		});
-		this.charactersHierarchy.onAdd(this.onAddCharacter.bind(this));
 		this.charactersHierarchy.onClone(this.onCharacterCloned.bind(this));
-		this.charactersHierarchy.onRemove(c => c.states.forEach(s => this.statesById.delete(s.id)));
+	}
+
+	private addFamilyPreset(taxon: Taxon) {
+		if (taxon.parentId) return;
+
+		this.presetStates.family.push({
+			id: "s-auto-" + taxon.id,
+			name: clone(taxon.name),
+			pictures: clone(taxon.pictures),
+		});
 	}
 
 	private indexState(state: State) {
 		this.statesById.set(state.id, state);
 	}
 
-	onAddCharacter(character: Character, autoid: boolean) {
-		character.states.forEach(s => this.indexState(s));
-		if (autoid) {
-            const parentCharacter = this.charactersHierarchy.itemWithId(character.parentId);
-            if (typeof character.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
-                const newState: State = {
-                    id: "s-auto-" + character.id,
-                    name: Object.assign({}, character.name), pictures: []
-                };
-                this.addState(newState, parentCharacter);
-                character.inherentState = newState;
-            }
-		}
+	taxonWithId(id: string|undefined): Taxon|undefined {
+		return this.taxonsHierarchy.itemWithId(id);
+	}
+
+	characterWithId(id: string|undefined): Character|undefined {
+		return this.charactersHierarchy.itemWithId(id);
 	}
 
 	onCharacterCloned(hierarchy: Hierarchy<Character>, character: Character, clonedCharacter: Character, newParent: Character|undefined) {
@@ -107,11 +86,20 @@ export class Dataset {
 	}
 
 	addTaxon(taxon: Taxon) {
-		this.taxonsHierarchy.add(taxon);	
+		this.taxonsHierarchy.add(taxon);
+		this.addFamilyPreset(taxon);
 	}
 
 	removeTaxon(taxon: Taxon) {
 		this.taxonsHierarchy.remove(taxon);
+		if (taxon.parentId) return;
+
+		const index = this.presetStates.family.findIndex(family => family.id === "s-auto-" + taxon.id);
+
+		if (index >= 0) {
+			this.removeStateWithoutCharacter(this.presetStates.family[index]);
+			this.presetStates.family.splice(index, 1);
+		}
 	}
 
 	get taxons() {
@@ -132,7 +120,20 @@ export class Dataset {
 	}
 
 	addCharacter(character: Character) {
+		const autoid = !character.id;
 		this.charactersHierarchy.add(character);
+		character.states.forEach(s => this.indexState(s));
+		if (autoid) {
+            const parentCharacter = this.charactersHierarchy.itemWithId(character.parentId);
+            if (typeof character.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
+                const newState: State = {
+                    id: "s-auto-" + character.id,
+                    name: Object.assign({}, character.name), pictures: []
+                };
+                this.addState(newState, parentCharacter);
+                character.inherentState = newState;
+            }
+		}
 	}
 
 	removeCharacter(character: Character) {

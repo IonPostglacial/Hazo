@@ -329,8 +329,8 @@ export default Vue.extend({
             const result = await this.fileRead(file);
 
             if (result !== null) {
-                for (const taxon of result.taxonsHierarchy.allItems) {
-                    const existing = this.dataset.taxonsHierarchy.itemWithId(taxon.id);
+                for (const taxon of result.taxons) {
+                    const existing = this.dataset.taxonWithId(taxon.id);
                     if (typeof existing !== "undefined") {
                         existing.name.S = existing.name.S ?? taxon.name.S;
                         existing.name.EN = existing.name.EN ?? taxon.name.EN;
@@ -391,7 +391,7 @@ export default Vue.extend({
                                 infosByName[name] = { author, url };
                             }
                         }
-                        for (const taxon of this.dataset.taxonsHierarchy.allItems) {
+                        for (const taxon of this.dataset.taxons) {
                             const info = infosByName[taxon.name.S];
                             if (info) {
                                 taxon.author = info.author;

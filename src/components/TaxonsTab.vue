@@ -213,7 +213,7 @@ export default Vue.extend({
             return this.store.dataset;
         },
         selectedTaxon(): Taxon|undefined {
-            return this.dataset.taxonsHierarchy.itemWithId(this.selectedTaxonId);
+            return this.dataset.taxonWithId(this.selectedTaxonId);
         },
         itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
             if (typeof this.selectedTaxon !== "undefined") {
@@ -343,7 +343,7 @@ export default Vue.extend({
         },
         exportStats() {
             const stats = taxonsStats(this.dataset.taxonsHierarchy);
-            const chars = Array.from(this.dataset.charactersHierarchy.allItems);
+            const chars = Array.from(this.dataset.characters);
             let statesCount = 0;
             let picsCount = 0;
             for (const char of chars) {
@@ -353,7 +353,7 @@ export default Vue.extend({
                     picsCount += state.pictures.length;
                 }
             }
-            for (const taxon of this.dataset.taxonsHierarchy.allItems) {
+            for (const taxon of this.dataset.taxons) {
                 picsCount += taxon.pictures.length;
             }
             const text = `In our items list, ${stats.taxa.length} taxa were registered in our database, ${stats.families.length} families, ${stats.gender} genus, ${stats.species.length} species. Among those, ** trees, and *** shrubs, and ** herbs; ** dans dry forest, ** live in savanna, ** aquatic plants.
