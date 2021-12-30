@@ -6,6 +6,7 @@ import clone from "@/tools/clone";
 import { generateId } from "@/tools/generateid";
 import Month from "./Months";
 
+
 interface StateCallback {
     (e: { state: State, character: Character }): void;
 }
@@ -16,9 +17,15 @@ type SelectableState = State & { children: any[], selected?: boolean };
 function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarchy<T>, itemsByIds: IMap<Hierarchy<T>>, item: Hierarchy<T>): T {
 	const it = cloneHierarchy(item);
 	const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
+	const newIdsByOldIds = new Map();
 	forEachHierarchy(it, child => {
-        child.id = "";
-        child.id = generateId(prefix, itemsByIds, child);
+		if (newIdsByOldIds.has(child.parentId)) {
+			child.parentId = newIdsByOldIds.get(child.parentId);
+		}
+		if (itemsByIds.has(child.id)) {
+			child.id = "";
+			child.id = generateId(prefix, itemsByIds, child);
+		}
 		itemsByIds.set(child.id, child);
     });
 	parent.children.push(it);
@@ -133,32 +140,6 @@ export class Dataset {
 			return this.charactersByIds.get(id);
 		}
 	}
-
-	// onCharacterCloned(hierarchy: Hierarchy<Character>, character: Character, clonedCharacter: Character, newParent: Character|undefined) {
-	// 	clonedCharacter.states = [];
-	// 	clonedCharacter.requiredStates = [];
-    //     clonedCharacter.inapplicableStates = [];
-    //     clonedCharacter.inherentState = undefined;
-    //     const oldParent = hierarchy.itemWithId(character.parentId);
-    //     const oldStates = this.characterStates(character);
-    //     const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
-    //     const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
-    //     for (const oldState of oldStates) {
-    //         const newState = clone(oldState);
-    //         newState.id = "";
-    //         this.addState(newState, clonedCharacter);
-    //         if (oldRequiredStatesIds.includes(oldState.id)) {
-    //             clonedCharacter.requiredStates.push(newState);
-    //         }
-    //         if (oldInapplicableStatesIds.includes(oldState.id)) {
-    //             clonedCharacter.inapplicableStates.push(newState);
-    //         }
-    //     }
-    //     if (newParent && character.inherentState?.id) {
-    //         const oldInherentStateIndex = Array.from(this.characterStates(oldParent)).findIndex(s => s.id === character.inherentState?.id);
-    //         clonedCharacter.inherentState = Array.from(this.characterStates(newParent))[oldInherentStateIndex];
-    //     }
-	// }
 
 	addTaxon(taxon: Taxon) {
 		const t = addItem("t", this.taxonsHierarchy, this.taxonsByIds, taxon);
