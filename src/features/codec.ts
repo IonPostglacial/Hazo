@@ -50,10 +50,10 @@ function deduplicatePicsIds(pictures: Iterable<Picture>, picIds: Set<string>): P
 	return pics;
 }
 
-function encodeHierarchicalItem(hierarchy: Hierarchy<any>, item: HierarchicalItem, picIds: Set<string>) {
+function encodeHierarchicalItem(item: Hierarchy<any>, picIds: Set<string>) {
 	const children = new Set<string>();
 
-	for (const child of hierarchy.childrenOf(item)) {
+	for (const child of item.children) {
 		children.add(child.id);
 	}
 	return {
@@ -76,7 +76,7 @@ function encodeDescription(character: Character, states: State[]): EncodedDescri
 
 function encodeTaxon(taxon: Taxon, dataset: Dataset, picIds: Set<string>) {
 	return {
-		...encodeHierarchicalItem(dataset.taxonsHierarchy, taxon, picIds),
+		...encodeHierarchicalItem(taxon, picIds),
 		bookInfoByIds: taxon.bookInfoByIds,
 		specimenLocations: taxon.specimenLocations,
 		descriptions: [...dataset.taxonDescriptions(taxon)].map(d => encodeDescription(d.character, d.states)),
@@ -101,7 +101,7 @@ function encodeCharacter(dataset: Dataset, character: Character, picIds: Set<str
 		inherentStateId: character.inherentState?.id,
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),
-		...encodeHierarchicalItem(dataset.charactersHierarchy, character, picIds),
+		...encodeHierarchicalItem(character, picIds),
 	};
 }
 
@@ -139,8 +139,8 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	}
 	return {
 		id: dataset.id,
-		taxons: Array.from(dataset.taxons).map(taxon => encodeTaxon(taxon, dataset, picIds)),
-		characters: Array.from(dataset.characters).map(character => encodeCharacter(dataset, character, picIds)),
+		taxons: Array.from(dataset.taxons).filter(t => t.id !== "t0").map(taxon => encodeTaxon(taxon, dataset, picIds)),
+		characters: Array.from(dataset.characters).filter(c => c.id !== "c0").map(character => encodeCharacter(dataset, character, picIds)),
 		states: Array.from(map(allStates.values(), s => encodeState(s, picIds))),
 		books: dataset.books,
 		extraFields: dataset.extraFields,

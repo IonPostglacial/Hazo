@@ -41,11 +41,12 @@ export function cloneHierarchy<T>(hierarchy: Hierarchy<T>): Hierarchy<T> {
     };
 }
 
-export function transformHierarchy<T, U>(hierarchy: Hierarchy<T>, transform: { filter: (h:Hierarchy<T>)=>boolean, map: (j:Hierarchy<T>)=>Hierarchy<U>}) {
+export function transformHierarchy<T, U>(hierarchy: Hierarchy<T>, transform: { filter: (h:Hierarchy<T>)=>boolean, map: (j:Hierarchy<T>)=>Hierarchy<U>}): Hierarchy<any> {
     const children = [];
+
     for (const child of hierarchy.children) {
         if (transform.filter(child)) {
-            children.push(transform.map(child));
+            children.push(transform.map(transformHierarchy(child, transform)));
         }
     }
     return { ...hierarchy, children };

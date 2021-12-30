@@ -259,6 +259,18 @@ export function createStore() {
             store.dataset.taxonsHierarchy = createTaxon({ id: "t0", name: { S: "<TOP>" } });
             store.dataset.charactersHierarchy = createCharacter({ id: "c0", name: { S: "<TOP>" } });
         },
+        addStateToAllowList(state: State) {
+            store.statesAllowList = [...store.statesAllowList, state];
+        },
+        removeStateFromAllowList(state: State) {
+            store.statesAllowList = store.statesAllowList.filter(s => s.id !== state.id);
+        },
+        addStateToDenyList(state: State) {
+            store.statesDenyList = [...store.statesDenyList, state];
+        },
+        removeStateFromDenyList(state: State) {
+            store.statesDenyList = store.statesDenyList.filter(s => s.id !== state.id);
+        },
     };
     function perform<Action extends keyof typeof actions>(action: Action, ...params: Parameters<typeof actions[Action]>) {
         if (store.dbg) {
@@ -280,6 +292,8 @@ export function createStore() {
         copiedTaxon: null as null | Hierarchy<Taxon>,
         copiedCharacter: null as null | Hierarchy<Character>,
         copiedStates: [] as State[],
+        statesAllowList: [] as State[],
+        statesDenyList: [] as State[],
         get charactersHierarchy() {
             return this.dataset.charactersHierarchy;
         },

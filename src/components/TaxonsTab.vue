@@ -1,6 +1,6 @@
 <template>
     <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+        <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-fields="nameFields"
             @move-item-up="moveUp" @move-item-down="moveDown"
             @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
@@ -27,7 +27,7 @@
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
                             <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
-                                <tree-menu :items="dataset.taxonsHierarchy"
+                                <tree-menu :items="taxonTree"
                                     :name-fields="nameFields"
                                     @select-item="changeSelectedTaxonParent" v-slot="menuProps">
                                     <div>{{ menuProps.item.name }}</div>
@@ -135,7 +135,7 @@
                     </div>
                     <div v-if="editDescriptors" class="vertical-flexbox scroll flex-grow-1">
                         <collapsible-panel label="Description">
-                            <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                            <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItemsByIds="dataset.charactersByIds" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                         </collapsible-panel>
                     </div>
                     <collapsible-panel v-if="!editProperties" class="scroll" label="Description">
@@ -175,11 +175,12 @@ import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { TexExporter, exportZipFolder, importKml } from "@/features";
-import { createTaxon } from "@/datatypes/Taxon";
+import { createTaxon, taxonHasStates } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
+import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { taxonsStats } from "@/features/hierarchystats";
 import { normalizePicture } from "@/datatypes/picture";
-import { forEachHierarchy } from "@/datatypes/hierarchy";
+import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
 
 
@@ -215,6 +216,17 @@ export default Vue.extend({
     computed: {
         dataset(): Dataset {
             return this.store.dataset;
+        },
+        taxonTree(): Taxon {
+            if (this.store.statesAllowList.length > 0 || this.store.statesDenyList.length > 0) {
+                return transformHierarchy(this.dataset.taxonsHierarchy, {
+                    map: t => t,
+                    filter: t => taxonOrAnyChildHasStates(t, this.store.statesAllowList) && 
+                        (this.store.statesDenyList.length == 0 || !taxonHasStates(t, this.store.statesDenyList)),
+                });
+            } else {
+                return this.dataset.taxonsHierarchy;
+            }
         },
         selectedTaxon(): Taxon|undefined {
             return this.dataset.taxon(this.selectedTaxonId);

@@ -105,8 +105,16 @@ button.selected-tab,
     height: 100%;
 }
 
+.float-left {
+    float: left;
+}
+
 .float-right {
     float: right;
+}
+
+.clear {
+    clear: both;
 }
 
 select {

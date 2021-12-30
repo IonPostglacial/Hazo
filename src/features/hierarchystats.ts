@@ -15,7 +15,7 @@ type Counts = {
 export function taxonsStats(hierarchy: Hierarchy<Taxon>): Counts {
     const counts: Counts = { families: [], gender: 0, taxa: [], species: [] };
     function countRec(item: Taxon, level: number) {
-        if (hierarchy.hasChildren(item)) {
+        if (item.children.length > 0) {
             if (level === 0) {
                 counts.families.push(item);
             } else {
@@ -27,11 +27,11 @@ export function taxonsStats(hierarchy: Hierarchy<Taxon>): Counts {
                 counts.species.push(item);
             }
         }
-        for (const child of hierarchy.childrenOf(item)) {
+        for (const child of item.children) {
             countRec(child, level + 1);
         }
     }
-    for (const item of hierarchy.topLevelItems) {
+    for (const item of hierarchy.children) {
         countRec(item, 0);
     }
     return counts;

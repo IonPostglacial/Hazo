@@ -1,5 +1,5 @@
 import { createHierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
-import { BookInfo, Taxon } from "./types";
+import { BookInfo, State, Taxon } from "./types";
 
 interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
 	bookInfoByIds?: Record<string, BookInfo>
@@ -36,4 +36,21 @@ export function createTaxon(init: TaxonInit): Taxon {
 		extra: init.extra ?? {},
 		children: [],
 	};
+}
+
+export function taxonHasStates(taxon: Taxon, states: State[]): boolean {
+	return states.every(s => taxon.states.some(state => state.id === s.id));
+}
+
+export function taxonOrAnyChildHasStates(taxon: Taxon, states: State[]): boolean {
+	if (taxonHasStates(taxon, states)) {
+		return true;
+	} else {
+		for (const child of taxon.children) {
+			if (taxonOrAnyChildHasStates(child, states)) {
+				return true;
+			}
+		}
+	}
+	return false;
 }

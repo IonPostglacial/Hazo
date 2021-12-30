@@ -71,7 +71,7 @@ export class Dataset {
     private stateRemovalCallbacks = new Set<StateCallback>();
 	private statesById: IMap<State>;
 	private taxonsByIds: IMap<Taxon>;
-	private charactersByIds: IMap<Character>;
+	charactersByIds: IMap<Character>;
 	presetStates: Record<CharacterPreset, State[]> = {
 		flowering: Month.floweringStates,
 		family: [],

@@ -1,6 +1,14 @@
 <template>
     <div id="app" class="vertical-flexbox lightgrey-background height-full">
         <nav class="thin-border background-gradient-1 no-print centered-text">
+            <div class="inline-block float-left">
+                <button v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
+                    {{ state.name.S }}
+                </button>
+                <button v-for="state in store.statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
+                    {{ state.name.S }}
+                </button>
+            </div>
             <div class="button-group inline-block">
                 <router-link class="button" to="/taxons">Taxons</router-link>
                 <router-link class="button" to="/characters">Characters</router-link>
@@ -62,6 +70,7 @@ import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
 import Vue from "vue";
 import { forEachHierarchy } from "./datatypes/hierarchy";
+import { State } from "./datatypes/types";
 
 export default Vue.extend({
     name: "App",
@@ -150,6 +159,12 @@ export default Vue.extend({
     methods: {
         openHub() {
             window.open(Config.datasetRegistry);
+        },
+        removeFromAllowList(state: State) {
+            this.store.do("removeStateFromAllowList", state);
+        },
+        removeFromDenyList(state: State) {
+            this.store.do("removeStateFromDenyList", state);
         },
         async syncPictures() {
             this.urlsToSync = [];

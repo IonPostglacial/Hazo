@@ -8,14 +8,14 @@ function getEntries(hierarchy: Hierarchy<Taxon>, entries: Iterable<Taxon>, zip: 
 		const entryName = generateFileName(entry.name.S);
 		const currentPath = path + encodeURI(entryName) + "/";
 		zip.folder(currentPath);
-		getEntries(hierarchy, hierarchy.childrenOf(entry), zip, currentPath);
+		getEntries(hierarchy, entry.children, zip, currentPath);
 	}
 }
 
 export function exportZipFolder(hierarchy: Hierarchy<Taxon>): Promise<Blob> {
 	const zip = new JSZip();
 
-	getEntries(hierarchy, hierarchy.topLevelItems, zip);
+	getEntries(hierarchy, hierarchy.children, zip);
 
 	return zip.generateAsync({type:"blob"});
 }

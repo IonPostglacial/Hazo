@@ -106,12 +106,30 @@
         <section v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
+                    <label v-if="selectedCharacter.inherentState">
+                        <input type="checkbox"
+                            @input="onlyAllowState(selectedCharacter.inherentState)"
+                            :checked="stateInAllowList(selectedCharacter.inherentState)">
+                        Add to allow list
+                    </label>
+                    <label v-if="selectedCharacter.inherentState">
+                        <input type="checkbox"
+                            @input="denyState(selectedCharacter.inherentState)"
+                            :checked="stateInDenyList(selectedCharacter.inherentState)">
+                        Add to deny list
+                    </label>
                     <button class="background-color-1" @click="exportStates">Copy</button>
                     <ul class="no-list-style medium-padding medium-margin">
                         <li v-for="state in statesToDisplay" :key="state.id" class="horizontal-flexbox">
                             <div class="vertical-flexbox thin-border">
                                 <div @click="moveStateUp(state)" class="move-up">🡡</div>
                                 <div @click="moveStateDown(state)" class="move-down">🡣</div>
+                                <label for="allow">
+                                    A<input name="allow" type="checkbox" @input="onlyAllowState(state)" :checked="stateInAllowList(state)">
+                                </label>
+                                <label for="deny">
+                                    D<input name="deny" type="checkbox" @input="denyState(state)" :checked="stateInDenyList(state)">
+                                </label>
                             </div>
                             <label class="medium-padding rounded nowrap horizontal-flexbox">
                                 <div class="form-grid">
@@ -204,9 +222,30 @@ export default Vue.extend({
                 .filter(s => typeof s !== "undefined") ?? [];
             return Array.from(this.dataset.characterStates(this.selectedCharacter)).
                 filter(s => !childrenInherentStateIds.includes(s.id));
-        }
+        },
     },
     methods: {
+        stateInAllowList(state: State): boolean {
+            return this.store.statesAllowList.some(s => s.id === state.id);
+        },
+        stateInDenyList(state: State): boolean {
+            return this.store.statesDenyList.some(s => s.id === state.id);
+        },
+        onlyAllowState(state: State) {
+            console.log("toto")
+            if (this.stateInAllowList(state)) {
+                this.store.do("removeStateFromAllowList", state);
+            } else {
+                this.store.do("addStateToAllowList", state);
+            }
+        },
+        denyState(state: State) {
+            if (this.stateInDenyList(state)) {
+                this.store.do("removeStateFromDenyList", state);
+            } else {
+                this.store.do("addStateToDenyList", state);
+            }
+        },
         exportStates() {
             if (this.selectedCharacter) {
                 navigator.clipboard.writeText(this.statesToDisplay.map(s => `${s.name.S??""}\n${s.name.EN??""}\n${s.name.CN??""}\n`).join("\n"));
