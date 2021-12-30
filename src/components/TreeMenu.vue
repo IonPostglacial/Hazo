@@ -15,7 +15,7 @@
                 </li>
             </ul>
         </div>
-        <ul :class="['menu', 'flex-grow-1', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
+        <ul :class="['menu', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
             <TreeMenuItem v-for="(item, index) in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
                 :item="item"
                 :editable="editable" :buttons="buttons"
@@ -33,6 +33,7 @@
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
         </ul>
+        <div class="flex-grow-1">&nbsp;</div>
         <add-item v-if="editable" @add-item="addItem({ value: $event.detail })"></add-item>
     </div> 
 </template>

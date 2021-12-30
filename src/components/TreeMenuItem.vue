@@ -1,6 +1,6 @@
 <template>
     <li>
-        <div class="horizontal-flexbox center-items">
+        <div class="medium-height horizontal-flexbox center-items">
             <div class="indent">&nbsp;</div>
             <label v-on:click="toggleOpen" :class="['small-square', 'blue-circle-hover', 'thin-margin', 'vertical-flexbox', 'flex-centered', { 'visibility-hidden': !hasArrows }]">
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
@@ -9,8 +9,8 @@
             <div class="horizontal-flexbox flex-centered unselectable">{{ prettyId }}</div>
         </div>
         <div v-for="nameField in fieldNames" :key="nameField.propertyName"
-                :class="['medium-line-height', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', 'cell', 'blue-hover-line', { 'background-color-1': selected }]">
-            <div class="horizontal-flexbox center-items flex-grow-1 medium-height">
+                :class="['medium-height', 'medium-line-height', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', 'cell', 'blue-hover-line', { 'background-color-1': selected }]">
+            <div class="horizontal-flexbox center-items flex-grow-1">
                 <label class="horizontal-flexbox flex-grow-1 unselectable" v-on:click="select">
                     <slot v-bind:item="{id: item.id, name: item.name[nameField.propertyName] }">
                         <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ item[nameField.propertyName] }}</div>
@@ -18,13 +18,13 @@
                 </label>
             </div>
         </div>
-        <div v-if="editable" class="horizontal-flexbox flex-centered">
+        <div v-if="editable" class="medium-height horizontal-flexbox flex-centered">
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
             <div @click="moveUp" class="move-up">🡡</div>
             <div @click="moveDown" class="move-down">🡣</div>
             <div class="close" @click="deleteItem"></div>
         </div>
-        <ul v-if="open" class="flex-grow-1">
+        <ul v-if="open">
             <TreeMenuItem v-for="(child, index) in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                 :init-open="initOpen"
                 :path="[...path, index]"
@@ -35,7 +35,7 @@
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
             <li v-if="editable">
-                <add-item class="full-line" @add-item="addItem"></add-item>
+                <add-item class="medium-height full-line" @add-item="addItem"></add-item>
             </li>
         </ul>
     </li>
