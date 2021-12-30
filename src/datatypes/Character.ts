@@ -3,7 +3,7 @@ import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
 
 type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
-	presetStates: Record<CharacterPreset, State[]>
+	presetStates?: Record<CharacterPreset, State[]>
 	inherentState?: State,
 	states?: State[] | CharacterPreset,
 	inapplicableStates?: State[],
@@ -16,11 +16,12 @@ export function createCharacter(init: CharacterInit): Character {
 		...createHierarchicalItem({ type: "character", ...init }),
 		states: Array.isArray(init.states) ? init.states :
 			typeof init.states === "undefined" ? [] :
-			init.presetStates[init.states],
+			init.presetStates?.[init.states] ?? [],
 		inherentState: init.inherentState,
 		inapplicableStates: init.inapplicableStates ?? [],
 		requiredStates: init.requiredStates ?? [],
 		preset: Array.isArray(init.states) ? undefined : init.states,
 		detail: init.detail ?? "",
+		children: [],
 	};
 }

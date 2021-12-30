@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, DictionaryEntry, Field, Hierarchy, HierarchicalItem, IMap, Picture, State, Taxon } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, HierarchicalItem, IMap, Picture, State, Taxon } from "@/datatypes";
 import { createCharacter, CharacterPreset } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
@@ -14,17 +14,6 @@ type EncodedState = {
 	description?: string;
 	color?: string;
 };
-
-type EncodedDictionaryEntry = {
-	id: string,
-	nameCN: string;
-	nameEN: string;
-	nameFR: string;
-	defCN: string;
-	defEN: string;
-	defFR: string;
-	url: string;
-}
 
 export interface EncodedDataset {
 	id: string
@@ -229,12 +218,13 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 	const books = standardBooks.slice();
 	const ds = new Dataset(
 		dataset?.id ?? "0",
-		new Hierarchy<Taxon>("t", new makeMap()),
-		new Hierarchy<Character>("c", new makeMap()),
+		createTaxon({ id: "t0", name: { S: "<TOP>" } }),
+		createCharacter({ id: "c0", name: { S: "<TOP>" } }),
 		books,
 		dataset?.extraFields ?? [],
 		states,
 	);
+
 	for (const state of dataset?.states ?? []) {
 		states.set(state.id, decodeState(state));
 	}
@@ -246,10 +236,10 @@ export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEnc
 		ds.addTaxon(decodeTaxon(taxon, books));
 		taxon.descriptions.forEach(d => {
 			for (const stateId of d.statesIds) {
-				const t = ds.taxonWithId(taxon.id);
+				const t = ds.taxon(taxon.id);
 				const state = states.get(stateId);
 				if (typeof t !== "undefined" && typeof state !== "undefined") {
-					ds.setTaxonState(t, state);
+					ds.setTaxonState(t.id, state);
 				}
 			}
 		});

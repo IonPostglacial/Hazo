@@ -4,6 +4,7 @@
             :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacter"
+            @move-item-up="moveUp" @move-item-down="moveDown"
             @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
@@ -155,7 +156,6 @@ import PictureBox from "./PictureBox.vue";
 import Vue from "vue";
 import { Dataset, Character, Hierarchy, State } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
-import { filter, map } from "@/tools/iter";
 import { normalizePicture } from "@/datatypes/picture";
 
 export default Vue.extend({
@@ -184,13 +184,13 @@ export default Vue.extend({
             return this.store.dataset.charactersHierarchy;
         },
         selectedCharacter(): Character|undefined {
-            return this.charactersHierarchy?.itemWithId(this.selectedCharacterId);
+            return this.dataset.character(this.selectedCharacterId);
         },
         parentStates(): State[] {
             const parentId = this.selectedCharacter?.parentId;
             if (typeof parentId === "undefined")
                 return[];
-            const parent = this.charactersHierarchy?.itemWithId(parentId);
+            const parent = this.dataset.character(parentId);
             if (typeof parent === "undefined")
                 return[];
             return Array.from(this.dataset.characterStates(parent));
@@ -199,8 +199,9 @@ export default Vue.extend({
             return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
         },
         statesToDisplay(): Array<State> {
-            const childrenInherentStateIds = Array.from(filter(map(this.charactersHierarchy.childrenOf(this.selectedCharacter), 
-                (c:Character) => c.inherentState?.id), s => typeof s !== "undefined"));
+            const childrenInherentStateIds = this.selectedCharacter?.children
+                .map(c => c.inherentState?.id)
+                .filter(s => typeof s !== "undefined") ?? [];
             return Array.from(this.dataset.characterStates(this.selectedCharacter)).
                 filter(s => !childrenInherentStateIds.includes(s.id));
         }
@@ -232,6 +233,12 @@ export default Vue.extend({
         },
         pasteStates() {
             this.store.do("pasteStates", this.selectedCharacterId);
+        },
+        moveUp(item: Character) {
+            if (this.selectedCharacter) this.store.do("moveCharacterUp", item);
+        },
+        moveDown(item: Character) {
+            if (this.selectedCharacter) this.store.do("moveCharacterDown", item);
         },
         setInapplicableState(state: State, selected: boolean) {
             this.store.do("setInapplicableState", { character: this.selectedCharacter!, state, selected });
@@ -313,7 +320,7 @@ export default Vue.extend({
             }));
         },
         deleteCharacter(e: { itemId: string}) {
-            const characterToDelete = this.charactersHierarchy?.itemWithId(e.itemId);
+            const characterToDelete = this.dataset.character(e.itemId);
             if (typeof characterToDelete !== "undefined") {
                 this.store.do("removeCharacter", characterToDelete);
             } else {

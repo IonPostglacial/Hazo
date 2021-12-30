@@ -25,11 +25,12 @@
             <div class="close" @click="deleteItem"></div>
         </div>
         <ul v-if="open" class="flex-grow-1">
-            <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
+            <TreeMenuItem v-for="(child, index) in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                 :init-open="initOpen"
+                :path="[...path, index]"
                 :selected-item="selectedItem"
                 :init-open-items="initOpenItems"
-                :field-names="fieldNames" :items-hierarchy="itemsHierarchy" :item="child" :buttons="buttons" 
+                :field-names="fieldNames" :item="child" :buttons="buttons" 
                 v-on="$listeners" :parent-id="item.id" v-slot:default="menuItemProps">
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
@@ -53,14 +54,14 @@ export default Vue.extend({
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,
-        item: Object as PropType<HierarchicalItem>,
-        itemsHierarchy: Object as PropType<Hierarchy<any>>,
+        item: Object as PropType<Hierarchy<HierarchicalItem>>,
         buttons: Array as PropType<Array<Button>>,
         fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,
         editable: Boolean,
         selectedItem: String,
         initOpen: Boolean,
         initOpenItems: Array as PropType<Array<string>>,
+        path: Array as PropType<Array<number>>,
     },
     data() {
         return {
@@ -68,7 +69,7 @@ export default Vue.extend({
         };
     },
     mounted() {
-        this.itemBus?.onOpenAll(() => this.open = (this.itemsHierarchy?.hasChildren(this.item)) ?? false);
+        this.itemBus?.onOpenAll(() => this.open = (this.item.children.length > 0) ?? false);
         this.itemBus?.onCloseAll(() => this.open = false);
         this.itemBus?.onToggle((id: string) =>  { if (id === this.item!.id) { this.open = !this.open } });
     }, 
@@ -88,10 +89,10 @@ export default Vue.extend({
             return this.buttons?.filter((button) => button.for === this.item?.type);
         },
         hasArrows(): boolean {
-            return (this.itemsHierarchy!.hasChildren(this.item) || this.editable);
+            return (this.item.children.length > 0 || this.editable);
         },
         childrenToDisplay(): Array<any> {
-            return Array.from(this.itemsHierarchy?.childrenOf(this.item)) ?? []
+            return this.item.children
         },
     },
     methods: {

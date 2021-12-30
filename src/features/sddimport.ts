@@ -142,13 +142,13 @@ export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset
 	const photosByRef = extractPhotosByRef(dataset);
 	const statesById = extractStatesById(makeMap, dataset, photosByRef);
     const statesByTaxons = extractStatesByTaxons(dataset);
-    const ds = new Dataset("0", new Hierarchy<Taxon>("t", new makeMap()), new Hierarchy<Character>("c", new makeMap()), [], [], statesById);
+    const ds = new Dataset("0", createTaxon({ id: "t0", name: { S: "<TOP>" }}), createCharacter({ id: "c0", name: { S: "<TOP>" } }), [], [], statesById);
     extractTaxonsHierarchy(ds, dataset, extraFields, photosByRef);
     for (const taxon of ds.taxons) {
         statesByTaxons.get(taxon.id)?.forEach(stateId => {
             const state = statesById.get(stateId);
             if (typeof state !== "undefined") {
-                ds.setTaxonState(taxon, state);
+                ds.setTaxonState(taxon.id, state);
             }
         });
     }

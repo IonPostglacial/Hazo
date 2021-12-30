@@ -16,13 +16,14 @@
             </ul>
         </div>
         <ul :class="['menu', 'flex-grow-1', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
-            <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
-                :item="item" :items-hierarchy="items"
+            <TreeMenuItem v-for="(item, index) in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
+                :item="item"
                 :editable="editable" :buttons="buttons"
                 :field-names="columnsToDisplay"
                 :selected-item="selectedItem"
                 :init-open="initOpen"
                 :init-open-items="initOpenItems"
+                :path="[index]"
                 @selected="selectItem"
                 @add-item="addItem"
                 @delete-item="deleteItem" 
@@ -43,6 +44,7 @@ import AddItem from "./AddItem.vue";
 import TreeMenuItem from "./TreeMenuItem.vue";
 import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
+import { iterHierarchy } from "@/datatypes/hierarchy";
 
 export default Vue.extend({
     name: "TreeMenu",
@@ -57,11 +59,6 @@ export default Vue.extend({
     components:  { AddItem, TreeMenuItem },
     data() {
         const initOpenItems: string[] = [];
-        let itemId = this.items?.itemWithId(this.selectedItem)?.parentId;
-        while (typeof itemId !== "undefined") {
-            initOpenItems.push(itemId);
-            itemId = this.items?.itemWithId(itemId)?.parentId;
-        }
         return {
             menuFilter: "",
             visibleFilter: "",
@@ -80,7 +77,7 @@ export default Vue.extend({
                 const self = this;
                 return {
                     *[Symbol.iterator]() {
-                        for (const item of self.items!.allItems) {
+                        for (const item of iterHierarchy(self.items)) {
                             if (self.nameFields!.
                                     map(field => (item.name as any)[field.propertyName]).
                                     some(name => name?.toUpperCase().includes(self.menuFilter?.toUpperCase()) ?? false)) {
@@ -90,7 +87,7 @@ export default Vue.extend({
                     }
                 };
             } else {
-                return this.items.topLevelItems;
+                return this.items.children;
             }
         },
     },
@@ -120,11 +117,11 @@ export default Vue.extend({
         deleteItem(e: string) {
             this.$emit("delete-item", e);
         },
-        moveItemUp(item: HierarchicalItem) {
-            this.items?.moveUp(item);
+        moveItemUp(e: HierarchicalItem) {
+            this.$emit("move-item-up", e);
         },
-        moveItemDown(item: HierarchicalItem) {
-            this.items?.moveDown(item);
+        moveItemDown(e: HierarchicalItem) {
+            this.$emit("move-item-down", e);
         },
         buttonClicked(e: string) {
             this.$emit("button-click", e);

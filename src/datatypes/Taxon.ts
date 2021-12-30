@@ -34,5 +34,6 @@ export function createTaxon(init: TaxonInit): Taxon {
 		page: init.page,
 		detail: init.detail ?? "",
 		extra: init.extra ?? {},
+		children: [],
 	};
 }

@@ -2,6 +2,7 @@
     <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="dataset.taxonsHierarchy" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-fields="nameFields"
+            @move-item-up="moveUp" @move-item-down="moveDown"
             @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
@@ -33,7 +34,7 @@
                             </div>
                         </div>
                         <div v-if="!selectingParent" class="button-group">
-                            <button type="button" v-for="parent in dataset.taxonsHierarchy.parentsOf(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
+                            <button type="button" v-for="parent in dataset.taxonParentChain(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
                             <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</button>
                         </div>
                     </div>
@@ -177,6 +178,8 @@ import { createTaxon } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { taxonsStats } from "@/features/hierarchystats";
 import { normalizePicture } from "@/datatypes/picture";
+import { forEachHierarchy } from "@/datatypes/hierarchy";
+import { createCharacter } from "@/datatypes/Character";
 
 
 export default Vue.extend({
@@ -213,13 +216,13 @@ export default Vue.extend({
             return this.store.dataset;
         },
         selectedTaxon(): Taxon|undefined {
-            return this.dataset.taxonWithId(this.selectedTaxonId);
+            return this.dataset.taxon(this.selectedTaxonId);
         },
         itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
             if (typeof this.selectedTaxon !== "undefined") {
                 return this.dataset.taxonCharactersTree(this.selectedTaxon);
             } else {
-                return new Hierarchy("", new Map());
+                return createCharacter({ id: "c0", name: { S: '' }});
             }
         },
         itemDescription(): Iterable<Description> {
@@ -232,9 +235,10 @@ export default Vue.extend({
     },
     methods: {
         pushStateToChildren(state: State) {
-            for (const child of this.dataset.taxonsHierarchy.getOrderedChildrenTree(this.selectedTaxon)) {
-                this.dataset.setTaxonState(child, state);
-            }
+            if (typeof this.selectedTaxon === "undefined") return;
+            forEachHierarchy(this.selectedTaxon, child => {
+                this.dataset.setTaxonState(child.id, state);
+            });
         },
         switchEditMode() {
             this.editProperties = !this.editProperties;
@@ -254,6 +258,12 @@ export default Vue.extend({
         },
         pasteItem() {
             this.store.do("pasteTaxon", this.selectedTaxonId);
+        },
+        moveUp(item: Taxon) {
+            if (this.selectedTaxon) this.store.do("moveTaxonUp", item);
+        },
+        moveDown(item: Taxon) {
+            if (this.selectedTaxon) this.store.do("moveTaxonDown", item);
         },
         openSelectParentDropdown() {
             this.selectingParent = true;
@@ -279,7 +289,7 @@ export default Vue.extend({
             }));
         },
         removeTaxon(e: { itemId: string }) {
-            const taxonToRemove = this.dataset.taxonsHierarchy?.itemWithId(e.itemId);
+            const taxonToRemove = this.dataset.taxon(e.itemId);
             if (taxonToRemove) {
                 this.store.do("removeTaxon", taxonToRemove);
             }
@@ -295,12 +305,12 @@ export default Vue.extend({
             const stateToAdd = isCharacter ? (e.item as Character).inherentState : e.item as State;
 
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
-                const selected = !this.dataset.hasTaxonState(this.selectedTaxon, stateToAdd);
+                const selected = !this.dataset.hasTaxonState(this.selectedTaxonId, stateToAdd);
                 this.store.do("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
         },
         openCharacter(e: { item: Character }) {
-            if (e.item.inherentState && this.selectedTaxon && !this.dataset.hasTaxonState(this.selectedTaxon, e.item.inherentState)) {
+            if (e.item.inherentState && this.selectedTaxon && !this.dataset.hasTaxonState(this.selectedTaxonId, e.item.inherentState)) {
                 this.taxonStateToggle({ item: e.item.inherentState });
             }
         },

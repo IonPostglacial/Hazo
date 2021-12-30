@@ -240,8 +240,8 @@ export default Vue.extend({
         treeData(): D3Hierarchy {
             const hierarchyToD3 = (hierarchy: Hierarchy<Character>, item: any): D3Hierarchy => {
                 const langFieldName = this.selectedLang.field;
-                const charChildren = item ? hierarchy.childrenOf(item) : [];
-                const charChildrenStatesNames = Array.from(charChildren).map(h => (h.inherentState?.name as any ?? {})[langFieldName])
+                const charChildren: Character[] = item?.children ?? [];
+                const charChildrenStatesNames = charChildren.map(h => (h.inherentState?.name as any ?? {})[langFieldName])
                     .filter(s => typeof s === "undefined");
                 return {
                     name: item.name ? item.name[langFieldName] : "",
@@ -252,10 +252,11 @@ export default Vue.extend({
                         ...map(filter(this.dataset.characterStates(item),
                             (s: any) => !charChildrenStatesNames.includes(s.name[langFieldName])),
                             (s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
-                    ]};
+                    ]
+                };
             };
             const hierarchy = this.store.dataset.charactersHierarchy;
-            const topLevelItems = Array.from(hierarchy.topLevelItems);
+            const topLevelItems = hierarchy.children;
             if (this.selectedCharacter) {
                 return hierarchyToD3(hierarchy, this.selectedCharacter);
             } else {

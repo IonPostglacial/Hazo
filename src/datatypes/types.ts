@@ -69,6 +69,7 @@ export interface Taxon extends HierarchicalItem {
 	bookInfoByIds?: Record<string, BookInfo>
 	specimenLocations?: { lat: number, lng: number }[];
 	extra: Record<string, any>;
+	children: Taxon[];
 }
 
 export type CharacterPreset = "flowering" | "family";
@@ -80,6 +81,7 @@ export interface Character extends HierarchicalItem {
 	inapplicableStates: State[];
 	requiredStates: State[];
 	preset: CharacterPreset|undefined;
+	children: Character[];
 }
 
 export interface Description {

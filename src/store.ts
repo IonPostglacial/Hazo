@@ -1,4 +1,4 @@
-import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon } from "./datatypes";
+import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon, cloneHierarchy, createTaxon, createCharacter } from "./datatypes";
 import { Dataset } from './datatypes/Dataset';
 import { State } from "./datatypes/types";
 import clone from "./tools/clone";
@@ -26,57 +26,87 @@ export function createStore() {
             store.connectedToHub = connectedToHub;
         },
         copyTaxon(taxon: Taxon) {
-            store.copiedTaxon = store.dataset.taxonsHierarchy.extractHierarchy(taxon);
+            store.copiedTaxon = cloneHierarchy(taxon);
         },
         pasteTaxon(targetId: string) {
             if (store.copiedTaxon !== null) {
-                store.dataset.taxonsHierarchy.addHierarchy(store.copiedTaxon, targetId);
+                const taxon = cloneHierarchy(store.copiedTaxon);
+                taxon.parentId = targetId;
+                store.dataset.addTaxon(taxon);
             }
-        },
-        addTaxonHierarchy(taxonHierarchy: Hierarchy<Taxon>) {
-            store.dataset.taxonsHierarchy.addHierarchy(taxonHierarchy, undefined);
         },
         addTaxon(taxon: Taxon) {
             store.dataset.addTaxon(taxon);
-            undoStack.push(() => store.dataset.removeTaxon(taxon));
+            undoStack.push(() => store.dataset.removeTaxon(taxon.id));
+        },
+        setTaxon({taxon, props} : {taxon: Taxon, props: Partial<Taxon>}) {
+            store.dataset.setTaxon(taxon.id, props);
         },
         addTaxons(taxons: Taxon[]) {
             taxons.forEach(t => store.dataset.addTaxon(t));
-            undoStack.push(() => taxons.forEach(t => store.dataset.removeTaxon(t)));
+            undoStack.push(() => taxons.forEach(t => store.dataset.removeTaxon(t.id)));
         },
         removeTaxon(taxon: Taxon) {
-            store.dataset.removeTaxon(taxon);
+            store.dataset.removeTaxon(taxon.id);
             undoStack.push(() => store.dataset.addTaxon(taxon));
         },
         changeTaxonParent(e: { taxon: Taxon, newParentId: string }) {
-            store.dataset.changeTaxonParent(e.taxon, e.newParentId);
+            store.dataset.changeTaxonParent(e.taxon.id, e.newParentId);
         },
         addTaxonPicture(payload: { taxon: Taxon, picture: Picture }) {
-            const t = store.dataset.taxonWithId(payload.taxon.id);
+            const t = store.dataset.taxon(payload.taxon.id);
             if (t) t.pictures = [...t.pictures, payload.picture];
         },
         setTaxonPicture(payload: { taxon: Taxon, picture: Picture, index: number }) {
-            const t = store.dataset.taxonWithId(payload.taxon.id);
+            const t = store.dataset.taxon(payload.taxon.id);
             if (t) {
                 t.pictures[payload.index] = payload.picture;
                 t.pictures = [...t.pictures];
             }
         },
         setTaxonLocations(payload: { taxon: Taxon, positions: { lat: number, lng: number }[] }) {
-            const t = store.dataset.taxonWithId(payload.taxon.id);
+            const t = store.dataset.taxon(payload.taxon.id);
             if (t) t.specimenLocations = payload.positions;
         },
         removeTaxonPicture(payload: { taxon: Taxon, index: number }) {
-            const t = store.dataset.taxonWithId(payload.taxon.id);
+            const t = store.dataset.taxon(payload.taxon.id);
             if (t) t.pictures.splice(payload.index, 1);
         },
         copyCharacter(character: Character) {
-            store.copiedCharacter = store.dataset.charactersHierarchy.extractHierarchy(character);
+            const clonedCharacter = cloneHierarchy(character);
+            clonedCharacter.states = clone(clonedCharacter.states);
+            clonedCharacter.requiredStates = clone(clonedCharacter.requiredStates);
+            clonedCharacter.inapplicableStates = clone(clonedCharacter.inapplicableStates);
+            clonedCharacter.inherentState = clone(clonedCharacter.inherentState);
+            store.copiedCharacter = clonedCharacter;
         },
         pasteCharacter(targetId: string) {
-            if (store.copiedCharacter !== null) {
-                store.dataset.charactersHierarchy.addHierarchy(store.copiedCharacter, targetId);
+            if (store.copiedCharacter === null) return;
+            const character = cloneHierarchy(store.copiedCharacter);
+            const oldStates = character.states;
+            const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
+            const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
+            character.states = [];
+            character.requiredStates = [];
+            character.inapplicableStates = [];
+            for (const oldState of oldStates) {
+                const newState = clone(oldState);
+                newState.id = "";
+                store.dataset.addState(newState, character);
+                if (oldRequiredStatesIds.includes(oldState.id)) {
+                    character.requiredStates.push(newState);
+                }
+                if (oldInapplicableStatesIds.includes(oldState.id)) {
+                    character.inapplicableStates.push(newState);
+                }
             }
+            const newParent = store.dataset.character(targetId);
+            if (newParent && store.copiedCharacter?.inherentState?.id) {
+                store.copiedCharacter.inherentState.id = "s-auto-" + store.copiedCharacter.id;
+                newParent.states.push(store.copiedCharacter.inherentState);
+            }
+            character.parentId = targetId;
+            store.dataset.addCharacter(character);
         },
         copyStates(states: State[] | undefined) {
             if (typeof states !== "undefined") {
@@ -87,40 +117,40 @@ export function createStore() {
         pasteStates(characterId: string) {
             for (const s of store.copiedStates) {
                 const stateToAdd = clone(s);
-                const character = store.dataset.characterWithId(characterId);
+                const character = store.dataset.character(characterId);
                 if (typeof character !== "undefined") {
                     store.dataset.addState(stateToAdd, character);
                 }
             }
         },
-        addCharacterHierarchy(characterHierarchy: Hierarchy<Character>) {
-            store.dataset.charactersHierarchy.addHierarchy(characterHierarchy, undefined);
-        },
         addCharacter(character: Character) {
             store.dataset.addCharacter(character);
-            undoStack.push(() => store.dataset.removeCharacter(character));
+            undoStack.push(() => store.dataset.removeCharacter(character.id));
+        },
+        setCharacter({character, props} : {character: Character, props: Partial<Character>}) {
+            store.dataset.setCharacter(character.id, props);
         },
         addCharacters(characters: Character[]) {
             characters.forEach(c => store.dataset.addCharacter(c));
-            undoStack.push(() => characters.forEach(c => store.dataset.removeCharacter(c)));
+            undoStack.push(() => characters.forEach(c => store.dataset.removeCharacter(c.id)));
         },
         removeCharacter(character: Character) {
-            store.dataset.removeCharacter(character);
+            store.dataset.removeCharacter(character.id);
             undoStack.push(() => store.dataset.addCharacter(character));
         },
         addCharacterPicture(payload: { character: Character, picture: Picture }) {
-            const c = store.dataset.characterWithId(payload.character.id);
+            const c = store.dataset.character(payload.character.id);
             if (c) c.pictures = [...c.pictures, payload.picture];
         },
         setCharacterPicture(payload: { character: Character, picture: Picture, index: number }) {
-            const c = store.dataset.characterWithId(payload.character.id);
+            const c = store.dataset.character(payload.character.id);
             if (c) {
                 c.pictures[payload.index] = payload.picture;
                 c.pictures = [...c.pictures];
             }
         },
         removeCharacterPicture(payload: { character: Character, index: number }) {
-            const c = store.dataset.characterWithId(payload.character.id);
+            const c = store.dataset.character(payload.character.id);
             if (c) c.pictures.splice(payload.index, 1);
         },
         setDataset(dataset: Dataset) {
@@ -129,8 +159,20 @@ export function createStore() {
         addState(payload: { state: State, character: Character }) {
             store.dataset.addState(payload.state, payload.character);
         },
+        moveTaxonUp(taxon: Taxon) {
+            store.dataset.moveTaxonUp(taxon);
+        },
+        moveTaxonDown(taxon: Taxon) {
+            store.dataset.moveTaxonDown(taxon);
+        },
+        moveCharacterUp(character: Character) {
+            store.dataset.moveCharacterUp(character);
+        },
+        moveCharacterDown(character: Character) {
+            store.dataset.moveCharacterDown(character);
+        },
         moveStateUp(payload: { state: State, character: Character }) {
-            const c = store.dataset.characterWithId(payload.character.id);
+            const c = store.dataset.character(payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
             if (index > 0 && c) {
                 c.states[index] = c.states[index-1];
@@ -139,7 +181,7 @@ export function createStore() {
             }
         },
         moveStateDown(payload: { state: State, character: Character }) {
-            const c = store.dataset.characterWithId(payload.character.id);
+            const c = store.dataset.character(payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
             if (index < payload.character.states.length - 1 && c) {
                 c.states[index] = c.states[index+1];
@@ -151,12 +193,12 @@ export function createStore() {
             store.dataset.removeState(payload.state, payload.character);
         },
         addStatePicture(payload: { character: Character|undefined, state: State, picture: Picture }) {
-            const c = store.dataset.characterWithId(payload.character?.id);
+            const c = store.dataset.character(payload.character?.id);
             const s = c?.states.find(s => s.id === payload.state.id);
             if (s) s.pictures = [...s.pictures, payload.picture];
         },
         setStatePicture(payload: { character: Character|undefined, state: State, picture: Picture, index: number }) {
-            const c = store.dataset.characterWithId(payload.character?.id);
+            const c = store.dataset.character(payload.character?.id);
             const s = c?.states.find(s => s.id === payload.state.id);
             if (s) {
                 s.pictures[payload.index] = payload.picture;
@@ -164,7 +206,7 @@ export function createStore() {
             }
         },
         removeStatePicture(payload: { character: Character|undefined, state: State, index: number }) {
-            const c = store.dataset.characterWithId(payload.character?.id);
+            const c = store.dataset.character(payload.character?.id);
             const s = c?.states.find(s => s.id === payload.state.id);
             if (s) s.pictures.splice(payload.index, 1);
         },
@@ -177,7 +219,7 @@ export function createStore() {
             store.dataset.addCharacter(clone(payload.character));
         },
         setInherentState(payload: { character: Character, state: State }) {
-            const ch = store.dataset.characterWithId(payload.character.id);
+            const ch = store.dataset.character(payload.character.id);
             if (typeof ch !== "undefined") {
                 ch.inherentState = payload.state;
                 setState(ch.requiredStates, payload.state, false);
@@ -186,9 +228,9 @@ export function createStore() {
         },
         setTaxonState(p: { taxon: Taxon, state: State, has: boolean }) {
             if (p.has) {
-                store.dataset.setTaxonState(p.taxon, p.state);
+                store.dataset.setTaxonState(p.taxon.id, p.state);
             } else {
-                store.dataset.removeTaxonState(p.taxon, p.state);
+                store.dataset.removeTaxonState(p.taxon.id, p.state);
             }
         },
         addDictionaryEntry(entry: DictionaryEntry) {
@@ -214,8 +256,8 @@ export function createStore() {
             }
         },
         resetData() {
-            store.dataset.taxonsHierarchy.clear();
-            store.dataset.charactersHierarchy.clear();
+            store.dataset.taxonsHierarchy = createTaxon({ id: "t0", name: { S: "<TOP>" } });
+            store.dataset.charactersHierarchy = createCharacter({ id: "c0", name: { S: "<TOP>" } });
         },
     };
     function perform<Action extends keyof typeof actions>(action: Action, ...params: Parameters<typeof actions[Action]>) {
@@ -227,8 +269,8 @@ export function createStore() {
     const store = {
         dbg: false,
         dataset: new Dataset("",
-            new Hierarchy<Taxon>("t", new ObservableMap()),
-            new Hierarchy<Character>("d", new ObservableMap()),
+            createTaxon({ id: "t0", name: { S: "<TOP>" } }),
+            createCharacter({ id: "c0", name: { S: "<TOP>" } }),
             standardBooks,
             new Array<Field>(),
             new ObservableMap(),

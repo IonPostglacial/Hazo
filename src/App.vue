@@ -61,6 +61,7 @@ import download from "@/tools/download";
 import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
 import Vue from "vue";
+import { forEachHierarchy } from "./datatypes/hierarchy";
 
 export default Vue.extend({
     name: "App",
@@ -258,14 +259,16 @@ export default Vue.extend({
             const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
 
-            for (const taxon of this.dataset.taxons) {
+             (this.dataset.taxonsHierarchy)
+
+            forEachHierarchy(this.dataset.taxonsHierarchy, taxon => {
                 const newDetail = taxon.detail.replace(re, replacement);
-                this.store.do("addTaxon", Object.assign({}, taxon, { detail: newDetail }));
-            }
-            for (const character of this.dataset.characters) {
+                this.store.do("setTaxon", { taxon: taxon, props: { detail: newDetail } });
+            });
+            forEachHierarchy(this.dataset.charactersHierarchy, character => {
                 const newDetail = character.detail.replace(re, replacement);
-                this.store.do("addCharacter", Object.assign({}, character, { detail: newDetail }));
-            }
+                this.store.do("setCharacter", { character: character, props: { detail: newDetail } });
+            });
         },
         async fileRead(file: File): Promise<Dataset | null> {
             let result: Dataset | null = null;
@@ -306,11 +309,11 @@ export default Vue.extend({
             const result = await this.fileRead((e.target.files ?? [])[0]);
 
             if (result !== null) {
-                for (const taxon of result.taxonsHierarchy.topLevelItems) {
-                    this.store.do("addTaxonHierarchy", result.taxonsHierarchy.extractHierarchy(taxon));
+                for (const taxon of result.taxonsHierarchy.children) {
+                    this.store.do("addTaxon", result.taxonsHierarchy);
                 }
-                for (const character of result.charactersHierarchy.topLevelItems) {
-                    this.store.do("addCharacterHierarchy", result.charactersHierarchy.extractHierarchy(character));
+                for (const character of result.charactersHierarchy.children) {
+                    this.store.do("addCharacter", result.charactersHierarchy);
                 }
             }
         },
@@ -329,8 +332,9 @@ export default Vue.extend({
             const result = await this.fileRead(file);
 
             if (result !== null) {
+                const existingTaxonsByIds = this.dataset.getTaxonsByIds();
                 for (const taxon of result.taxons) {
-                    const existing = this.dataset.taxonWithId(taxon.id);
+                    const existing = existingTaxonsByIds.get(taxon.id);
                     if (typeof existing !== "undefined") {
                         existing.name.S = existing.name.S ?? taxon.name.S;
                         existing.name.EN = existing.name.EN ?? taxon.name.EN;
@@ -368,7 +372,7 @@ export default Vue.extend({
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
-                        highlightTaxonsDetails(fileReader.result, this.dataset.taxonsHierarchy.toObject());
+                        highlightTaxonsDetails(fileReader.result, Object.fromEntries(this.dataset.getTaxonsByIds()));
                     }
                     resolve(null);
                 };
@@ -438,17 +442,17 @@ export default Vue.extend({
                 return ""+value;
             }
             function pushCsvLine(taxon: Taxon, path: string[]) {
-                const childrenNo = self.dataset.taxonsHierarchy.numberOfChildren(taxon);
+                const childrenNo = taxon.children.length;
                 for (const taxonName of path) {
                     csv.get(taxonName)![4] += childrenNo;
                 }
                 const cols = [path.join(" > "), taxon.name.S, taxon.author, taxon.name.V ?? "", taxon.name.CN ?? "", childrenNo];
                 csv.set(taxon.name.S, cols.map(escape));
-                for (const child of self.dataset.taxonsHierarchy.childrenOf(taxon)) {
+                for (const child of taxon.children) {
                     pushCsvLine(child, [...path, taxon.name.S]);
                 }
             }
-            for (const taxon of this.dataset.taxonsHierarchy.topLevelItems) {
+            for (const taxon of this.dataset.taxonsHierarchy.children) {
                 pushCsvLine(taxon, []);
             }
             download([...csv.values()].map(line => line.join(",")).join("\n"), "stats.csv", this.dataset.id);
@@ -459,8 +463,8 @@ export default Vue.extend({
         },
         exportSDD() {
             const xml = saveSDD({
-                items: this.dataset.taxonsHierarchy.toObject(),
-                descriptors: this.dataset.charactersHierarchy.toObject(),
+                items: this.dataset.getTaxonsByIds(),
+                descriptors: this.dataset.getCharactersByIds(),
                 extraFields: this.dataset.extraFields,
             });
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
