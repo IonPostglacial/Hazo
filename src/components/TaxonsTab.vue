@@ -28,8 +28,9 @@
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
                             <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
                                 <tree-menu :items="dataset.taxonsHierarchy"
-                                    :name-fields="[{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }]"
-                                    @select-item="changeSelectedTaxonParent">
+                                    :name-fields="nameFields"
+                                    @select-item="changeSelectedTaxonParent" v-slot="menuProps">
+                                    <div>{{ menuProps.item.name }}</div>
                                 </tree-menu>
                             </div>
                         </div>
