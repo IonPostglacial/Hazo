@@ -13,7 +13,6 @@
                 <router-link class="button" to="/taxons">Taxons</router-link>
                 <router-link class="button" to="/characters">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
-                <router-link class="button" to="/dictionary">Dictionary</router-link>
             </div>
             <div class="button-group inline-block float-right">
                 <button type="button" @click="openHub">Hub

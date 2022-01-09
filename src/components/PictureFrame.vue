@@ -20,7 +20,7 @@ export default Vue.extend({
     props: {
         index: Number,
         editable: Boolean,
-        picture: Object as PropType<Picture|undefined>,
+        picture: Object as PropType<Picture>,
     },
     computed: {
         url(): string|undefined {

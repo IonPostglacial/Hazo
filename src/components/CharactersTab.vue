@@ -5,7 +5,7 @@
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacter"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @unselected="selectedCharacterId = undefined" @delete-item="deleteCharacter" v-slot="menuProps">
+            @unselected="selectedCharacterId = ''" @delete-item="deleteCharacter" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
         <div class="scroll flex-grow-1">
@@ -52,26 +52,37 @@
                     <label class="item-property">Detail</label>
                     <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
                     <div>
+                        <label class="item-property">Type</label>
+                        <label><input type="radio" name="character-type" value="discrete" v-model="selectedCharacter.characterType">Discrete</label>
+                        <label><input type="radio" name="character-type" value="range" v-model="selectedCharacter.characterType">Range</label>
+                    </div>
+                    <div v-if="selectedCharacter.characterType === 'discrete'">
                         <label class="item-property">Preset</label>
                         <label><input type="radio" name="character-type" value="" v-model="selectedCharacter.preset">None</label>
                         <label><input type="radio" name="character-type" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
                         <label><input type="radio" name="character-type" value="family" v-model="selectedCharacter.preset">Family</label>
                     </div>
                 </collapsible-panel>
-                <characters-tree v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+                <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
                 </characters-tree>
-                <div v-if="!printMode" class="centered-text medium-margin thin-border medium-padding white-background">
-                    <flowering v-if="selectedCharacter && selectedCharacter.preset === 'flowering'">
+                <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
+                    <flowering>
                     </flowering>
                 </div>
+                <collapsible-panel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">
+                    <div class="form-grid medium-padding">
+                        <label for="range-min">From</label><input name="range-min" type="number" v-model="selectedCharacter.min" />
+                        <label for="range-max">To</label><input name="range-max" type="number" v-model="selectedCharacter.max" />
+                    </div>
+                </collapsible-panel>
                 <collapsible-panel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
                     <div class="horizontal-flexbox">
-                        <section class="medium-margin medium-padding thin-border flex-grow-1">
+                        <section v-if="isDiscreteCharacter" class="medium-margin medium-padding thin-border flex-grow-1">
                             <label>Inherent State</label>
                             <ul class="indented no-list-style">
                                 <li class="medium-padding" v-for="state in parentStates" :key="state.id">
                                     <label>
-                                        <input type="radio" :checked="selectedCharacter.inherentState ? selectedCharacter.inherentState.id === state.id : false" name="inherent-state" @change="setInherentState(state)" />
+                                        <input type="radio" :checked="isInherentState(state)" name="inherent-state" @change="setInherentState(state)" />
                                         {{ state.name.S }}
                                     </label>
                                 </li>
@@ -82,7 +93,7 @@
                             <ul class="indented no-list-style">
                                 <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                     <label>
-                                        <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter.requiredStates.find(s => s.id === state.id)" />
+                                        <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter ? selectedCharacter.requiredStates.find(s => s.id === state.id) : false" />
                                         {{ state.name.S }}
                                     </label>
                                 </li>
@@ -93,7 +104,7 @@
                             <ul class="indented no-list-style">
                                 <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                     <label>
-                                    <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter.inapplicableStates.find(s => s.id === state.id)" />
+                                    <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter ? selectedCharacter.inapplicableStates.find(s => s.id === state.id) : false" />
                                     {{ state.name.S }}
                                     </label>
                                 </li>
@@ -103,19 +114,19 @@
                 </collapsible-panel>
             </section>
         </div>
-        <section v-if="!printMode && selectedCharacter && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
+        <section v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
-                    <label v-if="selectedCharacter.inherentState">
+                    <label v-if="maybeInherentState">
                         <input type="checkbox"
-                            @input="onlyAllowState(selectedCharacter.inherentState)"
-                            :checked="stateInAllowList(selectedCharacter.inherentState)">
+                            @input="onlyAllowState(maybeInherentState)"
+                            :checked="stateInAllowList(maybeInherentState)">
                         Add to allow list
                     </label>
-                    <label v-if="selectedCharacter.inherentState">
+                    <label v-if="maybeInherentState">
                         <input type="checkbox"
-                            @input="denyState(selectedCharacter.inherentState)"
-                            :checked="stateInDenyList(selectedCharacter.inherentState)">
+                            @input="denyState(maybeInherentState)"
+                            :checked="stateInDenyList(maybeInherentState)">
                         Add to deny list
                     </label>
                     <button class="background-color-1" @click="exportStates">Copy</button>
@@ -195,6 +206,20 @@ export default Vue.extend({
         }
     },
     computed: {
+        isDiscreteCharacter(): boolean {
+            return this.selectedCharacter?.characterType === "discrete";
+        },
+        isFloweringCharacter(): boolean {
+            const ch = this.selectedCharacter;
+            return ch?.characterType === "discrete" && ch.preset === "flowering";
+        },
+        isRangeCharacter(): boolean {
+            return this.selectedCharacter?.characterType === "range";
+        },
+        maybeInherentState(): State|undefined {
+            const ch = this.selectedCharacter;
+            return ch?.characterType === "range" ? undefined : ch?.inherentState;
+        },
         dataset(): Dataset {
             return this.store.dataset;
         },
@@ -214,32 +239,38 @@ export default Vue.extend({
             return Array.from(this.dataset.characterStates(parent));
         },
         parentStatesExceptInherent(): State[] {
-            return this.parentStates.filter(s => s.id !== this.selectedCharacter?.inherentState?.id);
+            const ch = this.selectedCharacter;
+            return this.parentStates.filter(s => ch?.characterType === "range" || s.id !== ch?.inherentState?.id);
         },
         statesToDisplay(): Array<State> {
             const childrenInherentStateIds = this.selectedCharacter?.children
-                .map(c => c.inherentState?.id)
+                .map(c => c.characterType === "range" ? undefined : c.inherentState?.id)
                 .filter(s => typeof s !== "undefined") ?? [];
             return Array.from(this.dataset.characterStates(this.selectedCharacter)).
                 filter(s => !childrenInherentStateIds.includes(s.id));
         },
     },
     methods: {
+        isInherentState(state: State): boolean {
+            const ch = this.selectedCharacter;
+            return ch?.characterType === "discrete" && ch.inherentState ? ch.inherentState.id === state.id : false
+        },
         stateInAllowList(state: State): boolean {
             return this.store.statesAllowList.some(s => s.id === state.id);
         },
         stateInDenyList(state: State): boolean {
             return this.store.statesDenyList.some(s => s.id === state.id);
         },
-        onlyAllowState(state: State) {
-            console.log("toto")
+        onlyAllowState(state: State|undefined) {
+            if (!state) return;
             if (this.stateInAllowList(state)) {
                 this.store.do("removeStateFromAllowList", state);
             } else {
                 this.store.do("addStateToAllowList", state);
             }
         },
-        denyState(state: State) {
+        denyState(state: State|undefined) {
+            if (!state) return;
             if (this.stateInDenyList(state)) {
                 this.store.do("removeStateFromDenyList", state);
             } else {

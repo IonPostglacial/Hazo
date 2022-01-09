@@ -24,9 +24,9 @@
                                     <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
                                 </div>
                             </div>
-                            <flowering v-if="description.character.preset == 'flowering'" :value="monthsFromStates(description.states)">
+                            <flowering v-if="isFlowering(description)" :value="monthsFromStates(description.states)">
                             </flowering>
-                            <div v-if="description.character.preset != 'flowering'" class="horizontal-flexbox">
+                            <div v-if="!isFlowering(description)" class="horizontal-flexbox">
                                 <div>{{ description.character.name.S }}<span class="spaced">:</span></div>
                                 <div v-for="(state, index) in description.states" :key="state.id">
                                     <span v-if="index > 0" class="spaced">/</span> {{ state.name.S }}
@@ -84,7 +84,7 @@ export default Vue.extend({
         },
     },
     methods: {
-        pictureUrl(item: { url: string, hubUrl: string }): string {
+        pictureUrl(item: { url: string, hubUrl: string|undefined }): string {
             if (item.hubUrl) {
                 return item.hubUrl; 
             } else {
@@ -94,7 +94,11 @@ export default Vue.extend({
         print() {
             window.print();
         },
-        descriptions(taxon: Taxon): Iterable<Description> {
+        isFlowering(description: Description): boolean {
+            const ch = description.character;
+            return ch.characterType === "discrete" && ch.preset === "flowering";
+        },
+        descriptions(taxon: Taxon): Description[] {
             return this.dataset.taxonDescriptions(taxon);
         },
         monthsFromStates(states: State[]): number {

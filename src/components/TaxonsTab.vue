@@ -3,7 +3,7 @@
         <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-fields="nameFields"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @add-item="addTaxon" @unselected="selectedTaxonId = undefined" @delete-item="removeTaxon" v-slot="menuProps">
+            @add-item="addTaxon" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
         <div class="horizontal-flexbox scroll flex-grow-1">
@@ -35,7 +35,7 @@
                             </div>
                         </div>
                         <div v-if="!selectingParent" class="button-group">
-                            <button type="button" v-for="parent in dataset.taxonParentChain(selectedTaxon)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
+                            <button type="button" v-for="parent in dataset.taxonParentChain(selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
                             <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</button>
                         </div>
                     </div>
@@ -52,14 +52,14 @@
                     </div>
                     <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
                 </div>
-                <google-map v-if="(typeof selectedTaxon !== 'undefined') && showMap"
+                <google-map v-if="selectedTaxon && showMap"
                         id="mapid"
                         ref="Map"
                         :center="{ lat: 48.856614, lng: 2.3522219 }"
                         :zoom="12">
-                    <google-map-marker v-for="(position, index) in selectedTaxon.specimenLocations"
+                    <google-map-marker v-for="(position, index) in specimenLocations"
                         :key="index"
-                        :title="selectedTaxon.name"
+                        :title="selectedTaxon ? selectedTaxon.name : ''"
                         :position="position"
                     />
                 </google-map>
@@ -101,13 +101,16 @@
                                 <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
                                     Herbarium Picture</item-property-field>
                                 <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
-                                        :icon="extraField.icon" v-model="selectedTaxon.extra[extraField.id]" :editable="editProperties">
+                                        :icon="extraField.icon"
+                                        :value="extraProperty(extraField)"
+                                        @input="setExtraProperty"
+                                        :editable="editProperties">
                                     {{ extraField.label }}
                                 </item-property-field>
                             </div>
                         </collapsible-panel>
                         <collapsible-panel v-for="book in dataset.books" :key="book.id" :label="book.label">
-                            <div v-if="selectedTaxon.bookInfoByIds">
+                            <div v-if="selectedTaxon && selectedTaxon.bookInfoByIds">
                                 <div v-if="selectedTaxon.bookInfoByIds[book.id]">
                                     <label class="medium-margin">
                                         book:&nbsp;
@@ -185,6 +188,7 @@ import { taxonsStats } from "@/features/hierarchystats";
 import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
+import { DiscreteCharacter, Field, SelectableItem } from "@/datatypes/types";
 
 
 export default Vue.extend({
@@ -234,14 +238,17 @@ export default Vue.extend({
         selectedTaxon(): Taxon|undefined {
             return this.dataset.taxon(this.selectedTaxonId);
         },
-        itemDescriptorTree(): Hierarchy<Character & { selected?: boolean }> {
+        specimenLocations(): { lat: number, lng: number }[] {
+            return this.selectedTaxon?.specimenLocations ?? [];
+        },
+        itemDescriptorTree(): Hierarchy<SelectableItem> {
             if (typeof this.selectedTaxon !== "undefined") {
                 return this.dataset.taxonCharactersTree(this.selectedTaxon);
             } else {
                 return createCharacter({ id: "c0", name: { S: '' }});
             }
         },
-        itemDescription(): Iterable<Description> {
+        itemDescription(): Description[] {
             if (typeof this.selectedTaxon === "undefined") {
                 return [];
             } else {
@@ -317,18 +324,22 @@ export default Vue.extend({
             this.selectedTaxon!.extra[e.detail.property] = e.detail.value;
         },
         taxonStateToggle(e: { item: State|Character }) {
-            const isCharacter = (e.item as Character).type === "character";
-            const stateToAdd = isCharacter ? (e.item as Character).inherentState : e.item as State;
+            const ch = e.item as Character;
+            const isDiscreteCharacter = ch.type === "character" && ch.characterType === "discrete";
+            const stateToAdd = isDiscreteCharacter ? (ch as DiscreteCharacter).inherentState : e.item as State;
 
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
                 const selected = !this.dataset.hasTaxonState(this.selectedTaxonId, stateToAdd);
                 this.store.do("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
         },
-        openCharacter(e: { item: Character }) {
+        openCharacter(e: { item: DiscreteCharacter }) {
             if (e.item.inherentState && this.selectedTaxon && !this.dataset.hasTaxonState(this.selectedTaxonId, e.item.inherentState)) {
                 this.taxonStateToggle({ item: e.item.inherentState });
             }
+        },
+        extraProperty(extraField: Field): any {
+            return this.selectedTaxon!.extra[extraField.id];
         },
         addItemPhoto(e: {detail: { value: string }}) {
             if (typeof this.selectedTaxon === "undefined") {
@@ -374,9 +385,11 @@ export default Vue.extend({
             let picsCount = 0;
             for (const char of chars) {
                 picsCount += char.pictures.length;
-                statesCount += char.states.length;
-                for (const state of char.states) {
-                    picsCount += state.pictures.length;
+                if (char.characterType === "discrete") {
+                    statesCount += char.states.length;
+                    for (const state of char.states) {
+                        picsCount += state.pictures.length;
+                    }
                 }
             }
             for (const taxon of this.dataset.taxons) {

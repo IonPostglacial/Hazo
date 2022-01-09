@@ -12,8 +12,8 @@
                 :class="['medium-height', 'medium-line-height', 'flex-grow-1', 'horizontal-flexbox', 'center-items', 'cell', { 'background-color-1': selected }]">
             <div class="horizontal-flexbox center-items flex-grow-1">
                 <label class="horizontal-flexbox flex-grow-1 unselectable" v-on:click="select">
-                    <slot v-bind:item="{id: item.id, name: item.name[nameField.propertyName] }">
-                        <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ item[nameField.propertyName] }}</div>
+                    <slot v-bind:item="{id: item.id, name: itemName(nameField.propertyName) }">
+                        <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName(nameField.propertyName) }}</div>
                     </slot>
                 </label>
             </div>
@@ -54,7 +54,7 @@ export default Vue.extend({
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,
-        item: Object as PropType<Hierarchy<HierarchicalItem>>,
+        item: Object as PropType<Hierarchy<HierarchicalItem> & { warning?: boolean }>,
         buttons: Array as PropType<Array<Button>>,
         fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,
         editable: Boolean,
@@ -85,8 +85,8 @@ export default Vue.extend({
             }
             return this.item?.id ?? "";
         },
-        itemButtons(): Button[]|undefined {
-            return this.buttons?.filter((button) => button.for === this.item?.type);
+        itemButtons(): Button[] {
+            return this.buttons?.filter((button) => button.for === this.item?.type) ?? [];
         },
         hasArrows(): boolean {
             return (this.item.children.length > 0 || this.editable);
@@ -96,6 +96,13 @@ export default Vue.extend({
         },
     },
     methods: {
+        itemName(lang: string): string {
+            if (lang == "S" || lang == "V" || lang == "CN" || lang == "EN" || lang == "FR") {
+                return this.item.name[lang] ?? "";
+            } else {
+                return "";
+            }
+        },
         select() {
             this.$emit("selected", this.item?.id);
         },

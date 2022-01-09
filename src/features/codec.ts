@@ -97,8 +97,8 @@ function encodeTaxon(taxon: Taxon, dataset: Dataset, picIds: Set<string>) {
 function encodeCharacter(dataset: Dataset, character: Character, picIds: Set<string>) {
 	return {
 		states: Array.from(dataset.characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
-		preset: character.preset,
-		inherentStateId: character.inherentState?.id,
+		preset: character.characterType === "discrete" ? character.preset : undefined,
+		inherentStateId: character.characterType === "discrete" ? character.inherentState?.id : '',
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		...encodeHierarchicalItem(character, picIds),
@@ -196,17 +196,17 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 
 function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, character: EncodedCharacter, states: IMap<State>): Character {
 	const item = decodeHierarchicalItem(character);
-	const charStates: State[] = [];
+	const charStates = new Map<string, State>();
 	for (const stateId of character.states) {
 		const state = states.get(stateId);
 		if (typeof state !== "undefined") {
-			charStates.push(state);
+			charStates.set(state.id, state);
 		}
 	}
 	return createCharacter({
 		...item,
 		presetStates,
-		states: character.preset || charStates,
+		states: character.preset || Array.from(charStates.values()),
 		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
 		requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],

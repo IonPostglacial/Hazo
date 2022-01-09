@@ -1,5 +1,3 @@
-import { generateId } from "@/tools/generateid";
-
 export type Hierarchy<T> = T & {
     children: Hierarchy<T>[];
 }

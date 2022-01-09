@@ -3,7 +3,7 @@
         <div class="vertical-flexbox stick-to-top white-background">
             <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
             <div class="horizontal-flexbox flex-wrap button-group">
-                <button v-if="currentItems !== rootItems" type="button" @click="backToTop">Top</button>
+                <button type="button" @click="backToTop">Top</button>
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>
         </div>
@@ -33,6 +33,7 @@ import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
+import { DiscreteCharacter } from "@/datatypes/types";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
 export default Vue.extend({
@@ -41,7 +42,7 @@ export default Vue.extend({
     props: {
         editable: Boolean,
         rootItems: Object as PropType<Hierarchy<ItemType>>,
-        nameFields: Array as PropType<Array<string>>,
+        nameFields: Array as PropType<string[]>,
     },
     data() {
         const currentItems = [...this.rootItems!.children];
@@ -59,7 +60,7 @@ export default Vue.extend({
             if (this.breadCrumbs.length - 1 < 0) return;
             const currentlyOpenItem = this.breadCrumbs[this.breadCrumbs.length - 1];
             if (typeof currentlyOpenItem !== "undefined") {
-                this.floweringMode = currentlyOpenItem.type === "character" && (currentlyOpenItem as Character).preset === "flowering";
+                this.floweringMode = this.isFlowering(currentlyOpenItem);
                 this.currentItems = [...currentlyOpenItem.children];
                 this.flowering = Months.fromStates(this.currentItems.filter(item => item.selected));
             }
@@ -100,10 +101,14 @@ export default Vue.extend({
         hasChildren(item: Hierarchy<ItemType>): boolean {
             return item.children.length > 0;
         },
+        isFlowering(item: Hierarchy<ItemType>): boolean {
+            return item.type === "character" &&
+                    (item as Character).characterType === "discrete" &&
+                    (item as DiscreteCharacter).preset === "flowering"
+        },
         openItem(item: Hierarchy<ItemType> & { selected?: boolean }) {
             this.isRoot = false;
-            this.floweringMode = item.type === "character" && (item as Character).preset === "flowering";
-            console.log("item", item);
+            this.floweringMode = this.isFlowering(item);
             if (item.children.length > 0) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...item.children];
@@ -115,7 +120,7 @@ export default Vue.extend({
         },
         selectWithoutOpening(character: Character & { selected?: boolean }) {
             const ch = Hazo.store.dataset.character(character.id);
-            let inherentState = ch?.inherentState;
+            let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
             if (typeof inherentState === "undefined") {
                 const parentCharacter = Hazo.store.dataset.character(character.parentId);
                 if (typeof parentCharacter !== "undefined") {

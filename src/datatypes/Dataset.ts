@@ -1,4 +1,4 @@
-import { Book, Character, CharacterPreset, Description, Field, HierarchicalItem, State, Taxon } from "./types";
+import { SelectableItem, Book, Character, CharacterPreset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import { IMap } from "./IMap";
@@ -10,9 +10,6 @@ import Month from "./Months";
 interface StateCallback {
     (e: { state: State, character: Character }): void;
 }
-
-type SelectableCharacter = Character & { selected?: boolean };
-type SelectableState = State & { children: any[], selected?: boolean };
 
 function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarchy<T>, itemsByIds: IMap<Hierarchy<T>>, item: Hierarchy<T>): T {
 	const it = cloneHierarchy(item);
@@ -90,7 +87,9 @@ export class Dataset {
 		this.charactersByIds = new Map();
 		forEachHierarchy(charactersHierarchy, character => {
 			this.charactersByIds.set(character.id, character);
-			character.states.forEach(s => this.indexState(s));
+			if (character.characterType === "discrete") {
+				character.states.forEach(s => this.indexState(s));
+			}
 		});
 		forEachHierarchy(taxonsHierarchy, taxon => {
 			this.taxonsByIds.set(taxon.id, taxon);
@@ -193,10 +192,12 @@ export class Dataset {
 	addCharacter(character: Character) {
 		const autoid = !character.id;
 		const c = addItem("c", this.charactersHierarchy, this.charactersByIds, character);
-		c.states.forEach(s => this.indexState(s));
-		if (autoid) {
+		if (c.characterType === "discrete") {
+			c.states.forEach(s => this.indexState(s));
+		}
+		if (autoid && c.characterType === "discrete") {
             const parentCharacter = this.character(c.parentId);
-            if (typeof c.parentId !== "undefined" && typeof parentCharacter !== "undefined") {
+            if (parentCharacter?.characterType === "discrete") {
                 const newState: State = {
                     id: "s-auto-" + c.id,
                     name: Object.assign({}, c.name), pictures: []
@@ -223,7 +224,18 @@ export class Dataset {
 	removeCharacter(id: string) {
 		const character = removeItem(this.charactersHierarchy, this.charactersByIds, id);
 		if (typeof character === "undefined") return;
-		character.states.forEach(s => this.statesById.delete(s.id));
+		if (character.characterType === "discrete") {
+			character.states.forEach(s => this.statesById.delete(s.id));
+		}
+		const parent = this.character(character.parentId);
+		if (parent && parent.characterType === "discrete") {
+			const inherentStateId = "s-auto-" + id;
+			for (const state of parent.states) {
+				if (state.id === inherentStateId) {
+					this.removeState(state, parent);
+				}
+			}
+		}
 	}
 
 	get characters() {
@@ -287,9 +299,11 @@ export class Dataset {
 	
 		forEachHierarchy(this.charactersHierarchy, character => {
 			const states = [];
-			for (const state of character.states) {
-				if (taxon.states.some(s => s.id === state.id)) {
-					states.push(state);
+			if (character.characterType === "discrete") {
+				for (const state of character.states) {
+					if (taxon.states.some(s => s.id === state.id)) {
+						states.push(state);
+					}
 				}
 			}
 			if (states.length > 0) {
@@ -299,21 +313,22 @@ export class Dataset {
 		return descriptions;
 	}
 
-	taxonCharactersTree(taxon: Taxon): Hierarchy<SelectableCharacter> {
+	taxonCharactersTree(taxon: Taxon): Hierarchy<SelectableItem> {
 		const dependencyHierarchy = transformHierarchy(this.charactersHierarchy, {
 			filter: character => this.isApplicable({ character, taxon }),
-			map(character): Hierarchy<SelectableCharacter|SelectableState> {
-				const characterStates = character.states.map(s => Object.assign({
+			map(character): Hierarchy<SelectableItem> {
+				const characterStates = character.characterType === "range" ? [] : character.states.map(s => Object.assign({
 						type: "state",
 						parentId: character.id,
 						selected: taxon.states.some(state => state.id === s.id),
 					}, s));
 				const clonedChildren = clone(character.children);
-				const characterChildren: Array<SelectableCharacter|SelectableState> = [...clonedChildren];
+				const characterChildren: Hierarchy<SelectableItem>[] = [...clonedChildren];
 				for (const state of characterStates) {
-					const inherentCharacter: Character & {selected?:boolean}|undefined = clonedChildren.find(characterChild => characterChild.inherentState?.id === state.id);
+					const inherentCharacter: Character & {selected?:boolean}|undefined = clonedChildren.find(characterChild => 
+						characterChild.characterType === "range" ? undefined : characterChild.inherentState?.id === state.id);
 					if (typeof inherentCharacter === "undefined") {
-						characterChildren.push({ ...state, children: [] });
+						characterChildren.push({ ...state, type: "state", hidden: false, children: [] });
 					} else {
 						inherentCharacter.selected = state.selected;
 					}
@@ -332,7 +347,7 @@ export class Dataset {
         this.stateRemovalCallbacks.add(callback);
     }
 
-	addState(state: State, character: Character) {
+	addState(state: State, character: DiscreteCharacter) {
         state.id = generateId("s", this.statesById, state);
 		this.statesById.set(state.id, state);
 		character.states.push(state);
@@ -345,7 +360,7 @@ export class Dataset {
 		this.statesById.delete(state.id);
 	}
 
-    removeState(state: State, character: Character) {
+    removeState(state: State, character: DiscreteCharacter) {
 		this.removeStateWithoutCharacter(state);
 
         function removeStateFromArray(array: State[], state: State) {
@@ -357,6 +372,7 @@ export class Dataset {
 		removeStateFromArray(character.states, state);
 
 		for (const characterChild of character.children) {
+			if (characterChild.characterType === "range") continue;
 			removeStateFromArray(characterChild.inapplicableStates, state);
 			removeStateFromArray(characterChild.requiredStates, state);
 			if (characterChild.inherentState?.id === state.id) {
@@ -370,16 +386,18 @@ export class Dataset {
     }
 
     characterHasState(characterId: string, state: { id: string }|undefined): boolean {
-        return typeof state !== "undefined" &&
-            (this.character(characterId)?.states.some(s => s.id === state.id) ?? false);
+		const ch = this.character(characterId);
+        return typeof state !== "undefined" && ch?.characterType === "discrete" &&
+            (ch?.states.some(s => s.id === state.id) ?? false);
     }
 
-	characterStates(character: Character|undefined): Iterable<State> {
-		return character?.states ?? [];
+	characterStates(character: Character|undefined): State[] {
+		return character?.characterType === "discrete" ? character.states : [];
     }
 
     *allStates(): Iterable<State> {
 		for (const character of iterHierarchy(this.charactersHierarchy)) {
+			if (character.characterType === "range") continue;
 			for (const state of character.states) {
 				yield state;
 			}
