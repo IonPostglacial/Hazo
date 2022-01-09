@@ -8,7 +8,7 @@
             <section v-for="taxon in itemsToDisplay" :key="taxon.id" class="page-break">
                 <h2 class="horizontal-flexbox space-between">
                     <div><i>{{ taxon.name.S }}</i> {{ taxon.author }}</div>
-                    <div v-if="numberOfChildren(taxon) !== 0">subtaxa: {{ numberOfChildren(taxon) }}</div></h2>
+                    <div v-if="taxon.children.length !== 0">subtaxa: {{ taxon.children.length }}</div></h2>
                 <div class="horizontal-flexbox">
                     <div class="flex-grow-1">
                         <div>
@@ -43,6 +43,7 @@
 </template>
 <script lang="ts">
 import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
+import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { State } from '@/datatypes/types';
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
@@ -68,13 +69,17 @@ export default Vue.extend({
             return this.store.dataset;
         },
         selectedTaxon(): Taxon|undefined {
-            return this.dataset.taxonsHierarchy?.itemWithId(this.selectedTaxonId);
+            return this.dataset.taxon(this.selectedTaxonId);
         },
         itemsToDisplay(): Iterable<Taxon> {
             if (typeof this.selectedTaxon !== "undefined") {
-                return this.dataset.taxonsHierarchy?.getLeaves(this.selectedTaxon);
+                const items: Taxon[] = [];
+                forEachLeaves(this.dataset.taxonsHierarchy, t => {
+                    items.push(t);
+                });
+                return items;
             } else {
-                return this.dataset.taxonsHierarchy?.allItems;
+                return iterHierarchy(this.dataset.taxonsHierarchy);
             }
         },
     },
@@ -88,9 +93,6 @@ export default Vue.extend({
         },
         print() {
             window.print();
-        },
-        numberOfChildren(taxon: Taxon): number {
-            return this.dataset.taxonsHierarchy.numberOfChildren(taxon);
         },
         descriptions(taxon: Taxon): Iterable<Description> {
             return this.dataset.taxonDescriptions(taxon);

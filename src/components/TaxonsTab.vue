@@ -134,8 +134,11 @@
                         </collapsible-panel>
                     </div>
                     <div v-if="editDescriptors" class="vertical-flexbox scroll flex-grow-1">
+                        <section class="white-background medium-padding medium-margin thin-border">
+                            <a :href="selectedTaxon.website">{{ selectedTaxon.website }}</a>
+                        </section>
                         <collapsible-panel label="Description">
-                            <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItemsByIds="dataset.charactersByIds" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                            <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                         </collapsible-panel>
                     </div>
                     <collapsible-panel v-if="!editProperties" class="scroll" label="Description">

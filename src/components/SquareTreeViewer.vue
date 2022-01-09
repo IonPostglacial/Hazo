@@ -33,7 +33,6 @@ import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-import { IMap } from "@/datatypes/IMap";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
 export default Vue.extend({
@@ -41,7 +40,6 @@ export default Vue.extend({
     components: { Flowering },
     props: {
         editable: Boolean,
-        rootItemsByIds: Map as PropType<IMap<Hierarchy<ItemType>>>,
         rootItems: Object as PropType<Hierarchy<ItemType>>,
         nameFields: Array as PropType<Array<string>>,
     },
@@ -52,14 +50,14 @@ export default Vue.extend({
             floweringMode: false,
             isRoot: true,
             currentItems: currentItems,
-            breadCrumbs: [] as HierarchicalItem[],
+            breadCrumbs: [] as Hierarchy<ItemType>[],
             menuFilter: "",
         }
     },
     watch: {
         rootItems(newRootItems: Hierarchy<ItemType>) {
             if (this.breadCrumbs.length - 1 < 0) return;
-            const currentlyOpenItem = this.rootItemsByIds.get(this.breadCrumbs[this.breadCrumbs.length - 1].id);
+            const currentlyOpenItem = this.breadCrumbs[this.breadCrumbs.length - 1];
             if (typeof currentlyOpenItem !== "undefined") {
                 this.floweringMode = currentlyOpenItem.type === "character" && (currentlyOpenItem as Character).preset === "flowering";
                 this.currentItems = [...currentlyOpenItem.children];
@@ -105,7 +103,8 @@ export default Vue.extend({
         openItem(item: Hierarchy<ItemType> & { selected?: boolean }) {
             this.isRoot = false;
             this.floweringMode = item.type === "character" && (item as Character).preset === "flowering";
-            if (this.hasChildren(item)) {
+            console.log("item", item);
+            if (item.children.length > 0) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...item.children];
                 this.$emit("item-open", { item });

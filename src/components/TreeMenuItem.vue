@@ -1,5 +1,5 @@
 <template>
-    <li>
+    <li class="blue-hover-line">
         <div class="medium-height horizontal-flexbox center-items">
             <div class="indent">&nbsp;</div>
             <label v-on:click="toggleOpen" :class="['small-square', 'blue-circle-hover', 'thin-margin', 'vertical-flexbox', 'flex-centered', { 'visibility-hidden': !hasArrows }]">
@@ -9,7 +9,7 @@
             <div class="horizontal-flexbox flex-centered unselectable">{{ prettyId }}</div>
         </div>
         <div v-for="nameField in fieldNames" :key="nameField.propertyName"
-                :class="['medium-height', 'medium-line-height', 'flex-grow-1', 'medium-padding', 'horizontal-flexbox', 'center-items', 'cell', 'blue-hover-line', { 'background-color-1': selected }]">
+                :class="['medium-height', 'medium-line-height', 'flex-grow-1', 'horizontal-flexbox', 'center-items', 'cell', { 'background-color-1': selected }]">
             <div class="horizontal-flexbox center-items flex-grow-1">
                 <label class="horizontal-flexbox flex-grow-1 unselectable" v-on:click="select">
                     <slot v-bind:item="{id: item.id, name: item.name[nameField.propertyName] }">
