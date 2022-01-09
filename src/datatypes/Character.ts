@@ -1,4 +1,4 @@
-import { Character, CharacterPreset, State } from "./types";
+import { Character, CharacterPreset, CharacterType, State } from "./types";
 import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
 
@@ -14,6 +14,7 @@ type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 export function createCharacter(init: CharacterInit): Character {
 	return {
 		...createHierarchicalItem({ type: "character", ...init }),
+		characterType: "quantitafive",
 		states: Array.isArray(init.states) ? init.states :
 			typeof init.states === "undefined" ? [] :
 			init.presetStates?.[init.states] ?? [],

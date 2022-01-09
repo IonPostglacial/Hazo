@@ -168,7 +168,7 @@ export class Loader {
 							taxonToAugment.categoricals.push(categorical);
                         });
 					}
-				} catch (e) {
+				} catch (e: any) {
 					if (this.strictMode) {
 						throw e;
 					} else {
@@ -224,7 +224,7 @@ export class Loader {
 							parent.childrenHierarchyIds.push(hierarchyId);
 						}
 					}
-				} catch (e) {
+				} catch (e: any) {
 					if (this.strictMode) {
 						throw e;
 					} else {
@@ -281,7 +281,7 @@ export class Loader {
 				charactersById.set(characterId,
                     Object.assign({ id: characterId, states, inapplicableStatesRefs: [], childrenIds: [] },
                         this.loadRepresentation(firstChildNamed(characterElement, "Representation"), mediaObjectsById)));
-			} catch (e) {
+			} catch (e: any) {
 				if (this.strictMode) {
 					throw e;
 				} else {
@@ -326,7 +326,7 @@ export class Loader {
                                     parentCharacter.childrenIds.push(augmentedCharacter.id);
                                 }
                             }
-                        } catch (e) {
+                        } catch (e: any) {
                             if (this.strictMode) {
                                 throw e;
                             } else {

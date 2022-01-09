@@ -42,7 +42,7 @@ function characterToSdd(dataset: Dataset, character: Character, extraFields: Fie
 			parentId: character.parentId,
 			states: states,
 			inapplicableStatesRefs: character.inapplicableStates.map(s => ({ ref: s.id })),
-			childrenIds: [...map(dataset.charactersHierarchy.childrenOf(character), c => c.id)],
+			childrenIds: character.children.map(c => c.id),
 			mediaObjectsRefs: character.pictures.map(pic => ({ ref: pic.id })),
 		},
 		states: states,
@@ -64,7 +64,7 @@ function taxonToSdd(taxon: Taxon, dataset: Dataset): SddTaxonData {
 			return `${field.label}: ${value}<br><br>`;
 		}).join("") + (taxon.fasc != null) ? 'Flore Madagascar et Comores<br>fasc ${fasc}<br>page ${page}<br><br>' : "" + taxon.detail,
         parentId: taxon.parentId,
-        childrenIds: [...map(dataset.taxonsHierarchy.childrenOf(taxon), t => t.id)],
+        childrenIds: taxon.children.map(t => t.id),
         categoricals: [...dataset.taxonDescriptions(taxon)].map(d => ({
             ref: d.character.id,
             stateRefs: d.states.map(s => ({ ref: s.id }))

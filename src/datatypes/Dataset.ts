@@ -18,11 +18,12 @@ function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarch
 	const it = cloneHierarchy(item);
 	const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
 	const newIdsByOldIds = new Map();
+
 	forEachHierarchy(it, child => {
 		if (newIdsByOldIds.has(child.parentId)) {
 			child.parentId = newIdsByOldIds.get(child.parentId);
 		}
-		if (itemsByIds.has(child.id)) {
+		if (!child.id || itemsByIds.has(child.id)) {
 			child.id = "";
 			child.id = generateId(prefix, itemsByIds, child);
 		}
