@@ -180,7 +180,7 @@ import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
-import { TexExporter, exportZipFolder, importKml } from "@/features";
+import { createTexExporter, exportZipFolder, importKml } from "@/features";
 import { createTaxon, taxonHasStates } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
@@ -372,7 +372,7 @@ export default Vue.extend({
             download(zipTxt, "zip", undefined, true);
         },
         texExport() {
-            const taxonToTex = new TexExporter(this.dataset);
+            const taxonToTex = createTexExporter(this.dataset);
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
                 download(tex, "zip", undefined, true);

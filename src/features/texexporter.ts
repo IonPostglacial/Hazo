@@ -3,41 +3,28 @@ import { Dataset, Description, Picture, Taxon } from "@/datatypes";
 import generateFileName from "./generatefilename";
 import { join, map } from "@/tools/iter";
 
-export class TexExporter {
-    dataset: Dataset;
-    photos: string[];
-    pictureNameByUrl: Map<string, string>;
-    progressListeners: ((progress: number, progressMax: number) => void)[];
-
-    constructor(dataset: Dataset) {
-        this.dataset = dataset;
-        this.progressListeners = [];
-        this.pictureNameByUrl = new Map();
-        this.photos = [];
-        for (const taxon of dataset.taxons) {
-            if (taxon.pictures.length > 0) {
-                const photo = taxon.pictures[0];
-                this.pictureNameByUrl.set(photo.url, generateFileName(taxon.name.S) + ".jpg");
-                this.photos.push(photo.url);
-            }
+export function createTexExporter(d: Dataset) {
+    const dataset = d;
+    const progressListeners: ((progress: number, progressMax: number) => void)[] = [];
+    const pictureNameByUrl = new Map<string, string>();
+    const photos: string[] = [];
+    for (const taxon of dataset.taxons) {
+        if (taxon.pictures.length > 0) {
+            const photo = taxon.pictures[0];
+            pictureNameByUrl.set(photo.url, generateFileName(taxon.name.S) + ".jpg");
+            photos.push(photo.url);
         }
     }
 
-    picture(pictures: Picture[]) {
-        return this.pictureNameByUrl.get(pictures[0].url);
-    }
-
-    onProgress(listener: (progress: number, progressMax: number) => void) {
-        this.progressListeners.push(listener);
-    }
-
-    progressed(progress: number, progresMax: number) {
-        for (const listener of this.progressListeners) {
-            listener(progress, progresMax);
+    function pic(pictures: Picture[]|undefined): string|undefined {
+        if (typeof pictures === "undefined" || pictures.length === 0) {
+            return undefined;
+        } else {
+            return pictureNameByUrl.get(pictures[0].url);
         }
     }
 
-    private _generateTex(): string {
+    function _generateTex(): string {
         const descriptionTemplate = (description: Description) => `
             \\item ${description.character.name}: ${description.states.map(s => s.name).join(" ")}
         `;
@@ -47,7 +34,7 @@ export class TexExporter {
             \\frametitle{${taxon.name}}
             \\framesubtitle{${taxon.name.V}}
             \\begin{block}{Identification}
-            ${ this.photos.length > 0 ? `\\includegraphics[width=3cm,height=3cm]{${this.picture(taxon.pictures)}}` : "" }
+            ${ photos.length > 0 ? `\\includegraphics[width=3cm,height=3cm]{${pic(taxon.pictures)}}` : "" }
             \\begin{itemize}
             \\item name: ${taxon.name}
             \\item vernacular name: ${taxon.name.V}
@@ -56,12 +43,11 @@ export class TexExporter {
             \\end{block}
             \\begin{block}{Description}
             \\begin{itemize}
-            ${join(map(this.dataset.taxonDescriptions(taxon), descriptionTemplate), "\n")}
+            ${join(map(dataset.taxonDescriptions(taxon), descriptionTemplate), "\n")}
             \\end{itemize}
             \\end{block}
         \\end{frame}
         `;
-
         return `
             \\documentclass{beamer}
 
@@ -91,49 +77,60 @@ export class TexExporter {
 
             \\section{Taxons}
 
-            ${join(map(this.dataset.taxons, taxonTemplate), "\n")}
+            ${join(map(dataset.taxons, taxonTemplate), "\n")}
 
             \\end{document}
         `;
     }
 
-    export():Promise<Blob> {
-        const zip = new JSZip();
-
-        const texFileContent = this._generateTex();
-
-        const texFolder = zip.folder("latex");
-        texFolder?.file("export.tex", texFileContent);
-
-        return new Promise((resolve, reject) => {
-            let semaphore = this.photos.length;
-
-            const semDec = () => {
-                semaphore--;
-                this.progressed(this.photos.length - semaphore, this.photos.length);
-                if (semaphore === 0) {
-                    resolve(zip.generateAsync({type: "blob"}));
-                }
-            }
-
-            for (const photo of this.photos) {
-                const rq = new XMLHttpRequest();
-                rq.open("GET", photo);
-                rq.responseType = "blob";
-                rq.onload = (bytes) => {
-                    const pictureName = this.pictureNameByUrl.get(photo);
-
-                    if (!pictureName) return;
-
-                    texFolder?.file(pictureName, rq.response);
-                    semDec();
-                }
-                rq.onerror = (msg) => {
-                    console.log(`error: ${msg}`);
-                    semDec();
-                };
-                rq.send();
-            }
-        });
+    function progressed(progress: number, progresMax: number) {
+        for (const listener of progressListeners) {
+            listener(progress, progresMax);
+        }
     }
+
+    return {
+        onProgress(listener: (progress: number, progressMax: number) => void) {
+            progressListeners.push(listener);
+        },
+        export():Promise<Blob> {
+            const zip = new JSZip();
+
+            const texFileContent = _generateTex();
+
+            const texFolder = zip.folder("latex");
+            texFolder?.file("export.tex", texFileContent);
+
+            return new Promise((resolve, reject) => {
+                let semaphore = photos.length;
+
+                const semDec = () => {
+                    semaphore--;
+                    progressed(photos.length - semaphore, photos.length);
+                    if (semaphore === 0) {
+                        resolve(zip.generateAsync({type: "blob"}));
+                    }
+                }
+
+                for (const photo of photos) {
+                    const rq = new XMLHttpRequest();
+                    rq.open("GET", photo);
+                    rq.responseType = "blob";
+                    rq.onload = (bytes) => {
+                        const pictureName = pictureNameByUrl.get(photo);
+
+                        if (!pictureName) return;
+
+                        texFolder?.file(pictureName, rq.response);
+                        semDec();
+                    }
+                    rq.onerror = (msg) => {
+                        console.log(`error: ${msg}`);
+                        semDec();
+                    };
+                    rq.send();
+                }
+            });
+        }
+    };
 }
