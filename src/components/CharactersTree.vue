@@ -24,8 +24,9 @@ import { filter, map } from "@/tools/iter";
 type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
 
-function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy) {
-    const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = Math.max(element.clientHeight, 400);
+function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy, fullHeight: boolean = false) {
+    const clientHeight = document.body.clientHeight - 120;
+    const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = fullHeight ? clientHeight : Math.max(clientHeight, 400);
 
     const margin = { top: 20, right: 90, bottom: 30, left: 90 },
         width = MAX_WIDTH - margin.left - margin.right,
@@ -265,10 +266,10 @@ export default Vue.extend({
         },
     },
     mounted() {
-        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData);
+        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData, !this.selectedCharacter);
     },
     updated() {
-        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData);
+        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData, !this.selectedCharacter);
     },
     methods: {
         exportMarkdown() {
