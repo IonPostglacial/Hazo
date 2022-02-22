@@ -242,17 +242,16 @@ export default Vue.extend({
             const hierarchyToD3 = (hierarchy: Hierarchy<Character>, item: any): D3Hierarchy => {
                 const langFieldName = this.selectedLang.field;
                 const charChildren: Character[] = item?.children ?? [];
-                const charChildrenStatesNames = charChildren.map(h => (h.characterType === "range" ? undefined : h.inherentState?.name as any ?? {})[langFieldName])
-                    .filter(s => typeof s === "undefined");
+                const inherentStateIds = charChildren.map(c => c.characterType === "discrete" ? c.inherentState?.id : undefined);
                 return {
                     name: item.name ? item.name[langFieldName] : "",
                     url: (item.id ? ("characters/" + item.id) : undefined),
                     color: item.color,
                     children: [
-                        ...map(charChildren, child => hierarchyToD3(hierarchy, child)),
-                        ...map(filter(this.dataset.characterStates(item),
-                            (s: any) => !charChildrenStatesNames.includes(s.name[langFieldName])),
-                            (s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
+                        ...charChildren.map(child => hierarchyToD3(hierarchy, child)),
+                        ...this.dataset.characterStates(item)
+                            .filter((s: any) => !inherentStateIds.includes(s.id))
+                            .map((s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
                     ]
                 };
             };
