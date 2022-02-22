@@ -47,7 +47,7 @@
                         <label class="button" for="importKml">KML</label>
                         <button type="button" @click="emptyZip">Folders</button>
                         <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
-                        <button type="button" @click="exportStats">Stats</button>
+                        <router-link class="button" to="/taxons-stats">Stats</router-link>
                         <button type="button" @click="showFields = !showFields">Extra Fields</button>
                     </div>
                     <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
@@ -377,34 +377,6 @@ export default Vue.extend({
             taxonToTex.export().then(tex => {
                 download(tex, "zip", undefined, true);
             });
-        },
-        exportStats() {
-            const stats = taxonsStats(this.dataset.taxonsHierarchy);
-            const chars = Array.from(this.dataset.characters);
-            let statesCount = 0;
-            let picsCount = 0;
-            for (const char of chars) {
-                picsCount += char.pictures.length;
-                if (char.characterType === "discrete") {
-                    statesCount += char.states.length;
-                    for (const state of char.states) {
-                        picsCount += state.pictures.length;
-                    }
-                }
-            }
-            for (const taxon of this.dataset.taxons) {
-                picsCount += taxon.pictures.length;
-            }
-            const text = `In our items list, ${stats.taxa.length} taxa were registered in our database, ${stats.families.length} families, ${stats.gender} genus, ${stats.species.length} species. Among those, ** trees, and *** shrubs, and ** herbs; ** dans dry forest, ** live in savanna, ** aquatic plants.
-In the description list, ${chars.length} characters were noted, in *** groups, with ${statesCount} states, the *** description, *** description, and *** description were the three character the most applied in this database. And the fact that integrating the family and vernacular name into description, helping users reach their aiming plant efficiently. 
-${picsCount} pictures are stored in total. In our platform, **% plants are applied by human, ** plants are used for construction and ** are eatable, that present a great use for local people and for ethnobotanic researchers.<br>
-<h2>Taxa</h2><ol>${stats.taxa.map(t => `<li>${t.name.S}</li>`).join("")}</ol>
-<h2>Families</h2><ol>${stats.families.map(t => `<li>${t.name.S}</li>`).join("")}</ol>
-<h2>Species</h2><ol>${stats.species.map(t => `<li><i>${t.name.S}</i> ${t.author}</li>`).join("")}</ol>`;
-            const w = window.open("");
-            if (w) {
-                w.document.write(text); 
-            }
         },
     }
 });

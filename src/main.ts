@@ -4,6 +4,7 @@ import App from "./App.vue";
 import { createStore } from "./store";
 import TaxonPresentation from "./components/TaxonPresentation.vue";
 import TaxonsTab from "./components/TaxonsTab.vue";
+import TaxonsStats from "./components/TaxonsStats.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import debounce from "./tools/debounce";
@@ -36,6 +37,7 @@ globalThis.Hazo = {
 const router = new VueRouter({
     routes: [
         { path: "/", component: TaxonsTab },
+        { path: "/taxons-stats", component: TaxonsStats },
         { path: "/taxons/:id?", component: TaxonsTab },
         { path: "/print-taxons/:id?", component: TaxonPresentation },
         { path: "/characters/:id?", component: CharactersTab },
