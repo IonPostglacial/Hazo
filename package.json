@@ -18,6 +18,7 @@
     "split.js": "^1.6.4",
     "vue": "^2.6.11",
     "vue-router": "^3.4.9",
+    "vue-split-panel": "^1.0.4",
     "vuejs-google-maps": "^0.0.13"
   },
   "devDependencies": {

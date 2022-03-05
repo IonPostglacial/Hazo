@@ -8,7 +8,9 @@ import TaxonsStats from "./components/TaxonsStats.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import debounce from "./tools/debounce";
-import VueGoogleMap from "vuejs-google-maps"
+import VueGoogleMap from "vuejs-google-maps";
+ // @ts-ignore
+import VueSplit from 'vue-split-panel';
 import "vuejs-google-maps/dist/vuejs-google-maps.css"
 
 Vue.use(VueGoogleMap, {
@@ -21,6 +23,7 @@ Vue.use(VueGoogleMap, {
 Vue.config.productionTip = false;
 
 Vue.use(VueRouter);
+Vue.use(VueSplit);
 
 declare global {
     namespace globalThis {
