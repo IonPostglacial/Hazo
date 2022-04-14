@@ -63,7 +63,7 @@ import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line 
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import DB, { getAllDictionaryEntries } from "./db-storage";
 import { loadSDD } from "./sdd-load";
-import saveSDD from "./sdd-save.js";
+import saveSDD from "./sdd-save";
 import download from "@/tools/download";
 import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
@@ -476,11 +476,7 @@ export default Vue.extend({
             download(json, "hazo.json", this.dataset.id);
         },
         exportSDD() {
-            const xml = saveSDD({
-                items: this.dataset.getTaxonsByIds(),
-                descriptors: this.dataset.getCharactersByIds(),
-                extraFields: this.dataset.extraFields,
-            });
+            const xml = saveSDD(this.dataset);
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }
