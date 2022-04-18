@@ -20,7 +20,7 @@ async function fillZipEntry(hierarchy: Hierarchy<Taxon>, entries: Iterable<Taxon
 				if (!extension) {
 					extension = "jpeg";
 				}
-				const path = `${currentPath}${entry.name.S}-${i+1}.${extension}`;
+				const path = `${currentPath}${entryName}_${i+1}.${extension}`;
 				paths.push(path);
 				futurePictures.push(fetch(url));
 			}
@@ -28,10 +28,16 @@ async function fillZipEntry(hierarchy: Hierarchy<Taxon>, entries: Iterable<Taxon
 		const pics = await Promise.allSettled(futurePictures.values());
 		const futureBlobs: Promise<Blob>[] = pics.map((p: any) => p.value.blob());
 		const blobs = await Promise.allSettled(futureBlobs);
+
 		for (let i = 0; i < paths.length; i++) {
-			zip.file(paths[i], blobs[i].value);
+			const blobResult = blobs[i];
+			if (blobResult.status === "fulfilled") {
+				zip.file(paths[i], blobResult.value);
+			} else {
+				console.warn(`downloading picture for '${paths[i]}' failed.`);
+			}
 		}
-		fillZipEntry(hierarchy, entry.children, zip, currentPath);
+		await fillZipEntry(hierarchy, entry.children, zip, currentPath);
 	}
 }
 

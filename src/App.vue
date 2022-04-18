@@ -165,7 +165,7 @@ export default Vue.extend({
         removeFromDenyList(state: State) {
             this.store.do("removeStateFromDenyList", state);
         },
-        async syncPictures() {
+        syncPictures() {
             this.urlsToSync = [];
             for (const taxon of this.dataset.taxons) {
                 this.urlsToSync.push(...taxon.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
@@ -176,8 +176,17 @@ export default Vue.extend({
             for (const state of this.dataset.allStates()) {
                 this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            await uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress);
-            this.urlsToSync = [];
+            uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {
+                const successes = [];
+                for (const result of results) {
+                    if (result.status === "fulfilled") {
+                        successes.push(result.value);
+                    }
+                }
+                console.log(`successes: ${successes.length}/${this.urlsToSync.length}`);
+                console.table(successes);
+                this.urlsToSync = [];
+            });
         },
         async push() {
             const json = JSON.stringify(encodeDataset(this.dataset));
