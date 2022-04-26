@@ -38,7 +38,8 @@
                             </div>
                         </section>
                     </div>
-                    <img v-if="taxon.pictures[0]" class="medium-max-width medium-max-height fit-contain" :src="pictureUrl(taxon.pictures[0])"/>
+                    <PictureGalery :images="taxon.pictures" class="medium-max-width medium-max-height fit-contain">
+                    </PictureGalery>
                 </div>
                 <hr class="no-print">
             </section>
@@ -50,12 +51,14 @@ import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-lin
 import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, State } from '@/datatypes/types';
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import Flowering from "./Flowering.vue";
+import Vue from "vue"; // eslint-disable-line no-unused-vars
+import Flowering from "@/components/Flowering.vue";
+import PictureGalery from "@/components/PictureGalery.vue";
+
 
 export default Vue.extend({
     name: "TaxonPresentation",
-    components: { Flowering },
+    components: { Flowering, PictureGalery },
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,
