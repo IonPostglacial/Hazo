@@ -18,6 +18,7 @@
                             <div class="button-group">
                                 <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                                 <button type="button" @click="showMap = !showMap">Map</button>
+                                <button type="button" @click="sortTaxons">Sort</button>
                             </div>
                             <span class="medium-margin">Edit:</span>
                             <div class="button-group">
@@ -190,7 +191,7 @@ import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { taxonsStats } from "@/features/hierarchystats";
 import { normalizePicture } from "@/datatypes/picture";
-import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
+import { forEachHierarchy, sortHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, SelectableItem } from "@/datatypes/types";
 
@@ -266,6 +267,9 @@ export default Vue.extend({
             forEachHierarchy(this.selectedTaxon, child => {
                 this.dataset.setTaxonState(child.id, state);
             });
+        },
+        sortTaxons() {
+            sortHierarchy(this.taxonTree, (t1, t2) => t1.name.S.localeCompare(t2.name.S));
         },
         switchEditMode() {
             this.editProperties = !this.editProperties;

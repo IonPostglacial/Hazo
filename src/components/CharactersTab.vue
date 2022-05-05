@@ -16,6 +16,7 @@
                 <section class="scroll vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1 no-print">
                         <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
+                        <button type="button" @click="sortCharacters">Sort</button>
                         <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">Print</button>
                         <div class="button-group">
                             <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
@@ -192,6 +193,7 @@ import Vue from "vue";
 import { Dataset, Character, Hierarchy, State } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
+import { sortHierarchy } from "@/datatypes/hierarchy";
 
 export default Vue.extend({
     name: "CharactersTab",
@@ -257,6 +259,9 @@ export default Vue.extend({
         },
     },
     methods: {
+        sortCharacters() {
+            sortHierarchy(this.charactersHierarchy, (c1, c2) => c1.name.S.localeCompare(c2.name.S));
+        },
         isInherentState(state: State): boolean {
             const ch = this.selectedCharacter;
             return ch?.characterType === "discrete" && ch.inherentState ? ch.inherentState.id === state.id : false
