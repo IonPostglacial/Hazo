@@ -3,7 +3,7 @@
         <img v-if="icon" width="18" height="18" :src="'icons/'+icon" alt="">
         <label><slot></slot></label>
         <div v-if="!editable" class="inline-block medium-padding medium-margin" target="_blank">{{ value }}</div>
-        <input v-if="editable" type="text" :value="value" @input="setValue" />
+        <v-text-field dense v-if="editable" :value="value" @input="setValue"></v-text-field>
     </div>
 </template>
 
