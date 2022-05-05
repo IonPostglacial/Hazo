@@ -67,7 +67,7 @@ import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line 
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import DB, { getAllDictionaryEntries } from "./db-storage";
 import { loadSDD } from "./sdd-load";
-import saveSDD from "./sdd-save.js";
+import saveSDD from "./sdd-save";
 import download from "@/tools/download";
 import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
@@ -173,7 +173,7 @@ export default Vue.extend({
         removeFromDenyList(state: State) {
             this.store.do("removeStateFromDenyList", state);
         },
-        async syncPictures() {
+        syncPictures() {
             this.urlsToSync = [];
             for (const taxon of this.dataset.taxons) {
                 this.urlsToSync.push(...taxon.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
@@ -184,8 +184,17 @@ export default Vue.extend({
             for (const state of this.dataset.allStates()) {
                 this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            await uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress);
-            this.urlsToSync = [];
+            uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {
+                const successes = [];
+                for (const result of results) {
+                    if (result.status === "fulfilled") {
+                        successes.push(result.value);
+                    }
+                }
+                console.log(`successes: ${successes.length}/${this.urlsToSync.length}`);
+                console.table(successes);
+                this.urlsToSync = [];
+            });
         },
         async push() {
             const json = JSON.stringify(encodeDataset(this.dataset));
@@ -484,11 +493,7 @@ export default Vue.extend({
             download(json, "hazo.json", this.dataset.id);
         },
         exportSDD() {
-            const xml = saveSDD({
-                items: this.dataset.getTaxonsByIds(),
-                descriptors: this.dataset.getCharactersByIds(),
-                extraFields: this.dataset.extraFields,
-            });
+            const xml = saveSDD(this.dataset);
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }

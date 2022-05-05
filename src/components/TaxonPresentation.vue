@@ -20,7 +20,7 @@
                             <div>中文名 <span>{{ taxon.name.CN }}</span></div>
                             <div>NV <span>{{ taxon.name.V }}</span></div>
                             <div>NV 2 <span>{{ taxon.vernacularName2 }}</span></div>
-                            <div>Website <a target="_blank" :href="taxon.website">{{ taxon.website }}</a></div>
+                            <div style="max-width: 50ch" class="text-ellipsed">Website <a target="_blank" :href="taxon.website">{{ taxon.website }}</a></div>
                         </div>
                         <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox limited-width">
                             <div class="horizontal-flexbox small-height">
@@ -38,7 +38,8 @@
                             </div>
                         </section>
                     </div>
-                    <img v-if="taxon.pictures[0]" class="medium-max-width medium-max-height fit-contain" :src="pictureUrl(taxon.pictures[0])"/>
+                    <PictureGalery :images="taxon.pictures" class="medium-max-width medium-max-height fit-contain">
+                    </PictureGalery>
                 </div>
                 <hr class="no-print">
             </section>
@@ -50,12 +51,14 @@ import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-lin
 import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, State } from '@/datatypes/types';
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import Flowering from "./Flowering.vue";
+import Vue from "vue"; // eslint-disable-line no-unused-vars
+import Flowering from "@/components/Flowering.vue";
+import PictureGalery from "@/components/PictureGalery.vue";
+
 
 export default Vue.extend({
     name: "TaxonPresentation",
-    components: { Flowering },
+    components: { Flowering, PictureGalery },
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,

@@ -359,7 +359,7 @@ export default Vue.extend({
             this.showBigImage = true;
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.dataset.taxonsHierarchy!);
+            const zipTxt = await exportZipFolder(this.selectedTaxon ?? this.dataset.taxonsHierarchy!);
             download(zipTxt, "zip", undefined, true);
         },
         texExport() {
