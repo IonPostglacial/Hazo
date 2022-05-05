@@ -1,61 +1,65 @@
 <template>
-    <div id="app" class="vertical-flexbox lightgrey-background height-full">
-        <nav class="thin-border background-gradient-1 no-print centered-text">
-            <div class="inline-block float-left">
-                <button v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
-                    {{ state.name.S }}
-                </button>
-                <button v-for="state in store.statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
-                    {{ state.name.S }}
-                </button>
-            </div>
-            <div class="button-group inline-block">
-                <router-link class="button" to="/taxons">Taxons</router-link>
-                <router-link class="button" to="/characters">Characters</router-link>
-                <router-link class="button" to="/characters-tree">Characters Tree</router-link>
-            </div>
-            <div class="button-group inline-block float-right">
-                <button type="button" @click="openHub">Hub
-                    <span v-if="connectedToHub"> (Connected)</span>
-                    <span v-if="!connectedToHub"> (Disconnected)</span>
-                </button>
-                <button v-if="connectedToHub" type="button" @click="syncPictures" :disabled="urlsToSync.length > 0">
-                    Sync pictures
-                    <span v-if="urlsToSync.length > 0">{{ syncProgress }} / {{ urlsToSync.length }}</span>
-                </button>
-                <button v-if="connectedToHub" type="button" @click="push">Push</button>
-                <button v-if="connectedToHub" type="button" @click="pull">Pull</button>
-            </div>
-        </nav>
-        <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
+    <v-app>
+        <v-navigation-drawer v-if="tab != 'tree'" app v-model="drawer" clipped width="512">
+            <router-view name="LeftMenu"></router-view>
+        </v-navigation-drawer>
+        <v-main>
             <router-view></router-view>
-        </div>
-        <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
-            <div class="button-group">
-                <button type="button" @click="importFile">Import</button>
-                <button type="button" @click="mergeFile">Merge</button>
-                <button type="button" @click="jsonExport">Export</button>
-                <button type="button" @click="exportSDD">Export SDD</button>
-            </div>
+        </v-main>
+        <v-app-bar app dense clipped-left>
+            <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+
+            <v-btn icon @click="importFile" title="import a dataset file (json or SDD)"><v-icon>mdi-import</v-icon></v-btn>
+            <v-btn icon @click="mergeFile" title="merge a dataset file with the current dataset"><v-icon>mdi-merge</v-icon></v-btn>
+            <v-btn icon @click="jsonExport" title="export the current dataset to a JSON file"><v-icon>mdi-export</v-icon></v-btn>
+            <v-btn tile @click="exportSDD">Export SDD</v-btn>
+
+
+            <v-btn v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
+                {{ state.name.S }}
+            </v-btn>
+            <v-btn v-for="state in store.statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
+                {{ state.name.S }}
+            </v-btn>
+
             <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
             <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
-            <div class="button-group">
-                <button type="button" class="background-color-ok" @click="saveData">Save</button>
-                <select v-if="!preloaded" v-model="selectedBase">
-                    <option v-for="datasetId in datasetIds" :key="datasetId" :value="datasetId">{{ datasetId }}</option>
-                </select>
-                <button v-if="!preloaded" @click="renameDataset">Rename DB</button>
-                <button v-if="!preloaded && datasetIds.length > 1" @click="deleteDataset">Delete DB</button>
-                <button v-if="!preloaded" type="button" class="background-color-1" @click="createNewDataset">New DB</button>
-                <button type="button" class="background-color-ko" @click="resetData">Reset</button>
-            </div>
-            <div class="button-group">
-                <button type="button" @click="globalReplace">Replace Text</button>
-                <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
-                <button type="button" class="no-print background-color-1" @click="print">Print</button>
-            </div>
-        </section>
-    </div>
+            
+            <v-spacer></v-spacer>
+
+            <v-btn icon color="success" @click="saveData" title="save the dataset"><v-icon>mdi-content-save</v-icon></v-btn>
+            <v-select dense solo class="mt-6" v-if="!preloaded" v-model="selectedBase" :items="datasetIds">
+            </v-select>
+            <v-btn icon v-if="!preloaded" @click="renameDataset" title="rename the dataset"><v-icon>mdi-rename-box</v-icon></v-btn>
+            <v-btn icon v-if="!preloaded" color="primary" @click="createNewDataset" title="create new dataset"><v-icon>mdi-plus</v-icon></v-btn>
+            <v-btn icon color="warning" @click="resetData" title="reset the dataset"><v-icon>mdi-numeric-0-box</v-icon></v-btn>
+            <v-btn icon v-if="!preloaded && datasetIds.length > 1" color="error" @click="deleteDataset" title="delete the dataset"><v-icon>mdi-delete</v-icon></v-btn>
+
+            <v-spacer></v-spacer>
+
+            <v-btn icon @click="globalReplace" title="replace text"><v-icon>mdi-text</v-icon></v-btn>
+            <v-btn icon class="no-print" @click="displayTaxonStats" title="export stats about the taxons"><v-icon>mdi-chart-bar</v-icon></v-btn>
+            <v-btn icon @click="print" title="print current dataset"><v-icon>mdi-printer</v-icon></v-btn>
+            
+            <v-spacer></v-spacer>
+
+            <v-btn @click="openHub">Hub
+                <span v-if="connectedToHub"> (Connected)</span>
+                <span v-if="!connectedToHub"> (Disconnected)</span>
+            </v-btn>
+            <v-btn v-if="connectedToHub" @click="syncPictures" :disabled="urlsToSync.length > 0">
+                Sync pictures
+                <span v-if="urlsToSync.length > 0">{{ syncProgress }} / {{ urlsToSync.length }}</span>
+            </v-btn>
+            <v-btn v-if="connectedToHub" @click="push">Push</v-btn>
+            <v-btn v-if="connectedToHub" @click="pull">Pull</v-btn>
+        </v-app-bar>
+        <v-bottom-navigation app height="36" v-model="tab" color="primary">
+            <v-btn value="taxon" to="/taxons">Taxons</v-btn>
+            <v-btn value="character" to="/characters">Characters</v-btn>
+            <v-btn value="tree" to="/characters-tree">Tree</v-btn>
+        </v-bottom-navigation>
+    </v-app>
 </template>
 
 <script lang="ts">
@@ -70,9 +74,11 @@ import { Config } from './tools/config';
 import Vue from "vue";
 import { forEachHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
+import MultilangMenu from "@/components/MultilangMenu.vue";
 
 export default Vue.extend({
     name: "App",
+    components: { MultilangMenu },
     data() {
         return {
             store: Hazo.store,
@@ -80,7 +86,9 @@ export default Vue.extend({
             selectedBase: "",
             urlsToSync: [] as string[],
             syncProgress: 0,
+            drawer: true,
             preloaded: true,
+            tab: "taxon" as "taxon" | "character" | "tree",
         };
     },
     mounted() {

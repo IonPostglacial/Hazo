@@ -1,23 +1,41 @@
 <template>
-    <div class="vertical-flexbox">
-        <div class="vertical-flexbox stick-to-top white-background">
-            <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-            <div class="horizontal-flexbox flex-wrap button-group">
-                <button type="button" @click="backToTop">Top</button>
-                <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
-            </div>
-        </div>
+    <div class="vertical-flexbox relative scroll">
+        <v-card outlined class="stick-to-top">
+            <v-sheet class="pa-2">
+                <v-text-field
+                    v-model="menuFilter"
+                    label="Search"
+                    dense
+                    flat
+                    hide-details
+                    solo-inverted
+                    clearable
+                    clear-icon="mdi-close-circle-outline">
+                </v-text-field>
+                <v-toolbar flat>
+                    <v-btn icon @click="backToTop"><v-icon>mdi-folder</v-icon></v-btn>
+                    <div class="display-contents" v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id">
+                        <v-icon>mdi-chevron-right</v-icon>
+                        <v-btn depressed  @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</v-btn>
+                    </div>
+                </v-toolbar>
+            </v-sheet>
+        </v-card>
         <div v-if="!floweringMode" class="horizontal-flexbox flex-wrap relative">
-            <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
-                    :style="item.pictures.length > 0 ? 'background-image: url(' + item.pictures[0].url + ')' : ''"
-                    @click="openItem(item)">
-                <div v-for="field in nameFieldsForItem(item)" :key="field"
-                        :title="item.name[field]"
-                        :class="['thin-border', 'medium-padding', 'text-ellipsed', isSelected(item) ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
-                    {{ item.name[field] }}
-                </div>
-                <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
-            </component>
+            <v-card width="200" elevation="2" class="ma-2" outlined v-for="item in itemsToDisplay" :key="item.id" @click="openItem(item)">
+                <v-img height="200" :src="item.pictures.length > 0 ? item.pictures[0].url : ''" 
+              class="white--text align-end"
+              gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)">
+                    <v-card-title class="d-flex flex-column">
+                        <div class="text-no-wrap" v-for="field in nameFieldsForItem(item)" :key="field" :title="item.name[field]">
+                            {{ item.name[field] }}
+                        </div>
+                    </v-card-title>
+                </v-img>
+                <v-card-actions>
+                    <v-btn v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item)">no more precision</v-btn>
+                </v-card-actions>
+            </v-card>
         </div>
         <div v-if="floweringMode">
             <flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled"></flowering>

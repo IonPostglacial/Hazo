@@ -1,171 +1,180 @@
 <template>
-    <Split class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <SplitArea :size="25">
-            <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
-                :name-fields="nameFields"
-                @move-item-up="moveUp" @move-item-down="moveDown"
-                @add-item="addTaxon" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
-                <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
-            </tree-menu>
-        </SplitArea>
-        <SplitArea :size="75">
-            <div class="horizontal-flexbox scroll flex-grow-1">
-                <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
-                <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
-                <div class="vertical-flexbox flex-grow-1">
-                    <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
-                        <div class="horizontal-flexbox">
-                            <div class="button-group">
-                                <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                                <button type="button" @click="showMap = !showMap">Map</button>
-                                <button type="button" @click="sortTaxons">Sort</button>
-                            </div>
-                            <span class="medium-margin">Edit:</span>
-                            <div class="button-group">
-                                <button type="button" :class="{ 'selected-tab': editProperties }" @click="switchEditMode">Properties</button>
-                                <button type="button" :class="{ 'selected-tab': editDescriptors }" @click="switchEditMode">Descriptors</button>
-                            </div>
-                            <router-link class="button" :to="'/print-taxons/' + this.selectedTaxonId">Print</router-link>
-                        </div>
-                        <div v-if="selectedTaxon" class="relative">
-                            <div v-if="selectingParent">
-                                <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
-                                <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
-                                    <tree-menu :items="taxonTree"
-                                        :name-fields="nameFields"
-                                        @select-item="changeSelectedTaxonParent" v-slot="menuProps">
-                                        <div>{{ menuProps.item.name }}</div>
-                                    </tree-menu>
-                                </div>
-                            </div>
-                            <div v-if="!selectingParent" class="button-group">
-                                <button type="button" v-for="parent in dataset.taxonParentChain(selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
-                                <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</button>
+    <div>
+        <div class="horizontal-flexbox scroll flex-grow-1">
+            <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
+            <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
+            <div class="vertical-flexbox flex-grow-1">
+                <v-toolbar-items dense class="no-print">
+                    <v-btn icon v-if="(typeof selectedTaxon !== 'undefined')" title="copy taxon" type="button" @click="copyItem"><v-icon>mdi-content-copy</v-icon></v-btn>
+                    <v-btn icon @click="pasteItem" title="paste taxon"><v-icon>mdi-content-paste</v-icon></v-btn>
+                    <v-btn icon @click="showMap = !showMap" title="show on the map"><v-icon>mdi-map</v-icon></v-btn>
+                    <v-btn @click="sortTaxons">Sort</v-btn>
+                    <v-btn icon :to="'/print-taxons/' + this.selectedTaxonId" title="print the taxon and its descendants">
+                        <v-icon>mdi-printer</v-icon>
+                    </v-btn>
+                    <v-spacer></v-spacer>
+                    <div v-if="selectedTaxon" class="relative">
+                        <div v-if="selectingParent">
+                            <v-btn @click="closeSelectParentDropdown" class="background-color-1">select parent</v-btn>
+                            <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
+                                <tree-menu :items="taxonTree"
+                                    :name-fields="nameFields"
+                                    @select-item="changeSelectedTaxonParent" v-slot="menuProps">
+                                    <div>{{ menuProps.item.name }}</div>
+                                </tree-menu>
                             </div>
                         </div>
-                        <div class="button-group">
-                            <button v-if="(typeof selectedTaxon !== 'undefined')" type="button" @click="copyItem">Copy</button>
-                            <button type="button" @click="pasteItem">Paste</button>
+                        <div v-if="!selectingParent">
+                            <div class="display-contents" v-for="(parent, i) in dataset.taxonParentChain(selectedTaxon.id)" :key="parent.id">
+                                <v-icon v-if="i > 0">mdi-chevron-right</v-icon>
+                                <v-btn plain class="pa-1" @click="selectTaxon(parent.id)">
+                                    {{ parent.name.S }}
+                                </v-btn>
+                            </div>
+                            <v-btn @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</v-btn>
                         </div>
-                        <div class="button-group">
-                            <label class="button" for="importKml">KML</label>
-                            <button type="button" @click="emptyZip">Folders</button>
-                            <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
-                            <router-link class="button" to="/taxons-stats">Stats</router-link>
-                            <button type="button" @click="showFields = !showFields">Extra Fields</button>
-                        </div>
-                        <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
                     </div>
-                    <google-map v-if="selectedTaxon && showMap"
-                            id="mapid"
-                            ref="Map"
-                            :center="{ lat: 48.856614, lng: 2.3522219 }"
-                            :zoom="12">
-                        <google-map-marker v-for="(position, index) in specimenLocations"
-                            :key="index"
-                            :title="selectedTaxon ? selectedTaxon.name : ''"
-                            :position="position"
-                        />
-                    </google-map>
-                    <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
-                        <div :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': !editDescriptors }]">
-                            <picture-box :editable="editProperties"
-                                @open-photo="openPhoto"
-                                @add-photo="addItemPhoto"
-                                @set-photo="setItemPhoto"
-                                @delete-photo="deleteItemPhoto"
-                                :pictures="selectedTaxon.pictures">
-                            </picture-box>
-                            <collapsible-panel v-if="editProperties" label="Properties">
-                                <div class="scroll large-max-width form-grid medium-padding">
-                                    <div v-if="editProperties" class="display-contents">
-                                        <label>NS</label>
-                                        <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" />
-                                        <label>Author</label>
-                                        <input type="text" v-model="selectedTaxon.author" />
+                    <v-spacer></v-spacer>
+
+                    <label class="v-btn theme--light v-size--default" for="importKml">KML</label>
+                    <v-btn text @click="emptyZip">Folders</v-btn>
+                    <v-btn text @click="texExport">Latex{{latexProgressText}}</v-btn>
+                    <v-btn text to="/taxons-stats">Stats</v-btn>
+                    <v-btn text @click="showFields = !showFields">Extra Fields</v-btn>
+                    <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
+                </v-toolbar-items>
+                <google-map v-if="selectedTaxon && showMap"
+                        id="mapid"
+                        ref="Map"
+                        :center="{ lat: 48.856614, lng: 2.3522219 }"
+                        :zoom="12">
+                    <google-map-marker v-for="(position, index) in specimenLocations"
+                        :key="index"
+                        :title="selectedTaxon ? selectedTaxon.name : ''"
+                        :position="position"
+                    />
+                </google-map>
+                <v-row>
+                    <v-col cols="8">
+                        <v-expansion-panels accordion multiple v-model="panels">
+                            <v-expansion-panel>
+                                <v-expansion-panel-header>
+                                    Pictures
+                                </v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <picture-box :editable="editProperties"
+                                        @open-photo="openPhoto"
+                                        @add-photo="addItemPhoto"
+                                        @set-photo="setItemPhoto"
+                                        @delete-photo="deleteItemPhoto"
+                                        :pictures="selectedTaxon.pictures">
+                                    </picture-box>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                            <v-expansion-panel>
+                                <v-expansion-panel-header>
+                                    Properties
+                                </v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <div class="scroll large-max-width form-grid">
+                                        <div v-if="editProperties" class="display-contents">
+                                            <label>NS</label>
+                                            <v-text-field dense class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S"></v-text-field>
+                                            <label>Author</label>
+                                            <v-text-field dense v-model="selectedTaxon.author"></v-text-field>
+                                        </div>
+                                        <item-property-field v-model="selectedTaxon.name2" :editable="editProperties">
+                                            Synonymous</item-property-field>
+                                        <item-property-field v-model="selectedTaxon.name.CN" :editable="editProperties">
+                                            中文名</item-property-field>
+                                        <item-property-field v-model="selectedTaxon.name.V" :editable="editProperties">
+                                            NV</item-property-field>
+                                        <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editProperties">
+                                            NV 2</item-property-field>
+
+                                        <label>Website</label>
+                                        <v-text-field v-if="editProperties" type="text" v-model="selectedTaxon.website"></v-text-field>
+                                        <a v-if="!editProperties" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a>
+
+                                        <label>Meaning</label>
+                                        <v-textarea dense outlined :readonly="!editProperties" v-model="selectedTaxon.meaning"></v-textarea>
+
+                                        <item-property-field v-model="selectedTaxon.noHerbier" :editable="editProperties">
+                                            N° Herbier</item-property-field>
+                                        <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
+                                            Herbarium Picture</item-property-field>
+                                        <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
+                                                :icon="extraField.icon"
+                                                :value="extraProperty(extraField)"
+                                                @input="setExtraProperty"
+                                                :editable="editProperties">
+                                            {{ extraField.label }}
+                                        </item-property-field>
                                     </div>
-                                    <item-property-field v-model="selectedTaxon.name2" :editable="editProperties">
-                                        Synonymous</item-property-field>
-                                    <item-property-field v-model="selectedTaxon.name.CN" :editable="editProperties">
-                                        中文名</item-property-field>
-                                    <item-property-field v-model="selectedTaxon.name.V" :editable="editProperties">
-                                        NV</item-property-field>
-                                    <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editProperties">
-                                        NV 2</item-property-field>
-
-                                    <label>Website</label>
-                                    <input v-if="editProperties" type="text" v-model="selectedTaxon.website" />
-                                    <a v-if="!editProperties" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a>
-
-                                    <label>Meaning</label>
-                                    <textarea :readonly="!editProperties" v-model="selectedTaxon.meaning"></textarea>
-
-                                    <item-property-field v-model="selectedTaxon.noHerbier" :editable="editProperties">
-                                        N° Herbier</item-property-field>
-                                    <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
-                                        Herbarium Picture</item-property-field>
-                                    <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
-                                            :icon="extraField.icon"
-                                            :value="extraProperty(extraField)"
-                                            @input="setExtraProperty"
-                                            :editable="editProperties">
-                                        {{ extraField.label }}
-                                    </item-property-field>
-                                </div>
-                            </collapsible-panel>
-                            <collapsible-panel v-for="book in dataset.books" :key="book.id" :label="book.label">
-                                <div v-if="selectedTaxon && selectedTaxon.bookInfoByIds">
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                            <v-expansion-panel>
+                                <v-expansion-panel-header>
+                                    Description
+                                </v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <SquareTreeViewer :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                            <v-expansion-panel v-for="book in dataset.books" :key="book.id">
+                                <v-expansion-panel-header>
+                                    {{ book.label }}
+                                </v-expansion-panel-header>
+                                <v-expansion-panel-content v-if="selectedTaxon && selectedTaxon.bookInfoByIds">
                                     <div v-if="selectedTaxon.bookInfoByIds[book.id]">
-                                        <label class="medium-margin">
-                                            book:&nbsp;
-                                            <input v-if="editProperties" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].fasc" />
-                                            <div class="inline-block medium-padding medium-margin" v-if="!editProperties">
-                                                {{ selectedTaxon.bookInfoByIds[book.id].fasc }}
-                                            </div>
-                                        </label>
-                                        <label class="medium-margin">
-                                            page:&nbsp;
-                                            <input v-if="editProperties" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].page" />
+                                        <v-toolbar dense flat>
+                                            <label>page</label>
+                                            <v-text-field dense class="mt-4 ml-4" v-if="editProperties" v-model="selectedTaxon.bookInfoByIds[book.id].page"></v-text-field>
                                             <div class="inline-block medium-padding medium-margin" v-if="!editProperties">
                                                 {{ selectedTaxon.bookInfoByIds[book.id].page }}
                                             </div>
-                                        </label>
+                                            <label>book</label>
+                                            <v-text-field dense class="mt-4 ml-4" v-if="editProperties" v-model="selectedTaxon.bookInfoByIds[book.id].fasc"></v-text-field>
+                                            <div class="inline-block medium-padding medium-margin" v-if="!editProperties">
+                                                {{ selectedTaxon.bookInfoByIds[book.id].fasc }}
+                                            </div>
+                                        </v-toolbar>
                                         <ckeditor v-if="editProperties" :editor="editor" v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
                                         <div v-if="!editProperties" class="limited-width medium-padding" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
                                     </div>
-                                </div>
-                            </collapsible-panel>
-                            <collapsible-panel label="Additional Text" id="item-detail">
-                                <ckeditor v-if="editProperties" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
-                                <div v-if="!editProperties" class="limited-width" v-html="selectedTaxon.detail"></div>
-                            </collapsible-panel>
-                        </div>
-                        <div v-if="editDescriptors" class="vertical-flexbox scroll flex-grow-1">
-                            <section class="white-background medium-padding medium-margin thin-border">
-                                <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
-                            </section>
-                            <collapsible-panel label="Description">
-                                <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
-                            </collapsible-panel>
-                        </div>
-                        <collapsible-panel v-if="!editProperties" class="scroll" label="Description">
-                            <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
-                            <ul>
-                                <li v-for="desc in itemDescription" :key="desc.character.id">
-                                    {{ desc.character.name.S }}
-                                    <ul v-if="desc.states.length > 0" class="indented">
-                                        <li v-for="state in desc.states" :key="state.id">
-                                            {{ state.name.S }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </collapsible-panel>
-                    </split-panel>
-                </div>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                            <v-expansion-panel id="item-detail">
+                                <v-expansion-panel-header>
+                                    Additional Text
+                                </v-expansion-panel-header>
+                                <v-expansion-panel-content>
+                                    <ckeditor v-if="editProperties" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
+                                    <div v-if="!editProperties" class="limited-width" v-html="selectedTaxon.detail"></div>
+                                </v-expansion-panel-content>
+                            </v-expansion-panel>
+                        </v-expansion-panels>
+                    </v-col>
+                    <v-col cols="4">
+                        <p>
+                            <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
+                        </p>
+                        <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
+                        <ul>
+                            <li v-for="desc in itemDescription" :key="desc.character.id">
+                                {{ desc.character.name.S }}
+                                <ul v-if="desc.states.length > 0" class="indented">
+                                    <li v-for="state in desc.states" :key="state.id">
+                                        {{ state.name.S }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </v-col>
+                </v-row>
             </div>
-        </SplitArea>
-    </Split>
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
@@ -186,10 +195,8 @@ import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { createTexExporter, exportZipFolder, importKml } from "@/features";
-import { createTaxon, taxonHasStates } from "@/datatypes/Taxon";
-import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
+import { taxonHasStates } from "@/datatypes/Taxon";
 import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
-import { taxonsStats } from "@/features/hierarchystats";
 import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, sortHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
@@ -206,7 +213,6 @@ export default Vue.extend({
         return {
             nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
             store: Hazo.store,
-            showLeftMenu: true,
             showFields: false,
             showBigImage: false,
             showMap: false,
@@ -218,6 +224,7 @@ export default Vue.extend({
             latexProgressText: "",
             selectingParent: false,
             selectedTaxonId: this.$route.params.id ?? "",
+            panels: [0, 1],
         }
     },
     watch: {
@@ -259,7 +266,7 @@ export default Vue.extend({
             } else {
                 return this.dataset.taxonDescriptions(this.selectedTaxon);
             }
-        }
+        },
     },
     methods: {
         pushStateToChildren(state: State) {
@@ -290,12 +297,6 @@ export default Vue.extend({
         pasteItem() {
             this.store.do("pasteTaxon", this.selectedTaxonId);
         },
-        moveUp(item: Taxon) {
-            if (this.selectedTaxon) this.store.do("moveTaxonUp", item);
-        },
-        moveDown(item: Taxon) {
-            if (this.selectedTaxon) this.store.do("moveTaxonDown", item);
-        },
         openSelectParentDropdown() {
             this.selectingParent = true;
         },
@@ -310,20 +311,6 @@ export default Vue.extend({
         },
         selectTaxon(id: string) {
             this.selectedTaxonId = id;
-        },
-        addTaxon(e: {value: string[], parentId: string }) {
-            const [name, vernacularName, nameCN] = e.value;
-            this.store.do("addTaxon", createTaxon({
-                ...createHierarchicalItem({ id: "", type: "", name: { S: name, V: vernacularName, CN: nameCN}, pictures: [], }),
-                bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
-                parentId: e.parentId
-            }));
-        },
-        removeTaxon(e: { itemId: string }) {
-            const taxonToRemove = this.dataset.taxon(e.itemId);
-            if (taxonToRemove) {
-                this.store.do("removeTaxon", taxonToRemove);
-            }
         },
         setProperty(e: { detail: { property: string, value: string } }) {
             (this.selectedTaxon as any)[e.detail.property] = e.detail.value;

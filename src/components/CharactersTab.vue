@@ -1,30 +1,25 @@
 <template>
     <Split class="start-align flex-grow-1 scroll">
-        <SplitArea :size="33">
-            <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
-                :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
-                @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
-                @add-item="addCharacter"
-                @move-item-up="moveUp" @move-item-down="moveDown"
-                @unselected="selectedCharacterId = ''" @delete-item="deleteCharacter" v-slot="menuProps">
-                <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
-            </tree-menu>
-        </SplitArea>
-        <SplitArea :size="33" class="flex-grow-1">
+        <SplitArea :size="50" class="flex-grow-1">
             <div class="scroll flex-grow-1">
                 <popup-galery v-if="!printMode" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
                 <section class="scroll vertical-flexbox flex-grow-1">
-                    <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1 no-print">
-                        <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                        <button type="button" @click="sortCharacters">Sort</button>
-                        <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">Print</button>
-                        <div class="button-group">
-                            <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
-                            <button type="button" @click="pasteItem">Paste</button>
-                            <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyStates">Copy States</button>
-                            <button type="button" @click="pasteStates">Paste States</button>
-                        </div>
-                    </div>
+                    <v-toolbar dense class="no-print">
+                        <v-btn icon @click="printPresentation" :class="{'background-color-1': printMode}" title="print the character">
+                            <v-icon>mdi-printer</v-icon>
+                        </v-btn>
+                        <v-btn @click="sortCharacters">Sort</v-btn>
+                        <v-spacer></v-spacer>
+                        
+                        <v-btn icon v-if="(typeof selectedCharacter !== 'undefined')" @click="copyItem" title="Copy">
+                            <v-icon>mdi-content-copy</v-icon>
+                        </v-btn>
+                        <v-btn icon @click="pasteItem" title="Paste">
+                            <v-icon>mdi-content-paste</v-icon>
+                        </v-btn>
+                        <v-btn text v-if="(typeof selectedCharacter !== 'undefined')" @click="copyStates">Copy States</v-btn>
+                        <v-btn text @click="pasteStates">Paste States</v-btn>
+                    </v-toolbar>
                     <div v-if="(typeof selectedCharacter !== 'undefined' && printMode)" class="white-background">
                         <characters-presentation
                             :dataset="dataset"
@@ -48,13 +43,13 @@
                             </tr>
                             <tr>
                                 <th>Name</th>
-                                <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.S" /></td>
-                                <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" /></td>
-                                <td><input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" /></td>
+                                <td><v-text-field class="flex-grow-1" type="text" v-model="selectedCharacter.name.S"></v-text-field></td>
+                                <td><v-text-field class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN"></v-text-field></td>
+                                <td><v-text-field class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN"></v-text-field></td>
                             </tr>
                         </table>
                         <label class="item-property">Detail</label>
-                        <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
+                        <v-textarea outlined v-model="selectedCharacter.detail"></v-textarea>
                         <div>
                             <label class="item-property">Type</label>
                             <label><input type="radio" name="character-type" value="discrete" v-model="selectedCharacter.characterType">Discrete</label>
@@ -119,62 +114,70 @@
                 </section>
             </div>
         </SplitArea>
-        <SplitArea :size="33">
-            <section v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
-                <collapsible-panel label="States">
-                    <div class="scroll medium-padding white-background">
-                        <label v-if="maybeInherentState">
-                            <input type="checkbox"
-                                @input="onlyAllowState(maybeInherentState)"
-                                :checked="stateInAllowList(maybeInherentState)">
-                            Add to allow list
-                        </label>
-                        <label v-if="maybeInherentState">
-                            <input type="checkbox"
-                                @input="denyState(maybeInherentState)"
-                                :checked="stateInDenyList(maybeInherentState)">
-                            Add to deny list
-                        </label>
-                        <button class="background-color-1" @click="exportStates">Copy</button>
-                        <ul class="no-list-style medium-padding medium-margin">
-                            <li v-for="state in statesToDisplay" :key="state.id" class="horizontal-flexbox">
-                                <div class="vertical-flexbox thin-border">
-                                    <div @click="moveStateUp(state)" class="move-up">🡡</div>
-                                    <div @click="moveStateDown(state)" class="move-down">🡣</div>
-                                    <label for="allow">
-                                        A<input name="allow" type="checkbox" @input="onlyAllowState(state)" :checked="stateInAllowList(state)">
-                                    </label>
-                                    <label for="deny">
-                                        D<input name="deny" type="checkbox" @input="denyState(state)" :checked="stateInDenyList(state)">
-                                    </label>
-                                </div>
-                                <label class="medium-padding rounded nowrap horizontal-flexbox">
-                                    <div class="form-grid">
-                                        <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name.S" />
-                                        <div>EN</div><input type="text" class="flex-grow-1" v-model="state.name.EN" />
-                                        <div>CN</div><input type="text" class="flex-grow-1" v-model="state.name.CN" />
-                                        <label>Color</label><input type="color" v-model="state.color">
-                                        <div>Description</div>
-                                        <textarea v-model="state.description" class="input-text" pleceholder="description"></textarea>
+        <SplitArea :size="50">
+            <section v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="scroll relative vertical-flexbox">
+                <h3>States</h3>
+                <div class="scroll medium-padding white-background">
+                    <label v-if="maybeInherentState">
+                        <input type="checkbox"
+                            @input="onlyAllowState(maybeInherentState)"
+                            :checked="stateInAllowList(maybeInherentState)">
+                        Add to allow list
+                    </label>
+                    <label v-if="maybeInherentState">
+                        <input type="checkbox"
+                            @input="denyState(maybeInherentState)"
+                            :checked="stateInDenyList(maybeInherentState)">
+                        Add to deny list
+                    </label>
+                    <v-btn icon color="primary" @click="exportStates"><v-icon>mdi-content-copy</v-icon></v-btn>
+                    <v-container>
+                        <v-card class="ma-4" v-for="state in statesToDisplay" :key="state.id">
+                            <v-row>
+                                <v-col cols="1">
+
+                                    <v-btn icon @click="removeState(state)" color="error"><v-icon>mdi-delete</v-icon></v-btn>
+                                    <div class="vertical-flexbox">
+                                        <v-btn icon @click="moveStateUp(state)"><v-icon>mdi-arrow-up</v-icon></v-btn>
+                                        <v-btn icon @click="moveStateDown(state)"><v-icon>mdi-arrow-down</v-icon></v-btn>
+                                        <label for="allow">
+                                            A<input name="allow" type="checkbox" @input="onlyAllowState(state)" :checked="stateInAllowList(state)">
+                                        </label>
+                                        <label for="deny">
+                                            D<input name="deny" type="checkbox" @input="denyState(state)" :checked="stateInDenyList(state)">
+                                        </label>
                                     </div>
-                                    <picture-box
-                                        class="scroll"
-                                        :editable="true"
-                                        @add-photo="addStatePhoto(state, $event)"
-                                        @set-photo="setStatePhoto(state, $event)"
-                                        @delete-photo="deleteStatePhoto(state, $event)"
-                                        @open-photo="openStatePhoto(state, $event)"
-                                        :pictures="state.pictures">
-                                    </picture-box>
-                                    <div class="close" @click="removeState(state)"></div>
-                                </label>
-                            </li>
-                            <li>
-                                <add-item @add-item="addState"></add-item>
-                            </li>
-                        </ul>
-                    </div>
-                </collapsible-panel>
+                                </v-col>
+                                <v-col cols="11">
+                                    <v-row class="medium-padding rounded nowrap horizontal-flexbox">
+                                        <v-col cols="4">
+                                            <div class="form-grid">
+                                                <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name.S" />
+                                                <div>EN</div><input type="text" class="flex-grow-1" v-model="state.name.EN" />
+                                                <div>CN</div><input type="text" class="flex-grow-1" v-model="state.name.CN" />
+                                                <label>Color</label><input type="color" v-model="state.color">
+                                                <div>Description</div>
+                                                <textarea v-model="state.description" class="input-text" pleceholder="description"></textarea>
+                                            </div>
+                                        </v-col>
+                                        <v-col cols="8">
+                                            <picture-box
+                                                class="scroll"
+                                                :editable="true"
+                                                @add-photo="addStatePhoto(state, $event)"
+                                                @set-photo="setStatePhoto(state, $event)"
+                                                @delete-photo="deleteStatePhoto(state, $event)"
+                                                @open-photo="openStatePhoto(state, $event)"
+                                                :pictures="state.pictures">
+                                            </picture-box>
+                                        </v-col>
+                                    </v-row>
+                                </v-col>
+                            </v-row>
+                        </v-card>
+                        <add-item @add-item="addState"></add-item>
+                    </v-container>
+                </div>
             </section>
         </SplitArea>
     </Split>
@@ -191,7 +194,6 @@ import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
 import Vue from "vue";
 import { Dataset, Character, Hierarchy, State } from "@/datatypes";
-import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 import { sortHierarchy } from "@/datatypes/hierarchy";
 
@@ -315,12 +317,6 @@ export default Vue.extend({
         pasteStates() {
             this.store.do("pasteStates", this.selectedCharacterId);
         },
-        moveUp(item: Character) {
-            if (this.selectedCharacter) this.store.do("moveCharacterUp", item);
-        },
-        moveDown(item: Character) {
-            if (this.selectedCharacter) this.store.do("moveCharacterDown", item);
-        },
         setInapplicableState(state: State, selected: boolean) {
             this.store.do("setInapplicableState", { character: this.selectedCharacter!, state, selected });
         },
@@ -391,22 +387,6 @@ export default Vue.extend({
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
             this.showBigImage = true;
             this.bigImages = state.pictures;
-        },
-        addCharacter(e: { value: string[], parentId: string }) {
-            const [name, nameCN] = e.value;
-            this.store.do("addCharacter", createCharacter({
-                presetStates: this.dataset.presetStates,
-                name: { S: name, FR: name, CN: nameCN }, 
-                parentId: e.parentId,
-            }));
-        },
-        deleteCharacter(e: { itemId: string}) {
-            const characterToDelete = this.dataset.character(e.itemId);
-            if (typeof characterToDelete !== "undefined") {
-                this.store.do("removeCharacter", characterToDelete);
-            } else {
-                console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
-            }
         },
         addState(e: {detail: string[]}) {
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
