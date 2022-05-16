@@ -1,3 +1,5 @@
+import clone from "@/tools/clone";
+
 export type Hierarchy<T> = T & {
     children: Hierarchy<T>[];
 }
@@ -33,10 +35,7 @@ export function forEachLeaves<T>(hierarchy: Hierarchy<T>, cb: (h:Hierarchy<T>)=>
 }
 
 export function cloneHierarchy<T>(hierarchy: Hierarchy<T>): Hierarchy<T> {
-    return {
-        ...hierarchy,
-        children: hierarchy.children.map(cloneHierarchy),
-    };
+    return clone(hierarchy);
 }
 
 export function transformHierarchy<T, U>(hierarchy: Hierarchy<T>, transform: { filter: (h:Hierarchy<T>)=>boolean, map: (j:Hierarchy<T>)=>Hierarchy<U>}): Hierarchy<any> {
