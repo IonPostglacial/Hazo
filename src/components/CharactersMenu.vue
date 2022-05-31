@@ -5,6 +5,7 @@
         :name-fields="nameFields"
         @move-item-up="moveUp" @move-item-down="moveDown"
         @add-item="addCharacter" @delete-item="removeCharacter"
+        @export-selected-items="exportCharacters"
     ></MultilangMenu>
 </template>
 
@@ -15,6 +16,8 @@ import { Dataset } from "@/datatypes";
 import { Hierarchy } from "@/datatypes/hierarchy";
 import { Character } from "@/datatypes/types";
 import { createCharacter } from "@/datatypes/Character";
+import download from "@/tools/download";
+import { generateCSV } from "@/tools/parse-csv";
 
 
 export default Vue.extend({
@@ -64,6 +67,16 @@ export default Vue.extend({
             } else {
                 console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }
+        },
+        exportCharacters(characterIds: string[]) {
+            const csv = [["id", "scientific_name", "vernacular_name", "chinese_name"]];
+            for (const id of characterIds) {
+                const character = this.dataset.character(id);
+                if (typeof character !== "undefined") {
+                    csv.push([character.id, character.name.S, character.name.V??"", character.name.CN??""]);
+                }
+            }
+            download(generateCSV(csv), "characters.csv");
         },
     }
 });

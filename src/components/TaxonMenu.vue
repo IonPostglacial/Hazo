@@ -5,6 +5,7 @@
         :name-fields="nameFields"
         @move-item-up="moveUp" @move-item-down="moveDown"
         @add-item="addTaxon" @delete-item="removeTaxon"
+        @export-selected-items="exportTaxons"
     ></MultilangMenu>
 </template>
 
@@ -15,6 +16,8 @@ import { Book, Dataset, Taxon } from "@/datatypes";
 import { transformHierarchy } from "@/datatypes/hierarchy";
 import { createTaxon, taxonHasStates, taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
+import download from "@/tools/download";
+import { generateCSV } from "@/tools/parse-csv";
 
 
 export default Vue.extend({
@@ -68,6 +71,16 @@ export default Vue.extend({
             if (taxonToRemove) {
                 this.store.do("removeTaxon", taxonToRemove);
             }
+        },
+        exportTaxons(taxonIds: string[]) {
+            const csv = [["id", "scientific_name", "author", "vernacular_name", "chinese_name"]];
+            for (const id of taxonIds) {
+                const taxon = this.dataset.taxon(id);
+                if (typeof taxon !== "undefined") {
+                    csv.push([taxon.id, taxon.name.S, taxon.author, taxon.name.V??"", taxon.name.CN??""]);
+                }
+            }
+            download(generateCSV(csv), "taxons.csv");
         },
     }
 });

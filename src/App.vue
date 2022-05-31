@@ -8,12 +8,36 @@
         </v-main>
         <v-app-bar app dense clipped-left>
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-
-            <v-btn icon @click="importFile" title="import a dataset file (json or SDD)"><v-icon>mdi-import</v-icon></v-btn>
-            <v-btn icon @click="mergeFile" title="merge a dataset file with the current dataset"><v-icon>mdi-merge</v-icon></v-btn>
-            <v-btn icon @click="jsonExport" title="export the current dataset to a JSON file"><v-icon>mdi-export</v-icon></v-btn>
-            <v-btn tile @click="exportSDD">Export SDD</v-btn>
-
+            <v-menu transition="slide-y-transition" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on">
+                        Import
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item @click="importFile">
+                        <v-list-item-title>Replace current items</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="mergeFile">
+                        <v-list-item-title>Merge new items</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+            <v-menu transition="slide-y-transition" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on">
+                        Export
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item @click="jsonExport">
+                        <v-list-item-title>Export to JSON</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="exportSDD">
+                        <v-list-item-title>Export to SDD</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
 
             <v-btn v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
                 {{ state.name.S }}
@@ -40,19 +64,32 @@
             <v-btn icon @click="globalReplace" title="replace text"><v-icon>mdi-text</v-icon></v-btn>
             <v-btn icon class="no-print" @click="displayTaxonStats" title="export stats about the taxons"><v-icon>mdi-chart-bar</v-icon></v-btn>
             <v-btn icon @click="print" title="print current dataset"><v-icon>mdi-printer</v-icon></v-btn>
-            
-            <v-spacer></v-spacer>
-
-            <v-btn @click="openHub">Hub
-                <span v-if="connectedToHub"> (Connected)</span>
-                <span v-if="!connectedToHub"> (Disconnected)</span>
-            </v-btn>
-            <v-btn v-if="connectedToHub" @click="syncPictures" :disabled="urlsToSync.length > 0">
-                Sync pictures
-                <span v-if="urlsToSync.length > 0">{{ syncProgress }} / {{ urlsToSync.length }}</span>
-            </v-btn>
-            <v-btn v-if="connectedToHub" @click="push">Push</v-btn>
-            <v-btn v-if="connectedToHub" @click="pull">Pull</v-btn>
+            <v-menu transition="slide-y-transition" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on">
+                        Hub
+                        <span v-if="connectedToHub"> (Connected)</span>
+                        <span v-if="!connectedToHub"> (Disconnected)</span>
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item @click="openHub">
+                        <v-list-item-title>Go to the Hub</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="connectedToHub" @click="syncPictures" :disabled="urlsToSync.length > 0">
+                        <v-list-item-title>
+                            Sync pictures
+                            <span v-if="urlsToSync.length > 0">{{ syncProgress }} / {{ urlsToSync.length }}</span>
+                        </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="connectedToHub" @click="push">
+                        <v-list-item-title>Push</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="connectedToHub" @click="pull">
+                        <v-list-item-title>Pull</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
         </v-app-bar>
         <v-bottom-navigation app height="36" v-model="tab" color="primary">
             <v-btn value="taxon" to="/taxons">Taxons</v-btn>

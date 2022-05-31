@@ -179,7 +179,6 @@
 
 <script lang="ts">
 import SquareTreeViewer from "./SquareTreeViewer.vue";
-import TreeMenu from "./TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
@@ -207,7 +206,7 @@ export default Vue.extend({
     name: "TaxonsTab",
     components: {
         CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
-        ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation
+        ExtraFieldsPanel, PopupGalery, SplitPanel, TaxonPresentation
     },
     data() {
         return {

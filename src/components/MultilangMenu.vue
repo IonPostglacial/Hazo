@@ -8,12 +8,15 @@
             dense
             small
             flat
-            solo-inverted
+            solo
             hide-details
             clearable
             clear-icon="mdi-close-circle-outline">
           </v-text-field>
           <v-spacer></v-spacer>
+          <v-btn v-if="!selectable" @click="selectable = true">Select</v-btn>
+          <v-btn v-if="selectable" @click="selectable = false">Cancel</v-btn>
+          <v-btn v-if="selectable" @click="exportItems">Export</v-btn>
           <v-btn small icon @click="openAll"><v-icon>mdi-expand-all</v-icon></v-btn>
           <v-btn small icon @click="closeAll"><v-icon>mdi-collapse-all</v-icon></v-btn>
       </v-row>
@@ -56,6 +59,8 @@
       dense
       activatable
       hoverable
+      v-model="value"
+      :selectable="selectable"
       :open="open"
       :search="search"
       :items="treeItems"
@@ -109,76 +114,85 @@ function hierarchyToTree(h: Hierarchy<any>, selectedNames: NameLang[]): Tree {
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
 export default Vue.extend({
-  name: "MultilangMenu",
-  props: {
-    baseUrl: String,
-    items: Object as PropType<Hierarchy<HierarchicalItem>>,
-    nameFields: Array as PropType<NameLang[]>,
-  },
-  data() {
-    return {
-      addDialog: false,
-      addDialogParent: undefined as HierarchicalItem | undefined,
-      addDialogText: "",
-      open: [] as string[],
-      selectedNamesIndices: this.nameFields.map((_, i) => i),
-      search: "",
-      selectedItem: new Array<string>(),
-    };
-  },
-  computed: {
-    treeItems(): Tree {
-      return hierarchyToTree(this.items, this.selectedNames);
+    name: "MultilangMenu",
+    props: {
+        baseUrl: String as PropType<String>,
+        items: Object as PropType<Hierarchy<HierarchicalItem>>,
+        nameFields: Array as PropType<NameLang[]>,
     },
-    selectedNames(): NameLang[] {
-      return this.selectedNamesIndices.map((i) => this.nameFields[i]);
+    data() {
+        return {
+            selectable: false,
+            addDialog: false,
+            addDialogParent: undefined as HierarchicalItem | undefined,
+            addDialogText: "",
+            open: [] as string[],
+            selectedNamesIndices: this.nameFields.map((_, i) => i),
+            search: "",
+            selectedItem: new Array<string>(),
+            value: new Array<string>(),
+        };
     },
-  },
-  watch: {
-    selectedItem(value: string[]) {
-      if (value.length > 0) {
-        this.$router.push({ path: `/${this.baseUrl}/${value[0]}` });
-      }
+    computed: {
+        treeItems(): Tree {
+            return hierarchyToTree(this.items, this.selectedNames);
+        },
+        selectedNames(): NameLang[] {
+            return this.selectedNamesIndices.map((i) => this.nameFields[i]);
+        },
     },
-  },
-  methods: {
-    openAll() {
-      (this.$refs.treeView as any).updateAll(true);
+    watch: {
+        selectedItem(value: string[]) {
+            if (value.length > 0) {
+                this.$router.push({ path: `/${this.baseUrl}/${value[0]}` });
+            }
+        },
+        value() {
+            this.$emit("selected", this.value);
+        },
     },
-    closeAll() {
-      (this.$refs.treeView as any).updateAll(false);
+    methods: {
+        openAll() {
+            (this.$refs.treeView as any).updateAll(true);
+        },
+        closeAll() {
+            (this.$refs.treeView as any).updateAll(false);
+        },
+        prettyId(id: string): string {
+            for (const prefix of knownPrefixes) {
+                if (id.startsWith(prefix)) {
+                    return id.substring(prefix.length);
+                }
+            }
+            return id ?? "";
+        },
+        exportItems() {
+            this.$emit("export-selected-items", this.value);
+            this.selectable = false;
+        },
+        openAddDialog(e: HierarchicalItem | undefined) {
+            this.addDialogParent = e;
+            this.addDialog = true;
+        },
+        addItem() {
+            this.addDialog = false;
+            this.$emit("add-item", {
+                parentId: this.addDialogParent?.id,
+                value: [this.addDialogText],
+            });
+            this.addDialogParent = undefined;
+            this.addDialogText = "";
+        },
+        moveItemUp(e: HierarchicalItem) {
+            this.$emit("move-item-up", e);
+        },
+        moveItemDown(e: HierarchicalItem) {
+            this.$emit("move-item-down", e);
+        },
+        deleteItem(e: HierarchicalItem) {
+            this.$emit("delete-item", { itemId: e.id });
+        },
     },
-    prettyId(id: string): string {
-      for (const prefix of knownPrefixes) {
-        if (id.startsWith(prefix)) {
-          return id.substring(prefix.length);
-        }
-      }
-      return id ?? "";
-    },
-    openAddDialog(e: HierarchicalItem | undefined) {
-      this.addDialogParent = e;
-      this.addDialog = true;
-    },
-    addItem() {
-      this.addDialog = false;
-      this.$emit("add-item", {
-        parentId: this.addDialogParent?.id,
-        value: [this.addDialogText],
-      });
-      this.addDialogParent = undefined;
-      this.addDialogText = "";
-    },
-    moveItemUp(e: HierarchicalItem) {
-      this.$emit("move-item-up", e);
-    },
-    moveItemDown(e: HierarchicalItem) {
-      this.$emit("move-item-down", e);
-    },
-    deleteItem(e: HierarchicalItem) {
-      this.$emit("delete-item", { itemId: e.id });
-    },
-  },
 });
 </script>
 

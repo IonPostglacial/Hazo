@@ -184,7 +184,6 @@
 </template>
 <script lang="ts">
 import AddItem from "./AddItem.vue";
-import TreeMenu from "./TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
 import SplitPanel from "./SplitPanel.vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
@@ -199,7 +198,7 @@ import { sortHierarchy } from "@/datatypes/hierarchy";
 
 export default Vue.extend({
     name: "CharactersTab",
-    components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel },
+    components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, CharactersTree, CharactersPresentation, SplitPanel },
     data() {
         return {
             store: Hazo.store,
