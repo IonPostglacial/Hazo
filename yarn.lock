@@ -4569,10 +4569,10 @@ vuejs-google-maps@^0.0.13:
   dependencies:
     vue "^2.6.12"
 
-vuetify@^2.6.3:
-  version "2.6.5"
-  resolved "https://registry.npmjs.org/vuetify/-/vuetify-2.6.5.tgz"
-  integrity sha512-3T7huTujf33PLPgVhUY1y+8YD7K6d8qsk3UGcG6RL6qWc7QcUDczLcri0KNXeX2BeyESXMFhU0jwiNbMbNX+Tg==
+vuetify@^2.6.10:
+  version "2.6.10"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-2.6.10.tgz#b86cd7a97bf8cd3828a72c349795b5b3c539ebc2"
+  integrity sha512-fgUeRDDCwYkwu6WGEEKGe7IdfzOsXJCZGrqkn1pcS2ycuoDL8mR2/dejH5iFNnBY6MnsT365PAGn0J+9otjfQg==
 
 w3c-hr-time@^1.0.2:
   version "1.0.2"
