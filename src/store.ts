@@ -1,6 +1,6 @@
 import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon, cloneHierarchy, createTaxon, createCharacter } from "./datatypes";
 import { Dataset } from './datatypes/Dataset';
-import { State } from "./datatypes/types";
+import { DiscreteCharacter, State } from "./datatypes/types";
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";
@@ -74,36 +74,42 @@ export function createStore() {
         },
         copyCharacter(character: Character) {
             const clonedCharacter = cloneHierarchy(character);
-            clonedCharacter.states = clone(clonedCharacter.states);
             clonedCharacter.requiredStates = clone(clonedCharacter.requiredStates);
             clonedCharacter.inapplicableStates = clone(clonedCharacter.inapplicableStates);
-            clonedCharacter.inherentState = clone(clonedCharacter.inherentState);
+            if (clonedCharacter.characterType === "discrete") {
+                clonedCharacter.states = clone(clonedCharacter.states);
+                clonedCharacter.inherentState = clone(clonedCharacter.inherentState);
+            }
             store.copiedCharacter = clonedCharacter;
         },
         pasteCharacter(targetId: string) {
             if (store.copiedCharacter === null) return;
             const character = cloneHierarchy(store.copiedCharacter);
-            const oldStates = character.states;
             const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
             const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
-            character.states = [];
             character.requiredStates = [];
             character.inapplicableStates = [];
-            for (const oldState of oldStates) {
-                const newState = clone(oldState);
-                newState.id = "";
-                store.dataset.addState(newState, character);
-                if (oldRequiredStatesIds.includes(oldState.id)) {
-                    character.requiredStates.push(newState);
-                }
-                if (oldInapplicableStatesIds.includes(oldState.id)) {
-                    character.inapplicableStates.push(newState);
+            if (character.characterType === "discrete") {
+                const oldStates = character.states;
+                character.states = [];
+                for (const oldState of oldStates) {
+                    const newState = clone(oldState);
+                    newState.id = "";
+                    store.dataset.addState(newState, character);
+                    if (oldRequiredStatesIds.includes(oldState.id)) {
+                        character.requiredStates.push(newState);
+                    }
+                    if (oldInapplicableStatesIds.includes(oldState.id)) {
+                        character.inapplicableStates.push(newState);
+                    }
                 }
             }
             const newParent = store.dataset.character(targetId);
-            if (newParent && store.copiedCharacter?.inherentState?.id) {
-                store.copiedCharacter.inherentState.id = "s-auto-" + store.copiedCharacter.id;
-                newParent.states.push(store.copiedCharacter.inherentState);
+            if (newParent?.characterType === "discrete" && store.copiedCharacter?.characterType === "discrete") {
+                if (newParent && store.copiedCharacter?.inherentState?.id) {
+                    store.copiedCharacter.inherentState.id = "s-auto-" + store.copiedCharacter.id;
+                    newParent.states.push(store.copiedCharacter.inherentState);
+                }
             }
             character.parentId = targetId;
             store.dataset.addCharacter(character);
@@ -118,7 +124,7 @@ export function createStore() {
             for (const s of store.copiedStates) {
                 const stateToAdd = clone(s);
                 const character = store.dataset.character(characterId);
-                if (typeof character !== "undefined") {
+                if (typeof character !== "undefined" && character.characterType === "discrete") {
                     store.dataset.addState(stateToAdd, character);
                 }
             }
@@ -156,7 +162,7 @@ export function createStore() {
         setDataset(dataset: Dataset) {
             Object.assign(store.dataset, dataset);
         },
-        addState(payload: { state: State, character: Character }) {
+        addState(payload: { state: State, character: DiscreteCharacter }) {
             store.dataset.addState(payload.state, payload.character);
         },
         moveTaxonUp(taxon: Taxon) {
@@ -171,56 +177,62 @@ export function createStore() {
         moveCharacterDown(character: Character) {
             store.dataset.moveCharacterDown(character);
         },
-        moveStateUp(payload: { state: State, character: Character }) {
+        moveStateUp(payload: { state: State, character: DiscreteCharacter }) {
             const c = store.dataset.character(payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
-            if (index > 0 && c) {
+            if (index > 0 && c?.characterType === "discrete") {
                 c.states[index] = c.states[index-1];
                 c.states[index-1] = payload.state;
                 c.states = [...c.states];
             }
         },
-        moveStateDown(payload: { state: State, character: Character }) {
+        moveStateDown(payload: { state: State, character: DiscreteCharacter }) {
             const c = store.dataset.character(payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
-            if (index < payload.character.states.length - 1 && c) {
+            if (index < payload.character.states.length - 1 && c?.characterType === "discrete") {
                 c.states[index] = c.states[index+1];
                 c.states[index+1] = payload.state;
                 c.states = [...c.states];
             }
         },
-        removeState(payload: { state: State, character: Character }) {
+        removeState(payload: { state: State, character: DiscreteCharacter }) {
             store.dataset.removeState(payload.state, payload.character);
         },
-        addStatePicture(payload: { character: Character|undefined, state: State, picture: Picture }) {
+        addStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, picture: Picture }) {
             const c = store.dataset.character(payload.character?.id);
-            const s = c?.states.find(s => s.id === payload.state.id);
-            if (s) s.pictures = [...s.pictures, payload.picture];
-        },
-        setStatePicture(payload: { character: Character|undefined, state: State, picture: Picture, index: number }) {
-            const c = store.dataset.character(payload.character?.id);
-            const s = c?.states.find(s => s.id === payload.state.id);
-            if (s) {
-                s.pictures[payload.index] = payload.picture;
-                s.pictures = [...s.pictures];
+            if (c?.characterType === "discrete") {
+                const s = c.states.find(s => s.id === payload.state.id);
+                if (s) s.pictures = [...s.pictures, payload.picture];
             }
         },
-        removeStatePicture(payload: { character: Character|undefined, state: State, index: number }) {
+        setStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, picture: Picture, index: number }) {
             const c = store.dataset.character(payload.character?.id);
-            const s = c?.states.find(s => s.id === payload.state.id);
-            if (s) s.pictures.splice(payload.index, 1);
+            if (c?.characterType === "discrete") {
+                const s = c?.states.find(s => s.id === payload.state.id);
+                if (s) {
+                    s.pictures[payload.index] = payload.picture;
+                    s.pictures = [...s.pictures];
+                }
+            }
         },
-        setInapplicableState(payload: { character: Character, state: State, selected: boolean }) {
+        removeStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, index: number }) {
+            const c = store.dataset.character(payload.character?.id);
+            if (c?.characterType === "discrete") {
+                const s = c?.states.find(s => s.id === payload.state.id);
+                if (s) s.pictures.splice(payload.index, 1);
+            }
+        },
+        setInapplicableState(payload: { character: DiscreteCharacter, state: State, selected: boolean }) {
             setState(payload.character.inapplicableStates, payload.state, payload.selected);
             store.dataset.addCharacter(clone(payload.character));
         },
-        setRequiredState(payload: { character: Character, state: State, selected: boolean }) {
+        setRequiredState(payload: { character: DiscreteCharacter, state: State, selected: boolean }) {
             setState(payload.character.requiredStates, payload.state, payload.selected);
             store.dataset.addCharacter(clone(payload.character));
         },
-        setInherentState(payload: { character: Character, state: State }) {
+        setInherentState(payload: { character: DiscreteCharacter, state: State }) {
             const ch = store.dataset.character(payload.character.id);
-            if (typeof ch !== "undefined") {
+            if (ch?.characterType === "discrete") {
                 ch.inherentState = payload.state;
                 setState(ch.requiredStates, payload.state, false);
                 setState(ch.inapplicableStates, payload.state, false);
