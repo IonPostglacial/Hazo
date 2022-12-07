@@ -21,7 +21,7 @@
     "vue-split-panel": "^1.0.4",
     "vue-template-compiler": "^2.6.14",
     "vuejs-google-maps": "^0.0.13",
-    "vuetify": "^2.6.3"
+    "vuetify": "^2.6.10"
   },
   "devDependencies": {
     "@mdi/font": "^6.5.95",
