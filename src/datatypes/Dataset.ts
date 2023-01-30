@@ -13,6 +13,11 @@ interface StateCallback {
 
 function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarchy<T>, itemsByIds: IMap<Hierarchy<T>>, item: Hierarchy<T>): T {
 	const it = cloneHierarchy(item);
+	const declaredParent = it.parentId ? itemsByIds.get(it.parentId) : undefined;
+	if (typeof declaredParent === "undefined") {
+		console.warn("Error importing character", it.id, "parent missing:", it.parentId);
+		it.parentId = undefined;
+	}
 	const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
 	const newIdsByOldIds = new Map();
 
@@ -36,6 +41,7 @@ function removeItem<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsBy
 	const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
 	const i = parent.children.findIndex(t => t.id === id);
 	parent.children.splice(i, 1);
+	parent.children = [...parent.children];
 	itemsByIds.delete(id);
 	return it;
 }
@@ -162,7 +168,6 @@ export class Dataset {
 	removeTaxon(id: string) {
 		const taxon = removeItem(this.taxonsHierarchy, this.taxonsByIds, id);
 		if (typeof taxon === "undefined") return;
-
 		const index = this.presetStates.family.findIndex(family => family.id === "s-auto-" + taxon.id);
 
 		if (index >= 0) {
