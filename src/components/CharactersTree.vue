@@ -1,13 +1,20 @@
 <template>
-    <div :data-c="selectedCharacter ? selectedCharacter.id : ''">
-        <div class="horizontal-flexbox no-print">
+    <div class="scroll" :data-c="selectedCharacter ? selectedCharacter.id : ''">
+        <div class="horizontal-flexbox space-between no-print background-gradient-1 stick-to-top">
             <div class="horizontal-flexbox">
                 <label for="lang-selector">Language</label>
                 <select name="lang" id="lang-selector" v-model="lang">
                     <option v-for="(language, index) in languageList" :key="language.name" :value="index">{{ language.name }}</option>
                 </select>
             </div>
-            <button @click="exportMarkdown">Export to Markdown</button>
+            <div class="button-group">
+                <button @click="downloadSvg">Download as SVG</button>
+                <button @click="exportMarkdown">Export to Markdown</button>
+            </div>
+            <div class="button-group">
+                <button @click="magnify">+</button>
+                <button @click="minify">-</button>
+            </div>
         </div>
         <div ref="interactive-tree">
         </div>
@@ -23,17 +30,13 @@ import download from "@/tools/download";
 type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
 
-function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy, fullHeight: boolean = false) {
-    const clientHeight = document.body.clientHeight - 120;
-    const MAX_WIDTH = window.innerWidth, MAX_HEIGHT = fullHeight ? clientHeight : Math.max(clientHeight, 400);
+function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy, maxHeight: number) {
+    const MAX_WIDTH = window.innerWidth;
 
     const margin = { top: 20, right: 90, bottom: 30, left: 90 },
         width = MAX_WIDTH - margin.left - margin.right,
-        height = MAX_HEIGHT - margin.top - margin.bottom;
+        height = maxHeight - margin.top - margin.bottom;
 
-    // append the svg object to the body of the page
-    // appends a "group" element to "svg"
-    // moves the "group" element to the top left margin
     d3.select(element).selectAll("svg").remove();
     const svg = d3.select(element).append("svg")
         .attr("width", width + margin.right + margin.left)
@@ -227,6 +230,7 @@ export default Vue.extend({
         return {
             store: Hazo.store,
             languageList: [langFR, langEN, langCN],
+            maxHeight: 400,
             lang: 0,
         };
     },
@@ -264,15 +268,59 @@ export default Vue.extend({
         },
     },
     mounted() {
-        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData, !this.selectedCharacter);
+        this.updateGraph();
     },
     updated() {
-        updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData, !this.selectedCharacter);
+        this.updateGraph();
     },
     methods: {
+        updateGraph() {
+            updateD3(this, this.$refs["interactive-tree"] as Element, this.treeData, this.computeMaxHeight(!this.selectedCharacter));
+        },
         exportMarkdown() {
             download(hierarchyToMarkdown(this.treeData), "md");
-        }
+        },
+        computeMaxHeight(fullHeight: boolean) {
+            return fullHeight ? Math.max(document.body.clientHeight - 120, this.maxHeight) : this.maxHeight;
+        },
+        magnify() {
+            this.maxHeight += 300;
+            this.updateGraph();
+        },
+        minify() {
+            this.maxHeight += 300;
+            this.updateGraph();
+        },
+        downloadSvg() {
+            const svg = (this.$refs["interactive-tree"] as Element).firstChild;
+            if (svg === null) { console.error("cannot export interactive tree"); return; }
+            const serializer = new XMLSerializer();
+            const css = `.node circle {
+                fill: #fff;
+                stroke: steelblue;
+                stroke-width: 3px;
+            }
+            .node text {
+                font: 12px sans-serif;
+            }
+            .link {
+                fill: none;
+                stroke: #ccc;
+                stroke-width: 2px;
+            }</style>`;
+            const style = document.createElement("style");
+            style.textContent = css;
+            svg.insertBefore(style, svg.firstChild);
+            let source = serializer.serializeToString(svg);
+            if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+                source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
+            source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+            download(source, "svg", "characters-tree");
+        },
     }
 });
 </script>
