@@ -19,11 +19,11 @@ function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarch
 		it.parentId = undefined;
 	}
 	const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
-	const newIdsByOldIds = new Map();
+	const newIdsByOldIds = new Map<string, string>();
 
 	forEachHierarchy(it, child => {
-		if (newIdsByOldIds.has(child.parentId)) {
-			child.parentId = newIdsByOldIds.get(child.parentId);
+		if (newIdsByOldIds.has(child.parentId??"")) {
+			child.parentId = newIdsByOldIds.get(child.parentId??"");
 		}
 		if (!child.id || itemsByIds.has(child.id)) {
 			child.id = "";
