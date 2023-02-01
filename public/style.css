@@ -723,6 +723,14 @@ div.invisible {
     width: 11ch;
 }
 
+.tree-grid li li li li > * > .indent {
+    width: 15ch;
+}
+
+.tree-grid li li li li > * > .indent {
+    width: 19ch;
+}
+
 .tree-grid .cell {
     border-left: 1px solid #e3e3e3;
 }
