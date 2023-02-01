@@ -4,6 +4,7 @@ import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
 import { map } from "@/tools/iter";
 import clone from "@/tools/clone";
+import { fixParentIds } from "@/tools/fixes";
 
 type EncodedState = {
 	id: string;
@@ -137,6 +138,8 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	for (const state of dataset.allStates()) {
 		allStates.set(state.id, state);
 	}
+	fixParentIds(dataset.taxonsHierarchy);
+	fixParentIds(dataset.charactersHierarchy);
 	return {
 		id: dataset.id,
 		taxons: Array.from(dataset.taxons).filter(t => t.id !== "t0").map(taxon => encodeTaxon(taxon, dataset, picIds)),

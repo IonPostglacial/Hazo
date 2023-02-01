@@ -5,6 +5,7 @@ import clone from "./tools/clone";
 import makeid from './tools/makeid';
 import { ObservableMap } from "./tools/observablemap";
 import { addDictionaryEntry, deleteDictionaryEntry } from "./db-storage";
+import { fixParentIds } from "./tools/fixes";
 
 export type HazoStore = ReturnType<typeof createStore>;
 
@@ -32,6 +33,7 @@ export function createStore() {
             if (store.copiedTaxon !== null) {
                 const taxon = cloneHierarchy(store.copiedTaxon);
                 taxon.parentId = targetId;
+                fixParentIds(taxon);
                 store.dataset.addTaxon(taxon);
             }
         },
@@ -112,6 +114,7 @@ export function createStore() {
                 }
             }
             character.parentId = targetId;
+            fixParentIds(character);
             store.dataset.addCharacter(character);
         },
         copyStates(states: State[] | undefined) {
