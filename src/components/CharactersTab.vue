@@ -209,6 +209,9 @@ export default Vue.extend({
     watch: {
         $route(to: any) {
             this.selectedCharacterId = to.params.id;
+            if (this.selectedCharacter) {
+                this.store.do("selectCharacter", this.selectedCharacter);
+            }
         }
     },
     computed: {

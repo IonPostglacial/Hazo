@@ -222,6 +222,9 @@ export default Vue.extend({
     watch: {
         $route(to: any) {
             this.selectedTaxonId = to.params.id;
+            if (this.selectedTaxon) {
+                this.store.do("selectTaxon", this.selectedTaxon);
+            }
         },
     },
     computed: {

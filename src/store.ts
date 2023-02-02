@@ -26,6 +26,12 @@ export function createStore() {
         setConnectedToHub(connectedToHub: boolean) {
             store.connectedToHub = connectedToHub;
         },
+        selectTaxon(taxon: Taxon) {
+            store.selectedTaxon = taxon.id;
+        },
+        selectCharacter(character: Character) {
+            store.selectedCharacter = character.id;
+        },
         copyTaxon(taxon: Taxon) {
             store.copiedTaxon = cloneHierarchy(taxon);
         },
@@ -302,6 +308,8 @@ export function createStore() {
             new Array<Field>(),
             new ObservableMap(),
         ),
+        selectedTaxon: "",
+        selectedCharacter: "",
         dictionary: { entries: new Array<DictionaryEntry>() },
         connectedToHub: false,
         copiedTaxon: null as null | Hierarchy<Taxon>,
