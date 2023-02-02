@@ -10,8 +10,8 @@
                 </button>
             </div>
             <div class="button-group inline-block">
-                <router-link class="button" to="/taxons">Taxons</router-link>
-                <router-link class="button" to="/characters">Characters</router-link>
+                <router-link class="button" :to="'/taxons/' + store.selectedTaxon">Taxons</router-link>
+                <router-link class="button" :to="'/characters/' + store.selectedCharacter">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
             </div>
             <div class="button-group inline-block float-right">

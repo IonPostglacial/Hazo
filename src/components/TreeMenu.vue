@@ -60,6 +60,20 @@ export default Vue.extend({
     components:  { AddItem, TreeMenuItem },
     data() {
         const initOpenItems: string[] = [];
+        const shouldBeOpen = (h: Hierarchy<HierarchicalItem>) => {
+            if (h.id === this.selectedItem) {
+                console.log("is selected?", h.id, this.selectedItem);
+                return true;
+            }
+            for (const child of h.children) {
+                if (shouldBeOpen(child)) {
+                    initOpenItems.push(h.id);
+                    return true;
+                }
+            }
+            return false;
+        }
+        shouldBeOpen(this.items);
         return {
             menuFilter: "",
             visibleFilter: "",
