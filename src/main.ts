@@ -11,7 +11,21 @@ import debounce from "./tools/debounce";
 import VueGoogleMap from "vuejs-google-maps";
  // @ts-ignore
 import VueSplit from 'vue-split-panel';
-import "vuejs-google-maps/dist/vuejs-google-maps.css"
+import "vuejs-google-maps/dist/vuejs-google-maps.css";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
+        faLanguage, faCaretDown, faCaretUp, faPlus, faMinus, faPrint, 
+        faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, 
+        faCopy, faPaste, faUpload } from "@fortawesome/free-solid-svg-icons";
+
+
+library.add(faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
+    faCaretDown, faCaretUp, faLanguage, faPlus, faMinus, faPrint, 
+    faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, 
+    faCopy, faPaste, faUpload);
+
+Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 Vue.use(VueGoogleMap, {
     load: {

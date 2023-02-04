@@ -10,12 +10,18 @@
         </picture-frame>
         <div class="horizontal-flexbox space-between relative">
             <div class="button-group">
-                <button type="button" @click="previousPicture">&lt;</button>
-                <button type="button" @click="nextPicture">&gt;</button>
+                <button type="button" @click="previousPicture">
+                    <font-awesome-icon icon="fa-solid fa-arrow-left" />
+                </button>
+                <button type="button" @click="nextPicture">
+                    <font-awesome-icon icon="fa-solid fa-arrow-right" />
+                </button>
             </div>
             <div class="medium-padding">{{ indexText }}</div>
             <div>
-                <button type="button" @click="uploadPopup">&#128621;</button>
+                <button type="button" @click="uploadPopup">
+                    <font-awesome-icon icon="fa-solid fa-upload" />
+                </button>
                 <div v-if="displayUploadPopup" class="absolute over-everything thin-border medium-padding white-background">
                     <label>
                         <input type="file" @change="uploadPicture" />
