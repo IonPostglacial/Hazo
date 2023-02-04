@@ -2,7 +2,9 @@
     <div class="scroll" :data-c="selectedCharacter ? selectedCharacter.id : ''">
         <div class="horizontal-flexbox space-between no-print background-gradient-1 stick-to-top">
             <div class="horizontal-flexbox">
-                <label for="lang-selector">Language</label>
+                <label for="lang-selector" title="language">
+                    <font-awesome-icon icon="fa-solid fa-language" size="2x" />
+                </label>
                 <select name="lang" id="lang-selector" v-model="lang">
                     <option v-for="(language, index) in languageList" :key="language.name" :value="index">{{ language.name }}</option>
                 </select>
@@ -12,8 +14,8 @@
                 <button @click="exportMarkdown">Export to Markdown</button>
             </div>
             <div class="button-group">
-                <button @click="magnify">+</button>
-                <button @click="minify">-</button>
+                <button @click="magnify" title="zoom in"><font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" /></button>
+                <button @click="minify" title="zoom out"><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></button>
             </div>
         </div>
         <div ref="interactive-tree">

@@ -1,7 +1,7 @@
 <template>
     <Split class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <SplitArea :size="25">
-            <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+            <tree-menu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="nameFields"
                 @move-item-up="moveUp" @move-item-down="moveDown"
                 @add-item="addTaxon" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
@@ -15,16 +15,9 @@
                 <div class="vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
                         <div class="horizontal-flexbox">
-                            <div class="button-group">
-                                <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                                <button type="button" @click="showMap = !showMap">Map</button>
-                            </div>
-                            <span class="medium-margin">Edit:</span>
-                            <div class="button-group">
-                                <button type="button" :class="{ 'selected-tab': editProperties }" @click="switchEditMode">Properties</button>
-                                <button type="button" :class="{ 'selected-tab': editDescriptors }" @click="switchEditMode">Descriptors</button>
-                            </div>
-                            <router-link class="button" :to="'/print-taxons/' + this.selectedTaxonId">Print</router-link>
+                            <router-link class="button" :to="'/print-taxons/' + this.selectedTaxonId" title="print">
+                                <font-awesome-icon icon="fa-solid fa-print" />
+                            </router-link>
                         </div>
                         <div v-if="selectedTaxon" class="relative">
                             <div v-if="selectingParent">
@@ -43,14 +36,46 @@
                             </div>
                         </div>
                         <div class="button-group">
-                            <button v-if="(typeof selectedTaxon !== 'undefined')" type="button" @click="copyItem">Copy</button>
-                            <button type="button" @click="pasteItem">Paste</button>
+                            <button title="copy" v-if="(typeof selectedTaxon !== 'undefined')" type="button" @click="copyItem">
+                                <font-awesome-icon icon="fa-solid fa-copy" />
+                            </button>
+                            <button title="paste" type="button" @click="pasteItem">
+                                <font-awesome-icon icon="fa-solid fa-paste" />
+                            </button>
                         </div>
                         <div class="button-group">
-                            <label class="button" for="importKml">KML</label>
-                            <button type="button" @click="emptyZip">Folders</button>
-                            <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
-                            <router-link class="button" to="/taxons-stats">Stats</router-link>
+                            <drop-down label="Columns">
+                                <div class="vertical-flexbox">
+                                    <column-selector name="Left Menu" 
+                                        value="menu"
+                                        :selected="selectedColumns.includes('menu')"
+                                        @zoom-column="zoomColumn" @add-column="addColumn"
+                                        @remove-column="removeColumn"  />
+                                    <column-selector name="Properties" 
+                                        value="props"
+                                        :selected="selectedColumns.includes('props')"
+                                        @zoom-column="zoomColumn" @add-column="addColumn"
+                                        @remove-column="removeColumn" />
+                                    <column-selector name="Descriptors" 
+                                        value="desc"
+                                        :selected="selectedColumns.includes('desc')"
+                                        @zoom-column="zoomColumn" @add-column="addColumn"
+                                        @remove-column="removeColumn"  />
+                                    <column-selector name="Summary" 
+                                        value="summary"
+                                        :selected="selectedColumns.includes('summary')"
+                                        @zoom-column="zoomColumn" @add-column="addColumn"
+                                        @remove-column="removeColumn"  />
+                                </div>
+                            </drop-down>
+                            <drop-down label="Export">
+                                <div class="vertical-flexbox">
+                                    <label class="button" for="importKml">KML</label>
+                                    <button type="button" @click="emptyZip">Folders</button>
+                                    <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
+                                    <router-link class="button" to="/taxons-stats">Stats</router-link>
+                                </div>
+                            </drop-down>
                             <button type="button" @click="showFields = !showFields">Extra Fields</button>
                         </div>
                         <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
@@ -67,7 +92,7 @@
                         />
                     </google-map>
                     <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
-                        <div :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': !editDescriptors }]">
+                        <div v-if="selectedColumns.includes('props')" :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
                             <picture-box :editable="editProperties"
                                 @open-photo="openPhoto"
                                 @add-photo="addItemPhoto"
@@ -75,7 +100,7 @@
                                 @delete-photo="deleteItemPhoto"
                                 :pictures="selectedTaxon.pictures">
                             </picture-box>
-                            <collapsible-panel v-if="editProperties" label="Properties">
+                            <collapsible-panel label="Properties">
                                 <div class="scroll large-max-width form-grid medium-padding">
                                     <div v-if="editProperties" class="display-contents">
                                         <label>NS</label>
@@ -139,15 +164,15 @@
                                 <div v-if="!editProperties" class="limited-width" v-html="selectedTaxon.detail"></div>
                             </collapsible-panel>
                         </div>
-                        <div v-if="editDescriptors" class="vertical-flexbox scroll flex-grow-1">
+                        <div v-if="selectedColumns.includes('desc')" class="vertical-flexbox scroll flex-grow-1">
                             <section class="white-background medium-padding medium-margin thin-border">
                                 <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
                             </section>
                             <collapsible-panel label="Description">
-                                <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="editDescriptors" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                                <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="true" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                             </collapsible-panel>
                         </div>
-                        <collapsible-panel v-if="!editProperties" class="scroll" label="Description">
+                        <collapsible-panel v-if="selectedColumns.includes('summary')" class="scroll" label="Description">
                             <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                             <ul>
                                 <li v-for="desc in itemDescription" :key="desc.character.id">
@@ -182,6 +207,8 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Book, Character, Dataset, Description, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
+import ColumnSelector from "./ColumnSelector.vue";
+import DropDown from "./DropDown.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { createTexExporter, exportZipFolder, importKml } from "@/features";
@@ -198,25 +225,25 @@ import { DiscreteCharacter, Field, SelectableItem } from "@/datatypes/types";
 export default Vue.extend({
     name: "TaxonsTab",
     components: {
-        CollapsiblePanel, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
-        ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation
+        CollapsiblePanel, DropDown, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
+        ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
+        ColumnSelector
     },
     data() {
         return {
             nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
             store: Hazo.store,
-            showLeftMenu: true,
             showFields: false,
             showBigImage: false,
             showMap: false,
             bigImages: [{ id: "", url: "", label: "" }],
             editProperties: true,
-            editDescriptors: false,
             editor: ClassicEditor,
             editorConfig: {},
             latexProgressText: "",
             selectingParent: false,
             selectedTaxonId: this.$route.params.id ?? "",
+            selectedColumns: ["menu", "props"]
         }
     },
     watch: {
@@ -264,15 +291,20 @@ export default Vue.extend({
         }
     },
     methods: {
+        zoomColumn(col: string) {
+            this.selectedColumns = ["menu", col];
+        },
+        addColumn(col: string) {
+            this.selectedColumns = [...this.selectedColumns, col];
+        },
+        removeColumn(col: string) {
+            this.selectedColumns = this.selectedColumns.filter(c => c != col);
+        },
         pushStateToChildren(state: State) {
             if (typeof this.selectedTaxon === "undefined") return;
             forEachHierarchy(this.selectedTaxon, child => {
                 this.dataset.setTaxonState(child.id, state);
             });
-        },
-        switchEditMode() {
-            this.editProperties = !this.editProperties;
-            this.editDescriptors = !this.editDescriptors;
         },
         async importKml(e: InputEvent) {
             if (!(e.target instanceof HTMLInputElement) || !this.selectedTaxon) return;

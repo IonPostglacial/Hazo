@@ -13,6 +13,9 @@
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^19.0.2",
     "@ckeditor/ckeditor5-vue": "^1.0.1",
+    "@fortawesome/fontawesome-svg-core": "^6.2.1",
+    "@fortawesome/free-solid-svg-icons": "^6.2.1",
+    "@fortawesome/vue-fontawesome": "^2.0.10",
     "d3": "^6.2.0",
     "jszip": "^3.5.0",
     "split.js": "^1.6.4",

@@ -20,8 +20,12 @@
         </div>
         <div v-if="editable" class="medium-height horizontal-flexbox flex-centered">
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
-            <div @click="moveUp" class="move-up">🡡</div>
-            <div @click="moveDown" class="move-down">🡣</div>
+            <div @click="moveUp" class="move-up">
+                <font-awesome-icon icon="fa-solid fa-arrow-up" />
+            </div>
+            <div @click="moveDown" class="move-down">
+                <font-awesome-icon icon="fa-solid fa-arrow-down" />
+            </div>
             <div class="close" @click="deleteItem"></div>
         </div>
         <ul v-if="open">

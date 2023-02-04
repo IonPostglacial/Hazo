@@ -45,26 +45,26 @@ select,
     white-space: nowrap;
 }
 
-.button-group button,
-.button-group select,
-.button-group selector-label,
-.button-group .button {
+.button-group > button,
+.button-group > select,
+.button-group > selector-label,
+.button-group > .button {
     margin-left: 0;
     margin-right: 0;
     border-radius: 0;
     border-left-width: 0;
 }
 
-.button-group button:first-of-type,
-.button-group .button:first-of-type {
+.button-group > button:first-of-type,
+.button-group > .button:first-of-type {
     margin-left: 2px;
     border-start-start-radius: 4px;
     border-end-start-radius: 4px;
     border-left-width: 2px;
 }
 
-.button-group button:last-of-type,
-.button-group .button:last-of-type {
+.button-group > button:last-of-type,
+.button-group > .button:last-of-type {
     margin-right: 2px;
     border-start-end-radius: 4px;
     border-end-end-radius: 4px;
