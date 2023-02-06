@@ -1,6 +1,6 @@
 <template>
     <Split class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <SplitArea :size="25">
+        <SplitArea :size="leftMenuSize">
             <tree-menu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
                 :name-fields="nameFields"
                 @move-item-up="moveUp" @move-item-down="moveDown"
@@ -8,7 +8,7 @@
                 <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
             </tree-menu>
         </SplitArea>
-        <SplitArea :size="75">
+        <SplitArea :size="rightPaneSize">
             <div class="horizontal-flexbox scroll flex-grow-1">
                 <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
                 <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
@@ -255,6 +255,12 @@ export default Vue.extend({
         },
     },
     computed: {
+        leftMenuSize(): number {
+            return this.selectedColumns.includes("menu") ? 25 : 0;
+        },
+        rightPaneSize(): number {
+            return this.selectedColumns.includes("menu") ? 75 : 100;
+        },
         dataset(): Dataset {
             return this.store.dataset;
         },
