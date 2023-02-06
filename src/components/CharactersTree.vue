@@ -29,10 +29,10 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
 
-type D3Hierarchy = { name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
+type D3Hierarchy = { id: string, name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
 
-function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy, maxHeight: number) {
+function updateD3(vue: Vue & { openNodeIds: string[] }, element: Element, treeData: D3Hierarchy, maxHeight: number) {
     const MAX_WIDTH = window.innerWidth;
 
     const margin = { top: 20, right: 90, bottom: 30, left: 90 },
@@ -59,10 +59,15 @@ function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy, maxHeight: 
     update(root);
 
     function collapse(d: any) {
+        console.log("open: ", vue.openNodeIds);
         if (d.children) {
-            d._children = d.children;
-            d._children.forEach(collapse);
-            d.children = null;
+            if (!vue.openNodeIds.includes(d.data.id)) {
+                d._children = d.children;
+                d._children.forEach(collapse);
+                d.children = null;
+            } else {
+                d.children.forEach(collapse);
+            }
         }
     }
 
@@ -200,9 +205,12 @@ function updateD3(vue: Vue, element: Element, treeData: D3Hierarchy, maxHeight: 
         // Toggle children on click.
         function click(e: any, d: any) {
             if (d.children !== null) {
+                vue.openNodeIds = vue.openNodeIds.filter(id => id === d.data.id);
                 d._children = d.children;
                 d.children = null;
             } else {
+                console.log("open!", d);
+                vue.openNodeIds = [...vue.openNodeIds, d.data.id];
                 d.children = d._children;
                 d._children = null;
             }
@@ -228,12 +236,13 @@ export default Vue.extend({
     },
     data() {
         const langFR = { name: "FR", field: "S" }, langEN = { name: "EN", field: "EN" }, langCN = { name: "CN", field: "CN" };
-
+        const hierarchy = this.selectedCharacter ? this.selectedCharacter : Hazo.store.dataset.charactersHierarchy;
         return {
             store: Hazo.store,
             languageList: [langFR, langEN, langCN],
             maxHeight: 400,
             lang: 0,
+            openNodeIds: [hierarchy.id],
         };
     },
     computed: {
@@ -249,6 +258,7 @@ export default Vue.extend({
                 const charChildren: Character[] = item?.children ?? [];
                 const inherentStateIds = charChildren.map(c => c.characterType === "discrete" ? c.inherentState?.id : undefined);
                 return {
+                    id: item.id,
                     name: item.name ? item.name[langFieldName] : "",
                     url: (item.id ? ("characters/" + item.id) : undefined),
                     color: item.color,
@@ -256,7 +266,7 @@ export default Vue.extend({
                         ...charChildren.map(child => hierarchyToD3(hierarchy, child)),
                         ...this.dataset.characterStates(item)
                             .filter((s: any) => !inherentStateIds.includes(s.id))
-                            .map((s: any) => ({ name: s.name[langFieldName], children: [], color: s.color }))
+                            .map((s: any) => ({ id: s.id, name: s.name[langFieldName], children: [], color: s.color }))
                     ]
                 };
             };
@@ -265,7 +275,7 @@ export default Vue.extend({
             if (this.selectedCharacter) {
                 return hierarchyToD3(hierarchy, this.selectedCharacter);
             } else {
-                return { name: "Characters", children: topLevelItems.map(ch => hierarchyToD3(hierarchy, ch)) };
+                return { id: hierarchy.id, name: "Characters", children: topLevelItems.map(ch => hierarchyToD3(hierarchy, ch)) };
             }
         },
     },
@@ -290,7 +300,7 @@ export default Vue.extend({
             this.updateGraph();
         },
         minify() {
-            this.maxHeight += 300;
+            this.maxHeight -= 300;
             this.updateGraph();
         },
         downloadSvg() {
