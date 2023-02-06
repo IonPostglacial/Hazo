@@ -176,8 +176,15 @@ export default Vue.extend({
             for (const state of this.dataset.allStates()) {
                 this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            await uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress);
-            this.urlsToSync = [];
+            uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {
+                const successes = [];
+                for (const result of results) {
+                    if (result.status === "fulfilled") {
+                        successes.push(result.value);
+                    }
+                }
+                this.urlsToSync = [];
+            });
         },
         async push() {
             const json = JSON.stringify(encodeDataset(this.dataset));

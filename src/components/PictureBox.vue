@@ -97,9 +97,7 @@ export default Vue.extend({
         },
         addPicture(ev: Event & { detail: string[] }) {
             this.$emit("add-photo", { detail: { value: ev.detail } });
-            console.log("before", this.selectedPhotoIndex);
             this.selectedPhotoIndex = this.pictures?.length ?? 0 - 1;
-            console.log("after", this.selectedPhotoIndex);
             const oldIndex = this.selectedPhotoIndex;
             for (const remoteUrl of ev.detail) {
                 uploadPicture(remoteUrl).then(url => {

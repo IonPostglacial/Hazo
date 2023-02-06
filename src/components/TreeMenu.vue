@@ -62,7 +62,6 @@ export default Vue.extend({
         const initOpenItems: string[] = [];
         const shouldBeOpen = (h: Hierarchy<HierarchicalItem>) => {
             if (h.id === this.selectedItem) {
-                console.log("is selected?", h.id, this.selectedItem);
                 return true;
             }
             for (const child of h.children) {

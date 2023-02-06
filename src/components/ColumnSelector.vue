@@ -26,15 +26,12 @@ export default Vue.extend({
     },
     methods: {
         zoom() {
-            console.log("z");
             this.$emit("zoom-column", this.value);
         },
         add() {
-            console.log("a");
             this.$emit("add-column", this.value);
         },
         remove() {
-            console.log("r");
             this.$emit("remove-column", this.value);
         }
     }

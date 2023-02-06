@@ -59,7 +59,6 @@ function updateD3(vue: Vue & { openNodeIds: string[] }, element: Element, treeDa
     update(root);
 
     function collapse(d: any) {
-        console.log("open: ", vue.openNodeIds);
         if (d.children) {
             if (!vue.openNodeIds.includes(d.data.id)) {
                 d._children = d.children;
@@ -209,7 +208,6 @@ function updateD3(vue: Vue & { openNodeIds: string[] }, element: Element, treeDa
                 d._children = d.children;
                 d.children = null;
             } else {
-                console.log("open!", d);
                 vue.openNodeIds = [...vue.openNodeIds, d.data.id];
                 d.children = d._children;
                 d._children = null;
