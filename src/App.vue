@@ -183,8 +183,6 @@ export default Vue.extend({
                         successes.push(result.value);
                     }
                 }
-                console.log(`successes: ${successes.length}/${this.urlsToSync.length}`);
-                console.table(successes);
                 this.urlsToSync = [];
             });
         },

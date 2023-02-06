@@ -125,7 +125,7 @@ export function createTexExporter(d: Dataset) {
                         semDec();
                     }
                     rq.onerror = (msg) => {
-                        console.log(`error: ${msg}`);
+                        console.warn(`error: ${msg}`);
                         semDec();
                     };
                     rq.send();

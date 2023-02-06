@@ -25,7 +25,6 @@ export default Vue.extend({
     },
     methods: {
         handleClickOut(e: Event) {
-            console.log("click out");
             this.open = false;
         },
         toggleOpen() {
