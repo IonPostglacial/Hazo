@@ -2,7 +2,7 @@
     <div class="horizontal-flexbox flex-centered">
         <div :class="['min-width-s', { 'selected-column': selected }]">{{name}}</div>
         <div class="button-group">
-            <button @click="zoom">
+            <button @click="zoom" :disabled="!magnifyable">
                 <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
             </button>
             <button v-if="!selected" @click="add" class="background-color-ok">
@@ -22,6 +22,7 @@ export default Vue.extend({
         name: String,
         value: String,
         selected: Boolean,
+        magnifyable: Boolean,
     },
     methods: {
         zoom() {

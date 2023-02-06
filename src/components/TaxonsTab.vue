@@ -47,22 +47,22 @@
                             <drop-down label="Columns">
                                 <div class="vertical-flexbox">
                                     <column-selector name="Left Menu" 
-                                        value="menu"
+                                        value="menu" :magnifyable="false"
                                         :selected="selectedColumns.includes('menu')"
                                         @zoom-column="zoomColumn" @add-column="addColumn"
                                         @remove-column="removeColumn"  />
                                     <column-selector name="Properties" 
-                                        value="props"
+                                        value="props" :magnifyable="true"
                                         :selected="selectedColumns.includes('props')"
                                         @zoom-column="zoomColumn" @add-column="addColumn"
                                         @remove-column="removeColumn" />
                                     <column-selector name="Descriptors" 
-                                        value="desc"
+                                        value="desc" :magnifyable="true"
                                         :selected="selectedColumns.includes('desc')"
                                         @zoom-column="zoomColumn" @add-column="addColumn"
                                         @remove-column="removeColumn"  />
                                     <column-selector name="Summary" 
-                                        value="summary"
+                                        value="summary" :magnifyable="true"
                                         :selected="selectedColumns.includes('summary')"
                                         @zoom-column="zoomColumn" @add-column="addColumn"
                                         @remove-column="removeColumn"  />

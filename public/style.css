@@ -97,6 +97,14 @@ button.selected-tab,
 	background-color: #eee;
 }
 
+button:disabled {
+    cursor: not-allowed;
+}
+
+button:disabled .svg-inline--fa {
+    opacity: 0.2;
+}
+
 .full-width {
     width: 100%;
 }
