@@ -267,6 +267,10 @@ input[type="text"].no-fixed-width {
     min-width: 200px;
 }
 
+.min-width-m {
+    min-width: 50%;
+}
+
 .background-gradient-1 {
     background: linear-gradient(0deg, rgb(219, 219, 219) 5%, rgb(221, 221, 221) 22%);
 }
@@ -551,6 +555,10 @@ div.invisible {
     position: absolute;
     top: 2px;
     right: 2px;
+}
+
+.drop-up {
+    bottom: 100%;
 }
 
 .lightgrey-background {

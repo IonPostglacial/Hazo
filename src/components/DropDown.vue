@@ -5,7 +5,8 @@
             <font-awesome-icon v-if="!open" icon="fa-solid fa-caret-down" />
             <font-awesome-icon v-if="open" icon="fa-solid fa-caret-up" />
         </button>
-        <div v-if="open" class="absolute thin-border white-background medium-padding over-everything">
+        <div v-show="open" ref="menu" :class="['absolute', 'thin-border', 'white-background', 'medium-padding', 
+                'over-everything', { 'drop-up': dropUp }]">
             <slot></slot>
         </div>
     </div>
@@ -21,6 +22,7 @@ export default Vue.extend({
     data() {
         return {
             open: false,
+            dropUp: false,
         }
     },
     methods: {
@@ -29,12 +31,24 @@ export default Vue.extend({
         },
         toggleOpen() {
             this.open = !this.open;
+            if (this.open) {
+                this.dropUp = this.outOfWindow();
+            } else {
+                this.dropUp = false;
+            }
         },
         close(e: Event) {
             if (!this.$el.contains(e.target as any)) {
                 this.open = false
             }
-        }
+        },
+        outOfWindow() {
+            const menu = this.$refs.menu as HTMLElement;
+            menu.style.display = "block";
+            const bounding = menu.getBoundingClientRect();
+             menu.style.display = "none";
+            return bounding.bottom > window.innerHeight;
+        },
     },
     mounted () {
         document.addEventListener('click', this.close);

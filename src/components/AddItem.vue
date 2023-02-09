@@ -1,7 +1,10 @@
 <template>
     <div class="horizontal-flexbox">
-        <input type="text" v-if="!multiline" v-model="text" @keydown.enter="addSingleItem"
-            class="flex-grow-1" placeholder="Add an item" />
+        <div class="relative inline-block">
+            <input type="text" v-if="!multiline" v-model="text" @keydown.enter="addSingleItem"
+                @keydown="openAutoComplete" class="flex-grow-1" placeholder="Add an item" />
+            <div v-if="openAutoComplete"></div>
+        </div>
         <textarea type="text" v-if="multiline" v-model="text" class="flex-grow-1 input-text"
             rows="1" placeholder="Add multiple items">
         </textarea>
@@ -21,6 +24,7 @@ export default Vue.extend({
         return {
             multiline: false,
             text: this.value,
+            openAutoComplete: false,
         };
     },
     methods: {

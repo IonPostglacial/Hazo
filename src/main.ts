@@ -7,6 +7,7 @@ import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsStats from "./components/TaxonsStats.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
+import NamesDictionary from "./components/NamesDictionary.vue";
 import debounce from "./tools/debounce";
 import VueGoogleMap from "vuejs-google-maps";
  // @ts-ignore
@@ -59,6 +60,7 @@ const router = new VueRouter({
         { path: "/print-taxons/:id?", component: TaxonPresentation },
         { path: "/characters/:id?", component: CharactersTab },
         { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
+        { path: "/dictionary", component: NamesDictionary },
     ]
 });
 
