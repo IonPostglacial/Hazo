@@ -6,13 +6,13 @@
                 @keydown.down="selectNextCompletion"
                 class="flex-grow-1" placeholder="Add an item" />
             <drop-down v-if="autocomplete && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
-                <table>
-                    <tr v-for="(entry, i) in completions" :key="entry.id">
-                        <td v-for="lang in ['S', 'V', 'CN']" :key="lang" :class="{ 'background-color-1': i === selectedCompletion }">
+                <div class="grid-3">
+                    <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents">
+                        <div v-for="lang in ['S', 'V', 'CN']" :key="lang" :class="['medium-padding', { 'background-color-1': i === selectedCompletion }]">
                             {{ entry[lang] }}
-                        </td>
-                    </tr>
-                </table>
+                        </div>
+                    </div>
+                </div>
             </drop-down>
         </div>
         <textarea type="text" v-if="multiline" v-model="text" class="flex-grow-1 input-text"
