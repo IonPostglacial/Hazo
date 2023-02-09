@@ -2,6 +2,7 @@
     <Split class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <SplitArea :size="leftMenuSize">
             <tree-menu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+                :autocomplete="true"
                 :name-fields="nameFields"
                 @move-item-up="moveUp" @move-item-down="moveDown"
                 @add-item="addTaxon" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
@@ -208,7 +209,7 @@ import { Book, Character, Dataset, Description, Hierarchy, State, Taxon } from "
 import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ColumnSelector from "./ColumnSelector.vue";
-import DropDown from "./DropDown.vue";
+import DropDown from "./DropDownButton.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { createTexExporter, exportZipFolder, importKml } from "@/features";
