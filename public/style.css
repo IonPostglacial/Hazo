@@ -574,11 +574,11 @@ div.invisible {
 }
 
 .grid-3 {
+    min-width: 42ch;
     display: grid;
-    grid-template-columns: auto 1fr 1fr;
-    grid-auto-rows: 125px;
-    justify-items: end;
-    row-gap: 5px;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-rows: 3ch;
+    row-gap: 1ch;
 }
 
 .vertical-flexbox {
