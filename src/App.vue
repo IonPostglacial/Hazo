@@ -13,6 +13,7 @@
                 <router-link class="button" :to="'/taxons/' + store.selectedTaxon">Taxons</router-link>
                 <router-link class="button" :to="'/characters/' + store.selectedCharacter">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
+                <router-link class="button" to="/dictionary">Names Dictionary</router-link>
             </div>
             <div class="button-group inline-block float-right">
                 <button type="button" @click="openHub">Hub
@@ -50,6 +51,7 @@
                 <button type="button" class="background-color-ko" @click="resetData">Reset</button>
             </div>
             <div class="button-group">
+                <button @click="indexFamilies">Index Families</button>
                 <button type="button" @click="globalReplace">Replace Text</button>
                 <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
                 <button type="button" class="no-print background-color-1" @click="print">Print</button>
@@ -61,6 +63,7 @@
 <script lang="ts">
 import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
+import DropDown from "@/components/DropDown.vue";
 import DB, { getAllDictionaryEntries } from "./db-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save";
@@ -70,9 +73,11 @@ import { Config } from './tools/config';
 import Vue from "vue";
 import { forEachHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
+import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
 
 export default Vue.extend({
     name: "App",
+    components: { DropDown },
     data() {
         return {
             store: Hazo.store,
@@ -81,6 +86,8 @@ export default Vue.extend({
             urlsToSync: [] as string[],
             syncProgress: 0,
             preloaded: true,
+            searchFamily: "",
+            matchingFamilies: [] as Name[],
         };
     },
     mounted() {
@@ -153,7 +160,10 @@ export default Vue.extend({
     watch: {
         selectedBase(val) {
             this.loadBase(val);
-        }
+        },
+        searchFamily(val) {
+            familiesWithNamesLike("S", val).then(s => { this.matchingFamilies = s });
+        },
     },
     methods: {
         openHub() {
@@ -164,6 +174,11 @@ export default Vue.extend({
         },
         removeFromDenyList(state: State) {
             this.store.do("removeStateFromDenyList", state);
+        },
+        async indexFamilies() {
+            for (const family of this.dataset.taxonsHierarchy.children) {
+                storefamily({ S: family.name.S, V: family.name.V ?? "", CN: family.name.CN ?? "" });
+            }
         },
         syncPictures() {
             this.urlsToSync = [];
