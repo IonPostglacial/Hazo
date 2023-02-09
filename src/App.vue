@@ -63,7 +63,6 @@
 <script lang="ts">
 import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
-import DropDown from "@/components/DropDown.vue";
 import DB, { getAllDictionaryEntries } from "./db-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
@@ -77,7 +76,6 @@ import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
 
 export default Vue.extend({
     name: "App",
-    components: { DropDown },
     data() {
         return {
             store: Hazo.store,

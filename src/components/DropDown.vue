@@ -1,14 +1,7 @@
 <template>
-    <div class="relative inline-block">
-        <button @click="toggleOpen">
-            {{label}}
-            <font-awesome-icon v-if="!open" icon="fa-solid fa-caret-down" />
-            <font-awesome-icon v-if="open" icon="fa-solid fa-caret-up" />
-        </button>
-        <div v-show="open" ref="menu" :class="['absolute', 'thin-border', 'white-background', 'medium-padding', 
-                'over-everything', { 'drop-up': dropUp }]">
-            <slot></slot>
-        </div>
+    <div v-show="open" :class="['absolute', 'thin-border', 'white-background', 'medium-padding', 
+            'over-everything', { 'drop-up': dropUp }]">
+        <slot></slot>
     </div>
 </template>
 
@@ -17,44 +10,46 @@ import Vue from "vue";
 
 export default Vue.extend({
     props: {
-        label: String,
+        open: Boolean,
     },
     data() {
         return {
-            open: false,
             dropUp: false,
         }
     },
-    methods: {
-        handleClickOut(e: Event) {
-            this.open = false;
-        },
-        toggleOpen() {
-            this.open = !this.open;
-            if (this.open) {
+    watch: {
+        open(val) {
+            console.log("listen");
+            if (val) {
                 this.dropUp = this.outOfWindow();
             } else {
                 this.dropUp = false;
             }
-        },
-        close(e: Event) {
+        }
+    },
+    methods: {
+        clickout(e: Event) {
             if (!this.$el.contains(e.target as any)) {
-                this.open = false
+                this.$emit("clickout");
             }
         },
         outOfWindow() {
-            const menu = this.$refs.menu as HTMLElement;
+            const menu = this.$el as HTMLElement;
+            const oldDisplay = menu.style.display;
             menu.style.display = "block";
             const bounding = menu.getBoundingClientRect();
-             menu.style.display = "none";
+            menu.style.display = oldDisplay;
             return bounding.bottom > window.innerHeight;
         },
     },
     mounted () {
-        document.addEventListener('click', this.close);
+        this.dropUp = this.outOfWindow();
+        setTimeout(() => {
+            document.addEventListener('click', this.clickout);
+        });
     },
     beforeDestroy () {
-        document.removeEventListener('click', this.close);
+        document.removeEventListener('click', this.clickout);
     }
 });
 </script>

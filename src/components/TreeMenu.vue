@@ -34,7 +34,7 @@
             </TreeMenuItem>
         </ul>
         <div class="flex-grow-1">&nbsp;</div>
-        <add-item v-if="editable" @add-item="addItem({ value: $event.detail })"></add-item>
+        <add-item v-if="editable" :autocomplete="autocomplete" @add-item="addItem({ value: $event.detail })"></add-item>
     </div> 
 </template>
 
@@ -56,6 +56,7 @@ export default Vue.extend({
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
         selectedItem: String,
         initOpen: Boolean,
+        autocomplete: Boolean,
     },
     components:  { AddItem, TreeMenuItem },
     data() {
