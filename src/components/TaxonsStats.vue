@@ -78,10 +78,11 @@ export default Vue.extend({
             return family?.name.S ?? "";
         },
         selectSpeciesTable() {
-            var body = document.body, range, sel, el = this.$refs.speciestable;
+            var body = document.body, range, sel, el = this.$refs.speciestable as Node;
             if (document.createRange && window.getSelection) {
                 range = document.createRange();
                 sel = window.getSelection();
+                if (sel === null) return;
                 sel.removeAllRanges();
                 try {
                     range.selectNodeContents(el);
@@ -90,10 +91,6 @@ export default Vue.extend({
                     range.selectNode(el);
                     sel.addRange(range);
                 }
-            } else if (body.createTextRange) {
-                range = body.createTextRange();
-                range.moveToElementText(el);
-                range.select();
             }
         }
     }

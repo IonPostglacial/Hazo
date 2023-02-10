@@ -320,13 +320,19 @@ export default Vue.extend({
             if (this.selectedCharacter) this.store.do("moveCharacterDown", item);
         },
         setInapplicableState(state: State, selected: boolean) {
-            this.store.do("setInapplicableState", { character: this.selectedCharacter!, state, selected });
+            if (this.selectedCharacter?.characterType === "discrete") {
+                this.store.do("setInapplicableState", { character: this.selectedCharacter!, state, selected });
+            }
         },
         setRequiredState(state: State, selected: boolean) {
-            this.store.do("setRequiredState", { character: this.selectedCharacter!, state, selected });
+            if (this.selectedCharacter?.characterType === "discrete") {
+                this.store.do("setRequiredState", { character: this.selectedCharacter!, state, selected });
+            }
         },
         setInherentState(state: State) {
-            this.store.do("setInherentState", { character: this.selectedCharacter!, state });
+            if (this.selectedCharacter?.characterType === "discrete") {
+                this.store.do("setInherentState", { character: this.selectedCharacter!, state });
+            }
         },
         selectCharacter(id: string) {
             this.selectedCharacterId = id;
@@ -361,6 +367,7 @@ export default Vue.extend({
             this.store.do("removeCharacterPicture", { character: this.selectedCharacter, index: e.detail.index });
         },
         addStatePhoto(state: State, e: {detail: {value: string}}) {
+            if (this.selectedCharacter?.characterType !== "discrete") return;
             const numberOfPhotos = state.pictures.length;
             this.store.do("addStatePicture", {
                 character: this.selectedCharacter,
@@ -374,6 +381,7 @@ export default Vue.extend({
             });
         },
         setStatePhoto(state: State, e: {detail: {index: number, src: string, hubUrl: string}}) {
+            if (this.selectedCharacter?.characterType !== "discrete") return;
             if (state) {
                 this.store.do("setStatePicture", {
                     character: this.selectedCharacter,
@@ -384,7 +392,9 @@ export default Vue.extend({
             }
         },
         deleteStatePhoto(state: State, e: {detail: {index: number}}) {
-            this.store.do("removeStatePicture", { character: this.selectedCharacter, state: state, index: e.detail.index });
+            if (this.selectedCharacter?.characterType === "discrete") {
+                this.store.do("removeStatePicture", { character: this.selectedCharacter, state: state, index: e.detail.index });
+            }
         },
         openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
             this.showBigImage = true;
@@ -407,6 +417,7 @@ export default Vue.extend({
             }
         },
         addState(e: {detail: string[]}) {
+            if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
             const [name, nameEN, nameCN, color, description] = e.detail;
             this.store.do("addState", {
@@ -421,14 +432,17 @@ export default Vue.extend({
             });
         },
         moveStateUp(state: State) {
+            if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") return;
             this.store.do("moveStateUp", { character: this.selectedCharacter, state });
         },
         moveStateDown(state: State) {
+            if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") return;
             this.store.do("moveStateDown", { character: this.selectedCharacter, state });
         },
         removeState(state: State) {
+            if (this.selectedCharacter?.characterType !== "discrete") return;
             this.store.do("removeState", { character: this.selectedCharacter!, state });
         },
         openDescriptionPhoto(e: Event & {detail: { index: number }}) {

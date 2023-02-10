@@ -162,7 +162,7 @@ export class Dataset {
 
 	setTaxon(id: string, props: Partial<Taxon>) {
 		const taxon = this.taxon(id);
-		Object.assign(taxon, props);
+		Object.assign(taxon as any, props);
 	}
 
 	removeTaxon(id: string) {
@@ -223,7 +223,7 @@ export class Dataset {
 
 	setCharacter(id: string, props: Partial<Character>) {
 		const character = this.character(id);
-		Object.assign(character, props);
+		Object.assign(character as any, props);
 	}
 
 	removeCharacter(id: string) {
