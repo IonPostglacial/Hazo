@@ -118,12 +118,12 @@ export default Vue.extend({
                 this.$emit("item-selection-toggled", { item });
             }
         },
-        selectWithoutOpening(character: Character & { selected?: boolean }) {
+        selectWithoutOpening(character: DiscreteCharacter & { selected?: boolean }) {
             const ch = Hazo.store.dataset.character(character.id);
             let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
             if (typeof inherentState === "undefined") {
                 const parentCharacter = Hazo.store.dataset.character(character.parentId);
-                if (typeof parentCharacter !== "undefined") {
+                if (typeof parentCharacter !== "undefined" && parentCharacter.characterType === "discrete") {
                     inherentState = { id: "s" + makeid(8), name: clone(character.name), pictures: [] };
                     Hazo.store.do("addState", { state: inherentState, character: parentCharacter });
                     Hazo.store.do("setInherentState", { state: inherentState, character });
