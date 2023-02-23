@@ -302,33 +302,22 @@ export default Vue.extend({
             this.updateGraph();
         },
         downloadSvg() {
-            const svg = (this.$refs["interactive-tree"] as Element).firstChild;
+            const svg = (this.$refs["interactive-tree"] as Element).firstChild as SVGElement|null;
             if (svg === null) { console.error("cannot export interactive tree"); return; }
             const serializer = new XMLSerializer();
-            const css = `.node circle {
-                fill: #fff;
-                stroke: steelblue;
-                stroke-width: 3px;
-            }
-            .node text {
-                font: 12px sans-serif;
-            }
-            .link {
-                fill: none;
-                stroke: #ccc;
-                stroke-width: 2px;
-            }</style>`;
-            const style = document.createElement("style");
-            style.textContent = css;
-            svg.insertBefore(style, svg.firstChild);
+            svg.querySelectorAll(".node circle").forEach(e => {
+                e.setAttribute("style", "fill:#fff;stroke:steelblue;stroke-width:3px;" + 
+                    e.getAttribute("style"));
+            });
+            svg.querySelectorAll(".node text").forEach(e => {
+                e.setAttribute("style", "font: 12px sans-serif;" + 
+                    e.getAttribute("style"));
+            });
+            svg.querySelectorAll(".link").forEach(e => {
+                e.setAttribute("style", "fill:none;stroke:#ccc;stroke-width:2px;" + 
+                    e.getAttribute("style"))
+            });
             let source = serializer.serializeToString(svg);
-            if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
-                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-            }
-            if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
-                source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-            }
-            source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
             download(source, "svg", "characters-tree");
         },
     }
