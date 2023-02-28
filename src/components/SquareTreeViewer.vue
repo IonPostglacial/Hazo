@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import { Character } from "@/datatypes";
@@ -36,7 +36,7 @@ import makeid from "@/tools/makeid";
 import { DiscreteCharacter } from "@/datatypes/types";
 type ItemType = HierarchicalItem & { selected?: boolean };
 
-export default Vue.extend({
+export default {
     name: "SquareTreeViewer",
     components: { Flowering },
     props: {
@@ -53,12 +53,16 @@ export default Vue.extend({
             currentItems: currentItems,
             breadCrumbs: [] as Hierarchy<ItemType>[],
             menuFilter: "",
-        }
+        };
     },
     watch: {
         rootItems(newRootItems: Hierarchy<ItemType>) {
-            if (this.breadCrumbs.length - 1 < 0) return;
-            const currentlyOpenItem = this.breadCrumbs[this.breadCrumbs.length - 1];
+            let currentlyOpenItem = newRootItems;
+            for (const breadCrumb of this.breadCrumbs) {
+                const it = currentlyOpenItem.children.find(it => it.id === breadCrumb.id);
+                if (typeof it === "undefined") return;
+                currentlyOpenItem = it;
+            }
             if (typeof currentlyOpenItem !== "undefined") {
                 this.floweringMode = this.isFlowering(currentlyOpenItem);
                 this.currentItems = [...currentlyOpenItem.children];
@@ -92,10 +96,10 @@ export default Vue.extend({
         isClickable(item: Hierarchy<ItemType>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
-        isSelected(item: Hierarchy<ItemType> & { selected?: boolean }): boolean {
+        isSelected(item: Hierarchy<ItemType>): boolean {
             return item.selected ?? false;
         },
-        isSelectable(item: Hierarchy<ItemType> & { selected?: boolean }): boolean {
+        isSelectable(item: Hierarchy<ItemType>): boolean {
             return this.editable && item.children.length === 0;
         },
         hasChildren(item: Hierarchy<ItemType>): boolean {
@@ -106,7 +110,7 @@ export default Vue.extend({
                     (item as Character).characterType === "discrete" &&
                     (item as DiscreteCharacter).preset === "flowering"
         },
-        openItem(item: Hierarchy<ItemType> & { selected?: boolean }) {
+        openItem(item: Hierarchy<ItemType>) {
             this.isRoot = false;
             this.floweringMode = this.isFlowering(item);
             if (item.children.length > 0) {
@@ -146,5 +150,5 @@ export default Vue.extend({
             this.currentItems = [...breadCrumb.children];
         }
     },
-});
+};
 </script>

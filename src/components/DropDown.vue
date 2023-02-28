@@ -6,9 +6,7 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-
-export default Vue.extend({
+export default {
     props: {
         open: Boolean,
     },
@@ -19,7 +17,6 @@ export default Vue.extend({
     },
     watch: {
         open(val) {
-            console.log("listen");
             if (val) {
                 this.dropUp = this.outOfWindow();
             } else {
@@ -48,10 +45,10 @@ export default Vue.extend({
             document.addEventListener('click', this.clickout);
         });
     },
-    beforeDestroy () {
+    beforeUnmount () {
         document.removeEventListener('click', this.clickout);
     }
-});
+};
 </script>
 
 <style>

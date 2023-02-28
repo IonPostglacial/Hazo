@@ -34,12 +34,19 @@
                 :path="[...path, index]"
                 :selected-item="selectedItem"
                 :init-open-items="initOpenItems"
-                :field-names="fieldNames" :item="child" :buttons="buttons" 
-                v-on="$listeners" :parent-id="item.id" v-slot:default="menuItemProps">
+                :field-names="fieldNames" :item="child" :buttons="buttons"
+                @selected="$emit('selected', $event)"
+                @add-item="$emit('add-item', $event)"
+                @delete-item="$emit('delete-item', $event)" 
+                @button-clicked="$emit('button-clicked', $event)"
+                @move-item-up="$emit('move-item-up', $event)"
+                @move-item-down="$emit('move-item-down', $event)"
+                :parent-id="item.id"
+                v-slot:default="menuItemProps">
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
             <li v-if="editable">
-                <add-item class="medium-height full-line" @add-item="addItem"></add-item>
+                <add-item :value="''" class="medium-height full-line" @add-item="addItem"></add-item>
             </li>
         </ul>
     </li>
@@ -47,25 +54,25 @@
 
 <script lang="ts">
 import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub"; // eslint-disable-line no-unused-vars
 import AddItem from "./AddItem.vue";
 
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
-export default Vue.extend({
+export default {
     components: { AddItem },
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,
-        item: Object as PropType<Hierarchy<HierarchicalItem> & { warning?: boolean }>,
+        item: { type: Object as PropType<Hierarchy<HierarchicalItem> & { warning?: boolean }>, required: true },
         buttons: Array as PropType<Array<Button>>,
         fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,
         editable: Boolean,
         selectedItem: String,
         initOpen: Boolean,
         initOpenItems: Array as PropType<Array<string>>,
-        path: Array as PropType<Array<number>>,
+        path: { type: Array as PropType<Array<number>>, required: true },
     },
     data() {
         return {
@@ -129,5 +136,5 @@ export default Vue.extend({
             this.$emit("move-item-down", this.item);
         }
     }
-});
+};
 </script>

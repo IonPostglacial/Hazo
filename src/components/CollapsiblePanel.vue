@@ -15,7 +15,7 @@
 <script lang="ts">
 import Vue from "vue";
 
-export default Vue.extend({
+export default {
     props: {
         label: String,
     },
@@ -24,5 +24,5 @@ export default Vue.extend({
             open: true,
         }
     }
-});
+};
 </script>

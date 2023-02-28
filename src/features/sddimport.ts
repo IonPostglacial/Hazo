@@ -1,13 +1,11 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, Dataset, Field, Hierarchy, IMap, State, Taxon } from "@/datatypes";
+import { Character, Dataset, Field, Hierarchy, State, Taxon } from "@/datatypes";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { createCharacter } from "@/datatypes/Character";
 import { createTaxon } from "@/datatypes/Taxon";
 import { CharacterPreset, HierarchicalItem } from "@/datatypes/types";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
-
-type MapContructor<T> = { new (): IMap<T> };
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {
@@ -56,7 +54,7 @@ function hierarchicalItemFromSdd(id: string, representation: Representation, ext
     return data;
 }
 
-function characterFromSdd(presetStates: Record<CharacterPreset, State[]>, character: sdd_Character, photosByRef: Record<string, string>, statesById: IMap<State>): Character {
+function characterFromSdd(presetStates: Record<CharacterPreset, State[]>, character: sdd_Character, photosByRef: Record<string, string>, statesById: Map<string, State>): Character {
     return createCharacter({
         ...hierarchicalItemFromSdd(character.id, character, [], photosByRef),
         presetStates,
@@ -109,8 +107,8 @@ function extractStatesByTaxons(sddContent: sdd_Dataset): Map<string, string[]> {
     return statesByTaxons;
 }
 
-function extractStatesById(makeMap: MapContructor<State>, sddContent: sdd_Dataset, photosByRef: Record<string, string>): IMap<State> {
-	const statesById = new makeMap();
+function extractStatesById(sddContent: sdd_Dataset, photosByRef: Record<string, string>): Map<string, State> {
+	const statesById = new Map();
 	for (const state of sddContent.states) {
 		statesById.set(state.id, stateFromSdd(state, photosByRef));
 	}
@@ -123,7 +121,7 @@ function extractTaxonsHierarchy(ds: Dataset, sddContent: sdd_Dataset, extraField
 	}
 }
 
-function extractCharactersHierarchy(ds: Dataset, sddContent: sdd_Dataset, statesById: IMap<State>, photosByRef: Record<string, string>) {
+function extractCharactersHierarchy(ds: Dataset, sddContent: sdd_Dataset, statesById: Map<string, State>, photosByRef: Record<string, string>) {
 	for (const character of sddContent.characters) {
 		ds.addCharacter(characterFromSdd(ds.presetStates, character, photosByRef, statesById));
 	}
@@ -138,9 +136,9 @@ function extractPhotosByRef(sddContent: sdd_Dataset) {
 	return photosByRef;
 }
 
-export function datasetFromSdd(makeMap: MapContructor<any>, dataset: sdd_Dataset, extraFields: Field[]): Dataset {
+export function datasetFromSdd(dataset: sdd_Dataset, extraFields: Field[]): Dataset {
 	const photosByRef = extractPhotosByRef(dataset);
-	const statesById = extractStatesById(makeMap, dataset, photosByRef);
+	const statesById = extractStatesById(dataset, photosByRef);
     const statesByTaxons = extractStatesByTaxons(dataset);
     const ds = new Dataset("0", createTaxon({ id: "t0", name: { S: "<TOP>" }}), createCharacter({ id: "c0", name: { S: "<TOP>" } }), [], [], statesById);
     extractTaxonsHierarchy(ds, dataset, extraFields, photosByRef);

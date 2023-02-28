@@ -19,7 +19,6 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import Months from "@/datatypes/Months";
 
 const ZONE_RATIO = 12 / (2 * Math.PI);
@@ -57,13 +56,13 @@ function eventDocumentPosition(e: MouseEvent) {
     ];
 }
 
-export default Vue.extend({
+export default {
     props: {
-        value: Number,
+        modelValue: Number,
     },
     methods: {
         hasMonth(month: number): boolean {
-            return Months.has(this.value, month);
+            return Months.has(this.modelValue, month);
         },
         selectMonth(e: MouseEvent) {
             e.stopPropagation();
@@ -74,17 +73,17 @@ export default Vue.extend({
             const monthIndex = (angle * ZONE_RATIO | 0);
             const selectedMonth = 1 << monthIndex;
             let newVal = 0;
-            if (Months.has(this.value, selectedMonth)) {
+            if (Months.has(this.modelValue, selectedMonth)) {
                 this.$emit("month-unselected", monthIndex);
-                newVal = Months.without(this.value, selectedMonth);
+                newVal = Months.without(this.modelValue, selectedMonth);
             } else {
                 this.$emit("month-selected", monthIndex);
-                newVal = Months.with(this.value, selectedMonth);
+                newVal = Months.with(this.modelValue, selectedMonth);
             }
-            this.$emit("input", newVal);
+            this.$emit("update:modelValue", newVal);
         },
     },
-});
+};
 </script>
 
 <style>

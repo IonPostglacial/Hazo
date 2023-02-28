@@ -25,14 +25,14 @@
 
 <script lang="ts">
 import type { Character, Dataset, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { PropType, VueElement } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
 
 type D3Hierarchy = { id: string, name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
 
-function updateD3(vue: Vue & { openNodeIds: string[] }, element: Element, treeData: D3Hierarchy, maxHeight: number) {
+function updateD3(vue: VueElement & { openNodeIds: string[] }, element: Element, treeData: D3Hierarchy, maxHeight: number) {
     const MAX_WIDTH = window.innerWidth;
 
     const margin = { top: 20, right: 90, bottom: 30, left: 90 },
@@ -227,7 +227,7 @@ function hierarchyToMarkdown(data: D3Hierarchy, indentation=-1): string {
     return content;
 }
 
-export default Vue.extend({
+export default {
     name: "CharactersTree",
     props: {
         selectedCharacter: Object as PropType<Character|undefined>,
@@ -321,7 +321,7 @@ export default Vue.extend({
             download(source, "svg", "characters-tree");
         },
     }
-});
+};
 </script>
 
 <style>

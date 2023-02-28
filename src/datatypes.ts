@@ -1,5 +1,4 @@
 export * from "./datatypes/Character";
-export * from "./datatypes/IMap";
 export * from "./datatypes/Dataset";
 export * from "./datatypes/HierarchicalItem";
 export * from "./datatypes/Taxon";

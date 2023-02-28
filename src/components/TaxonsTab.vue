@@ -81,17 +81,17 @@
                         </div>
                         <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
                     </div>
-                    <google-map v-if="selectedTaxon && showMap"
+                    <GoogleMap v-if="selectedTaxon && showMap"
+                            api-key="AIzaSyClYri6lQql5nQkCwktcq2DJsjBDpmP_nU"
                             id="mapid"
                             ref="Map"
                             :center="{ lat: 48.856614, lng: 2.3522219 }"
                             :zoom="12">
-                        <google-map-marker v-for="(position, index) in specimenLocations"
+                        <Marker v-for="(position, index) in specimenLocations"
                             :key="index"
-                            :title="selectedTaxon ? selectedTaxon.name : ''"
-                            :position="position"
+                            :options="{ title: selectedTaxon ? selectedTaxon.name : '', position }"
                         />
-                    </google-map>
+                    </GoogleMap>
                     <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
                         <div v-if="selectedColumns.includes('props')" :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
                             <picture-box :editable="editProperties"
@@ -131,7 +131,7 @@
                                         Herbarium Picture</item-property-field>
                                     <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
                                             :icon="extraField.icon"
-                                            :value="extraProperty(extraField)"
+                                            :model-value="extraProperty(extraField)"
                                             @input="setExtraProperty"
                                             :editable="editProperties">
                                         {{ extraField.label }}
@@ -155,7 +155,10 @@
                                                 {{ selectedTaxon.bookInfoByIds[book.id].page }}
                                             </div>
                                         </label>
-                                        <ckeditor v-if="editProperties" :editor="editor" v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig"></ckeditor>
+                                        <ckeditor v-if="editProperties" 
+                                            :editor="editor"
+                                            v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig">
+                                        </ckeditor>
                                         <div v-if="!editProperties" class="limited-width medium-padding" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
                                     </div>
                                 </div>
@@ -201,12 +204,12 @@ import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import SplitPanel from "./SplitPanel.vue";
 import PictureBox from "./PictureBox.vue";
-//@ts-ignore
-import CKEditor from '@ckeditor/ckeditor5-vue';
+// @ts-ignore
+import CKEditor from "@ckeditor/ckeditor5-vue";
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { GoogleMap, Marker } from "vue3-google-map";
 import { Book, Character, Dataset, Description, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue from "vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ColumnSelector from "./ColumnSelector.vue";
 import DropDown from "./DropDownButton.vue";
@@ -216,17 +219,17 @@ import { createTexExporter, exportZipFolder, importKml } from "@/features";
 import { createTaxon, taxonHasStates } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
-import { taxonsStats } from "@/features/hierarchystats";
 import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, SelectableItem } from "@/datatypes/types";
 
 
-export default Vue.extend({
+export default {
     name: "TaxonsTab",
     components: {
-        CollapsiblePanel, DropDown, ItemPropertyField, PictureBox, SquareTreeViewer, ckeditor: CKEditor.component,
+        CollapsiblePanel, DropDown, ItemPropertyField, PictureBox, SquareTreeViewer, 
+        GoogleMap, Marker, ckeditor: CKEditor.component,
         ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
         ColumnSelector
     },
@@ -243,7 +246,7 @@ export default Vue.extend({
             editorConfig: {},
             latexProgressText: "",
             selectingParent: false,
-            selectedTaxonId: this.$route.params.id ?? "",
+            selectedTaxonId: this.$route.params.id as string ?? "",
             selectedColumns: ["menu", "props"]
         }
     },
@@ -329,10 +332,10 @@ export default Vue.extend({
             this.store.do("pasteTaxon", this.selectedTaxonId);
         },
         moveUp(item: Taxon) {
-            if (this.selectedTaxon) this.store.do("moveTaxonUp", item);
+            this.store.do("moveTaxonUp", item);
         },
         moveDown(item: Taxon) {
-            if (this.selectedTaxon) this.store.do("moveTaxonDown", item);
+            this.store.do("moveTaxonDown", item);
         },
         openSelectParentDropdown() {
             this.selectingParent = true;
@@ -425,5 +428,5 @@ export default Vue.extend({
             });
         },
     }
-});
+};
 </script>

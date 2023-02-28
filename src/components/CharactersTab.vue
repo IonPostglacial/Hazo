@@ -30,7 +30,7 @@
                             :character="selectedCharacter">
                         </characters-presentation>
                     </div>
-                    <picture-box v-if="!printMode && (typeof selectedCharacter !== 'undefined')" editable="editable"
+                    <picture-box v-if="!printMode && (typeof selectedCharacter !== 'undefined')" :editable="true"
                         @add-photo="addCharacterPhoto"
                         @set-photo="setCharacterPhoto"
                         @delete-photo="deleteCharacterPhoto"
@@ -66,7 +66,7 @@
                             <label><input type="radio" name="character-type" value="family" v-model="selectedCharacter.preset">Family</label>
                         </div>
                     </collapsible-panel>
-                    <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1 limited-width" :selected-character="selectedCharacter">
+                    <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
                     </characters-tree>
                     <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
                         <flowering>
@@ -96,7 +96,7 @@
                                 <ul class="indented no-list-style">
                                     <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                         <label>
-                                            <input type="checkbox" @change="setRequiredState(state, $event.target.checked)" :checked="selectedCharacter ? selectedCharacter.requiredStates.find(s => s.id === state.id) : false" />
+                                            <input type="checkbox" @change="setRequiredState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.requiredStates.find(s => s.id === state.id) : false" />
                                             {{ state.name.S }}
                                         </label>
                                     </li>
@@ -107,7 +107,7 @@
                                 <ul class="indented no-list-style">
                                     <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                         <label>
-                                        <input type="checkbox" @change="setInapplicableState(state, $event.target.checked)" :checked="selectedCharacter ? selectedCharacter.inapplicableStates.find(s => s.id === state.id) : false" />
+                                        <input type="checkbox" @change="setInapplicableState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.inapplicableStates.find(s => s.id === state.id) : false" />
                                         {{ state.name.S }}
                                         </label>
                                     </li>
@@ -188,12 +188,11 @@ import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import Vue from "vue";
-import { Dataset, Character, Hierarchy, State } from "@/datatypes";
+import { Dataset, Character, Hierarchy, State, Picture } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 
-export default Vue.extend({
+export default {
     name: "CharactersTab",
     components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel },
     data() {
@@ -201,8 +200,8 @@ export default Vue.extend({
             store: Hazo.store,
             showLeftMenu: true,
             showBigImage: false,
-            bigImages: [{id: "", url: "", label: ""}],
-            selectedCharacterId: this.$route.params.id ?? "",
+            bigImages: [{id: "", hubUrl: "", url: "", label: ""} as Picture],
+            selectedCharacterId: (this.$route.params.id as string) ?? "",
             printMode: false,
         };
     },
@@ -229,7 +228,7 @@ export default Vue.extend({
             const ch = this.selectedCharacter;
             return ch?.characterType === "range" ? undefined : ch?.inherentState;
         },
-        dataset(): Dataset {
+        dataset() {
             return this.store.dataset;
         },
         charactersHierarchy(): Hierarchy<Character> {
@@ -314,10 +313,10 @@ export default Vue.extend({
             this.store.do("pasteStates", this.selectedCharacterId);
         },
         moveUp(item: Character) {
-            if (this.selectedCharacter) this.store.do("moveCharacterUp", item);
+            this.store.do("moveCharacterUp", item);
         },
         moveDown(item: Character) {
-            if (this.selectedCharacter) this.store.do("moveCharacterDown", item);
+            this.store.do("moveCharacterDown", item);
         },
         setInapplicableState(state: State, selected: boolean) {
             if (this.selectedCharacter?.characterType === "discrete") {
@@ -450,5 +449,5 @@ export default Vue.extend({
             this.bigImages = this.selectedCharacter!.pictures;
         },
     }
-});
+};
 </script>

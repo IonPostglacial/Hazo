@@ -43,7 +43,7 @@ import CollapsiblePanel from "./CollapsiblePanel.vue";
 import { Config } from "@/tools/config";
 import { uploadPicture } from "@/datatypes/picture";
 
-export default Vue.extend({
+export default {
   components: { AddItem, CollapsiblePanel, PictureFrame },
     props: {
         editable: Boolean,
@@ -118,5 +118,5 @@ export default Vue.extend({
             this.$emit("set-photo", e);
         }
     }
-})
+}
 </script>

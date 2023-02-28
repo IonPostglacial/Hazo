@@ -3,9 +3,9 @@ import { Dataset } from './datatypes/Dataset';
 import { DiscreteCharacter, State } from "./datatypes/types";
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
-import { ObservableMap } from "./tools/observablemap";
 import { addDictionaryEntry, deleteDictionaryEntry } from "./db-storage";
 import { fixParentIds } from "./tools/fixes";
+import { reactive } from "vue";
 
 export type HazoStore = ReturnType<typeof createStore>;
 
@@ -299,14 +299,14 @@ export function createStore() {
         }
         (actions[action] as any).apply(self, params);
     }
-    const store = {
+    const store = reactive({
         dbg: false,
         dataset: new Dataset("",
             createTaxon({ id: "t0", name: { S: "<TOP>" } }),
             createCharacter({ id: "c0", name: { S: "<TOP>" } }),
             standardBooks,
             new Array<Field>(),
-            new ObservableMap(),
+            new Map(),
         ),
         selectedTaxon: "",
         selectedCharacter: "",
@@ -327,6 +327,6 @@ export function createStore() {
                 action();
             }
         },
-    };
+    });
     return store;
 }

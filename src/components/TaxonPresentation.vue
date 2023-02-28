@@ -28,7 +28,7 @@
                                     <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
                                 </div>
                             </div>
-                            <flowering v-if="isFlowering(description)" :value="monthsFromStates(description.states)">
+                            <flowering v-if="isFlowering(description)" :model-value="monthsFromStates(description.states)">
                             </flowering>
                             <div v-if="!isFlowering(description)" class="horizontal-flexbox">
                                 <div>{{ charName(description.character) }}<span class="spaced">:</span></div>
@@ -53,7 +53,7 @@ import { Character, State } from '@/datatypes/types';
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 
-export default Vue.extend({
+export default {
     name: "TaxonPresentation",
     components: { Flowering },
     data() {
@@ -118,5 +118,5 @@ export default Vue.extend({
             return Months.fromStates(states);
         },
     }
-})
+}
 </script>

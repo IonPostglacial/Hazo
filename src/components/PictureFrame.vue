@@ -16,7 +16,7 @@ import Vue, { PropType } from "vue";
 import { Picture, uploadPicture } from "@/datatypes";
 
 
-export default Vue.extend({
+export default {
     props: {
         index: Number,
         editable: Boolean,
@@ -59,5 +59,5 @@ export default Vue.extend({
             }
         },
     }
-})
+}
 </script>

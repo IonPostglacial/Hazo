@@ -24,11 +24,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import DropDown from "@/components/DropDown.vue";
 import { familiesWithNamesLike, Name } from "@/db-index";
 
-export default Vue.extend({
+export default {
   components: { DropDown },
     props: {
         value: String,
@@ -37,7 +36,7 @@ export default Vue.extend({
     data() {
         return {
             multiline: false,
-            text: this.value,
+            text: this.value ?? "",
             openAutoComplete: false,
             completions: [] as Name[],
             selectedCompletion: -1,
@@ -101,5 +100,5 @@ export default Vue.extend({
             this.multiline = false;
         },
     }
-});
+};
 </script>

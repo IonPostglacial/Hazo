@@ -29,7 +29,7 @@ import Vue, { PropType } from "vue";
 import AddItem from "./AddItem.vue";
 import { Field } from "@/datatypes";
 
-export default Vue.extend({
+export default {
     components: { AddItem },
     props: { showFields: Boolean, extraFields: Array as PropType<Field[]> },
     data() {
@@ -48,5 +48,5 @@ export default Vue.extend({
             this.$emit("closed");
         },
     }
-})
+}
 </script>

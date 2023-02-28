@@ -5,10 +5,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+
 import Split, { Instance } from 'split.js'
 
-export default Vue.extend({
+export default {
     props: {
         vertical: Boolean,
     },
@@ -30,10 +30,10 @@ export default Vue.extend({
         this.split = Split(children);
         this.split.setSizes(children.map((_, i) => i === 0 ? 33 : 67 / (children.length - 1)));
     },
-    beforeDestroy() {
+    beforeUnmount() {
         this.split?.destroy();
     }
-});
+};
 </script>
 
 <style>
