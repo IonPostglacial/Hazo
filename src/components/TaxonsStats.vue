@@ -37,7 +37,7 @@ import Vue from "vue";
 import { taxonsStats } from "@/features";
 import type { Taxon, Dataset } from "@/datatypes";
 
-export default Vue.extend({
+export default {
     data() {
         const dataset = Hazo.store.dataset;
         const stats = taxonsStats(dataset.taxonsHierarchy);
@@ -94,5 +94,5 @@ export default Vue.extend({
             }
         }
     }
-});
+};
 </script>

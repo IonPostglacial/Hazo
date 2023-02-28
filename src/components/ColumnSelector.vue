@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-export default Vue.extend({
+export default {
     props: {
         name: String,
         value: String,
@@ -35,5 +35,5 @@ export default Vue.extend({
             this.$emit("remove-column", this.value);
         }
     }
-})
+}
 </script>

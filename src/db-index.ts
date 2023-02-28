@@ -3,7 +3,7 @@ const DB_NAME = "NamesIndex";
 const FAMILY_INDEX_STORE_NAME = "FamilyIndexStore";
 export type Language = "S" | "V" | "CN";
 export const LANGUAGES_V1: Language[] = ["S", "V", "CN"];
-export type Name = Record<Language, string>;
+export type Name = Record<Language | string, string>;
 
 function createFamilyIndexStore(db: IDBDatabase, previousVersion: number) {
     if (!db.objectStoreNames.contains(FAMILY_INDEX_STORE_NAME)) {

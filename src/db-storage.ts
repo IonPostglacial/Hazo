@@ -1,5 +1,6 @@
 import { DictionaryEntry } from "./datatypes";
 import { EncodedDataset } from "./features/codec";
+import clone from "./tools/clone";
 
 const DB_NAME = "Datasets";
 const DB_VERSION = 6;
@@ -125,8 +126,7 @@ function dbStore(dataset: EncodedDataset): Promise<void> {
             };
         
             const datasets = transaction.objectStore("Datasets");
-    
-            datasets.put(dataset);
+            datasets.put(clone(dataset));
             resolve();
         };
     });

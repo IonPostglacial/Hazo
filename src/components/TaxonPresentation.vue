@@ -28,7 +28,7 @@
                                     <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
                                 </div>
                             </div>
-                            <flowering v-if="isFlowering(description)" :value="monthsFromStates(description.states)">
+                            <flowering v-if="isFlowering(description)" :model-value="monthsFromStates(description.states)">
                             </flowering>
                             <div v-if="!isFlowering(description)" class="horizontal-flexbox">
                                 <div>{{ charName(description.character) }}<span class="spaced">:</span></div>
@@ -56,7 +56,7 @@ import Flowering from "@/components/Flowering.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
 
 
-export default Vue.extend({
+export default {
     name: "TaxonPresentation",
     components: { Flowering, PictureGalery },
     data() {
@@ -121,5 +121,5 @@ export default Vue.extend({
             return Months.fromStates(states);
         },
     }
-})
+}
 </script>

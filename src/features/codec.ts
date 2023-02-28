@@ -216,8 +216,8 @@ function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, charact
 	});
 }
 
-export function decodeDataset(makeMap: { new(): IMap<any> }, dataset: AlreadyEncodedDataset|undefined): Dataset {
-	const states: IMap<State> = new makeMap();
+export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset {
+	const states = new Map<string, State>();
 	const books = standardBooks.slice();
 	const ds = new Dataset(
 		dataset?.id ?? "0",

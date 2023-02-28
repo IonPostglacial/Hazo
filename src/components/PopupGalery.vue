@@ -13,7 +13,7 @@ import PictureGalery from "@/components/PictureGalery.vue";
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 
-export default Vue.extend({
+export default {
     name: "PopupGalery",
     components: { PictureGalery },
     props: {
@@ -33,5 +33,5 @@ export default Vue.extend({
             this.titleText = picture.label;
         }
     }
-})
+}
 </script>

@@ -1,7 +1,6 @@
 import { SelectableItem, Book, Character, CharacterPreset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
-import { IMap } from "./IMap";
 import clone from "@/tools/clone";
 import { generateId } from "@/tools/generateid";
 import Month from "./Months";
@@ -11,7 +10,7 @@ interface StateCallback {
     (e: { state: State, character: Character }): void;
 }
 
-function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarchy<T>, itemsByIds: IMap<Hierarchy<T>>, item: Hierarchy<T>): T {
+function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>): T {
 	const it = cloneHierarchy(item);
 	const declaredParent = it.parentId ? itemsByIds.get(it.parentId) : undefined;
 	if (typeof declaredParent === "undefined") {
@@ -35,7 +34,7 @@ function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarch
 	return it;
 }
 
-function removeItem<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: IMap<Hierarchy<T>>, id: string): T|undefined {
+function removeItem<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, id: string): T|undefined {
 	const it = itemsByIds.get(id);
 	if (typeof it === "undefined") return undefined;
 	const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
@@ -46,7 +45,7 @@ function removeItem<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsBy
 	return it;
 }
 
-function moveUp<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: IMap<Hierarchy<T>>, item: Hierarchy<T>) {
+function moveUp<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>) {
     const parent = item.parentId ? itemsByIds.get(item.parentId) ?? hierarchy : hierarchy;
     const siblings = parent.children;
     const index = siblings.findIndex(it => it.id === item.id);
@@ -58,7 +57,7 @@ function moveUp<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds:
 	parent.children = [...siblings];
 }
 
-function moveDown<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: IMap<Hierarchy<T>>, item: Hierarchy<T>) {
+function moveDown<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>) {
     const parent = item.parentId ? itemsByIds.get(item.parentId) ?? hierarchy : hierarchy;
     const siblings = parent.children;
     const index = siblings.findIndex(it => it.id === item.id);
@@ -71,11 +70,11 @@ function moveDown<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsById
 }
 
 export class Dataset {
-	private stateAdditionCallbacks = new Set<StateCallback>();
-    private stateRemovalCallbacks = new Set<StateCallback>();
-	private statesById: IMap<State>;
-	private taxonsByIds: IMap<Taxon>;
-	charactersByIds: IMap<Character>;
+	stateAdditionCallbacks = new Set<StateCallback>();
+    stateRemovalCallbacks = new Set<StateCallback>();
+	statesById: Map<string, State>;
+	taxonsByIds: Map<string, Taxon>;
+	charactersByIds: Map<string, Character>;
 	presetStates: Record<CharacterPreset, State[]> = {
 		flowering: Month.floweringStates,
 		family: [],
@@ -87,7 +86,7 @@ export class Dataset {
 			public charactersHierarchy: Hierarchy<Character>,
 			public books: Book[] = standardBooks.slice(),
 			public extraFields: Field[] = [],
-			statesById: IMap<State>|undefined) {
+			statesById: Map<string, State>|undefined) {
 		this.statesById = statesById ?? new Map();
 		this.taxonsByIds = new Map();
 		this.charactersByIds = new Map();
@@ -257,8 +256,9 @@ export class Dataset {
 
 	setTaxonState(taxonId: string, state: State) {
 		const s = this.statesById.get(state.id);
-		if (typeof s !== "undefined") {
-			this;this.taxon(taxonId)?.states.push(s);
+		const t = this.taxon(taxonId);
+		if (typeof s !== "undefined" && typeof t !== "undefined") {
+			t.states.push(s);
 		}
 	}
 

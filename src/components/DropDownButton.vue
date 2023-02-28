@@ -15,7 +15,7 @@
 import Vue from "vue";
 import DropDown from "@/components/DropDown.vue";
 
-export default Vue.extend({
+export default {
     components: { DropDown },
     props: {
         label: String,
@@ -30,11 +30,10 @@ export default Vue.extend({
             this.open = false;
         },
         toggleOpen() {
-            console.log("toggle");
             this.open = !this.open;
         },
     },
-});
+};
 </script>
 
 <style>

@@ -67,14 +67,12 @@ import DB, { getAllDictionaryEntries } from "./db-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save";
 import download from "@/tools/download";
-import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
-import Vue from "vue";
 import { forEachHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
 import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
 
-export default Vue.extend({
+export default {
     name: "App",
     data() {
         return {
@@ -103,7 +101,7 @@ export default Vue.extend({
             const preloadedDataset = JSON.parse(preloadedDatasetText);
             DB.store(preloadedDataset).then(() => {
                     this.store.do("setConnectedToHub", true);
-                    this.store.do("setDataset", decodeDataset(ObservableMap, preloadedDataset));
+                    this.store.do("setDataset", decodeDataset(preloadedDataset));
                     this.selectedBase = preloadedDataset.id;
                 });
         } else {
@@ -133,7 +131,7 @@ export default Vue.extend({
                             this.datasetIds.push(fetchedDataset.id);
                         }
                         DB.store(fetchedDataset).then(() => {
-                            this.store.do("setDataset", decodeDataset(ObservableMap, fetchedDataset));
+                            this.store.do("setDataset", decodeDataset(fetchedDataset));
                             this.selectedBase = fetchedDataset.id;
                         });
                     });
@@ -218,13 +216,13 @@ export default Vue.extend({
             } else {
                 const json = await res.json();
                 this.resetData();
-                this.store.do("setDataset", decodeDataset(ObservableMap, json));
+                this.store.do("setDataset", decodeDataset(json));
             }
         },
         loadBase(id: string) {
             DB.load(id).then(savedDataset => {
                 this.resetData();
-                this.store.do("setDataset", decodeDataset(ObservableMap, savedDataset ?? { id }));
+                this.store.do("setDataset", decodeDataset(savedDataset ?? { id }));
             });
         },
         print() {
@@ -351,7 +349,7 @@ export default Vue.extend({
                 }
             }
         },
-        async fileMerge(e: InputEvent) {
+        async fileMerge(e: Event) {
             if (!(e.target instanceof HTMLInputElement)) return;
 
             const file = (e.target.files ?? [])[0];
@@ -392,7 +390,7 @@ export default Vue.extend({
                 }
             }
         },
-        async fileUpload(e: InputEvent) {
+        async fileUpload(e: Event) {
             if (!(e.target instanceof HTMLInputElement)) return;
 
             const result = await this.fileRead((e.target.files ?? [])[0]);
@@ -451,7 +449,7 @@ export default Vue.extend({
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
                         const db = JSON.parse(fileReader.result);
-                        const dataset = decodeDataset(ObservableMap, db);
+                        const dataset = decodeDataset(db);
                         resolve(dataset);
                     }
                 };
@@ -500,5 +498,5 @@ export default Vue.extend({
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }
-});
+};
 </script>

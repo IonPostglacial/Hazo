@@ -25,7 +25,7 @@
 import Vue from "vue";
 import { familiesWithNamesLike, Name, Language, LANGUAGES_V1, deleteFamily } from "@/db-index";
 
-export default Vue.extend({
+export default {
     data() {
         return {
             languages: LANGUAGES_V1,
@@ -51,5 +51,5 @@ export default Vue.extend({
     mounted() {
         this.updateFamilies();
     }
-});
+};
 </script>

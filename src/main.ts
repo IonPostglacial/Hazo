@@ -1,5 +1,5 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import * as Vue from "vue";
+import * as VueRouter from "vue-router";
 import App from "./App.vue";
 import { createStore } from "./store";
 import TaxonPresentation from "./components/TaxonPresentation.vue";
@@ -9,10 +9,8 @@ import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import NamesDictionary from "./components/NamesDictionary.vue";
 import debounce from "./tools/debounce";
-import VueGoogleMap from "vuejs-google-maps";
- // @ts-ignore
-import VueSplit from 'vue-split-panel';
-import "vuejs-google-maps/dist/vuejs-google-maps.css";
+// @ts-ignore
+import VueSplit from "vue3-split-panel";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
@@ -20,25 +18,23 @@ import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
         faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, 
         faCopy, faPaste, faUpload } from "@fortawesome/free-solid-svg-icons";
 
-
 library.add(faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
     faCaretDown, faCaretUp, faLanguage, faPlus, faMinus, faPrint, 
     faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, 
     faCopy, faPaste, faUpload);
 
-Vue.component("font-awesome-icon", FontAwesomeIcon);
-
-Vue.use(VueGoogleMap, {
-    load: {
-        apiKey: "AIzaSyClYri6lQql5nQkCwktcq2DJsjBDpmP_nU",
-        libraries: [/* rest of libraries */]
-    }
+const router = VueRouter.createRouter({
+    history: VueRouter.createWebHashHistory(),
+    routes: [
+        { path: "/", component: TaxonsTab },
+        { path: "/taxons-stats", component: TaxonsStats },
+        { path: "/taxons/:id?", component: TaxonsTab },
+        { path: "/print-taxons/:id?", component: TaxonPresentation },
+        { path: "/characters/:id?", component: CharactersTab },
+        { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
+        { path: "/dictionary", component: NamesDictionary },
+    ]
 });
-
-Vue.config.productionTip = false;
-
-Vue.use(VueRouter);
-Vue.use(VueSplit);
 
 declare global {
     namespace globalThis {
@@ -52,22 +48,11 @@ globalThis.Hazo = {
     store: createStore()
 };
 
-const router = new VueRouter({
-    routes: [
-        { path: "/", component: TaxonsTab },
-        { path: "/taxons-stats", component: TaxonsStats },
-        { path: "/taxons/:id?", component: TaxonsTab },
-        { path: "/print-taxons/:id?", component: TaxonPresentation },
-        { path: "/characters/:id?", component: CharactersTab },
-        { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
-        { path: "/dictionary", component: NamesDictionary },
-    ]
-});
-
-new Vue({
-    render: h => h(App),
-    router: router,
-}).$mount("#app");
+const app = Vue.createApp(App);
+app.use(router);
+app.use(VueSplit as any);
+app.component("font-awesome-icon", FontAwesomeIcon);
+app.mount("#app");
 
 function adaptSize() {
     document.documentElement.style.setProperty("--viewport-height", `${0.01 * window.innerHeight}px`);

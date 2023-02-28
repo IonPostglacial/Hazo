@@ -12,7 +12,7 @@ import { Picture } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 
-export default Vue.extend({
+export default {
     name: "PictureGalery",
     props: {
         images: Array as PropType<Picture[]>,
@@ -45,5 +45,5 @@ export default Vue.extend({
             }
         },
     }
-})
+}
 </script>
