@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import Vue, { PropType } from "vue";
+import { PropType } from "vue";
 import { Picture, uploadPicture } from "@/datatypes";
 
 
@@ -20,7 +20,7 @@ export default {
     props: {
         index: Number,
         editable: Boolean,
-        picture: Object as PropType<Picture>,
+        picture: { type: Object as PropType<Picture>, required: true },
     },
     computed: {
         url(): string|undefined {
@@ -45,10 +45,13 @@ export default {
         openPhoto() {
             this.$emit("open-photo", { detail: { index: this.index } });
         },
-        setPhoto(e: Event & { target: { value: string } }) {
-            uploadPicture(e.target.value).then(url => {
-                this.$emit("set-photo", { detail: { src: e.target.value, hubUrl: url, index: this.index } })
-            });
+        setPhoto(e: Event) {
+            if (e.target instanceof HTMLInputElement && e.target.value) {
+                const val = e.target.value;
+                uploadPicture(val).then(url => {
+                    this.$emit("set-photo", { detail: { src: val, hubUrl: url, index: this.index } })
+                });
+            }
         },
         uploadPhoto() {
             const oldUrl = this.picture?.url;

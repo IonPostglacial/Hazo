@@ -1,7 +1,7 @@
 <template>
     <div class="scroll flex-grow-1">
         <div class="horizontal-flexbox no-print">
-            <router-link class="button" :to="'/taxons/' + this.selectedTaxonId">Back to Taxon</router-link>
+            <router-link class="button" :to="'/taxons/' + selectedTaxonId">Back to Taxon</router-link>
             <select v-model="lang">
                 <option value="S">Scientific</option>
                 <option value="CN">Chinese</option>
@@ -61,7 +61,7 @@ export default {
             isParentSelected: {} as Record<string, boolean>,
             store: Hazo.store,
             lang: "S",
-            selectedTaxonId: this.$route.params.id ?? "",
+            selectedTaxonId: (this.$route.params.id as string|undefined) ?? "",
         }
     },
     watch: {
@@ -71,7 +71,7 @@ export default {
     },
     computed: {
         dataset(): Dataset {
-            return this.store.dataset;
+            return this.store.dataset as Dataset;
         },
         selectedTaxon(): Taxon|undefined {
             return this.dataset.taxon(this.selectedTaxonId);

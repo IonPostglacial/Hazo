@@ -22,7 +22,6 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import { familiesWithNamesLike, Name, Language, LANGUAGES_V1, deleteFamily } from "@/db-index";
 
 export default {
@@ -38,7 +37,7 @@ export default {
         updateFamilies() {
             familiesWithNamesLike(this.lang, this.search).then(f => this.families = f);
         },
-        deleteEntry(id: number) {
+        deleteEntry(id: string) {
             deleteFamily(id);
             this.updateFamilies();
         },

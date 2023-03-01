@@ -18,7 +18,7 @@ import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
 export default {
     name: "PopupGalery",
     props: {
-        images: Array as PropType<Picture[]>,
+        images: { type: Array as PropType<Picture[]>, required: true },
         open: Boolean,
     },
     data() {

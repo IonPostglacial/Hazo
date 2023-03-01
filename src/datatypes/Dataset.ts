@@ -204,6 +204,7 @@ export class Dataset {
             if (parentCharacter?.characterType === "discrete") {
                 const newState: State = {
                     id: "s-auto-" + c.id,
+					type: "state",
                     name: Object.assign({}, c.name), pictures: []
                 };
                 this.addState(newState, parentCharacter);
@@ -333,7 +334,7 @@ export class Dataset {
 					const inherentCharacter: Character & {selected?:boolean}|undefined = clonedChildren.find(characterChild => 
 						characterChild.characterType === "range" ? undefined : characterChild.inherentState?.id === state.id);
 					if (typeof inherentCharacter === "undefined") {
-						characterChildren.push({ ...state, type: "state", hidden: false, children: [] });
+						characterChildren.push({ ...state, hidden: false, children: [] });
 					} else {
 						inherentCharacter.selected = state.selected;
 					}

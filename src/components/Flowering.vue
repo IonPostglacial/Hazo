@@ -58,7 +58,7 @@ function eventDocumentPosition(e: MouseEvent) {
 
 export default {
     props: {
-        modelValue: Number,
+        modelValue: { type: Number, required: true },
     },
     methods: {
         hasMonth(month: number): boolean {
