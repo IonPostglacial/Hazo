@@ -9,13 +9,13 @@
 </template>
 <script lang="ts">
 import { Picture } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 
 export default {
     name: "PictureGalery",
     props: {
-        images: Array as PropType<Picture[]>,
+        images: { type: Array as PropType<Picture[]>, required: true },
     },
     data() {
         return {

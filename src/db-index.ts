@@ -45,7 +45,7 @@ export async function storefamily(family: Name): Promise<IDBRequest<IDBValidKey>
             .map(([k, v]) => [k, v.toLowerCase()]))));
 }
 
-export async function deleteFamily(id: number): Promise<IDBRequest<undefined>> {
+export async function deleteFamily(id: string): Promise<IDBRequest<undefined>> {
     return familyIndexStore("readwrite").then(store => store.delete(id));
 }
 

@@ -77,8 +77,8 @@ export default {
         uploadPopup() {
             this.displayUploadPopup = !this.displayUploadPopup;
         },
-        async uploadPicture(e : Event & { target: HTMLInputElement }) {
-            if (e.target?.files?.length ?? 0 > 0) {
+        async uploadPicture(e : Event) {
+            if (e.target instanceof HTMLInputElement && (e.target.files?.length ?? 0 > 0)) {
                 const fileToUpload = e.target!.files![0];
                 const data = new FormData();
                 data.append("file", fileToUpload, Math.random() * 1E6 + fileToUpload.name);

@@ -33,15 +33,14 @@ import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-import { DiscreteCharacter } from "@/datatypes/types";
-type ItemType = HierarchicalItem & { selected?: boolean };
+import { DiscreteCharacter, SelectableItem } from "@/datatypes/types";
 
 export default {
     name: "SquareTreeViewer",
     components: { Flowering },
     props: {
         editable: Boolean,
-        rootItems: Object as PropType<Hierarchy<ItemType>>,
+        rootItems: Object as PropType<Hierarchy<SelectableItem>>,
         nameFields: Array as PropType<string[]>,
     },
     data() {
@@ -51,12 +50,12 @@ export default {
             floweringMode: false,
             isRoot: true,
             currentItems: currentItems,
-            breadCrumbs: [] as Hierarchy<ItemType>[],
+            breadCrumbs: [] as Hierarchy<SelectableItem>[],
             menuFilter: "",
         };
     },
     watch: {
-        rootItems(newRootItems: Hierarchy<ItemType>) {
+        rootItems(newRootItems: Hierarchy<SelectableItem>) {
             let currentlyOpenItem = newRootItems;
             for (const breadCrumb of this.breadCrumbs) {
                 const it = currentlyOpenItem.children.find(it => it.id === breadCrumb.id);
@@ -69,12 +68,12 @@ export default {
                 this.flowering = Months.fromStates(this.currentItems.filter(item => item.selected));
             }
         },
-        currentItems(items: Hierarchy<ItemType>[]) {
+        currentItems(items: Hierarchy<SelectableItem>[]) {
             this.flowering = Months.fromStates(items.filter(item => item.selected));
         }
     },
     computed: {
-        itemsToDisplay(): Iterable<HierarchicalItem> {
+        itemsToDisplay(): Iterable<Hierarchy<SelectableItem>> {
             if (!this.currentItems) return [];
             const shouldDisplayItem = (item: HierarchicalItem & { selected?: boolean }) => {
                 if (!this.editable && item.selected === false) {
@@ -93,24 +92,24 @@ export default {
         nameFieldsForItem(item: any): Iterable<string> {
             return this.nameFields?.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
         },
-        isClickable(item: Hierarchy<ItemType>): boolean {
+        isClickable(item: Hierarchy<SelectableItem>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
-        isSelected(item: Hierarchy<ItemType>): boolean {
+        isSelected(item: Hierarchy<SelectableItem>): boolean {
             return item.selected ?? false;
         },
-        isSelectable(item: Hierarchy<ItemType>): boolean {
+        isSelectable(item: Hierarchy<SelectableItem>): boolean {
             return this.editable && item.children.length === 0;
         },
-        hasChildren(item: Hierarchy<ItemType>): boolean {
+        hasChildren(item: Hierarchy<SelectableItem>): boolean {
             return item.children.length > 0;
         },
-        isFlowering(item: Hierarchy<ItemType>): boolean {
+        isFlowering(item: Hierarchy<SelectableItem>): boolean {
             return item.type === "character" &&
                     (item as Character).characterType === "discrete" &&
                     (item as DiscreteCharacter).preset === "flowering"
         },
-        openItem(item: Hierarchy<ItemType>) {
+        openItem(item: Hierarchy<SelectableItem>) {
             this.isRoot = false;
             this.floweringMode = this.isFlowering(item);
             if (item.children.length > 0) {
@@ -122,13 +121,14 @@ export default {
                 this.$emit("item-selection-toggled", { item });
             }
         },
-        selectWithoutOpening(character: DiscreteCharacter & { selected?: boolean }) {
+        selectWithoutOpening(character: Hierarchy<SelectableItem>) {
+            if (character.type !== "character" || character.characterType !== "discrete") return;
             const ch = Hazo.store.dataset.character(character.id);
             let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
             if (typeof inherentState === "undefined") {
                 const parentCharacter = Hazo.store.dataset.character(character.parentId);
                 if (typeof parentCharacter !== "undefined" && parentCharacter.characterType === "discrete") {
-                    inherentState = { id: "s" + makeid(8), name: clone(character.name), pictures: [] };
+                    inherentState = { id: "s" + makeid(8), type: "state", name: clone(character.name), pictures: [] };
                     Hazo.store.do("addState", { state: inherentState, character: parentCharacter });
                     Hazo.store.do("setInherentState", { state: inherentState, character });
                 }
@@ -144,7 +144,7 @@ export default {
             this.currentItems = [...this.rootItems!.children];
             this.breadCrumbs = [];
         },
-        goToBreadCrumb(breadCrumb: Hierarchy<ItemType>) {
+        goToBreadCrumb(breadCrumb: Hierarchy<SelectableItem>) {
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
             this.currentItems = [...breadCrumb.children];

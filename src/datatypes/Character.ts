@@ -13,7 +13,8 @@ type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 
 export function createCharacter(init: CharacterInit): Character {
 	return {
-		...createHierarchicalItem({ type: "character", ...init }),
+		...createHierarchicalItem(init),
+		type: "character",
 		characterType: "discrete",
 		states: Array.isArray(init.states) ? init.states :
 			typeof init.states === "undefined" ? [] :

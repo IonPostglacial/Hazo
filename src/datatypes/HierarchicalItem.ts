@@ -4,18 +4,19 @@ export interface HierarchicalItemInit {
 	parentId?: string;
 	id?: string,
 	name: MultilangText;
+	detail?: string,
 	pictures?: Picture[];
-	type: string;
 	hidden?: boolean;
 }
 
-export function createHierarchicalItem(init : HierarchicalItemInit): HierarchicalItem {
+export function createHierarchicalItem(init : HierarchicalItemInit): Omit<HierarchicalItem, "type"> {
 	return {
 		parentId: init.parentId,
 		id: init.id ?? "",
+		detail: init.detail ?? "",
+		children: [],
 		name: { S: init.name.S, V: init.name.V ?? "", CN: init.name.CN ?? "", EN: init.name.EN ?? "", FR: init.name.FR ?? "" },
 		pictures: init.pictures ?? [],
-		type: init.type,
 		hidden: init.hidden ?? false,
 	};
 }

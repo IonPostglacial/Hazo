@@ -35,7 +35,7 @@ export type MultilangText = {
 	CN?: string;
 	EN?: string;
 	FR?: string;
-};
+} & Partial<Record<string, string>>;
 
 export type BasicInfo = {
 	id: string;
@@ -44,21 +44,22 @@ export type BasicInfo = {
 };
 
 export type State = BasicInfo & {
+	type: "state";
 	description?: string;
 	color?: string;
 };
 
-export type HierarchicalItem = BasicInfo & {
+export type IHierarchicalItem = BasicInfo & {
 	parentId?: string;
-	type: string;
 	hidden: boolean;
 };
 
-export type SelectableItem = HierarchicalItem & {
+export type SelectableItem = IHierarchicalItem & {
 	selected?: boolean
 }
 
-export type Taxon = HierarchicalItem & {
+export type Taxon = IHierarchicalItem & {
+	type: "taxon";
 	states: State[];
 	author: string;
 	vernacularName2: string;
@@ -66,7 +67,7 @@ export type Taxon = HierarchicalItem & {
 	meaning: string;
 	herbariumPicture: string;
 	website: string;
-	noHerbier: number|undefined;
+	noHerbier: string|undefined;
 	fasc: number|undefined;
 	page: number|undefined;
 	detail : string;
@@ -80,12 +81,15 @@ export type CharacterPreset = "flowering" | "family";
 
 export type CharacterType = "discrete" | "range";
 
-export type AnyCharacter = HierarchicalItem & {
+export type AnyCharacter = IHierarchicalItem & {
+	type: "character";
 	detail: string;
 	inapplicableStates: State[];
 	requiredStates: State[];
 	children: Character[];
 };
+
+export type HierarchicalItem = Taxon | DiscreteCharacter | RangeCharacter;
 
 export type RangeCharacter = AnyCharacter & {
 	characterType: "range",

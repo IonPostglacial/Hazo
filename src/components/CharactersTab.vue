@@ -69,7 +69,7 @@
                     <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
                     </characters-tree>
                     <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
-                        <flowering>
+                        <flowering v-model="floweringMonth">
                         </flowering>
                     </div>
                     <collapsible-panel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">
@@ -96,7 +96,7 @@
                                 <ul class="indented no-list-style">
                                     <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                         <label>
-                                            <input type="checkbox" @change="setRequiredState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.requiredStates.find(s => s.id === state.id) : false" />
+                                            <input type="checkbox" @change="setRequiredState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.requiredStates.some(s => s.id === state.id) : false" />
                                             {{ state.name.S }}
                                         </label>
                                     </li>
@@ -107,7 +107,7 @@
                                 <ul class="indented no-list-style">
                                     <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                         <label>
-                                        <input type="checkbox" @change="setInapplicableState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.inapplicableStates.find(s => s.id === state.id) : false" />
+                                        <input type="checkbox" @change="setInapplicableState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.inapplicableStates.some(s => s.id === state.id) : false" />
                                         {{ state.name.S }}
                                         </label>
                                     </li>
@@ -203,6 +203,7 @@ export default {
             bigImages: [{id: "", hubUrl: "", url: "", label: ""} as Picture],
             selectedCharacterId: (this.$route.params.id as string) ?? "",
             printMode: false,
+            floweringMonth: 0,
         };
     },
     watch: {
@@ -228,8 +229,8 @@ export default {
             const ch = this.selectedCharacter;
             return ch?.characterType === "range" ? undefined : ch?.inherentState;
         },
-        dataset() {
-            return this.store.dataset;
+        dataset(): Dataset {
+            return this.store.dataset as Dataset;
         },
         charactersHierarchy(): Hierarchy<Character> {
             return this.store.dataset.charactersHierarchy;
@@ -422,6 +423,7 @@ export default {
             this.store.do("addState", {
                 state: {
                     id: "",
+                    type: "state",
                     name: { S: name, FR: name, EN: nameEN, CN: nameCN },
                     color,
                     description,

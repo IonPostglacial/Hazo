@@ -17,7 +17,7 @@ export default {
     name: "PopupGalery",
     components: { PictureGalery },
     props: {
-        images: Array as PropType<Picture[]>,
+        images: { type: Array as PropType<Picture[]>, required: true },
         open: Boolean,
     },
     data() {

@@ -66,7 +66,7 @@ export default {
     },
     computed: {
         dataset(): Dataset {
-            return this.store.dataset;
+            return this.store.dataset as Dataset;
         },
     },
     methods: {

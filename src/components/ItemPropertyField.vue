@@ -15,8 +15,10 @@ export default {
         modelValue: String,
     },
     methods: {
-        setValue(e: Event & { target: { value: string } }) {
-            this.$emit("update:modelValue", e.target.value);
+        setValue(e: Event) {
+            if (e.target instanceof HTMLInputElement) {
+                this.$emit("update:modelValue", e.target.value);
+            }
         },
     }
 };

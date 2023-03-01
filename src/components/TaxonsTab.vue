@@ -16,7 +16,7 @@
                 <div class="vertical-flexbox flex-grow-1">
                     <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
                         <div class="horizontal-flexbox">
-                            <router-link class="button" :to="'/print-taxons/' + this.selectedTaxonId" title="print">
+                            <router-link class="button" :to="'/print-taxons/' + selectedTaxonId" title="print">
                                 <font-awesome-icon icon="fa-solid fa-print" />
                             </router-link>
                         </div>
@@ -222,7 +222,7 @@ import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
-import { DiscreteCharacter, Field, SelectableItem } from "@/datatypes/types";
+import { DiscreteCharacter, Field, Picture, SelectableItem } from "@/datatypes/types";
 
 
 export default {
@@ -240,7 +240,7 @@ export default {
             showFields: false,
             showBigImage: false,
             showMap: false,
-            bigImages: [{ id: "", url: "", label: "" }],
+            bigImages: [{ id: "", url: "", label: "", hubUrl: "" }] as Picture[],
             editProperties: true,
             editor: ClassicEditor,
             editorConfig: {},
@@ -266,7 +266,7 @@ export default {
             return this.selectedColumns.includes("menu") ? 75 : 100;
         },
         dataset(): Dataset {
-            return this.store.dataset;
+            return this.store.dataset as Dataset;
         },
         taxonTree(): Taxon {
             if (this.store.statesAllowList.length > 0 || this.store.statesDenyList.length > 0) {
@@ -289,7 +289,7 @@ export default {
             if (typeof this.selectedTaxon !== "undefined") {
                 return this.dataset.taxonCharactersTree(this.selectedTaxon);
             } else {
-                return createCharacter({ id: "c0", name: { S: '' }});
+                return createCharacter({ id: "c0", name: { S: '' }, detail: ""});
             }
         },
         itemDescription(): Description[] {
@@ -316,7 +316,7 @@ export default {
                 this.dataset.setTaxonState(child.id, state);
             });
         },
-        async importKml(e: InputEvent) {
+        async importKml(e: Event) {
             if (!(e.target instanceof HTMLInputElement) || !this.selectedTaxon) return;
             
             const positions = await importKml((e.target.files ?? [])[0]);
@@ -355,7 +355,7 @@ export default {
         addTaxon(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;
             this.store.do("addTaxon", createTaxon({
-                ...createHierarchicalItem({ id: "", type: "", name: { S: name, V: vernacularName, CN: nameCN}, pictures: [], }),
+                ...createHierarchicalItem({ id: "", name: { S: name, V: vernacularName, CN: nameCN}, detail: "", pictures: [], }),
                 bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
             }));
