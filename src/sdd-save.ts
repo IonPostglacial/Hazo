@@ -178,7 +178,7 @@ function saveSDD(ds: Dataset): Document {
 
     (function addDescriptorHierarchyNodes (descriptorHierarchy, nodesElement, parentRef?: string) {
         let node;
-        if (descriptorHierarchy.type === "concept") {
+        if (descriptorHierarchy.characterType === "range") {
             const descriptiveConcept = node = xml.createElement("DescriptiveConcept");
             descriptiveConcept.setAttribute("id", descriptorHierarchy.id);
             descriptiveConcept.appendChild(createRepresentation(xml, descriptorHierarchy));
@@ -195,7 +195,7 @@ function saveSDD(ds: Dataset): Document {
             for (const child of descriptorHierarchy.children) {
                 addDescriptorHierarchyNodes(child, charTreeConceptsNodes, descriptorHierarchy.id);
             }
-        } else if (descriptorHierarchy.type === "character") {
+        } else if (descriptorHierarchy.characterType === "discrete") {
             const charNode = node = xml.createElement("CharNode");
             const character = xml.createElement("Character");
             character.setAttribute("ref", descriptorHierarchy.id);
