@@ -40,7 +40,6 @@ function removeItem<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsBy
 	const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
 	const i = parent.children.findIndex(t => t.id === id);
 	parent.children.splice(i, 1);
-	parent.children = [...parent.children];
 	itemsByIds.delete(id);
 	return it;
 }
@@ -54,7 +53,6 @@ function moveUp<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds:
         siblings[index - 1] = siblings[index];
         siblings[index] = tmp;
     }
-	parent.children = [...siblings];
 }
 
 function moveDown<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>) {
@@ -66,7 +64,6 @@ function moveDown<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsById
         siblings[index + 1] = siblings[index];
         siblings[index] = tmp;
     }
-	parent.children = [...siblings];
 }
 
 export class Dataset {
@@ -107,6 +104,7 @@ export class Dataset {
 
 		this.presetStates.family.push({
 			id: "s-auto-" + taxon.id,
+			type: "state",
 			name: clone(taxon.name),
 			pictures: clone(taxon.pictures),
 		});
