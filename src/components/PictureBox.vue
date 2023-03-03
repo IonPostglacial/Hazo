@@ -36,7 +36,7 @@
 
 <script lang="ts">
 import { Picture } from "@/datatypes";
-import Vue, { PropType } from "vue";
+import { PropType } from "vue";
 import AddItem from "./AddItem.vue";
 import PictureFrame from "./PictureFrame.vue";
 import CollapsiblePanel from "./CollapsiblePanel.vue";

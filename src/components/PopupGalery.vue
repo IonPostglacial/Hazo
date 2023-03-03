@@ -10,7 +10,7 @@
 <script lang="ts">
 import { Picture } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import PictureGalery from "@/components/PictureGalery.vue";
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
+import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 
 
 export default {

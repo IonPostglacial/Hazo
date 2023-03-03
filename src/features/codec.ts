@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, HierarchicalItem, IMap, Picture, State, Taxon } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, HierarchicalItem, Picture, State, Taxon, IHierarchicalItem } from "@/datatypes";
 import { createCharacter, CharacterPreset } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
@@ -109,6 +109,7 @@ function encodeCharacter(dataset: Dataset, character: Character, picIds: Set<str
 function decodeState(encoded: EncodedState): State {
 	return {
 		id: encoded.id,
+		type: "state",
 		name: {
 			S: encoded.name,
 			CN: encoded.nameCN,
@@ -150,7 +151,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	};
 }
 
-function decodeHierarchicalItem(item: EncodedHierarchicalItem): HierarchicalItem {
+function decodeHierarchicalItem(item: EncodedHierarchicalItem): IHierarchicalItem {
 	return createHierarchicalItem({
 		...item,
 		name: {
@@ -197,7 +198,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 	});
 }
 
-function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, character: EncodedCharacter, states: IMap<State>): Character {
+function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, character: EncodedCharacter, states: Map<string, State>): Character {
 	const item = decodeHierarchicalItem(character);
 	const charStates = new Map<string, State>();
 	for (const stateId of character.states) {

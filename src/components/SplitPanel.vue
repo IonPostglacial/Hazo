@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts">
-
 import Split, { Instance } from 'split.js'
 
 export default {
