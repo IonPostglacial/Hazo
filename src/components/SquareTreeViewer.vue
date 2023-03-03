@@ -75,7 +75,7 @@ export default {
     computed: {
         itemsToDisplay(): Iterable<Hierarchy<SelectableItem>> {
             if (!this.currentItems) return [];
-            const shouldDisplayItem = (item: HierarchicalItem & { selected?: boolean }) => {
+            const shouldDisplayItem = (item: SelectableItem) => {
                 if (!this.editable && item.selected === false) {
                     return false;
                 }

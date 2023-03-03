@@ -299,7 +299,7 @@ export function createStore() {
         }
         (actions[action] as any).apply(self, params);
     }
-    const store = {
+    const storeData = {
         dbg: false,
         dataset: new Dataset("",
             createTaxon({ id: "t0", name: { S: "<TOP>" } }),
@@ -328,5 +328,6 @@ export function createStore() {
             }
         },
     };
-    return reactive(store) as typeof store;
+    const store = reactive(storeData) as typeof storeData;
+    return store;
 }
