@@ -16,7 +16,7 @@
                         :class="['thin-border', 'medium-padding', 'text-ellipsed', isSelected(item) ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
                     {{ item.name[field] }}
                 </div>
-                <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
+                <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item as HierarchicalItem)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </component>
         </div>
         <div v-if="floweringMode">
@@ -105,7 +105,7 @@ export default {
             return item.children.length > 0;
         },
         isFlowering(item: Hierarchy<SelectableItem>): boolean {
-            return item.type === "character" &&
+            return (item as HierarchicalItem).type === "character" &&
                     (item as Character).characterType === "discrete" &&
                     (item as DiscreteCharacter).preset === "flowering"
         },
@@ -121,7 +121,7 @@ export default {
                 this.$emit("item-selection-toggled", { item });
             }
         },
-        selectWithoutOpening(character: Hierarchy<SelectableItem>) {
+        selectWithoutOpening(character: HierarchicalItem) {
             if (character.type !== "character" || character.characterType !== "discrete") return;
             const ch = Hazo.store.dataset.character(character.id);
             let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;

@@ -12,7 +12,6 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import DropDown from "@/components/DropDown.vue";
 
 export default {

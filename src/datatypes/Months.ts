@@ -1,4 +1,5 @@
-import { State } from "./types";
+import { Hierarchy } from "./hierarchy";
+import { HierarchicalItem, SelectableItem, State } from "./types";
 
 const Months = {
     NAMES: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEV"],
@@ -28,7 +29,7 @@ const Months = {
         { id: "s_month_nov", type: "state" as "state", name: { S: "NOV" }, pictures: [], },
         { id: "s_month_dec", type: "state" as "state", name: { S: "DEC" }, pictures: [], },
     ],
-    fromStates(currentItems: State[]): number {
+    fromStates(currentItems: {id: string}[]): number {
         let flowering = 0;
         for (const item of currentItems) {
             const monthIndex = Months.floweringStates.findIndex(s => s.id === item.id);

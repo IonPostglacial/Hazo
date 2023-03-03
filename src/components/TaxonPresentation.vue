@@ -47,11 +47,12 @@
 </template>
 <script lang="ts">
 import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
-import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
+import { forEachLeaves, Hierarchy, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, State } from '@/datatypes/types';
-import Vue, { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import Flowering from "./Flowering.vue";
+import Flowering from "@/components/Flowering.vue";
+import PictureGalery from "@/components/PictureGalery.vue";
+
 
 export default {
     name: "TaxonPresentation",
@@ -114,7 +115,7 @@ export default {
         descriptions(taxon: Taxon): Description[] {
             return this.dataset.taxonDescriptions(taxon);
         },
-        monthsFromStates(states: State[]): number {
+        monthsFromStates(states: {id: string}[]): number {
             return Months.fromStates(states);
         },
     }
