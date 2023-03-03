@@ -1,4 +1,4 @@
-import { Dataset, Taxon } from "@/datatypes";
+import { Dataset } from "@/datatypes";
 
 
 export default function exportStatistics(ds: Dataset): string {

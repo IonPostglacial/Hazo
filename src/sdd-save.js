@@ -170,14 +170,13 @@ function saveSDD({ items, descriptors, extraFields }) {
     const charTreeConceptsNodes = xml.createElement("Nodes");
     characterTreeConcepts.appendChild(charTreeConceptsNodes);
 
-    (function addDescriptorHierarchyNodes (hierarchy, nodesElement, parentRef) {
-        for (const descriptorHierarchy of Object.values(hierarchy)) {
-            let node;
-            if (descriptorHierarchy.type === "concept") {
-                const descriptiveConcept = node = xml.createElement("DescriptiveConcept");
-                descriptiveConcept.setAttribute("id", descriptorHierarchy.id);
-                descriptiveConcept.appendChild(createRepresentation(xml, descriptorHierarchy));
-                descriptiveConcepts.appendChild(descriptiveConcept);
+    (function addDescriptorHierarchyNodes (descriptorHierarchy, nodesElement, parentRef?: string) {
+        let node;
+        if (descriptorHierarchy.characterType === "range") {
+            const descriptiveConcept = node = xml.createElement("DescriptiveConcept");
+            descriptiveConcept.setAttribute("id", descriptorHierarchy.id);
+            descriptiveConcept.appendChild(createRepresentation(xml, descriptorHierarchy));
+            descriptiveConcepts.appendChild(descriptiveConcept);
 
                 const descriptiveConceptElement = xml.createElement("DescriptiveConcept");
                 descriptiveConceptElement.setAttribute("ref", descriptorHierarchy.id);
@@ -209,10 +208,18 @@ function saveSDD({ items, descriptors, extraFields }) {
                 charNode.appendChild(character);
                 nodesElement.appendChild(charNode);
             }
-            if (typeof parentRef !== "undefined") {
-                const parent = xml.createElement("Parent");
-                parent.setAttribute("ref", parentRef);
-                node?.prepend(parent);
+        } else if (descriptorHierarchy.characterType === "discrete") {
+            const charNode = node = xml.createElement("CharNode");
+            const character = xml.createElement("Character");
+            character.setAttribute("ref", descriptorHierarchy.id);
+            
+            const dependencyRules = xml.createElement("DependencyRules");
+            const inapplicableIf = xml.createElement("InapplicableIf");
+            
+            for (const inapplicableState of descriptorHierarchy.inapplicableStates ?? []) {
+                const state = xml.createElement("State");
+                state.setAttribute("ref", inapplicableState.id);
+                inapplicableIf.appendChild(state);
             }
         }
     }(descriptors, charTreeNodes));

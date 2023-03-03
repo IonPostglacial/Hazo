@@ -4,12 +4,13 @@ import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { createCharacter } from "@/datatypes/Character";
 import { createTaxon } from "@/datatypes/Taxon";
-import { CharacterPreset, HierarchicalItem } from "@/datatypes/types";
+import { CharacterPreset, HierarchicalItem, IHierarchicalItem } from "@/datatypes/types";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
     return {
         id: state.id,
+        type: "state",
         name: {
             S: state.label,
             V: state.label,
@@ -45,11 +46,11 @@ function removeFromDescription(description: string, sections:Array<String>) {
     return desc;
 }
 
-function hierarchicalItemFromSdd(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): HierarchicalItem {
+function hierarchicalItemFromSdd(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): IHierarchicalItem {
     const names = representation.label.split("/");
     const name = names[0], nameCN = names[2];
     const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);
-    const data = createHierarchicalItem({ id: id, name: { S: name, CN: nameCN }, type: "", pictures: picturesFromPhotos(photos) });
+    const data = createHierarchicalItem({ id: id, name: { S: name, CN: nameCN }, pictures: picturesFromPhotos(photos) });
 
     return data;
 }

@@ -1,4 +1,4 @@
-import { HierarchicalItem, Hierarchy, Taxon } from "@/datatypes";
+import { Hierarchy, Taxon } from "@/datatypes";
 
 type Counts = {
     families: Taxon[],

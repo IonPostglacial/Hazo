@@ -1,6 +1,6 @@
 import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
 import { Character, Dataset, Field, State, Taxon } from "@/datatypes";
-import { map } from "@/tools/iter";
+
 
 interface SddStateData {
     state: sdd_State;
