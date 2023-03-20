@@ -35,13 +35,13 @@
 <script lang="ts">
 import Vue from "vue";
 import { taxonsStats } from "@/features";
-import type { Taxon, Dataset } from "@/datatypes";
+import { Taxon, Dataset, iterHierarchy } from "@/datatypes";
 
 export default {
     data() {
         const dataset = Hazo.store.dataset;
         const stats = taxonsStats(dataset.taxonsHierarchy);
-        const chars = Array.from(dataset.characters);
+        const chars = Array.from(iterHierarchy(dataset.charactersHierarchy));
         let statesCount = 0;
         let picsCount = 0;
         for (const char of chars) {
@@ -53,7 +53,7 @@ export default {
                 }
             }
         }
-        for (const taxon of dataset.taxons) {
+        for (const taxon of iterHierarchy(dataset.taxonsHierarchy)) {
             picsCount += taxon.pictures.length;
         }
         return {

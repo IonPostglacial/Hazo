@@ -68,7 +68,7 @@ import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save";
 import download from "@/tools/download";
 import { Config } from './tools/config';
-import { forEachHierarchy } from "./datatypes/hierarchy";
+import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
 import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
 
@@ -178,10 +178,10 @@ export default {
         },
         syncPictures() {
             this.urlsToSync = [];
-            for (const taxon of this.dataset.taxons) {
+            for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
                 this.urlsToSync.push(...taxon.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            for (const character of this.dataset.characters) {
+            for (const character of iterHierarchy(this.dataset.charactersHierarchy)) {
                 this.urlsToSync.push(...character.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
             for (const state of this.dataset.allStates()) {
@@ -239,10 +239,10 @@ export default {
         saveData() {
             const taxons: Record<string, Taxon> = {};
             const characters: Record<string, Character> = {};
-            for (const taxon of this.dataset.taxons) {
+            for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
                 taxons[taxon.id] = taxon;
             }
-            for (const character of this.dataset.characters) {
+            for (const character of iterHierarchy(this.dataset.charactersHierarchy)) {
                 characters[character.id] = character;
             }
             DB.store(encodeDataset(this.dataset)).then(() => {
@@ -317,12 +317,13 @@ export default {
             if (!(e.target instanceof HTMLInputElement)) return;
 
             const result = await this.fileRead((e.target.files ?? [])[0]);
+            if (result === null) { return; }
             const propertiesToMerge = (window.prompt("Properties to merge ?") ?? "").split(",");
             const resultsByName: Record<string, Taxon> = {};
-            for (const item of Object.values(result?.taxons ?? {})) {
+            for (const item of Object.values(iterHierarchy(result.taxonsHierarchy))) {
                 resultsByName[item.name] = item;
             }
-            for (const item of this.dataset.taxons) {
+            for (const item of iterHierarchy(this.dataset.taxonsHierarchy)) {
                 const newInfo: any = resultsByName[item.name.S], anyItem: any = item;
                 if (typeof newInfo !== "undefined") {
                     for (const prop of propertiesToMerge) {
@@ -364,8 +365,8 @@ export default {
             const result = await this.fileRead(file);
 
             if (result !== null) {
-                const existingTaxonsByIds = this.dataset.getTaxonsByIds();
-                for (const taxon of result.taxons) {
+                const existingTaxonsByIds = this.dataset.taxonsByIds;
+                for (const taxon of iterHierarchy(result.taxonsHierarchy)) {
                     const existing = existingTaxonsByIds.get(taxon.id);
                     if (typeof existing !== "undefined") {
                         existing.name.S = existing.name.S ?? taxon.name.S;
@@ -404,7 +405,7 @@ export default {
                 const fileReader = new FileReader();
                 fileReader.onload = () => {
                     if (typeof fileReader.result === "string") {
-                        highlightTaxonsDetails(fileReader.result, Object.fromEntries(this.dataset.getTaxonsByIds()));
+                        highlightTaxonsDetails(fileReader.result, Object.fromEntries(this.dataset.taxonsByIds));
                     }
                     resolve(null);
                 };
@@ -427,7 +428,7 @@ export default {
                                 infosByName[name] = { author, url };
                             }
                         }
-                        for (const taxon of this.dataset.taxons) {
+                        for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
                             const info = infosByName[taxon.name.S];
                             if (info) {
                                 taxon.author = info.author;

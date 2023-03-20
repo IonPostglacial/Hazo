@@ -1,11 +1,11 @@
-import { Dataset } from "@/datatypes";
+import { Dataset, iterHierarchy } from "@/datatypes";
 
 
 export default function exportStatistics(ds: Dataset): string {
     const references = [];
     const div = document.createElement("div");
     const startsWithLetter = /^[^\W\d_]+.*/;
-    for (const item of ds.taxons) {
+    for (const item of iterHierarchy(ds.taxonsHierarchy)) {
         div.innerHTML = item.detail;
         const words = div.innerText.split(/[\s\t,;:=/."'-()]/) ?? [];
         for (const word of words) {

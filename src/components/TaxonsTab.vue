@@ -32,7 +32,7 @@
                                 </div>
                             </div>
                             <div v-if="!selectingParent" class="button-group">
-                                <button type="button" v-for="parent in dataset.taxonParentChain(selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
+                                <button type="button" v-for="parent in taxonParentChain(dataset, selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
                                 <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</button>
                             </div>
                         </div>
@@ -209,14 +209,14 @@ import CKEditor from "@ckeditor/ckeditor5-vue";
 //@ts-ignore
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Dataset, Description, Hierarchy, State, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./CollapsiblePanel.vue";
 import ColumnSelector from "./ColumnSelector.vue";
 import DropDown from "./DropDownButton.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { createTexExporter, exportZipFolder, importKml } from "@/features";
-import { createTaxon, taxonHasStates } from "@/datatypes/Taxon";
+import { createTaxon, taxonHasState, taxonHasStates } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { normalizePicture } from "@/datatypes/picture";
@@ -287,7 +287,7 @@ export default {
         },
         itemDescriptorTree(): Hierarchy<SelectableItem> {
             if (typeof this.selectedTaxon !== "undefined") {
-                return this.dataset.taxonCharactersTree(this.selectedTaxon);
+                return taxonCharactersTree(this.selectedTaxon, this.dataset.charactersHierarchy);
             } else {
                 return createCharacter({ id: "c0", name: { S: '' }, detail: ""});
             }
@@ -296,11 +296,14 @@ export default {
             if (typeof this.selectedTaxon === "undefined") {
                 return [];
             } else {
-                return this.dataset.taxonDescriptions(this.selectedTaxon);
+                return taxonDescriptions(this.dataset, this.selectedTaxon);
             }
         }
     },
     methods: {
+        taxonParentChain(ds: Dataset, id: string | undefined): Taxon[] {
+            return taxonParentChain(ds, id);
+        },
         zoomColumn(col: string) {
             this.selectedColumns = ["menu", col];
         },
@@ -378,12 +381,12 @@ export default {
             const stateToAdd = isDiscreteCharacter ? (ch as DiscreteCharacter).inherentState : e.item as State;
 
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
-                const selected = !this.dataset.hasTaxonState(this.selectedTaxonId, stateToAdd);
+                const selected = !taxonHasState(this.selectedTaxon, stateToAdd);
                 this.store.do("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
         },
         openCharacter(e: { item: DiscreteCharacter }) {
-            if (e.item.inherentState && this.selectedTaxon && !this.dataset.hasTaxonState(this.selectedTaxonId, e.item.inherentState)) {
+            if (e.item.inherentState && this.selectedTaxon && ! taxonHasState(this.selectedTaxon, e.item.inherentState)) {
                 this.taxonStateToggle({ item: e.item.inherentState });
             }
         },

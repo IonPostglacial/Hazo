@@ -1,5 +1,5 @@
 import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
-import { Character, Dataset, Field, State, Taxon } from "@/datatypes";
+import { Character, Dataset, Field, iterHierarchy, State, Taxon, taxonDescriptions } from "@/datatypes";
 
 
 interface SddStateData {
@@ -65,7 +65,7 @@ function taxonToSdd(taxon: Taxon, dataset: Dataset): SddTaxonData {
 		}).join("") + (taxon.fasc != null) ? 'Flore Madagascar et Comores<br>fasc ${fasc}<br>page ${page}<br><br>' : "" + taxon.detail,
         parentId: taxon.parentId,
         childrenIds: taxon.children.map(t => t.id),
-        categoricals: [...dataset.taxonDescriptions(taxon)].map(d => ({
+        categoricals: [...taxonDescriptions(dataset, taxon)].map(d => ({
             ref: d.character.id,
             stateRefs: d.states.map(s => ({ ref: s.id }))
         })),
@@ -82,12 +82,12 @@ export function datasetToSdd(dataset: Dataset): sdd_Dataset {
 	let states: sdd_State[] = [],
 		mediaObjects: sdd_MediaObject[] = [];
 
-	for (const taxon of dataset.taxons) {
+	for (const taxon of iterHierarchy(dataset.taxonsHierarchy)) {
 		const sddData = taxonToSdd(taxon, dataset);
 		taxons.push(sddData.taxon);
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
 	}
-	for (const character of dataset.characters) {
+	for (const character of iterHierarchy(dataset.charactersHierarchy)) {
 		const sddData = characterToSdd(dataset, character, dataset.extraFields, mediaObjects);
 		characters.push(sddData.character);
 		states = states.concat(sddData.states);

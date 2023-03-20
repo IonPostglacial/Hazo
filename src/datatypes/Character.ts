@@ -27,3 +27,8 @@ export function createCharacter(init: CharacterInit): Character {
 		children: [],
 	};
 }
+
+export function characterHasState(ch: Character, state: { id: string }|undefined): boolean {
+	return typeof state !== "undefined" && ch?.characterType === "discrete" &&
+		(ch?.states.some(s => s.id === state.id) ?? false);
+}

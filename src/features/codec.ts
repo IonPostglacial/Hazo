@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, HierarchicalItem, Picture, State, Taxon, IHierarchicalItem } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, HierarchicalItem, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, taxonDescriptions } from "@/datatypes";
 import { createCharacter, CharacterPreset } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
@@ -80,7 +80,7 @@ function encodeTaxon(taxon: Taxon, dataset: Dataset, picIds: Set<string>) {
 		...encodeHierarchicalItem(taxon, picIds),
 		bookInfoByIds: taxon.bookInfoByIds,
 		specimenLocations: taxon.specimenLocations,
-		descriptions: [...dataset.taxonDescriptions(taxon)].map(d => encodeDescription(d.character, d.states)),
+		descriptions: [...taxonDescriptions(dataset, taxon)].map(d => encodeDescription(d.character, d.states)),
 		author: taxon.author,
 		vernacularName2: taxon.vernacularName2,
 		name2: taxon.name2,
@@ -143,8 +143,8 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	fixParentIds(dataset.charactersHierarchy);
 	return {
 		id: dataset.id,
-		taxons: Array.from(dataset.taxons).filter(t => t.id !== "t0").map(taxon => encodeTaxon(taxon, dataset, picIds)),
-		characters: Array.from(dataset.characters).filter(c => c.id !== "c0").map(character => encodeCharacter(dataset, character, picIds)),
+		taxons: Array.from(iterHierarchy(dataset.taxonsHierarchy)).filter(t => t.id !== "t0").map(taxon => encodeTaxon(taxon, dataset, picIds)),
+		characters: Array.from(iterHierarchy(dataset.charactersHierarchy)).filter(c => c.id !== "c0").map(character => encodeCharacter(dataset, character, picIds)),
 		states: Array.from(map(allStates.values(), s => encodeState(s, picIds))),
 		books: dataset.books,
 		extraFields: dataset.extraFields,

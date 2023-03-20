@@ -1,5 +1,5 @@
 import { standardFields } from "@/datatypes";
-import { Dataset } from "./datatypes/Dataset";
+import { Dataset, taxonDescriptions } from "./datatypes/Dataset";
 import { forEachHierarchy, Hierarchy } from "./datatypes/hierarchy";
 import { BasicInfo, Taxon } from "./datatypes/types";
 
@@ -250,7 +250,7 @@ function saveSDD(ds: Dataset): Document {
 
         const summaryData = xml.createElement("SummaryData");
 
-        for (const description of ds.taxonDescriptions(item) ?? []) {
+        for (const description of taxonDescriptions(ds, item) ?? []) {
             const categorical = xml.createElement("Categorical");
             categorical.setAttribute("ref", description.character.id);
             

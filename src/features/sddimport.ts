@@ -1,5 +1,5 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, Dataset, Field, Hierarchy, State, Taxon } from "@/datatypes";
+import { Character, Dataset, Field, Hierarchy, iterHierarchy, State, Taxon } from "@/datatypes";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { createCharacter } from "@/datatypes/Character";
@@ -143,7 +143,7 @@ export function datasetFromSdd(dataset: sdd_Dataset, extraFields: Field[]): Data
     const statesByTaxons = extractStatesByTaxons(dataset);
     const ds = new Dataset("0", createTaxon({ id: "t0", name: { S: "<TOP>" }}), createCharacter({ id: "c0", name: { S: "<TOP>" } }), [], [], statesById);
     extractTaxonsHierarchy(ds, dataset, extraFields, photosByRef);
-    for (const taxon of ds.taxons) {
+    for (const taxon of iterHierarchy(ds.taxonsHierarchy)) {
         statesByTaxons.get(taxon.id)?.forEach(stateId => {
             const state = statesById.get(stateId);
             if (typeof state !== "undefined") {
