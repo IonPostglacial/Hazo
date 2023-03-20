@@ -41,7 +41,7 @@ const editor = useEditor({
     },
 }) as ShallowRef<Editor>;
 onBeforeUnmount(() => {
-    editor.value!.destroy();
+    editor.value.destroy();
 })
 </script>
   
