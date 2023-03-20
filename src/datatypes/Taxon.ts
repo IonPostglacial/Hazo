@@ -39,8 +39,12 @@ export function createTaxon(init: TaxonInit): Taxon {
 	};
 }
 
+export function taxonHasState(taxon: Taxon, state: State) {
+	return taxon.states.some(s => s.id === state.id);
+}
+
 export function taxonHasStates(taxon: Taxon, states: State[]): boolean {
-	return states.every(s => taxon.states.some(state => state.id === s.id));
+	return states.every(s => taxonHasState(taxon, s));
 }
 
 export function taxonOrAnyChildHasStates(taxon: Taxon, states: State[]): boolean {

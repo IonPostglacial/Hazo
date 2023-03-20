@@ -1,4 +1,7 @@
 import { standardFields } from "@/datatypes";
+import { Dataset, taxonDescriptions } from "./datatypes/Dataset";
+import { forEachHierarchy, Hierarchy } from "./datatypes/hierarchy";
+import { BasicInfo, Taxon } from "./datatypes/types";
 
 function saveSDD({ items, descriptors, extraFields }) {
     const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");
@@ -252,7 +255,7 @@ function saveSDD({ items, descriptors, extraFields }) {
 
         const summaryData = xml.createElement("SummaryData");
 
-        for (const description of item.descriptions ?? []) {
+        for (const description of taxonDescriptions(ds, item) ?? []) {
             const categorical = xml.createElement("Categorical");
             categorical.setAttribute("ref", description.descriptor.id);
             

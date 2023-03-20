@@ -1,5 +1,5 @@
 import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon, cloneHierarchy, createTaxon, createCharacter } from "./datatypes";
-import { Dataset } from './datatypes/Dataset';
+import { Dataset, moveCharacterDown, moveCharacterUp } from './datatypes/Dataset';
 import { DiscreteCharacter, State } from "./datatypes/types";
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
@@ -175,16 +175,16 @@ export function createStore() {
             store.dataset.addState(payload.state, payload.character);
         },
         moveTaxonUp(taxon: Taxon) {
-            store.dataset.moveTaxonUp(taxon);
+            moveCharacterUp(store.dataset.taxonsHierarchy, store.dataset.taxonsByIds, taxon);
         },
         moveTaxonDown(taxon: Taxon) {
-            store.dataset.moveTaxonDown(taxon);
+            moveCharacterDown(store.dataset.taxonsHierarchy, store.dataset.taxonsByIds, taxon);
         },
         moveCharacterUp(character: Character) {
-            store.dataset.moveCharacterUp(character);
+            moveCharacterUp(store.dataset.charactersHierarchy, store.dataset.charactersByIds, character);
         },
         moveCharacterDown(character: Character) {
-            store.dataset.moveCharacterDown(character);
+            moveCharacterDown(store.dataset.charactersHierarchy, store.dataset.charactersByIds, character);
         },
         moveStateUp(payload: { state: State, character: DiscreteCharacter }) {
             const c = store.dataset.character(payload.character.id);

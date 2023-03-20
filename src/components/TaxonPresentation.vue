@@ -46,7 +46,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Dataset, Description, Taxon } from '@/datatypes'; // eslint-disable-line no-unused-vars
+import { Dataset, Description, Taxon, taxonDescriptions } from '@/datatypes'; // eslint-disable-line no-unused-vars
 import { forEachLeaves, Hierarchy, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, State } from '@/datatypes/types';
@@ -113,7 +113,7 @@ export default {
             return ch.characterType === "discrete" && ch.preset === "flowering";
         },
         descriptions(taxon: Taxon): Description[] {
-            return this.dataset.taxonDescriptions(taxon);
+            return taxonDescriptions(this.dataset, taxon);
         },
         monthsFromStates(states: {id: string}[]): number {
             return Months.fromStates(states);
