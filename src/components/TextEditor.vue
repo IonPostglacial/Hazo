@@ -1,5 +1,3 @@
-
-
 <template>
     <div class="vertical-flexbox">
         <div class="horizontal-flexbox background-gradient-1">
