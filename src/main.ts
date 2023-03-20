@@ -15,12 +15,14 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
         faLanguage, faCaretDown, faCaretUp, faPlus, faMinus, faPrint, 
-        faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, 
+        faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus,
+        faBold, faItalic, faUnderline,
         faCopy, faPaste, faUpload } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
     faCaretDown, faCaretUp, faLanguage, faPlus, faMinus, faPrint, 
     faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, 
+    faBold, faItalic, faUnderline,
     faCopy, faPaste, faUpload);
 
 const router = VueRouter.createRouter({

@@ -155,16 +155,15 @@
                                                 {{ selectedTaxon.bookInfoByIds[book.id].page }}
                                             </div>
                                         </label>
-                                        <ckeditor v-if="editProperties" 
-                                            :editor="editor"
-                                            v-model="selectedTaxon.bookInfoByIds[book.id].detail" :config="editorConfig">
-                                        </ckeditor>
+                                        <TextEditor v-if="editProperties"
+                                            v-model="selectedTaxon.bookInfoByIds[book.id].detail">
+                                        </TextEditor>
                                         <div v-if="!editProperties" class="limited-width medium-padding" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
                                     </div>
                                 </div>
                             </collapsible-panel>
                             <collapsible-panel label="Additional Text" id="item-detail">
-                                <ckeditor v-if="editProperties" :editor="editor" v-model="selectedTaxon.detail" :config="editorConfig"></ckeditor>
+                                <TextEditor v-if="editProperties" v-model="selectedTaxon.detail"></TextEditor>
                                 <div v-if="!editProperties" class="limited-width" v-html="selectedTaxon.detail"></div>
                             </collapsible-panel>
                         </div>
@@ -204,13 +203,10 @@ import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import SplitPanel from "./SplitPanel.vue";
 import PictureBox from "./PictureBox.vue";
-// @ts-ignore
-import CKEditor from "@ckeditor/ckeditor5-vue";
-//@ts-ignore
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { GoogleMap, Marker } from "vue3-google-map";
 import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./CollapsiblePanel.vue";
+import TextEditor from "./TextEditor.vue";
 import ColumnSelector from "./ColumnSelector.vue";
 import DropDown from "./DropDownButton.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
@@ -229,9 +225,9 @@ export default {
     name: "TaxonsTab",
     components: {
         CollapsiblePanel, DropDown, ItemPropertyField, PictureBox, SquareTreeViewer, 
-        GoogleMap, Marker, ckeditor: CKEditor.component,
+        GoogleMap, Marker,
         ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
-        ColumnSelector
+        ColumnSelector, TextEditor,
     },
     data() {
         return {
@@ -242,8 +238,6 @@ export default {
             showMap: false,
             bigImages: [{ id: "", url: "", label: "", hubUrl: "" }] as Picture[],
             editProperties: true,
-            editor: ClassicEditor,
-            editorConfig: {},
             latexProgressText: "",
             selectingParent: false,
             selectedTaxonId: this.$route.params.id as string ?? "",
