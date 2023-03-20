@@ -1,10 +1,10 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, Dataset, Field, Hierarchy, iterHierarchy, State, Taxon } from "@/datatypes";
+import { Character, Dataset, Field, iterHierarchy, State, Taxon } from "@/datatypes";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { createCharacter } from "@/datatypes/Character";
 import { createTaxon } from "@/datatypes/Taxon";
-import { CharacterPreset, HierarchicalItem, IHierarchicalItem } from "@/datatypes/types";
+import { CharacterPreset, IHierarchicalItem } from "@/datatypes/types";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
@@ -46,7 +46,7 @@ function removeFromDescription(description: string, sections:Array<String>) {
     return desc;
 }
 
-function hierarchicalItemFromSdd(id: string, representation: Representation, extraFields: Field[], photosByRef: Record<string, string>): IHierarchicalItem {
+function hierarchicalItemFromSdd(id: string, representation: Representation, photosByRef: Record<string, string>): IHierarchicalItem {
     const names = representation.label.split("/");
     const name = names[0], nameCN = names[2];
     const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);
@@ -57,7 +57,7 @@ function hierarchicalItemFromSdd(id: string, representation: Representation, ext
 
 function characterFromSdd(presetStates: Record<CharacterPreset, State[]>, character: sdd_Character, photosByRef: Record<string, string>, statesById: Map<string, State>): Character {
     return createCharacter({
-        ...hierarchicalItemFromSdd(character.id, character, [], photosByRef),
+        ...hierarchicalItemFromSdd(character.id, character, photosByRef),
         presetStates,
         detail: character.detail,
         inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById.get(s.ref)!),
@@ -84,7 +84,7 @@ function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record
     }
 
     const t = createTaxon({
-        ...hierarchicalItemFromSdd(taxon.id, taxon, extraFields, photosByRef),
+        ...hierarchicalItemFromSdd(taxon.id, taxon, photosByRef),
         author: author, fasc: fasc, page: page, detail: detail, 
         parentId: taxon.parentId,
     });

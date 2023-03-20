@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import type { Character, Dataset, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import { PropType, VueElement } from "vue"; // eslint-disable-line no-unused-vars
+import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
 
@@ -165,7 +165,7 @@ export default {
                     .attr("transform", function() {
                         return "translate(" + source.y0 + "," + source.x0 + ")";
                     })
-                    .on("dblclick", (e: any, d: any) => { if (d.data.url) vue.$router.push(d.data.url); })
+                    .on("dblclick", (_: any, d: any) => { if (d.data.url) vue.$router.push(d.data.url); })
                     .on("click", click);
 
                 // Add Circle for the nodes
@@ -270,7 +270,7 @@ export default {
                 }
 
                 // Toggle children on click.
-                function click(e: any, d: any) {
+                function click(_: any, d: any) {
                     if (d.children !== null) {
                         vue.openNodeIds = vue.openNodeIds.filter(id => id === d.data.id);
                         d._children = d.children;

@@ -11,12 +11,11 @@
         "skipLibCheck": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
         "sourceMap": true,
         "baseUrl": ".",
-        "types": [
-            "vite",
-            "jest"
-        ],
         "paths": {
             "@/*": [
                 "src/*"

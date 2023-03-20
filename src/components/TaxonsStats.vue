@@ -33,7 +33,6 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import { taxonsStats } from "@/features";
 import { Taxon, Dataset, iterHierarchy } from "@/datatypes";
 
@@ -78,7 +77,7 @@ export default {
             return family?.name.S ?? "";
         },
         selectSpeciesTable() {
-            var body = document.body, range, sel, el = this.$refs.speciestable as Node;
+            var range, sel, el = this.$refs.speciestable as Node;
             if (document.createRange && window.getSelection) {
                 range = document.createRange();
                 sel = window.getSelection();

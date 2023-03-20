@@ -63,7 +63,8 @@
 <script lang="ts">
 import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
-import DB, { getAllDictionaryEntries } from "./db-storage";
+// import * as DB from "./db-storage";
+import * as FS from "./fs-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save";
 import download from "@/tools/download";
@@ -71,6 +72,7 @@ import { Config } from './tools/config';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
 import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
+import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 
 export default {
     name: "App",
@@ -86,10 +88,8 @@ export default {
             matchingFamilies: [] as Name[],
         };
     },
-    mounted() {
-        getAllDictionaryEntries().then((entries) => {
-            this.store.do("addDictionaryEntries", entries);
-        });
+    async mounted() {
+        await migrateIndexedDbStorageToFileStorage();
         const preloadedDatasetEl = document.getElementById("preloaded-dataset");
         if (preloadedDatasetEl) {
             const preloadedDatasetText = preloadedDatasetEl.innerHTML;
@@ -99,7 +99,7 @@ export default {
                 Config.datasetRegistry = registry;
             }
             const preloadedDataset = JSON.parse(preloadedDatasetText);
-            DB.store(preloadedDataset).then(() => {
+            FS.store(preloadedDataset).then(() => {
                     this.store.do("setConnectedToHub", true);
                     this.store.do("setDataset", decodeDataset(preloadedDataset));
                     this.selectedBase = preloadedDataset.id;
@@ -120,7 +120,7 @@ export default {
                     }, 300_000);
                 }
             });
-            DB.list().then(dbIds => {
+            FS.list().then(dbIds => {
                 this.datasetIds = dbIds;
                 const dataUrl = this.$route.query.from;
                 if (typeof dataUrl === "string") {
@@ -130,7 +130,7 @@ export default {
                         if (!this.datasetIds.includes(fetchedDataset.id)) {
                             this.datasetIds.push(fetchedDataset.id);
                         }
-                        DB.store(fetchedDataset).then(() => {
+                        FS.store(fetchedDataset).then(() => {
                             this.store.do("setDataset", decodeDataset(fetchedDataset));
                             this.selectedBase = fetchedDataset.id;
                         });
@@ -220,9 +220,11 @@ export default {
             }
         },
         loadBase(id: string) {
-            DB.load(id).then(savedDataset => {
+            FS.load(id).then(savedDataset => {
                 this.resetData();
-                this.store.do("setDataset", decodeDataset(savedDataset ?? { id }));
+                const ds = decodeDataset(savedDataset ?? { id });
+                ds.id = id;
+                this.store.do("setDataset", ds);
             });
         },
         print() {
@@ -245,7 +247,10 @@ export default {
             for (const character of iterHierarchy(this.dataset.charactersHierarchy)) {
                 characters[character.id] = character;
             }
-            DB.store(encodeDataset(this.dataset)).then(() => {
+            if (!this.dataset.id) {
+                this.dataset.id = this.selectedBase;
+            }
+            FS.store(encodeDataset(this.dataset)).then(() => {
                 if (this.connectedToHub) {
                     this.push();
                 }
@@ -260,10 +265,10 @@ export default {
                     newId = "";
                 }
             }
-            DB.delete(this.dataset.id);
+            FS.remove(this.dataset.id);
             const i = this.datasetIds.indexOf(this.dataset.id);
             this.dataset.id = newId;
-            DB.store(encodeDataset(this.dataset));
+            FS.store(encodeDataset(this.dataset));
             this.datasetIds[i] = newId;
             this.selectedBase = newId;
         },
@@ -271,7 +276,7 @@ export default {
             if (typeof this.dataset !== "undefined") {
                 const i = this.datasetIds.indexOf(this.dataset.id);
                 this.datasetIds.splice(i, 1);
-                DB.delete(this.dataset.id);
+                FS.remove(this.dataset.id);
                 if (this.datasetIds.length > 0) {
                     this.selectedBase = this.datasetIds[0];
                 }
@@ -343,10 +348,10 @@ export default {
 
             if (result !== null) {
                 for (const taxon of result.taxonsHierarchy.children) {
-                    this.store.do("addTaxon", result.taxonsHierarchy);
+                    this.store.do("addTaxon", taxon);
                 }
                 for (const character of result.charactersHierarchy.children) {
-                    this.store.do("addCharacter", result.charactersHierarchy);
+                    this.store.do("addCharacter", character);
                 }
             }
         },
@@ -463,7 +468,6 @@ export default {
         displayTaxonStats() {
             let csv = new Map<string, string[]>();
             csv.set("", ["Path", "NS", "Author", "NV", "名字", "subtaxa n°"]);
-            const self = this;
             function escape(value: string|number): string {
                 if (typeof value === "string") {
                     if (value.includes(",")) {

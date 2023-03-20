@@ -48,7 +48,7 @@
 </template>
 <script lang="ts">
 import { Dataset, Description, Taxon, taxonDescriptions } from '@/datatypes'; // eslint-disable-line no-unused-vars
-import { forEachLeaves, Hierarchy, iterHierarchy } from '@/datatypes/hierarchy';
+import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, State } from '@/datatypes/types';
 import Flowering from "@/components/Flowering.vue";

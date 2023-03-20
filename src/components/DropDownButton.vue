@@ -25,7 +25,7 @@ export default {
         }
     },
     methods: {
-        handleClickOut(e: Event) {
+        handleClickOut(_: Event) {
             this.open = false;
         },
         toggleOpen() {

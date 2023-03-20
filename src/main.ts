@@ -33,7 +33,7 @@ const router = VueRouter.createRouter({
         { path: "/taxons/:id?", component: TaxonsTab },
         { path: "/print-taxons/:id?", component: TaxonPresentation },
         { path: "/characters/:id?", component: CharactersTab },
-        { path: "/characters-tree", component: CharactersTree, props: route => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
+        { path: "/characters-tree", component: CharactersTree, props: _ => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
         { path: "/dictionary", component: NamesDictionary },
     ]
 });
@@ -66,10 +66,10 @@ document.addEventListener("keydown", function(e) {
     }
 });
 
-window.addEventListener("load", function (e) {
+window.addEventListener("load", function () {
     adaptSize();
 });
-window.addEventListener("resize", debounce(200, function (e) {
+window.addEventListener("resize", debounce(200, function () {
     adaptSize();
 }));
 navigator.serviceWorker?.register("img-caching-service-worker.js", { scope: "./" });

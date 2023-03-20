@@ -162,7 +162,7 @@
                                         @add-photo="addStatePhoto(state, $event)"
                                         @set-photo="setStatePhoto(state, $event)"
                                         @delete-photo="deleteStatePhoto(state, $event)"
-                                        @open-photo="openStatePhoto(state, $event)"
+                                        @open-photo="openStatePhoto(state)"
                                         :pictures="state.pictures">
                                     </picture-box>
                                     <div class="close" @click="removeState(state)"></div>
@@ -396,7 +396,7 @@ export default {
                 this.store.do("removeStatePicture", { character: this.selectedCharacter, state: state, index: e.detail.index });
             }
         },
-        openStatePhoto(state: State, e: Event & {detail: { index: number }}) {
+        openStatePhoto(state: State) {
             this.showBigImage = true;
             this.bigImages = state.pictures;
         },
@@ -446,7 +446,7 @@ export default {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             this.store.do("removeState", { character: this.selectedCharacter!, state });
         },
-        openDescriptionPhoto(e: Event & {detail: { index: number }}) {
+        openDescriptionPhoto() {
             this.showBigImage = true;
             this.bigImages = this.selectedCharacter!.pictures;
         },
