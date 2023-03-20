@@ -39,7 +39,7 @@ const editor = useEditor({
     extensions: [Document, Paragraph, Text, Bold, Italic, Underline],
     content: props.modelValue,
     onUpdate: () => {
-        emit("update:modelValue", editor.value!.getHTML())
+        emit("update:modelValue", editor.value.getHTML())
     },
 }) as ShallowRef<Editor>;
 onBeforeUnmount(() => {
