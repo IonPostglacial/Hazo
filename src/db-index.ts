@@ -5,7 +5,7 @@ export type Language = "S" | "V" | "CN";
 export const LANGUAGES_V1: Language[] = ["S", "V", "CN"];
 export type Name = Record<Language | string, string>;
 
-function createFamilyIndexStore(db: IDBDatabase, previousVersion: number) {
+function createFamilyIndexStore(db: IDBDatabase, _previousVersion: number) {
     if (!db.objectStoreNames.contains(FAMILY_INDEX_STORE_NAME)) {
         const store = db.createObjectStore(FAMILY_INDEX_STORE_NAME, { keyPath: "id", autoIncrement: true });
         for (const langProp of LANGUAGES_V1) {

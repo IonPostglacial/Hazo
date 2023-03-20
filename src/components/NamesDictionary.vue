@@ -43,7 +43,7 @@ export default {
         },
     },
     watch: {
-        search(val) {
+        search(_) {
             this.updateFamilies();
         }
     },

@@ -1,5 +1,5 @@
-import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject, Representation } from "../sdd/datatypes";
-import { Character, Dataset, Field, iterHierarchy, State, Taxon, taxonDescriptions } from "@/datatypes";
+import type { Character as sdd_Character, Dataset as sdd_Dataset, MediaObject as sdd_MediaObject, State as sdd_State, Taxon as sdd_Taxon, MediaObject } from "../sdd/datatypes";
+import { Character, Dataset, iterHierarchy, State, Taxon, taxonDescriptions } from "@/datatypes";
 
 
 interface SddStateData {
@@ -31,7 +31,7 @@ function stateToSdd(character: Character, state: State):SddStateData {
     }
 }
 
-function characterToSdd(dataset: Dataset, character: Character, extraFields: Field[], mediaObjects: sdd_MediaObject[]): SddCharacterData {
+function characterToSdd(dataset: Dataset, character: Character): SddCharacterData {
 	const statesData = Array.from(dataset.characterStates(character)).map(s => stateToSdd(character, s));
 	const states = statesData.map(data => data.state);
 	return {
@@ -88,7 +88,7 @@ export function datasetToSdd(dataset: Dataset): sdd_Dataset {
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);
 	}
 	for (const character of iterHierarchy(dataset.charactersHierarchy)) {
-		const sddData = characterToSdd(dataset, character, dataset.extraFields, mediaObjects);
+		const sddData = characterToSdd(dataset, character);
 		characters.push(sddData.character);
 		states = states.concat(sddData.states);
 		mediaObjects = mediaObjects.concat(sddData.mediaObjects);

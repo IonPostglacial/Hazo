@@ -100,11 +100,11 @@ export function deleteDictionaryEntry(id: string) {
     }
 }
 
-async function onUpgrade(db: IDBDatabase, oldVersion: number) {
+async function onUpgrade(db: IDBDatabase, _oldVersion: number) {
     createStore(db);
 }
 
-function dbStore(dataset: EncodedDataset): Promise<void> {
+export function store(dataset: EncodedDataset): Promise<void> {
     return new Promise((resolve, reject) => {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
     
@@ -132,7 +132,7 @@ function dbStore(dataset: EncodedDataset): Promise<void> {
     });
 }
 
-function dbList(): Promise<string[]> {
+export function list(): Promise<string[]> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {
@@ -170,7 +170,7 @@ function dbList(): Promise<string[]> {
     });
 }
 
-function dbDelete(id: string) {
+export function remove(id: string) {
     const rq = indexedDB.open(DB_NAME, DB_VERSION);
     rq.onupgradeneeded = function (event) {
         onUpgrade(rq.result, event.oldVersion);
@@ -191,7 +191,7 @@ function dbDelete(id: string) {
     }
 }
 
-function dbLoad(id: string): Promise<EncodedDataset> {
+export function load(id: string): Promise<EncodedDataset> {
     return new Promise(function (resolve, reject) {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {
@@ -223,11 +223,4 @@ function dbLoad(id: string): Promise<EncodedDataset> {
             reject(rq.result);
         };
     });
-}
-
-export default {
-    store: dbStore,
-    list: dbList,
-    load: dbLoad,
-    delete: dbDelete,
 }

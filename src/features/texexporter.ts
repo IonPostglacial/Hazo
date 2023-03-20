@@ -101,7 +101,7 @@ export function createTexExporter(d: Dataset) {
             const texFolder = zip.folder("latex");
             texFolder?.file("export.tex", texFileContent);
 
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve, _reject) => {
                 let semaphore = photos.length;
 
                 const semDec = () => {
@@ -116,7 +116,7 @@ export function createTexExporter(d: Dataset) {
                     const rq = new XMLHttpRequest();
                     rq.open("GET", photo);
                     rq.responseType = "blob";
-                    rq.onload = (bytes) => {
+                    rq.onload = (_bytes) => {
                         const pictureName = pictureNameByUrl.get(photo);
 
                         if (!pictureName) return;

@@ -409,7 +409,7 @@ export default {
 
             this.store.do("removeTaxonPicture", { taxon: this.selectedTaxon, index: e.detail.index });
         },
-        openPhoto(e: Event & {detail: { index: number }}) {
+        openPhoto(_: Event & {detail: { index: number }}) {
             this.bigImages = this.selectedTaxon!.pictures;
             this.showBigImage = true;
         },
