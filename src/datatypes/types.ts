@@ -3,12 +3,6 @@ export type Book = {
     label: string;
 };
 
-export type Button = {
-    id: string;
-    for: string;
-    label: string;
-};
-
 export type Picture= {
 	id: string;
 	url: string;

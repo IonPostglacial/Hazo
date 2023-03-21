@@ -45,16 +45,17 @@
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createMenuEventHub } from "@/tools/menu-event-hub";
-import AddItem from "./AddItem.vue";
-import TreeMenuItem from "./TreeMenuItem.vue";
-import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import AddItem from "../AddItem.vue";
+import TreeMenuItem, { Button, MenuItem } from "./TreeMenuItem.vue";
+import { HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
 import { iterHierarchy } from "@/datatypes/hierarchy";
+
 
 export default {
     name: "TreeMenu",
     props: {
-        items: { type: Object as PropType<Hierarchy<HierarchicalItem>>, required: true },
+        items: { type: Object as PropType<MenuItem>, required: true },
         buttons: Array as PropType<Button[]>,
         editable: Boolean,
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
@@ -65,7 +66,7 @@ export default {
     components:  { AddItem, TreeMenuItem },
     data() {
         const initOpenItems: string[] = [];
-        const shouldBeOpen = (h: Hierarchy<HierarchicalItem>) => {
+        const shouldBeOpen = (h: MenuItem) => {
             if (h.id === this.selectedItem) {
                 return true;
             }
@@ -90,7 +91,7 @@ export default {
         columnsToDisplay(): { label: string, propertyName: string }[] {
             return this.nameFields?.filter(nameField => this.visibleColumns[nameField.propertyName]) ?? [];
         },
-        itemsToDisplay(): Iterable<Hierarchy<HierarchicalItem>> {
+        itemsToDisplay(): Iterable<MenuItem> {
             if (!this.items) return [];
             if (this.menuFilter !== "") {
                 const self = this;

@@ -39,7 +39,7 @@ import { Picture } from "@/datatypes";
 import { PropType } from "vue";
 import AddItem from "./AddItem.vue";
 import PictureFrame from "./PictureFrame.vue";
-import CollapsiblePanel from "./CollapsiblePanel.vue";
+import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import { Config } from "@/tools/config";
 import { uploadPicture } from "@/datatypes/picture";
 

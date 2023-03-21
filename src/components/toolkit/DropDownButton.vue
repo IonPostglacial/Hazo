@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import DropDown from "@/components/DropDown.vue";
+import DropDown from "@/components/toolkit/DropDown.vue";
 
 export default {
     components: { DropDown },
