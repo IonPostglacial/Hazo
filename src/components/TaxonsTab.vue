@@ -197,18 +197,18 @@
 
 <script lang="ts">
 import SquareTreeViewer from "./SquareTreeViewer.vue";
-import TreeMenu from "./TreeMenu.vue";
+import TreeMenu from "./toolkit/TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
-import SplitPanel from "./SplitPanel.vue";
+import SplitPanel from "./toolkit/SplitPanel.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
 import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import CollapsiblePanel from "./CollapsiblePanel.vue";
-import TextEditor from "./TextEditor.vue";
+import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
+import TextEditor from "./toolkit/TextEditor.vue";
 import ColumnSelector from "./ColumnSelector.vue";
-import DropDown from "./DropDownButton.vue";
+import DropDown from "./toolkit/DropDownButton.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { createTexExporter, exportZipFolder, importKml } from "@/features";

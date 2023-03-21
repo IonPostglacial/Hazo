@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import DropDown from "@/components/DropDown.vue";
+import DropDown from "@/components/toolkit/DropDown.vue";
 import { familiesWithNamesLike, Name } from "@/db-index";
 
 export default {

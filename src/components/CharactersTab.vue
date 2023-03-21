@@ -180,10 +180,10 @@
 </template>
 <script lang="ts">
 import AddItem from "./AddItem.vue";
-import TreeMenu from "./TreeMenu.vue";
+import TreeMenu from "./toolkit/TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
-import SplitPanel from "./SplitPanel.vue";
-import CollapsiblePanel from "./CollapsiblePanel.vue";
+import SplitPanel from "./toolkit/SplitPanel.vue";
+import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";

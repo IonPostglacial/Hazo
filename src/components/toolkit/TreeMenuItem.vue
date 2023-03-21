@@ -53,10 +53,24 @@
 </template>
 
 <script lang="ts">
-import { Button, HierarchicalItem, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub"; // eslint-disable-line no-unused-vars
-import AddItem from "./AddItem.vue";
+import AddItem from "../AddItem.vue";
+
+
+export type MenuItem = {
+    id: string,
+    parentId?: string,
+    type: string,
+    name: Partial<Record<string, string>>,
+    children: MenuItem[],
+};
+
+export type Button = {
+    id: string;
+    for: string;
+    label: string;
+};
 
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
@@ -65,7 +79,7 @@ export default {
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,
-        item: { type: Object as PropType<Hierarchy<HierarchicalItem> & { warning?: boolean }>, required: true },
+        item: { type: Object as PropType<MenuItem & { warning?: boolean }>, required: true },
         buttons: Array as PropType<Array<Button>>,
         fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,
         editable: Boolean,
