@@ -1,22 +1,26 @@
 <template>
-    <div class="vertical-flexbox space-between relative">
+    <VBox class="relative">
         <div v-if="editable" @click="deletePhoto" class="close white absolute-top-right"></div>
         <a @click="openPhoto" class="small-margin thin-border fill dark-background" href="#1">
             <img :src="url" :alt="picture.label">
         </a>
         <button class="background-color-1" v-if="isRemoteUrl && isConnectedToHub" @click="uploadPhoto">Retrieve Photo</button>
-        <div v-if="editable" class="horizontal-flexbox">
+        <HBox v-if="editable">
             <input :value="picture.url" @change="setPhoto" type="text" class="no-fixed-width flex-grow-1" />
-        </div>
-    </div>
+        </HBox>
+    </VBox>
 </template>
 
 <script lang="ts">
 import { PropType } from "vue";
 import { Picture, uploadPicture } from "@/datatypes";
+import HBox from "./toolkit/HBox.vue";
+import VBox from "./toolkit/VBox.vue";
+import Spacer from "./toolkit/Spacer.vue";
 
 
 export default {
+    components: { HBox, Spacer, VBox },
     props: {
         index: Number,
         editable: Boolean,

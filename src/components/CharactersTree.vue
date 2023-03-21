@@ -1,23 +1,25 @@
 <template>
     <div class="scroll" :data-c="selectedCharacter ? selectedCharacter.id : ''">
-        <div class="horizontal-flexbox space-between no-print background-gradient-1 stick-to-top">
-            <div class="horizontal-flexbox">
+        <HBox class="no-print background-gradient-1 stick-to-top">
+            <HBox>
                 <label for="lang-selector" title="language">
                     <font-awesome-icon icon="fa-solid fa-language" size="2x" />
                 </label>
                 <select name="lang" id="lang-selector" v-model="lang">
                     <option v-for="(language, index) in languageList" :key="language.name" :value="index">{{ language.name }}</option>
                 </select>
-            </div>
+            </HBox>
+            <Spacer></Spacer>
             <div class="button-group">
                 <button @click="downloadSvg">Download as SVG</button>
                 <button @click="exportMarkdown">Export to Markdown</button>
             </div>
+            <Spacer></Spacer>
             <div class="button-group">
                 <button @click="magnify" title="zoom in"><font-awesome-icon icon="fa-solid fa-magnifying-glass-plus" /></button>
                 <button @click="minify" title="zoom out"><font-awesome-icon icon="fa-solid fa-magnifying-glass-minus" /></button>
             </div>
-        </div>
+        </HBox>
         <div ref="interactive-tree">
         </div>
     </div>
@@ -25,6 +27,8 @@
 
 <script lang="ts">
 import type { Character, Dataset, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import HBox from "./toolkit/HBox.vue";
+import Spacer from "./toolkit/Spacer.vue";
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
@@ -44,6 +48,7 @@ function hierarchyToMarkdown(data: D3Hierarchy, indentation=-1): string {
 
 export default {
     name: "CharactersTree",
+    components: { HBox, Spacer },
     props: {
         selectedCharacter: Object as PropType<Character|undefined>,
     },

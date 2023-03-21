@@ -8,7 +8,7 @@
             @open-photo="openPhoto"
             @set-photo="setPhoto">
         </picture-frame>
-        <div class="horizontal-flexbox space-between relative">
+        <HBox class="relative">
             <div class="button-group">
                 <button type="button" @click="previousPicture">
                     <font-awesome-icon icon="fa-solid fa-arrow-left" />
@@ -30,13 +30,15 @@
                 </div>
             </div>
             <add-item @add-item="addPicture" :value="addPictureUrl" class="flex-grow-1"></add-item>
-        </div>
+        </HBox>
     </collapsible-panel>
 </template>
 
 <script lang="ts">
 import { Picture } from "@/datatypes";
 import { PropType } from "vue";
+import HBox from "./toolkit/HBox.vue";
+import Spacer from "./toolkit/Spacer.vue";
 import AddItem from "./AddItem.vue";
 import PictureFrame from "./PictureFrame.vue";
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
@@ -44,7 +46,7 @@ import { Config } from "@/tools/config";
 import { uploadPicture } from "@/datatypes/picture";
 
 export default {
-  components: { AddItem, CollapsiblePanel, PictureFrame },
+  components: { AddItem, CollapsiblePanel, HBox, PictureFrame, Spacer },
     props: {
         editable: Boolean,
         pictures: Array as PropType<Picture[]|undefined>

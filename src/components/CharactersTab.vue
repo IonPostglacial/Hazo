@@ -13,8 +13,8 @@
         <SplitArea :size="33" class="flex-grow-1">
             <div class="scroll flex-grow-1">
                 <popup-galery v-if="!printMode" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
-                <section class="scroll vertical-flexbox flex-grow-1">
-                    <div class="horizontal-flexbox stick-to-top medium-padding thin-border background-gradient-1 no-print">
+                <VBox class="scroll flex-grow-1">
+                    <HBox class="stick-to-top medium-padding thin-border background-gradient-1 no-print">
                         <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
                         <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">Print</button>
                         <div class="button-group">
@@ -23,7 +23,7 @@
                             <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyStates">Copy States</button>
                             <button type="button" @click="pasteStates">Paste States</button>
                         </div>
-                    </div>
+                    </HBox>
                     <div v-if="(typeof selectedCharacter !== 'undefined' && printMode)" class="white-background">
                         <characters-presentation
                             :dataset="dataset"
@@ -79,7 +79,7 @@
                         </div>
                     </collapsible-panel>
                     <collapsible-panel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
-                        <div class="horizontal-flexbox">
+                        <HBox>
                             <section v-if="isDiscreteCharacter" class="medium-margin medium-padding thin-border flex-grow-1">
                                 <label>Inherent State</label>
                                 <ul class="indented no-list-style">
@@ -113,13 +113,13 @@
                                     </li>
                                 </ul>
                             </section>
-                        </div>
+                        </HBox>
                     </collapsible-panel>
-                </section>
+                </VBox>
             </div>
         </SplitArea>
         <SplitArea :size="33">
-            <section v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="scroll relative horizontal-flexbox">
+            <HBox v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="scroll relative">
                 <collapsible-panel label="States">
                     <div class="scroll medium-padding white-background">
                         <label v-if="maybeInherentState">
@@ -137,7 +137,7 @@
                         <button class="background-color-1" @click="exportStates">Copy</button>
                         <ul class="no-list-style medium-padding medium-margin">
                             <li v-for="state in statesToDisplay" :key="state.id" class="horizontal-flexbox">
-                                <div class="vertical-flexbox thin-border">
+                                <VBox class="thin-border">
                                     <div @click="moveStateUp(state)" class="move-up">🡡</div>
                                     <div @click="moveStateDown(state)" class="move-down">🡣</div>
                                     <label for="allow">
@@ -146,7 +146,7 @@
                                     <label for="deny">
                                         D<input name="deny" type="checkbox" @input="denyState(state)" :checked="stateInDenyList(state)">
                                     </label>
-                                </div>
+                                </VBox>
                                 <label class="medium-padding rounded nowrap horizontal-flexbox">
                                     <div class="form-grid">
                                         <div>FR</div><input type="text" class="flex-grow-1" v-model="state.name.S" />
@@ -174,12 +174,14 @@
                         </ul>
                     </div>
                 </collapsible-panel>
-            </section>
+            </HBox>
         </SplitArea>
     </Split>
 </template>
 <script lang="ts">
 import AddItem from "./AddItem.vue";
+import HBox from "./toolkit/HBox.vue";
+import VBox from "./toolkit/VBox.vue";
 import TreeMenu from "./toolkit/TreeMenu.vue";
 import CharactersTree from "./CharactersTree.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
@@ -194,7 +196,7 @@ import { normalizePicture } from "@/datatypes/picture";
 
 export default {
     name: "CharactersTab",
-    components: { AddItem, CollapsiblePanel, Flowering, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel },
+    components: { AddItem, CollapsiblePanel, Flowering, HBox, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel, VBox },
     data() {
         return {
             store: Hazo.store,

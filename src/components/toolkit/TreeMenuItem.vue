@@ -1,24 +1,24 @@
 <template>
     <li class="blue-hover-line">
-        <div class="medium-height horizontal-flexbox center-items">
+        <HBox class="medium-height center-items">
             <div class="indent">&nbsp;</div>
-            <label v-on:click="toggleOpen" :class="['small-square', 'blue-circle-hover', 'thin-margin', 'vertical-flexbox', 'flex-centered', { 'visibility-hidden': !hasArrows }]">
+            <VBox v-on:click="toggleOpen" :class="['small-square', 'blue-circle-hover', 'thin-margin', 'flex-centered', { 'visibility-hidden': !hasArrows }]">
                 <div v-if="open" class="bottom-arrow">&nbsp;</div>
                 <div v-if="!open" class="left-arrow">&nbsp;</div>
-            </label>
-            <div class="horizontal-flexbox flex-centered unselectable">{{ prettyId }}</div>
-        </div>
-        <div v-for="nameField in fieldNames" :key="nameField.propertyName"
-                :class="['medium-height', 'medium-line-height', 'flex-grow-1', 'horizontal-flexbox', 'center-items', 'cell', { 'background-color-1': selected }]">
-            <div class="horizontal-flexbox center-items flex-grow-1">
+            </VBox>
+            <HBox class="flex-centered unselectable">{{ prettyId }}</HBox>
+        </HBox>
+        <HBox v-for="nameField in fieldNames" :key="nameField.propertyName"
+                :class="['medium-height', 'medium-line-height', 'flex-grow-1', 'center-items', 'cell', { 'background-color-1': selected }]">
+            <HBox class="center-items flex-grow-1">
                 <label class="horizontal-flexbox flex-grow-1 unselectable" v-on:click="select">
                     <slot v-bind:item="{id: item.id, name: itemName(nameField.propertyName) }">
                         <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName(nameField.propertyName) }}</div>
                     </slot>
                 </label>
-            </div>
-        </div>
-        <div v-if="editable" class="medium-height horizontal-flexbox flex-centered">
+            </HBox>
+        </HBox>
+        <HBox v-if="editable" class="medium-height flex-centered">
             <button class="background-color-1" v-for="button in itemButtons" :key="button.id" v-on:click="buttonClicked(button.id)">{{ button.label }}</button>
             <div @click="moveUp" class="move-up">
                 <font-awesome-icon icon="fa-solid fa-arrow-up" />
@@ -27,7 +27,7 @@
                 <font-awesome-icon icon="fa-solid fa-arrow-down" />
             </div>
             <div class="close" @click="deleteItem"></div>
-        </div>
+        </HBox>
         <ul v-if="open">
             <TreeMenuItem v-for="(child, index) in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                 :init-open="initOpen"
@@ -56,6 +56,8 @@
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub"; // eslint-disable-line no-unused-vars
 import AddItem from "../AddItem.vue";
+import HBox from "./HBox.vue";
+import VBox from "./VBox.vue";
 
 
 export type MenuItem = {
@@ -75,7 +77,7 @@ export type Button = {
 const knownPrefixes = ["t", "myt-", "c", "s", "d", "myd-"];
 
 export default {
-    components: { AddItem },
+    components: { AddItem, HBox, VBox },
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,

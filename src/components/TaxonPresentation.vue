@@ -1,19 +1,21 @@
 <template>
     <div class="scroll flex-grow-1">
-        <div class="horizontal-flexbox no-print">
+        <HBox class="no-print">
             <router-link class="button" :to="'/taxons/' + selectedTaxonId">Back to Taxon</router-link>
             <select v-model="lang">
                 <option value="S">Scientific</option>
                 <option value="CN">Chinese</option>
             </select>
              <button type="button" class="background-color-1" @click="print">Print</button>
-        </div>
+        </HBox>
         <article style="max-width: 100ch" class="centered white-background medium-padding">
             <section v-for="taxon in itemsToDisplay" :key="taxon.id" class="page-break">
-                <h2 class="horizontal-flexbox space-between">
+                <h2 class="horizontal-flexbox">
                     <div><i>{{ taxon.name.S }}</i> {{ taxon.author }}</div>
-                    <div v-if="taxon.children.length !== 0">subtaxa: {{ taxon.children.length }}</div></h2>
-                <div class="horizontal-flexbox">
+                    <Spacer></Spacer>
+                    <div v-if="taxon.children.length !== 0">subtaxa: {{ taxon.children.length }}</div>
+                </h2>
+                <HBox>
                     <div class="flex-grow-1">
                         <div>
                             <div>Synonymous <span>{{ taxon.name2 }}</span></div>
@@ -22,25 +24,25 @@
                             <div>NV 2 <span>{{ taxon.vernacularName2 }}</span></div>
                             <div style="max-width: 50ch" class="text-ellipsed">Website <a target="_blank" :href="taxon.website">{{ taxon.website }}</a></div>
                         </div>
-                        <section v-for="description in descriptions(taxon)" :key="description.character.id" class="horizontal-flexbox limited-width">
-                            <div class="horizontal-flexbox small-height">
-                                <div v-for="state in description.states" :key="'img-' + state.id" class="horizontal-flexbox">
+                        <HBox v-for="description in descriptions(taxon)" :key="description.character.id" class="limited-width">
+                            <HBox class="small-height">
+                                <HBox v-for="state in description.states" :key="'img-' + state.id">
                                     <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
-                                </div>
-                            </div>
+                                </HBox>
+                            </HBox>
                             <flowering v-if="isFlowering(description)" :model-value="monthsFromStates(description.states)">
                             </flowering>
-                            <div v-if="!isFlowering(description)" class="horizontal-flexbox">
+                            <HBox v-if="!isFlowering(description)">
                                 <div>{{ charName(description.character) }}<span class="spaced">:</span></div>
                                 <div v-for="(state, index) in description.states" :key="state.id">
                                     <span v-if="index > 0" class="spaced">/</span> {{ stateName(state) }}
                                 </div>
-                            </div>
-                        </section>
+                            </HBox>
+                        </HBox>
                     </div>
                     <PictureGalery :images="taxon.pictures" class="medium-max-width medium-max-height fit-contain">
                     </PictureGalery>
-                </div>
+                </HBox>
                 <hr class="no-print">
             </section>
         </article>
@@ -53,11 +55,13 @@ import Months from '@/datatypes/Months';
 import { Character, State } from '@/datatypes/types';
 import Flowering from "@/components/Flowering.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
+import HBox from './toolkit/HBox.vue';
+import Spacer from './toolkit/Spacer.vue';
 
 
 export default {
     name: "TaxonPresentation",
-    components: { Flowering, PictureGalery },
+    components: { Flowering, HBox, PictureGalery, Spacer },
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,

@@ -1,8 +1,8 @@
 <template>
     <div v-if="showFields" class="absolute over-everything full-width medium-margin thin-border white-background vertical-flexbox">
-        <header class="horizontal-flexbox medium-padding background-gradient-1 thin-border">
+        <HBox class="medium-padding background-gradient-1 thin-border">
             <div class="nowrap no-vertical-overflow flex-grow-1">Extra Fields</div><div class="close" @click="close"></div>
-        </header>
+        </HBox>
         <ul class="vertical-flexbox medium-padding scroll">
             <li v-for="field in extraFields" :key="field.id" class="horizontal-flexbox">
                 <label class="nowrap">
@@ -27,10 +27,11 @@
 <script lang="ts">
 import { PropType } from "vue";
 import AddItem from "./AddItem.vue";
+import HBox from "./toolkit/HBox.vue";
 import { Field } from "@/datatypes";
 
 export default {
-    components: { AddItem },
+    components: { AddItem, HBox },
     props: { showFields: Boolean, extraFields: Array as PropType<Field[]> },
     data() {
         return {
