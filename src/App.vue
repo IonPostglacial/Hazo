@@ -1,5 +1,5 @@
 <template>
-    <div id="app" class="lightgrey-background height-full">
+    <VBox class="lightgrey-background height-full">
         <HBox class="thin-border background-gradient-1 no-print centered-text">
             <div class="button-group">
                 <button v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
@@ -61,7 +61,7 @@
                 <button type="button" class="no-print background-color-1" @click="print">Print</button>
             </div>
         </HBox>
-    </div>
+    </VBox>
 </template>
 
 <script lang="ts">
@@ -78,11 +78,12 @@ import { State } from "./datatypes/types";
 import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import HBox from "@/components/toolkit/HBox.vue";
+import VBox from "@/components/toolkit/VBox.vue";
 import Spacer from "@/components/toolkit/Spacer.vue";
 
 export default {
     name: "App",
-    components: { HBox, Spacer },
+    components: { HBox, Spacer, VBox },
     data() {
         return {
             store: Hazo.store,
