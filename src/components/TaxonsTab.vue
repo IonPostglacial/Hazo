@@ -10,15 +10,23 @@
             </tree-menu>
         </SplitArea>
         <SplitArea :size="rightPaneSize">
-            <div class="horizontal-flexbox scroll flex-grow-1">
+            <HBox class="scroll flex-grow-1">
                 <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
                 <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
-                <div class="vertical-flexbox flex-grow-1">
-                    <div class="horizontal-flexbox space-between no-print medium-padding thin-border">
-                        <div class="horizontal-flexbox">
+                <VBox class="flex-grow-1">
+                    <HBox class="no-print medium-padding thin-border">
+                        <HBox>
                             <router-link class="button" :to="'/print-taxons/' + selectedTaxonId" title="print">
                                 <font-awesome-icon icon="fa-solid fa-print" />
                             </router-link>
+                        </HBox>
+                        <div class="button-group">
+                            <button title="copy" v-if="(typeof selectedTaxon !== 'undefined')" type="button" @click="copyItem">
+                                <font-awesome-icon icon="fa-solid fa-copy" />
+                            </button>
+                            <button title="paste" type="button" @click="pasteItem">
+                                <font-awesome-icon icon="fa-solid fa-paste" />
+                            </button>
                         </div>
                         <div v-if="selectedTaxon" class="relative">
                             <div v-if="selectingParent">
@@ -36,17 +44,10 @@
                                 <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</button>
                             </div>
                         </div>
-                        <div class="button-group">
-                            <button title="copy" v-if="(typeof selectedTaxon !== 'undefined')" type="button" @click="copyItem">
-                                <font-awesome-icon icon="fa-solid fa-copy" />
-                            </button>
-                            <button title="paste" type="button" @click="pasteItem">
-                                <font-awesome-icon icon="fa-solid fa-paste" />
-                            </button>
-                        </div>
+                        <Spacer></Spacer>
                         <div class="button-group">
                             <drop-down label="Columns">
-                                <div class="vertical-flexbox">
+                                <VBox>
                                     <column-selector name="Left Menu" 
                                         value="menu" :magnifyable="false"
                                         :selected="selectedColumns.includes('menu')"
@@ -67,20 +68,20 @@
                                         :selected="selectedColumns.includes('summary')"
                                         @zoom-column="zoomColumn" @add-column="addColumn"
                                         @remove-column="removeColumn"  />
-                                </div>
+                                </VBox>
                             </drop-down>
                             <drop-down label="Export">
-                                <div class="vertical-flexbox">
+                                <VBox>
                                     <label class="button" for="importKml">KML</label>
                                     <button type="button" @click="emptyZip">Folders</button>
                                     <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
                                     <router-link class="button" to="/taxons-stats">Stats</router-link>
-                                </div>
+                                </VBox>
                             </drop-down>
                             <button type="button" @click="showFields = !showFields">Extra Fields</button>
                         </div>
                         <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
-                    </div>
+                    </HBox>
                     <GoogleMap v-if="selectedTaxon && showMap"
                             api-key="AIzaSyClYri6lQql5nQkCwktcq2DJsjBDpmP_nU"
                             id="mapid"
@@ -93,7 +94,7 @@
                         />
                     </GoogleMap>
                     <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
-                        <div v-if="selectedColumns.includes('props')" :class="['vertical-flexbox', 'scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
+                        <VBox v-if="selectedColumns.includes('props')" :class="['scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
                             <picture-box :editable="editProperties"
                                 @open-photo="openPhoto"
                                 @add-photo="addItemPhoto"
@@ -166,15 +167,15 @@
                                 <TextEditor v-if="editProperties" v-model="selectedTaxon.detail"></TextEditor>
                                 <div v-if="!editProperties" class="limited-width" v-html="selectedTaxon.detail"></div>
                             </collapsible-panel>
-                        </div>
-                        <div v-if="selectedColumns.includes('desc')" class="vertical-flexbox scroll flex-grow-1">
+                        </VBox>
+                        <VBox v-if="selectedColumns.includes('desc')" class="scroll flex-grow-1">
                             <section class="white-background medium-padding medium-margin thin-border">
                                 <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
                             </section>
                             <collapsible-panel label="Description">
                                 <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="true" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                             </collapsible-panel>
-                        </div>
+                        </VBox>
                         <collapsible-panel v-if="selectedColumns.includes('summary')" class="scroll" label="Description">
                             <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                             <ul>
@@ -189,8 +190,8 @@
                             </ul>
                         </collapsible-panel>
                     </split-panel>
-                </div>
-            </div>
+                </VBox>
+            </HBox>
         </SplitArea>
     </Split>
 </template>
@@ -207,8 +208,11 @@ import { GoogleMap, Marker } from "vue3-google-map";
 import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
-import ColumnSelector from "./ColumnSelector.vue";
 import DropDown from "./toolkit/DropDownButton.vue";
+import HBox from "./toolkit/HBox.vue";
+import VBox from "./toolkit/VBox.vue";
+import Spacer from "./toolkit/Spacer.vue";
+import ColumnSelector from "./ColumnSelector.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { createTexExporter, exportZipFolder, importKml } from "@/features";
@@ -224,7 +228,7 @@ import { DiscreteCharacter, Field, Picture, SelectableItem } from "@/datatypes/t
 export default {
     name: "TaxonsTab",
     components: {
-        CollapsiblePanel, DropDown, ItemPropertyField, PictureBox, SquareTreeViewer, 
+        CollapsiblePanel, DropDown, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
         GoogleMap, Marker,
         ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
         ColumnSelector, TextEditor,

@@ -1,10 +1,10 @@
 <template>
-    <div class="horizontal-flexbox">
-        <div class="relative inline-block">
+    <HBox>
+        <div class="relative inline-block flex-grow-1">
             <input type="text" v-if="!multiline" v-model="text" @keydown.enter="addSingleItem"
                 @keydown.up="selectPreviousCompletion"
                 @keydown.down="selectNextCompletion"
-                class="flex-grow-1" placeholder="Add an item" />
+                class="full-width" placeholder="Add an item" />
             <drop-down v-if="autocomplete && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
                 <div class="grid-3">
                     <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents">
@@ -20,15 +20,16 @@
         </textarea>
         <button @click="multiline = !multiline" title="Activate multiline mode">¶</button>
         <button @click="add" title="Add an item" class="background-color-1">Add</button>
-    </div>
+    </HBox>
 </template>
 
 <script lang="ts">
 import DropDown from "@/components/toolkit/DropDown.vue";
+import HBox from "@/components/toolkit/HBox.vue";
 import { familiesWithNamesLike, Name } from "@/db-index";
 
 export default {
-  components: { DropDown },
+  components: { DropDown, HBox },
     props: {
         value: String,
         autocomplete: Boolean,

@@ -1,24 +1,25 @@
 <template>
-    <div class="vertical-flexbox">
-        <div class="vertical-flexbox stick-to-top white-background thin-border">
-            <div class="thin-margin horizontal-flexbox space-between center-items">
+    <VBox>
+        <VBox class="stick-to-top white-background thin-border">
+            <HBox class="thin-margin center-items">
                 <input class="flex-grow-1" type="search" @input="updateSearchFilter" :value="visibleFilter" placeholder="Filter" />
-                <div class="horizontal-flexbox button-group">
+                <Spacer></Spacer>
+                <HBox class="button-group">
                     <button type="button" v-on:click="openAll">
                         <font-awesome-icon icon="fa-solid fa-plus" />
                     </button>
                     <button type="button" v-on:click="closeAll">
                         <font-awesome-icon icon="fa-solid fa-minus" />
                     </button>
-                </div>
-            </div>
-            <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox space-between button-group">
+                </HBox>
+            </HBox>
+            <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox button-group">
                 <button @click="$emit('unselected')" title="unselect">0</button>
                 <li v-for="nameField in nameFields" :key="nameField.propertyName" :class="['flex-grow-1', 'button', 'no-list-style', { 'background-color-1': visibleColumns[nameField.propertyName] }]" @click="toggleColumnVisibility(nameField.propertyName)">
                     {{ nameField.label }}
                 </li>
             </ul>
-        </div>
+        </VBox>
         <ul :class="['menu', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
             <TreeMenuItem v-for="(item, index) in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
                 :item="item"
@@ -39,7 +40,7 @@
         </ul>
         <div class="flex-grow-1">&nbsp;</div>
         <add-item v-if="editable" :autocomplete="autocomplete" @add-item="addItem({ value: $event.detail })"></add-item>
-    </div> 
+    </VBox> 
 </template>
 
 <script lang="ts">
@@ -47,6 +48,9 @@ import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createMenuEventHub } from "@/tools/menu-event-hub";
 import AddItem from "../AddItem.vue";
 import TreeMenuItem, { Button, MenuItem } from "./TreeMenuItem.vue";
+import HBox from "./HBox.vue";
+import VBox from "./VBox.vue";
+import Spacer from "./Spacer.vue";
 import { HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
 import { iterHierarchy } from "@/datatypes/hierarchy";
@@ -63,7 +67,7 @@ export default {
         initOpen: Boolean,
         autocomplete: Boolean,
     },
-    components:  { AddItem, TreeMenuItem },
+    components:  { AddItem, HBox, Spacer, TreeMenuItem, VBox },
     data() {
         const initOpenItems: string[] = [];
         const shouldBeOpen = (h: MenuItem) => {

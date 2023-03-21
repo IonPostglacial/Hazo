@@ -1,6 +1,6 @@
 <template>
-    <div class="vertical-flexbox">
-        <div class="horizontal-flexbox background-gradient-1">
+    <VBox>
+        <HBox class="background-gradient-1">
             <button @click="editor.chain().focus().toggleBold().run()" >
                 <font-awesome-icon icon="fa-solid fa-bold" />
             </button>
@@ -10,9 +10,9 @@
             <button @click="editor.chain().focus().toggleUnderline().run()">
                 <font-awesome-icon icon="fa-solid fa-underline" />
             </button>
-        </div>
+        </HBox>
         <editor-content :editor="editor" />
-    </div>
+    </VBox>
 </template>
 
 <script setup lang="ts">
@@ -23,6 +23,8 @@ import Italic from "@tiptap/extension-italic";
 import Underline from "@tiptap/extension-underline";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
+import HBox from "./HBox.vue";
+import VBox from "./VBox.vue";
 import { onBeforeUnmount, ShallowRef } from "vue";
 
 const props = defineProps({

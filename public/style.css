@@ -113,18 +113,6 @@ button:disabled .svg-inline--fa {
     height: 100%;
 }
 
-.float-left {
-    float: left;
-}
-
-.float-right {
-    float: right;
-}
-
-.clear {
-    clear: both;
-}
-
 select {
     appearance: none;
     background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
@@ -158,10 +146,6 @@ ul {
     object-fit: cover;
     width: 150px;
     height: 120px;
-}
-
-.no-shrink {
-    flex-shrink: 0;
 }
 
 input[type="search"],
@@ -221,10 +205,6 @@ input[type="text"].no-fixed-width {
 
 .height-main-panel {
     height: calc(100% - 84px);
-}
-
-.ck.ck-editor {
-    max-width: 800px;
 }
 
 .max-width-screen {
@@ -431,16 +411,8 @@ div.invisible {
 	border: 1px solid #ddd;
 }
 
-.thin-border-left {
-    border-left: 1px solid #ccc;
-}
-
 .flex-grow-1 {
     flex-grow: 1;
-}
-
-.flex-grow-2 {
-    flex-grow: 2;
 }
 
 .flex-wrap {
@@ -459,14 +431,6 @@ div.invisible {
 .text-ellipsed {
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.hide-next-unchecked + * {
-    display: none;
-}
-
-.hide-next-unchecked:checked + * {
-    display: initial;
 }
 
 .small-square {
@@ -538,11 +502,6 @@ div.invisible {
     text-align: center;
 }
 
-.fixed-right {
-    position: fixed;
-    right: 0;
-}
-
 .absolute {
     position: absolute;
 }
@@ -588,16 +547,8 @@ div.invisible {
     align-content: stretch;
 }
 
-.stretch-items {
-    align-items: stretch;
-}
-
 .center-items {
     align-items: center;
-}
-
-.space-between {
-    justify-content: space-between;
 }
 
 .horizontal-flexbox {
@@ -610,10 +561,6 @@ div.invisible {
     font-size: 28px;
 }
 
-.min-width-small {
-    min-width: 32px;
-}
-
 .cented-aligned {
     justify-content: center;
     align-items: center;    
@@ -621,11 +568,6 @@ div.invisible {
 
 .text-underlined {
     text-decoration: underline;
-}
-
-.start-aligned {
-    justify-content: flex-start;
-    align-items: flex-start;
 }
 
 .wrap-flexbox {
@@ -667,25 +609,9 @@ div.invisible {
     border-radius: 100%;
 }
 
-.content {
-    padding: 8px;
-}
-
-.width-1-3 {
-    width: 33%;
-}
-
-.selector {
-    display: inline-block;
-}
-
 .flex-centered {
     align-items: center;
     justify-content: center;
-}
-
-.indentation-width {
-    width: 42px;
 }
 
 .indented {

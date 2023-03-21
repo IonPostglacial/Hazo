@@ -1,7 +1,7 @@
 <template>
-    <div id="app" class="vertical-flexbox lightgrey-background height-full">
-        <nav class="thin-border background-gradient-1 no-print centered-text">
-            <div class="inline-block float-left">
+    <div id="app" class="lightgrey-background height-full">
+        <HBox class="thin-border background-gradient-1 no-print centered-text">
+            <div class="button-group">
                 <button v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
                     {{ state.name.S }}
                 </button>
@@ -9,13 +9,15 @@
                     {{ state.name.S }}
                 </button>
             </div>
-            <div class="button-group inline-block">
+            <Spacer></Spacer>
+            <div class="button-group">
                 <router-link class="button" :to="'/taxons/' + store.selectedTaxon">Taxons</router-link>
                 <router-link class="button" :to="'/characters/' + store.selectedCharacter">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
                 <router-link class="button" to="/dictionary">Names Dictionary</router-link>
             </div>
-            <div class="button-group inline-block float-right">
+            <Spacer></Spacer>
+            <div class="button-group">
                 <button type="button" @click="openHub">Hub
                     <span v-if="connectedToHub"> (Connected)</span>
                     <span v-if="!connectedToHub"> (Disconnected)</span>
@@ -27,17 +29,18 @@
                 <button v-if="connectedToHub" type="button" @click="push">Push</button>
                 <button v-if="connectedToHub" type="button" @click="pull">Pull</button>
             </div>
-        </nav>
-        <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
+        </HBox>
+        <HBox class="start-align flex-grow-1 height-main-panel">
             <router-view></router-view>
-        </div>
-        <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
+        </HBox>
+        <HBox class="thin-border background-gradient-1 no-print">
             <div class="button-group">
                 <button type="button" @click="importFile">Import</button>
                 <button type="button" @click="mergeFile">Merge</button>
                 <button type="button" @click="jsonExport">Export</button>
                 <button type="button" @click="exportSDD">Export SDD</button>
             </div>
+            <Spacer></Spacer>
             <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
             <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
             <div class="button-group">
@@ -50,13 +53,14 @@
                 <button v-if="!preloaded" type="button" class="background-color-1" @click="createNewDataset">New DB</button>
                 <button type="button" class="background-color-ko" @click="resetData">Reset</button>
             </div>
+            <Spacer></Spacer>
             <div class="button-group">
                 <button @click="indexFamilies">Index Families</button>
                 <button type="button" @click="globalReplace">Replace Text</button>
                 <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
                 <button type="button" class="no-print background-color-1" @click="print">Print</button>
             </div>
-        </section>
+        </HBox>
     </div>
 </template>
 
@@ -73,9 +77,12 @@ import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
 import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
+import HBox from "@/components/toolkit/HBox.vue";
+import Spacer from "@/components/toolkit/Spacer.vue";
 
 export default {
     name: "App",
+    components: { HBox, Spacer },
     data() {
         return {
             store: Hazo.store,

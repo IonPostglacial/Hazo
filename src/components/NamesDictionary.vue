@@ -1,15 +1,15 @@
 <template>
-    <div class="vertical-flexbox white-background thin-border medium-padding min-width-m centered scroll">
-        <div class="vertical-flexbox stick-to-top white-background full-width">
-            <div class="horizontal-flexbox centered">
+    <VBox class="white-background thin-border medium-padding min-width-m centered scroll">
+        <VBox class="stick-to-top white-background full-width">
+            <HBox class="centered">
                 <select v-model="lang">
                     <option value="S">NS</option>
                     <option value="V">NV</option>
                     <option value="CN">中文名</option>
                 </select>
                 <input type="search" v-model="search" />
-            </div>
-        </div>
+            </HBox>
+        </VBox>
         <table>
             <tr>
                 <th v-for="lang in languages" :key="lang">{{ lang }}</th><th></th>
@@ -18,13 +18,16 @@
                 <td v-for="lang in languages" :key="lang">{{ entry[lang] }}</td><td><div class="close" @click="deleteEntry(entry.id)"></div></td>
             </tr>
         </table>
-    </div>
+    </VBox>
 </template>
 
 <script lang="ts">
+import HBox from "./toolkit/HBox.vue";
+import VBox from "./toolkit/VBox.vue";
 import { familiesWithNamesLike, Name, Language, LANGUAGES_V1, deleteFamily } from "@/db-index";
 
 export default {
+    components: { HBox, VBox },
     data() {
         return {
             languages: LANGUAGES_V1,

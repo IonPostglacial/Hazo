@@ -1,5 +1,5 @@
 <template>
-    <div class="horizontal-flexbox flex-centered">
+    <HBox class="flex-centered">
         <div :class="['min-width-s', { 'selected-column': selected }]">{{name}}</div>
         <div class="button-group">
             <button @click="zoom" :disabled="!magnifyable">
@@ -12,11 +12,14 @@
                 <font-awesome-icon icon="fa-solid fa-minus" />
             </button>
         </div>
-    </div>
+    </HBox>
 </template>
 
 <script lang="ts">
+import HBox from './toolkit/HBox.vue';
+
 export default {
+    components: { HBox },
     props: {
         name: String,
         value: String,

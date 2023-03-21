@@ -1,19 +1,24 @@
 <template>
-  <div class="vertical-flexbox thin-border medium-margin white-background vertical-flexbox flex-grow-1">
-        <div class="horizontal-flexbox">
+  <VBox class="thin-border medium-margin white-background flex-grow-1">
+        <HBox>
             <b class="flex-grow-1 medium-margin">{{ label }}</b>
-            <label @click="open = !open" class="small-square blue-circle-hover thin-margin vertical-flexbox flex-centered">
+            <VBox @click="open = !open" class="small-square blue-circle-hover thin-margin flex-centered">
                 <div :class="open ? 'bottom-arrow' : 'left-arrow'">&nbsp;</div>
-            </label>
-        </div>
+            </VBox>
+        </HBox>
         <div :class="open ? '' : 'invisible'">
             <slot></slot>
         </div>
-    </div>
+    </VBox>
 </template>
 
 <script lang="ts">
+import HBox from './HBox.vue';
+import VBox from './VBox.vue';
+
+
 export default {
+    components: { HBox, VBox },
     props: {
         label: String,
     },

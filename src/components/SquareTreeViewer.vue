@@ -1,13 +1,13 @@
 <template>
-    <div class="vertical-flexbox">
-        <div class="vertical-flexbox stick-to-top white-background">
+    <VBox>
+        <VBox class="stick-to-top white-background">
             <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-            <div class="horizontal-flexbox flex-wrap button-group">
+            <div class="flex-wrap button-group">
                 <button type="button" @click="backToTop">Top</button>
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>
-        </div>
-        <div v-if="!floweringMode" class="horizontal-flexbox flex-wrap relative">
+        </VBox>
+        <HBox v-if="!floweringMode" class="flex-wrap relative">
             <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
                     :style="item.pictures.length > 0 ? 'background-image: url(' + item.pictures[0].url + ')' : ''"
                     @click="openItem(item)">
@@ -18,26 +18,29 @@
                 </div>
                 <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item as HierarchicalItem)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </component>
-        </div>
+        </HBox>
         <div v-if="floweringMode">
             <flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled"></flowering>
         </div>
-    </div>
+    </VBox>
 </template>
 
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
+import HBox from "./toolkit/HBox.vue";
+import VBox from "./toolkit/VBox.vue";
 import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
 import { DiscreteCharacter, SelectableItem } from "@/datatypes/types";
 
+
 export default {
     name: "SquareTreeViewer",
-    components: { Flowering },
+    components: { Flowering, HBox, VBox },
     props: {
         editable: Boolean,
         rootItems: Object as PropType<Hierarchy<SelectableItem>>,
