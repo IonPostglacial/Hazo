@@ -12,20 +12,12 @@
     </VBox>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import HBox from './HBox.vue';
 import VBox from './VBox.vue';
 
 
-export default {
-    components: { HBox, VBox },
-    props: {
-        label: String,
-    },
-    data() {
-        return {
-            open: true,
-        }
-    }
-};
+const { label } = defineProps({ label: String });
+const open = ref(true);
 </script>
