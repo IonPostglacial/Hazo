@@ -11,7 +11,7 @@
                 <font-awesome-icon icon="fa-solid fa-underline" />
             </button>
         </HBox>
-        <editor-content :editor="editor" />
+        <editor-content class="flex-grow-1 horizontal-flexbox" :editor="editor" />
     </VBox>
 </template>
 
