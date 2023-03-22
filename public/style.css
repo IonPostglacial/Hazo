@@ -41,6 +41,10 @@ select,
     user-select: none;
 }
 
+#app .ProseMirror {
+    flex-grow: 1;
+}
+
 .button-group {
     white-space: nowrap;
 }
