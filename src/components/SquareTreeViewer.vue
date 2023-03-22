@@ -27,7 +27,7 @@
 
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Hierarchy, HierarchicalItem, characterFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
@@ -126,10 +126,10 @@ export default {
         },
         selectWithoutOpening(character: HierarchicalItem) {
             if (character.type !== "character" || character.characterType !== "discrete") return;
-            const ch = Hazo.store.dataset.character(character.id);
+            const ch = characterFromId(Hazo.store.dataset, character.id);
             let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
             if (typeof inherentState === "undefined") {
-                const parentCharacter = Hazo.store.dataset.character(character.parentId);
+                const parentCharacter = characterFromId(Hazo.store.dataset, character.parentId);
                 if (typeof parentCharacter !== "undefined" && parentCharacter.characterType === "discrete") {
                     inherentState = { id: "s" + makeid(8), type: "state", name: clone(character.name), pictures: [] };
                     Hazo.store.do("addState", { state: inherentState, character: parentCharacter });

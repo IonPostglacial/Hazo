@@ -1,5 +1,5 @@
 import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon, cloneHierarchy, createTaxon, createCharacter } from "./datatypes";
-import { Dataset, moveCharacterDown, moveCharacterUp } from './datatypes/Dataset';
+import { Dataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId } from './datatypes/Dataset';
 import { DiscreteCharacter, State } from "./datatypes/types";
 import clone from "./tools/clone";
 import makeid from './tools/makeid';
@@ -62,22 +62,22 @@ export function createStore() {
             store.dataset.changeTaxonParent(e.taxon.id, e.newParentId);
         },
         addTaxonPicture(payload: { taxon: Taxon, picture: Picture }) {
-            const t = store.dataset.taxon(payload.taxon.id);
+            const t = taxonFromId(store.dataset, payload.taxon.id);
             if (t) t.pictures = [...t.pictures, payload.picture];
         },
         setTaxonPicture(payload: { taxon: Taxon, picture: Picture, index: number }) {
-            const t = store.dataset.taxon(payload.taxon.id);
+            const t = taxonFromId(store.dataset, payload.taxon.id);
             if (t) {
                 t.pictures[payload.index] = payload.picture;
                 t.pictures = [...t.pictures];
             }
         },
         setTaxonLocations(payload: { taxon: Taxon, positions: { lat: number, lng: number }[] }) {
-            const t = store.dataset.taxon(payload.taxon.id);
+            const t = taxonFromId(store.dataset, payload.taxon.id);
             if (t) t.specimenLocations = payload.positions;
         },
         removeTaxonPicture(payload: { taxon: Taxon, index: number }) {
-            const t = store.dataset.taxon(payload.taxon.id);
+            const t = taxonFromId(store.dataset, payload.taxon.id);
             if (t) t.pictures.splice(payload.index, 1);
         },
         copyCharacter(character: Character) {
@@ -112,7 +112,7 @@ export function createStore() {
                     }
                 }
             }
-            const newParent = store.dataset.character(targetId);
+            const newParent = characterFromId(store.dataset, targetId);
             if (newParent?.characterType === "discrete" && store.copiedCharacter?.characterType === "discrete") {
                 if (newParent && store.copiedCharacter?.inherentState?.id) {
                     store.copiedCharacter.inherentState.id = "s-auto-" + store.copiedCharacter.id;
@@ -132,7 +132,7 @@ export function createStore() {
         pasteStates(characterId: string) {
             for (const s of store.copiedStates) {
                 const stateToAdd = clone(s);
-                const character = store.dataset.character(characterId);
+                const character = characterFromId(store.dataset, characterId);
                 if (typeof character !== "undefined" && character.characterType === "discrete") {
                     store.dataset.addState(stateToAdd, character);
                 }
@@ -154,18 +154,18 @@ export function createStore() {
             undoStack.push(() => store.dataset.addCharacter(character));
         },
         addCharacterPicture(payload: { character: Character, picture: Picture }) {
-            const c = store.dataset.character(payload.character.id);
+            const c = characterFromId(store.dataset, payload.character.id);
             if (c) c.pictures = [...c.pictures, payload.picture];
         },
         setCharacterPicture(payload: { character: Character, picture: Picture, index: number }) {
-            const c = store.dataset.character(payload.character.id);
+            const c = characterFromId(store.dataset, payload.character.id);
             if (c) {
                 c.pictures[payload.index] = payload.picture;
                 c.pictures = [...c.pictures];
             }
         },
         removeCharacterPicture(payload: { character: Character, index: number }) {
-            const c = store.dataset.character(payload.character.id);
+            const c = characterFromId(store.dataset, payload.character.id);
             if (c) c.pictures.splice(payload.index, 1);
         },
         setDataset(dataset: Dataset) {
@@ -187,7 +187,7 @@ export function createStore() {
             moveCharacterDown(store.dataset.charactersHierarchy, store.dataset.charactersByIds, character);
         },
         moveStateUp(payload: { state: State, character: DiscreteCharacter }) {
-            const c = store.dataset.character(payload.character.id);
+            const c = characterFromId(store.dataset, payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
             if (index > 0 && c?.characterType === "discrete") {
                 c.states[index] = c.states[index-1];
@@ -196,7 +196,7 @@ export function createStore() {
             }
         },
         moveStateDown(payload: { state: State, character: DiscreteCharacter }) {
-            const c = store.dataset.character(payload.character.id);
+            const c = characterFromId(store.dataset, payload.character.id);
             const index = payload.character.states.findIndex(s => s.id === payload.state.id);
             if (index < payload.character.states.length - 1 && c?.characterType === "discrete") {
                 c.states[index] = c.states[index+1];
@@ -208,14 +208,14 @@ export function createStore() {
             store.dataset.removeState(payload.state, payload.character);
         },
         addStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, picture: Picture }) {
-            const c = store.dataset.character(payload.character?.id);
+            const c = characterFromId(store.dataset, payload.character?.id);
             if (c?.characterType === "discrete") {
                 const s = c.states.find(s => s.id === payload.state.id);
                 if (s) s.pictures = [...s.pictures, payload.picture];
             }
         },
         setStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, picture: Picture, index: number }) {
-            const c = store.dataset.character(payload.character?.id);
+            const c = characterFromId(store.dataset, payload.character?.id);
             if (c?.characterType === "discrete") {
                 const s = c?.states.find(s => s.id === payload.state.id);
                 if (s) {
@@ -225,7 +225,7 @@ export function createStore() {
             }
         },
         removeStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, index: number }) {
-            const c = store.dataset.character(payload.character?.id);
+            const c = characterFromId(store.dataset, payload.character?.id);
             if (c?.characterType === "discrete") {
                 const s = c?.states.find(s => s.id === payload.state.id);
                 if (s) s.pictures.splice(payload.index, 1);
@@ -240,7 +240,7 @@ export function createStore() {
             store.dataset.addCharacter(clone(payload.character));
         },
         setInherentState(payload: { character: DiscreteCharacter, state: State }) {
-            const ch = store.dataset.character(payload.character.id);
+            const ch = characterFromId(store.dataset, payload.character.id);
             if (ch?.characterType === "discrete") {
                 ch.inherentState = payload.state;
                 setState(ch.requiredStates, payload.state, false);
