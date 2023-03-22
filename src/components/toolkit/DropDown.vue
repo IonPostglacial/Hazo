@@ -1,56 +1,50 @@
 <template>
-    <div v-show="open" :class="['absolute', 'thin-border', 'white-background', 'medium-padding', 
+    <div ref="menu" v-show="open" :class="['absolute', 'thin-border', 'white-background', 'medium-padding', 
             'over-everything', { 'drop-up': dropUp }]">
         <slot></slot>
     </div>
 </template>
 
-<script lang="ts">
-export default {
-    props: {
-        open: Boolean,
-    },
-    data() {
-        return {
-            dropUp: false,
-        }
-    },
-    watch: {
-        open(val) {
-            if (val) {
-                this.dropUp = this.outOfWindow();
-            } else {
-                this.dropUp = false;
-            }
-        }
-    },
-    methods: {
-        clickout(e: Event) {
-            if (!this.$el.contains(e.target as any)) {
-                this.$emit("clickout");
-            }
-        },
-        outOfWindow() {
-            const menu = this.$el as HTMLElement;
-            const oldDisplay = menu.style.display;
-            menu.style.display = "block";
-            const bounding = menu.getBoundingClientRect();
-            menu.style.display = oldDisplay;
-            return bounding.bottom > window.innerHeight;
-        },
-    },
-    mounted () {
-        this.dropUp = this.outOfWindow();
-        setTimeout(() => {
-            document.addEventListener('click', this.clickout);
-        });
-    },
-    beforeUnmount () {
-        document.removeEventListener('click', this.clickout);
+<script setup lang="ts">
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+
+
+const { open } = defineProps({ open: Boolean });
+const emit = defineEmits(["clickout"]);
+const menu = ref<HTMLElement | null>(null);
+const dropUp = ref(false);
+
+watch(() => open, val => {
+    if (val) {
+        dropUp.value = outOfWindow();
+    } else {
+        dropUp.value = false;
     }
-};
+});
+
+onMounted(() => {
+    dropUp.value = outOfWindow();
+    setTimeout(() => {
+        document.addEventListener('click', clickout);
+    });
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', clickout);
+});
+
+function clickout(e: Event) {
+    if (!menu.value?.contains(e.target as any)) {
+        emit("clickout");
+    }
+}
+
+function outOfWindow() {
+    if (!menu.value) { return false; }
+    const oldDisplay = menu.value.style.display;
+    menu.value.style.display = "block";
+    const bounding = menu.value.getBoundingClientRect();
+    menu.value.style.display = oldDisplay;
+    return bounding.bottom > window.innerHeight;
+}
 </script>
-
-<style>
-
-</style>
