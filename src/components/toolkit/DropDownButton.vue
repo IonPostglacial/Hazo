@@ -1,6 +1,6 @@
 <template>
     <div class="relative inline-block">
-        <button @click="toggleOpen">
+        <button @click="open = !open">
             {{label}}
             <font-awesome-icon v-if="!open" icon="fa-solid fa-caret-down" />
             <font-awesome-icon v-if="open" icon="fa-solid fa-caret-up" />
@@ -11,30 +11,14 @@
     </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import DropDown from "@/components/toolkit/DropDown.vue";
+import { ref } from "vue";
 
-export default {
-    components: { DropDown },
-    props: {
-        label: String,
-    },
-    data() {
-        return {
-            open: false,
-        }
-    },
-    methods: {
-        handleClickOut(_: Event) {
-            this.open = false;
-        },
-        toggleOpen() {
-            this.open = !this.open;
-        },
-    },
-};
+const { label } = defineProps({ label: String });
+const open = ref(false);
+
+function handleClickOut(_: Event) {
+    open.value = false;
+}
 </script>
-
-<style>
-
-</style>
