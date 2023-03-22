@@ -190,7 +190,7 @@ import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Dataset, Character, Hierarchy, State, Picture } from "@/datatypes";
+import { Dataset, Character, Hierarchy, State, Picture, characterFromId } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 
@@ -238,13 +238,13 @@ export default {
             return this.store.dataset.charactersHierarchy;
         },
         selectedCharacter(): Character|undefined {
-            return this.dataset.character(this.selectedCharacterId);
+            return characterFromId(this.dataset, this.selectedCharacterId);
         },
         parentStates(): State[] {
             const parentId = this.selectedCharacter?.parentId;
             if (typeof parentId === "undefined")
                 return[];
-            const parent = this.dataset.character(parentId);
+            const parent = characterFromId(this.dataset, parentId);
             if (typeof parent === "undefined")
                 return[];
             return Array.from(this.dataset.characterStates(parent));
@@ -411,7 +411,7 @@ export default {
             }));
         },
         deleteCharacter(e: { itemId: string}) {
-            const characterToDelete = this.dataset.character(e.itemId);
+            const characterToDelete = characterFromId(this.dataset, e.itemId);
             if (typeof characterToDelete !== "undefined") {
                 this.store.do("removeCharacter", characterToDelete);
             } else {

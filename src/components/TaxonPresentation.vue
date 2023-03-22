@@ -49,7 +49,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Dataset, Description, Taxon, taxonDescriptions } from '@/datatypes'; // eslint-disable-line no-unused-vars
+import { Dataset, Description, Taxon, taxonDescriptions, taxonFromId } from '@/datatypes'; // eslint-disable-line no-unused-vars
 import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, State } from '@/datatypes/types';
@@ -80,7 +80,7 @@ export default {
             return this.store.dataset as Dataset;
         },
         selectedTaxon(): Taxon|undefined {
-            return this.dataset.taxon(this.selectedTaxonId);
+            return taxonFromId(this.dataset, this.selectedTaxonId);
         },
         itemsToDisplay(): Iterable<Taxon> {
             if (this.selectedTaxon) {

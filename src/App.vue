@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Character, Dataset, Taxon, allStates } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 // import * as DB from "./db-storage";
 import * as FS from "./fs-storage";
@@ -192,7 +192,7 @@ export default {
             for (const character of iterHierarchy(this.dataset.charactersHierarchy)) {
                 this.urlsToSync.push(...character.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            for (const state of this.dataset.allStates()) {
+            for (const state of allStates(this.dataset)) {
                 this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
             uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {

@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, taxonFromId } from "@/datatypes";
 import { createCharacter, CharacterPreset } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
@@ -261,7 +261,7 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 		ds.addTaxon(decodeTaxon(taxon, books));
 		taxon.descriptions.forEach(d => {
 			for (const stateId of d.statesIds) {
-				const t = ds.taxon(taxon.id);
+				const t = taxonFromId(ds, taxon.id);
 				const state = states.get(stateId);
 				if (typeof t !== "undefined" && typeof state !== "undefined") {
 					ds.setTaxonState(t.id, state);

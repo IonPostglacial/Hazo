@@ -91,7 +91,7 @@ export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy
 export function taxonParentChain(ds: Dataset, id: string|undefined): Taxon[] {
 	const parents: Taxon[] = [];
 	while (typeof id !== undefined) {
-		const taxon = ds.taxon(id);
+		const taxon = taxonFromId(ds, id);
 		if (typeof taxon !== "undefined") {
 			parents.unshift(taxon);
 			id = taxon.parentId;
@@ -148,6 +148,31 @@ function removeStateWithoutCharacter(ds: Dataset, state: State) {
 	ds.statesById.delete(state.id);
 }
 
+export function taxonFromId(ds: Dataset, id: string|undefined): Taxon|undefined {
+	if (typeof id === "undefined") {
+		return undefined;
+	} else {
+		return ds.taxonsByIds.get(id);
+	}
+}
+
+export function characterFromId(ds: Dataset, id: string|undefined): Character|undefined {
+	if (typeof id === "undefined") {
+		return undefined;
+	} else {
+		return ds.charactersByIds.get(id);
+	}
+}
+
+export function* allStates(ds: Dataset): Iterable<State> {
+	for (const character of iterHierarchy(ds.charactersHierarchy)) {
+		if (character.characterType === "range") { continue; }
+		for (const state of character.states) {
+			yield state;
+		}
+	}
+}
+
 export class Dataset {
 	statesById: Map<string, State>;
 	taxonsByIds: Map<string, Taxon>;
@@ -179,29 +204,13 @@ export class Dataset {
 		});
 	}
 
-	taxon(id: string|undefined): Taxon|undefined {
-		if (typeof id === "undefined") {
-			return undefined;
-		} else {
-			return this.taxonsByIds.get(id);
-		}
-	}
-
-	character(id: string|undefined): Character|undefined {
-		if (typeof id === "undefined") {
-			return undefined;
-		} else {
-			return this.charactersByIds.get(id);
-		}
-	}
-
 	addTaxon(taxon: Taxon) {
 		const t = addItem("t", this.taxonsHierarchy, this.taxonsByIds, taxon);
 		addFamilyPreset(this, t);
 	}
 
 	setTaxon(id: string, props: Partial<Taxon>) {
-		const taxon = this.taxon(id);
+		const taxon = taxonFromId(this, id);
 		Object.assign(taxon as any, props);
 	}
 
@@ -217,12 +226,12 @@ export class Dataset {
 	}
 
 	changeTaxonParent(id: string, newParentId: string) {
-		const taxon = this.taxon(id);
-		if (typeof taxon === "undefined") return;
-		const oldParent = this.taxon(taxon.parentId) ?? this.taxonsHierarchy;
+		const taxon = taxonFromId(this, id);
+		if (typeof taxon === "undefined") { return; }
+		const oldParent = taxonFromId(this, taxon.parentId) ?? this.taxonsHierarchy;
 		const i = oldParent.children.findIndex(t => t.id === id);
 		oldParent.children.splice(i, 1);
-		const parent = this.taxon(newParentId) ?? this.taxonsHierarchy;
+		const parent = taxonFromId(this, newParentId) ?? this.taxonsHierarchy;
 		parent.children.push(taxon);
 	}
 
@@ -233,7 +242,7 @@ export class Dataset {
 			c.states.forEach(s => indexState(this, s));
 		}
 		if (autoid && c.characterType === "discrete") {
-            const parentCharacter = this.character(c.parentId);
+            const parentCharacter = characterFromId(this, c.parentId);
             if (parentCharacter?.characterType === "discrete") {
                 const newState: State = {
                     id: "s-auto-" + c.id,
@@ -247,17 +256,17 @@ export class Dataset {
 	}
 
 	setCharacter(id: string, props: Partial<Character>) {
-		const character = this.character(id);
+		const character = characterFromId(this, id);
 		Object.assign(character as any, props);
 	}
 
 	removeCharacter(id: string) {
 		const character = removeItem(this.charactersHierarchy, this.charactersByIds, id);
-		if (typeof character === "undefined") return;
+		if (typeof character === "undefined") { return; }
 		if (character.characterType === "discrete") {
 			character.states.forEach(s => this.statesById.delete(s.id));
 		}
-		const parent = this.character(character.parentId);
+		const parent = characterFromId(this, character.parentId);
 		if (parent && parent.characterType === "discrete") {
 			const inherentStateId = "s-auto-" + id;
 			for (const state of parent.states) {
@@ -270,14 +279,14 @@ export class Dataset {
 
 	setTaxonState(taxonId: string, state: State) {
 		const s = this.statesById.get(state.id);
-		const t = this.taxon(taxonId);
+		const t = taxonFromId(this, taxonId);
 		if (typeof s !== "undefined" && typeof t !== "undefined") {
 			t.states.push(s);
 		}
 	}
 
 	removeTaxonState(taxonId: string, state: State) {
-		const t = this.taxon(taxonId);
+		const t = taxonFromId(this, taxonId);
 		if (typeof t !== "undefined") {
 			const stateIndex = t.states.findIndex(s => s.id === state.id);
 			if (stateIndex >= 0) {
@@ -291,7 +300,7 @@ export class Dataset {
 	}
 
 	taxonStates(taxonId: string): State[] {
-		return this.taxon(taxonId)?.states ?? [];
+		return taxonFromId(this, taxonId)?.states ?? [];
 	}
 
 	addState(state: State, character: DiscreteCharacter) {
@@ -323,14 +332,5 @@ export class Dataset {
 
 	characterStates(character: Character|undefined): State[] {
 		return character?.characterType === "discrete" ? character.states : [];
-    }
-
-    *allStates(): Iterable<State> {
-		for (const character of iterHierarchy(this.charactersHierarchy)) {
-			if (character.characterType === "range") continue;
-			for (const state of character.states) {
-				yield state;
-			}
-		}
     }
 }

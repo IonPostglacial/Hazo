@@ -205,7 +205,7 @@ import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain, taxonFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDown from "./toolkit/DropDownButton.vue";
@@ -278,7 +278,7 @@ export default {
             }
         },
         selectedTaxon(): Taxon|undefined {
-            return this.dataset.taxon(this.selectedTaxonId);
+            return taxonFromId(this.dataset, this.selectedTaxonId);
         },
         specimenLocations(): { lat: number, lng: number }[] {
             return this.selectedTaxon?.specimenLocations ?? [];
@@ -362,7 +362,7 @@ export default {
             }));
         },
         removeTaxon(e: { itemId: string }) {
-            const taxonToRemove = this.dataset.taxon(e.itemId);
+            const taxonToRemove = taxonFromId(this.dataset, e.itemId);
             if (taxonToRemove) {
                 this.store.do("removeTaxon", taxonToRemove);
             }

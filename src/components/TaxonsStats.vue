@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { taxonsStats } from "@/features";
-import { Taxon, Dataset, iterHierarchy } from "@/datatypes";
+import { Taxon, Dataset, iterHierarchy, taxonFromId } from "@/datatypes";
 
 export default {
     data() {
@@ -72,7 +72,7 @@ export default {
         getFamilyName(t: Taxon|undefined): string {
             var family = t;
             while (typeof family?.parentId !== "undefined") {
-                family = this.dataset.taxon(family.parentId);
+                family = taxonFromId(this.dataset, family.parentId);
             }
             return family?.name.S ?? "";
         },
