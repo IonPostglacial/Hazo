@@ -1,5 +1,5 @@
 <template>
-    <div v-if="open" class="absolute over-everything full-width">
+    <div v-if="open" class="absolute over-everything full-width absolute-top-right">
         <HBox class="medium-padding thin-border background-gradient-1">
             <div class="nowrap no-vertical-overflow flex-grow-1">{{ titleText }}</div>
             <div class="close" @click="close"></div>

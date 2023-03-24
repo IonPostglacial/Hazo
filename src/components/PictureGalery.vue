@@ -1,9 +1,13 @@
 <template>
     <div class="medium-margin thin-border white-background flex-grow-1 centered-text">
         <HBox class="cented-aligned dark-background">
-            <button v-if="selectedImageIndex > 0" class="no-print background-color-1 font-size-28" @click="previousImage">🡄</button>
-            <img class="fit-contain full-width height-full" :src="selectedImage.url" :alt="selectedImage.label">
-            <button v-if="selectedImageIndex < images.length - 1" class="no-print background-color-1 font-size-28" @click="nextImage">🡆</button>
+            <button v-if="selectedImageIndex > 0" class="no-print background-color-1 font-size-28" @click="previousImage">
+                <font-awesome-icon icon="fa-solid fa-arrow-left" />
+            </button>
+            <img class="fit-contain full-width height-full" :src="selectedImageUrl" :alt="selectedImage.label">
+            <button v-if="selectedImageIndex < images.length - 1" class="no-print background-color-1 font-size-28" @click="nextImage">
+                <font-awesome-icon icon="fa-solid fa-arrow-right" />
+            </button>
         </HBox>
     </div>
 </template>
@@ -31,7 +35,10 @@ export default {
             } else {
                 return { id: "", hubUrl: "", url: "", label: "" };
             }
-        }
+        },
+        selectedImageUrl(): string|undefined {
+            return this.selectedImage.hubUrl ?? this.selectedImage.url; 
+        },
     },
     methods: {
         previousImage() {

@@ -1,9 +1,9 @@
 <template>
     <VBox class="relative">
         <div v-if="editable" @click="deletePhoto" class="close white absolute-top-right"></div>
-        <a @click="openPhoto" class="small-margin thin-border fill dark-background" href="#1">
+        <button type="button" @click="openPhoto" class="small-margin thin-border fill dark-background">
             <img :src="url" :alt="picture.label">
-        </a>
+        </button>
         <button class="background-color-1" v-if="isRemoteUrl && isConnectedToHub" @click="uploadPhoto">Retrieve Photo</button>
         <HBox v-if="editable">
             <input :value="picture.url" @change="setPhoto" type="text" class="no-fixed-width flex-grow-1" />
