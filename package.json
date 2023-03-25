@@ -29,7 +29,6 @@
     "vue": "^3.2.0",
     "vue-router": "^4.0.0",
     "vue3-google-map": "^0.15.0",
-    "vue3-split-panel": "^0.1.2",
     "@types/wicg-file-system-access": "^2020.9.5"
   },
   "devDependencies": {
