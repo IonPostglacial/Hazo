@@ -232,7 +232,7 @@ export default {
             return ch?.characterType === "range" ? undefined : ch?.inherentState;
         },
         dataset(): Dataset {
-            return this.store.dataset as Dataset;
+            return this.store.dataset;
         },
         charactersHierarchy(): Hierarchy<Character> {
             return this.store.dataset.charactersHierarchy;

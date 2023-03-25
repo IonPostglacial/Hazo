@@ -52,7 +52,7 @@ globalThis.Hazo = {
 
 const app = Vue.createApp(App);
 app.use(router);
-app.use(VueSplit as any);
+app.use(VueSplit);
 app.component("font-awesome-icon", FontAwesomeIcon);
 app.mount("#app");
 

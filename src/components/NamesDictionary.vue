@@ -24,7 +24,7 @@
 <script lang="ts">
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
-import { familiesWithNamesLike, Name, Language, LANGUAGES_V1, deleteFamily } from "@/db-index";
+import { familiesWithNamesLike, Name, LANGUAGES_V1, deleteFamily } from "@/db-index";
 
 export default {
     components: { HBox, VBox },
@@ -32,7 +32,7 @@ export default {
         return {
             languages: LANGUAGES_V1,
             families: [] as Name[],
-            lang: "S" as Language,
+            lang: "S" as const,
             search: ""
         };
     },

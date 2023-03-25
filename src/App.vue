@@ -154,7 +154,7 @@ export default {
     },
     computed: {
         dataset(): Dataset {
-            return this.store.dataset as Dataset;
+            return this.store.dataset;
         },
         connectedToHub(): boolean {
             return this.store.connectedToHub;
