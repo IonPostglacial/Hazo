@@ -328,6 +328,6 @@ export function createStore() {
             }
         },
     };
-    const store = reactive(storeData) as typeof storeData;
+    const store = reactive(storeData);
     return store;
 }

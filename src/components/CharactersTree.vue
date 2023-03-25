@@ -65,7 +65,7 @@ export default {
     },
     computed: {
         dataset(): Dataset {
-            return this.store.dataset as Dataset;
+            return this.store.dataset;
         },
         selectedLang(): { name: string, field: string } {
             return this.languageList[this.lang];
