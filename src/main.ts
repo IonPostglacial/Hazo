@@ -10,7 +10,6 @@ import CharactersTree from "./components/CharactersTree.vue";
 import NamesDictionary from "./components/NamesDictionary.vue";
 import debounce from "./tools/debounce";
 // @ts-ignore
-import VueSplit from "vue3-split-panel";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
@@ -52,7 +51,6 @@ globalThis.Hazo = {
 
 const app = Vue.createApp(App);
 app.use(router);
-app.use(VueSplit);
 app.component("font-awesome-icon", FontAwesomeIcon);
 app.mount("#app");
 
