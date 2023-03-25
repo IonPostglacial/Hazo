@@ -67,7 +67,6 @@
 <script lang="ts">
 import { Character, Dataset, Taxon, allStates } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
-// import * as DB from "./db-storage";
 import * as FS from "./fs-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save.js";
