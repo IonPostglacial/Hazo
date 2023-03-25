@@ -1,38 +1,33 @@
 <template>
-    <div :class="['split', { 'vertical': vertical }]">
+    <div ref="root" :class="['split', { 'vertical': vertical }]">
         <slot></slot>
     </div>
 </template>
 
-<script lang="ts">
-import Split, { Instance } from 'split.js'
+<script setup lang="ts">
+import { onBeforeUnmount, onBeforeUpdate, onMounted, onUpdated, ref } from "vue";
+import Split, { Instance } from "split.js";
 
-export default {
-    props: {
-        vertical: Boolean,
-    },
-    data() {
-        return {
-            split: undefined as Instance|undefined,
-        };
-    },
-    mounted() {
-        const children = Array.from(this.$el.children) as HTMLElement[];
-        this.split = Split(children);
-        this.split.setSizes(children.map((_, i) => i === 0 ? 33 : 67 / (children.length - 1)));
-    },
-    beforeUpdate() {
-        this.split?.destroy();
-    },
-    updated() {
-        const children = Array.from(this.$el.children) as HTMLElement[];
-        this.split = Split(children);
-        this.split.setSizes(children.map((_, i) => i === 0 ? 33 : 67 / (children.length - 1)));
-    },
-    beforeUnmount() {
-        this.split?.destroy();
-    }
-};
+
+const { vertical } = defineProps({ vertical: Boolean });
+const split = ref<Instance|undefined>(undefined);
+const root = ref<HTMLElement>();
+
+function updateSplit() {
+    if (!root.value) { return; }
+    const children = Array.from(root.value.children) as HTMLElement[];
+    split.value = Split(children);
+    split.value.setSizes(children.map((_, i) => i === 0 ? 33 : 67 / (children.length - 1)));
+}
+
+onMounted(() => {
+    updateSplit();
+});
+onBeforeUpdate(() => { split.value?.destroy(); });
+onUpdated(() => {
+    updateSplit();
+});
+onBeforeUnmount(() => { split.value?.destroy(); });
 </script>
 
 <style>
