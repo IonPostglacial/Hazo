@@ -13,6 +13,7 @@
             <div class="button-group">
                 <button @click="downloadSvg">Download as SVG</button>
                 <button @click="exportMarkdown">Export to Markdown</button>
+                <button @click="exportMarkdownAllLangs">Export to Markdown multilang</button>
             </div>
             <Spacer></Spacer>
             <div class="button-group">
@@ -46,6 +47,27 @@ function hierarchyToMarkdown(data: D3Hierarchy, indentation=-1): string {
     return content;
 }
 
+function nameMultilang(item: any, langFields: {name: string, field: string}[]): string {
+    return langFields.map(field => item.name[field.field]).filter(n => n).join(", ")
+}
+
+const hierarchyToD3 = (dataset: Dataset, hierarchy: Hierarchy<Character>, item: any, langFields: {name: string, field: string}[]): D3Hierarchy => {
+    const charChildren: Character[] = item?.children ?? [];
+    const inherentStateIds = charChildren.map(c => c.characterType === "discrete" ? c.inherentState?.id : undefined);
+    return {
+        id: item.id,
+        name: nameMultilang(item, langFields),
+        url: (item.id ? ("characters/" + item.id) : undefined),
+        color: item.color,
+        children: [
+            ...charChildren.map(child => hierarchyToD3(dataset, hierarchy, child, langFields)),
+            ...dataset.characterStates(item)
+                .filter((s: any) => !inherentStateIds.includes(s.id))
+                .map((s: any) => ({ id: s.id, name: nameMultilang(s, langFields), children: [], color: s.color }))
+        ]
+    };
+};
+
 export default {
     name: "CharactersTree",
     components: { HBox, Spacer },
@@ -63,6 +85,11 @@ export default {
             openNodeIds: [hierarchy.id],
         };
     },
+    watch: {
+        lang() {
+            this.updateGraph();
+        }
+    },
     computed: {
         dataset(): Dataset {
             return this.store.dataset;
@@ -71,29 +98,12 @@ export default {
             return this.languageList[this.lang];
         },
         treeData(): D3Hierarchy {
-            const hierarchyToD3 = (hierarchy: Hierarchy<Character>, item: any): D3Hierarchy => {
-                const langFieldName = this.selectedLang.field;
-                const charChildren: Character[] = item?.children ?? [];
-                const inherentStateIds = charChildren.map(c => c.characterType === "discrete" ? c.inherentState?.id : undefined);
-                return {
-                    id: item.id,
-                    name: item.name ? item.name[langFieldName] : "",
-                    url: (item.id ? ("characters/" + item.id) : undefined),
-                    color: item.color,
-                    children: [
-                        ...charChildren.map(child => hierarchyToD3(hierarchy, child)),
-                        ...this.dataset.characterStates(item)
-                            .filter((s: any) => !inherentStateIds.includes(s.id))
-                            .map((s: any) => ({ id: s.id, name: s.name[langFieldName], children: [], color: s.color }))
-                    ]
-                };
-            };
             const hierarchy = this.store.dataset.charactersHierarchy;
             const topLevelItems = hierarchy.children;
             if (this.selectedCharacter) {
-                return hierarchyToD3(hierarchy, this.selectedCharacter);
+                return hierarchyToD3(this.dataset, hierarchy, this.selectedCharacter, [this.selectedLang]);
             } else {
-                return { id: hierarchy.id, name: "Characters", children: topLevelItems.map(ch => hierarchyToD3(hierarchy, ch)) };
+                return { id: hierarchy.id, name: "Characters", children: topLevelItems.map(ch => hierarchyToD3(this.dataset, hierarchy, ch, [this.selectedLang])) };
             }
         },
     },
@@ -293,7 +303,10 @@ export default {
             this.updateD3(this.$refs["interactive-tree"] as Element, this.treeData, this.computeMaxHeight(!this.selectedCharacter));
         },
         exportMarkdown() {
-            download(hierarchyToMarkdown(this.treeData), "md");
+            download(hierarchyToMarkdown(hierarchyToD3(this.dataset, this.store.dataset.charactersHierarchy, this.selectedCharacter ?? this.store.dataset.charactersHierarchy, [this.selectedLang])), "md");
+        },
+        exportMarkdownAllLangs() {
+            download(hierarchyToMarkdown(hierarchyToD3(this.dataset, this.store.dataset.charactersHierarchy, this.selectedCharacter ?? this.store.dataset.charactersHierarchy, this.languageList)), "md");
         },
         computeMaxHeight(fullHeight: boolean) {
             return fullHeight ? Math.max(document.body.clientHeight - 120, this.maxHeight) : this.maxHeight;
