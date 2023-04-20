@@ -12,8 +12,13 @@ export function datasetFromFile(id: string, file: File): Promise<EncodedDataset>
         fileReader.onload = () => {
             if (typeof fileReader.result === "string") {
                 if (fileReader.result) {
-                    const db = JSON.parse(fileReader.result);
-                    resolve(db);
+                    try {
+                        const db = JSON.parse(fileReader.result);
+                        resolve(db);
+                    } catch (e) {
+                        console.warn(e);
+                        resolve({ id, taxons: [], characters: [], states: [], books: [], extraFields: [] });
+                    }
                 } else {
                     resolve({ id, taxons: [], characters: [], states: [], books: [], extraFields: [] });
                 }
@@ -30,13 +35,15 @@ export function fileNameFromDatasetId(id: string): string {
     return `${id}.hazo.json`;
 }
 
-export async function store(dataset: EncodedDataset): Promise<void> {
+export async function store(dataset: EncodedDataset): Promise<string> {
     const dir = await getDatasetsDirectory();
+    const fileName = fileNameFromDatasetId(dataset.id);
     const handle = await dir.getFileHandle(fileNameFromDatasetId(dataset.id), { create: true });
     const file = await handle.createWritable({ keepExistingData: false });
     const json = JSON.stringify(dataset);
     await file.write(json);
-    return await file.close();
+    await file.close();
+    return fileName;
 }
 
 export async function list(): Promise<string[]> {
@@ -59,7 +66,7 @@ export async function load(id: string): Promise<EncodedDataset> {
 
 export async function remove(id: string) {
     const dir = await getDatasetsDirectory();
-    return dir.removeEntry(id);
+    return dir.removeEntry(fileNameFromDatasetId(id));
 }
 
 export async function removeAll() {

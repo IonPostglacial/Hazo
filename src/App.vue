@@ -263,7 +263,7 @@ export default {
                 }
             });
         },
-        renameDataset() {
+        async renameDataset() {
             let newId = "";
             while(newId === "") {
                 newId = window.prompt("New name of the dataset ?") ?? "";
@@ -272,18 +272,18 @@ export default {
                     newId = "";
                 }
             }
-            FS.remove(this.dataset.id);
+            await FS.remove(this.dataset.id);
             const i = this.datasetIds.indexOf(this.dataset.id);
             this.dataset.id = newId;
-            FS.store(encodeDataset(this.dataset));
+            await FS.store(encodeDataset(this.dataset));
             this.datasetIds[i] = newId;
             this.selectedBase = newId;
         },
-        deleteDataset() {
+        async deleteDataset() {
             if (typeof this.dataset !== "undefined") {
                 const i = this.datasetIds.indexOf(this.dataset.id);
                 this.datasetIds.splice(i, 1);
-                FS.remove(this.dataset.id);
+                await FS.remove(this.dataset.id);
                 if (this.datasetIds.length > 0) {
                     this.selectedBase = this.datasetIds[0];
                 }
