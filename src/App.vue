@@ -79,6 +79,7 @@ import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import HBox from "@/components/toolkit/HBox.vue";
 import VBox from "@/components/toolkit/VBox.vue";
 import Spacer from "@/components/toolkit/Spacer.vue";
+import { escape } from "./tools/parse-csv";
 
 export default {
     name: "App",
@@ -475,16 +476,7 @@ export default {
         displayTaxonStats() {
             let csv = new Map<string, string[]>();
             csv.set("", ["Path", "NS", "Author", "NV", "名字", "subtaxa n°"]);
-            function escape(value: string|number): string {
-                if (typeof value === "string") {
-                    if (value.includes(",")) {
-                        return `"${value}"`;
-                    } else {
-                        return value;
-                    }
-                }
-                return ""+value;
-            }
+
             function pushCsvLine(taxon: Taxon, path: string[]) {
                 const childrenNo = taxon.children.length;
                 for (const taxonName of path) {

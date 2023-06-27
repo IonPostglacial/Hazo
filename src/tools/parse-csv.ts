@@ -1,3 +1,16 @@
+export function escape(value: string|number|undefined): string {
+    if (typeof value === "string") {
+        if (value.includes(",")) {
+            return `"${value}"`;
+        } else {
+            return value;
+        }
+    } else if (typeof value === "undefined") {
+        return "";
+    }
+    return ""+value;
+}
+
 export default function parseCSV(str: string) {
     const arr:string[][] = [];
     let quote = false;

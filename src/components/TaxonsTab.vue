@@ -25,6 +25,7 @@
                             <font-awesome-icon icon="fa-solid fa-paste" />
                         </button>
                     </div>
+                    <button @click="exportCSV">Export CSV</button>
                     <div v-if="selectedTaxon" class="relative">
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
@@ -201,7 +202,7 @@ import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain, taxonFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain, taxonFromId, characterFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDown from "./toolkit/DropDownButton.vue";
@@ -219,6 +220,7 @@ import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, Picture, SelectableItem } from "@/datatypes/types";
+import { escape } from "@/tools/parse-csv";
 
 
 export default {
@@ -295,6 +297,25 @@ export default {
         }
     },
     methods: {
+        exportCSV() {
+            let content = "NV,NS,Family,Biblio\n";
+            const tree = this.taxonTree;
+            const c = characterFromId(this.dataset, "c277");
+            if (!c || c.characterType !== "discrete") return;
+            const states = new Set(c.states.map(s=>s.id));
+            function writeCSV(node: Taxon, level: number, family: string) {
+                const f = level === 1 ? node.name.S : family;
+                if (level > 0) {
+                    const biblios = node.states.filter(s=>states.has(s.id)).map(s=>s.name.S);
+                    content += `${escape(node.name.V)}, ${escape(node.name.S + " " + node.author)},${escape(f)},${escape(biblios.join(", "))}\n`;
+                }
+                for (const child of node.children) {
+                    writeCSV(child, level + 1, f);
+                }
+            }
+            writeCSV(tree, 0, "");
+            download(content, "csv", "summary");
+        },
         taxonParentChain(ds: Dataset, id: string | undefined): Taxon[] {
             return taxonParentChain(ds, id);
         },
