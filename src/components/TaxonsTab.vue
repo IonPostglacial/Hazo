@@ -175,13 +175,16 @@
                         </collapsible-panel>
                     </VBox>
                     <collapsible-panel v-if="selectedColumns.includes('summary')" class="scroll" label="Description">
-                        <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
+                        <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
+                        <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
+                            <option v-for="(language, index) in nameFields" :key="language.label" :value="index">{{ language.label }}</option>
+                        </select>
                         <ul>
                             <li v-for="desc in itemDescription" :key="desc.character.id">
-                                {{ desc.character.name.S }}
+                                {{ desc.character.name[selectedSummaryLangProperty] }}
                                 <ul v-if="desc.states.length > 0" class="indented">
                                     <li v-for="state in desc.states" :key="state.id">
-                                        {{ state.name.S }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
+                                        {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
                                     </li>
                                 </ul>
                             </li>
@@ -234,6 +237,7 @@ export default {
     data() {
         return {
             nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
+            selectedSummaryLangId: 0,
             store: Hazo.store,
             showFields: false,
             showBigImage: false,
@@ -255,6 +259,9 @@ export default {
         },
     },
     computed: {
+        selectedSummaryLangProperty(): string {
+            return this.nameFields[this.selectedSummaryLangId].propertyName;
+        },
         leftMenuSize(): number {
             return this.selectedColumns.includes("menu") ? 25 : 0;
         },

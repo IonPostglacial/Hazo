@@ -1,11 +1,11 @@
 <template>
-    <div v-if="open" class="absolute over-everything full-width absolute-top-right">
-        <HBox class="medium-padding thin-border background-gradient-1">
+    <dialog v-if="open" class="over-everything white" open>
+        <HBox>
             <div class="nowrap no-vertical-overflow flex-grow-1">{{ titleText }}</div>
             <div class="close" @click="close"></div>
         </HBox>
         <PictureGalery :images="images" @image-selected="handleImageSelected"></PictureGalery>
-    </div>
+    </dialog>
 </template>
 <script lang="ts">
 import { Picture } from "@/datatypes"; // eslint-disable-line no-unused-vars

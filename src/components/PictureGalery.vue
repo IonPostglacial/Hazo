@@ -4,7 +4,7 @@
             <button v-if="selectedImageIndex > 0" class="no-print background-color-1 font-size-28" @click="previousImage">
                 <font-awesome-icon icon="fa-solid fa-arrow-left" />
             </button>
-            <img class="fit-contain full-width height-full" :src="selectedImageUrl" :alt="selectedImage.label">
+            <img class="fit-contain full-width height-full max-height-screen" :src="selectedImageUrl" :alt="selectedImage.label">
             <button v-if="selectedImageIndex < images.length - 1" class="no-print background-color-1 font-size-28" @click="nextImage">
                 <font-awesome-icon icon="fa-solid fa-arrow-right" />
             </button>
