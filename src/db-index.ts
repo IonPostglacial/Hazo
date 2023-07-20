@@ -1,16 +1,21 @@
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const DB_NAME = "NamesIndex";
 const FAMILY_INDEX_STORE_NAME = "FamilyIndexStore";
-export type Language = "S" | "V" | "CN";
-export const LANGUAGES_V1: Language[] = ["S", "V", "CN"];
+export type Language = "S" | "V" | "CN" | "LA";
+const LANGUAGES_V1: Language[] = ["S", "V", "CN"];
+export const LANGUAGES: Language[] = LANGUAGES_V1;
 export type Name = Record<Language | string, string>;
 
 function createFamilyIndexStore(db: IDBDatabase, _previousVersion: number) {
     if (!db.objectStoreNames.contains(FAMILY_INDEX_STORE_NAME)) {
         const store = db.createObjectStore(FAMILY_INDEX_STORE_NAME, { keyPath: "id", autoIncrement: true });
-        for (const langProp of LANGUAGES_V1) {
+        for (const langProp of LANGUAGES) {
             store.createIndex(langProp, langProp, { unique: false });
         }
+    }
+    if (_previousVersion < 2) {
+        const store = db.createObjectStore(FAMILY_INDEX_STORE_NAME, { keyPath: "id", autoIncrement: true });
+        store.createIndex("LA", "LA", { unique: false });
     }
 }
 

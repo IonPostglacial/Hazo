@@ -24,13 +24,13 @@
 <script lang="ts">
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
-import { familiesWithNamesLike, Name, LANGUAGES_V1, deleteFamily } from "@/db-index";
+import { familiesWithNamesLike, Name, LANGUAGES, deleteFamily } from "@/db-index";
 
 export default {
     components: { HBox, VBox },
     data() {
         return {
-            languages: LANGUAGES_V1,
+            languages: LANGUAGES,
             families: [] as Name[],
             lang: "S" as const,
             search: ""
