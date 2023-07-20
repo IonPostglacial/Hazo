@@ -25,7 +25,7 @@ import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import HBox from "./HBox.vue";
 import VBox from "./VBox.vue";
-import { onBeforeUnmount, ShallowRef } from "vue";
+import { onBeforeUnmount, ShallowRef, onBeforeUpdate } from "vue";
 
 const props = defineProps({
     modelValue: {
@@ -42,8 +42,14 @@ const editor = useEditor({
         emit("update:modelValue", editor.value.getHTML())
     },
 }) as ShallowRef<Editor>;
+
 onBeforeUnmount(() => {
     editor.value.destroy();
-})
+});
+
+onBeforeUpdate(() => {
+    editor.value.commands.setContent(props.modelValue);
+});
+
 </script>
   
