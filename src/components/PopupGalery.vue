@@ -23,17 +23,15 @@ export default {
     },
     data() {
         return {
-            selectedImageIndex: 0,
+            titleText: this.images.length > 0 ? this.images[0].label : "",
         };
-    },
-    computed: {
-        selectedImage(): Picture {
-            return this.images[this.selectedImageIndex];
-        }
     },
     methods: {
         close() {
             this.$emit("closed");
+        },
+        handleImageSelected({ picture } : { picture: Picture, index: number }) {
+            this.titleText = picture.label;
         }
     }
 }
