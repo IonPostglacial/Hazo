@@ -1,12 +1,12 @@
 <template>
     <div class="horizontal-flexbox">
-        <v-text-field dense v-if="!multiline" v-model="text" @keydown.enter="addSingleItem"
-            class="flex-grow-1" placeholder="Add an item"></v-text-field>
-        <v-textarea outlined background-color="grey lighten-2" v-if="multiline" v-model="text" class="flex-grow-1 input-text"
+        <input type="text" v-if="!multiline" v-model="text" @keydown.enter="addSingleItem"
+            class="flex-grow-1" placeholder="Add an item" />
+        <textarea type="text" v-if="multiline" v-model="text" class="flex-grow-1 input-text"
             rows="1" placeholder="Add multiple items">
-        </v-textarea>
-        <v-btn icon @click="multiline = !multiline" title="Activate multiline mode"><v-icon>mdi-format-list-text</v-icon></v-btn>
-        <v-btn @click="add" color="primary" title="Add an item">Add</v-btn>
+        </textarea>
+        <button @click="multiline = !multiline" title="Activate multiline mode">¶</button>
+        <button @click="add" title="Add an item" class="background-color-1">Add</button>
     </div>
 </template>
 

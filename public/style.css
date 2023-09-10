@@ -3,10 +3,6 @@
     src: url("fonts/Source_Sans_Pro/SourceSansPro-Regular.ttf");
 }
 
-.v-treeview--dense.super-dense .v-treeview-node__root {
-    min-height: 28px;
-}
-
 html {
     box-sizing: border-box;
 }
@@ -24,6 +20,8 @@ th {
     text-align: left;
 }
 
+button,
+select,
 .selector-label,
 .button {
     text-decoration: none;
@@ -72,15 +70,21 @@ th {
     border-end-end-radius: 4px;
 }
 
+button:hover,
+select:hover,
 .button:hover {
     cursor: pointer;
     background-color: white;
 }
 
+button.background-color-1:hover,
+select:hover,
 .button.background-color-1:hover {
     background-color: #287ae6;
 }
 
+button:active,
+select:active,
 .button:active {
 	background-color: #bbb;
 }
@@ -94,7 +98,6 @@ button.selected-tab,
 }
 
 .full-width {
-    display: inline-block;
     width: 100%;
 }
 
@@ -102,13 +105,34 @@ button.selected-tab,
     height: 100%;
 }
 
+.float-left {
+    float: left;
+}
+
 .float-right {
     float: right;
+}
+
+.clear {
+    clear: both;
+}
+
+select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat, repeat;
+    background-position: right .7em top 50%, 0 0;
+    background-size: .65em auto, 100%;
 }
 
 *[dir="rtl"] select, :root:lang(ar) select :root:lang(iw) select {
     background-position: left .7em top 50%, 0 0;
     padding: .6em .8em .5em 1.4em;
+}
+
+ul {
+    padding: 0;
+    margin: 0;
 }
 
 .fit-contain {
@@ -132,6 +156,8 @@ button.selected-tab,
     flex-shrink: 0;
 }
 
+input[type="search"],
+input[type="text"],
 .input-text {
     margin: 2px;
     font-family: inherit;
@@ -144,8 +170,19 @@ button.selected-tab,
     outline: none;
 }
 
+input[type="search"]:focus,
+input[type="text"]:focus,
 .input-text:focus {
     border: 2px solid #2571d4;
+}
+
+input[type="search"] {
+    border-radius: 14px;
+    padding: 2px 14px;
+}
+
+input[type="text"] {
+    border-radius: 8px;
 }
 
 .form-grid {
@@ -164,6 +201,10 @@ input[type="text"].no-fixed-width {
 
 #app {
     font-family: "SourceSans";
+    height: 100vh;
+    height: calc(var(--viewport-height, 1vh) * 100);
+    width: 100vw;
+    overflow: hidden;
 }
 
 .italic {
@@ -498,8 +539,7 @@ div.invisible {
     z-index: 10000;
 }
 
-.absolute-top-right,
-.v-btn.absolute-top-right {
+.absolute-top-right {
     position: absolute;
     top: 2px;
     right: 2px;
@@ -601,14 +641,13 @@ div.invisible {
     color: inherit;
 }
 
-.blue-hover-line:hover,
-.blue-hover-line:hover ~ .blue-hover-line {
+.blue-hover-line:hover > .cell {
     background-color: rgb(37, 113, 212);
     color: white;
 }
 
 .blue-circle-hover:hover {
-    border: 1px solid rgb(37, 113, 212);;
+    border: 1px solid rgb(37, 113, 212);
     border-radius: 100%;
 }
 
@@ -686,5 +725,8 @@ div.invisible {
 
 .tree-grid .cell {
     border-left: 1px solid #e3e3e3;
+}
+
+.tree-grid .cell a {
     padding: 2px 1ch;
 }

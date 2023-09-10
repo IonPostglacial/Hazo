@@ -39,14 +39,6 @@ export function cloneHierarchy<T>(hierarchy: Hierarchy<T>): Hierarchy<T> {
     };
 }
 
-export function sortHierarchy<T>(hierarchy: Hierarchy<T>, sortFn: (a: T, b: T) => number): Hierarchy<T> {
-    hierarchy.children.sort(sortFn);
-    for (const child of hierarchy.children) {
-        sortHierarchy(child, sortFn);
-    }
-    return hierarchy;
-}
-
 export function transformHierarchy<T, U>(hierarchy: Hierarchy<T>, transform: { filter: (h:Hierarchy<T>)=>boolean, map: (j:Hierarchy<T>)=>Hierarchy<U>}): Hierarchy<any> {
     const children = [];
 

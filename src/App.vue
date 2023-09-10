@@ -1,102 +1,61 @@
 <template>
-    <v-app>
-        <v-navigation-drawer v-if="tab != 'tree'" app v-model="drawer" clipped width="512">
-            <router-view name="LeftMenu"></router-view>
-        </v-navigation-drawer>
-        <v-main>
+    <div id="app" class="vertical-flexbox lightgrey-background height-full">
+        <nav class="thin-border background-gradient-1 no-print centered-text">
+            <div class="inline-block float-left">
+                <button v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
+                    {{ state.name.S }}
+                </button>
+                <button v-for="state in store.statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
+                    {{ state.name.S }}
+                </button>
+            </div>
+            <div class="button-group inline-block">
+                <router-link class="button" to="/taxons">Taxons</router-link>
+                <router-link class="button" to="/characters">Characters</router-link>
+                <router-link class="button" to="/characters-tree">Characters Tree</router-link>
+            </div>
+            <div class="button-group inline-block float-right">
+                <button type="button" @click="openHub">Hub
+                    <span v-if="connectedToHub"> (Connected)</span>
+                    <span v-if="!connectedToHub"> (Disconnected)</span>
+                </button>
+                <button v-if="connectedToHub" type="button" @click="syncPictures" :disabled="urlsToSync.length > 0">
+                    Sync pictures
+                    <span v-if="urlsToSync.length > 0">{{ syncProgress }} / {{ urlsToSync.length }}</span>
+                </button>
+                <button v-if="connectedToHub" type="button" @click="push">Push</button>
+                <button v-if="connectedToHub" type="button" @click="pull">Pull</button>
+            </div>
+        </nav>
+        <div class="horizontal-flexbox start-align flex-grow-1 height-main-panel">
             <router-view></router-view>
-        </v-main>
-        <v-app-bar app dense clipped-left>
-            <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-            <v-menu transition="slide-y-transition" bottom>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn v-bind="attrs" v-on="on">
-                        Import
-                    </v-btn>
-                </template>
-                <v-list>
-                    <v-list-item @click="importFile">
-                        <v-list-item-title>Replace current items</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="mergeFile">
-                        <v-list-item-title>Merge new items</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-            <v-menu transition="slide-y-transition" bottom>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn v-bind="attrs" v-on="on">
-                        Export
-                    </v-btn>
-                </template>
-                <v-list>
-                    <v-list-item @click="jsonExport">
-                        <v-list-item-title>Export to JSON</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="exportSDD">
-                        <v-list-item-title>Export to SDD</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-
-            <v-btn v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
-                {{ state.name.S }}
-            </v-btn>
-            <v-btn v-for="state in store.statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
-                {{ state.name.S }}
-            </v-btn>
-
+        </div>
+        <section class="horizontal-flexbox space-between thin-border background-gradient-1 no-print">
+            <div class="button-group">
+                <button type="button" @click="importFile">Import</button>
+                <button type="button" @click="mergeFile">Merge</button>
+                <button type="button" @click="jsonExport">Export</button>
+                <button type="button" @click="exportSDD">Export SDD</button>
+            </div>
             <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
             <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
-            
-            <v-spacer></v-spacer>
-
-            <v-btn icon color="success" @click="saveData" title="save the dataset"><v-icon>mdi-content-save</v-icon></v-btn>
-            <v-select dense solo class="mt-6" v-if="!preloaded" v-model="selectedBase" :items="datasetIds">
-            </v-select>
-            <v-btn icon v-if="!preloaded" @click="renameDataset" title="rename the dataset"><v-icon>mdi-rename-box</v-icon></v-btn>
-            <v-btn icon v-if="!preloaded" color="primary" @click="createNewDataset" title="create new dataset"><v-icon>mdi-plus</v-icon></v-btn>
-            <v-btn icon color="warning" @click="resetData" title="reset the dataset"><v-icon>mdi-numeric-0-box</v-icon></v-btn>
-            <v-btn icon v-if="!preloaded && datasetIds.length > 1" color="error" @click="deleteDataset" title="delete the dataset"><v-icon>mdi-delete</v-icon></v-btn>
-
-            <v-spacer></v-spacer>
-
-            <v-btn icon @click="globalReplace" title="replace text"><v-icon>mdi-text</v-icon></v-btn>
-            <v-btn icon class="no-print" @click="displayTaxonStats" title="export stats about the taxons"><v-icon>mdi-chart-bar</v-icon></v-btn>
-            <v-btn icon @click="print" title="print current dataset"><v-icon>mdi-printer</v-icon></v-btn>
-            <v-menu transition="slide-y-transition" bottom>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn v-bind="attrs" v-on="on">
-                        Hub
-                        <span v-if="connectedToHub"> (Connected)</span>
-                        <span v-if="!connectedToHub"> (Disconnected)</span>
-                    </v-btn>
-                </template>
-                <v-list>
-                    <v-list-item @click="openHub">
-                        <v-list-item-title>Go to the Hub</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item v-if="connectedToHub" @click="syncPictures" :disabled="urlsToSync.length > 0">
-                        <v-list-item-title>
-                            Sync pictures
-                            <span v-if="urlsToSync.length > 0">{{ syncProgress }} / {{ urlsToSync.length }}</span>
-                        </v-list-item-title>
-                    </v-list-item>
-                    <v-list-item v-if="connectedToHub" @click="push">
-                        <v-list-item-title>Push</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item v-if="connectedToHub" @click="pull">
-                        <v-list-item-title>Pull</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-        </v-app-bar>
-        <v-bottom-navigation app height="36" v-model="tab" color="primary">
-            <v-btn value="taxon" to="/taxons">Taxons</v-btn>
-            <v-btn value="character" to="/characters">Characters</v-btn>
-            <v-btn value="tree" to="/characters-tree">Tree</v-btn>
-        </v-bottom-navigation>
-    </v-app>
+            <div class="button-group">
+                <button type="button" class="background-color-ok" @click="saveData">Save</button>
+                <select v-if="!preloaded" v-model="selectedBase">
+                    <option v-for="datasetId in datasetIds" :key="datasetId" :value="datasetId">{{ datasetId }}</option>
+                </select>
+                <button v-if="!preloaded" @click="renameDataset">Rename DB</button>
+                <button v-if="!preloaded && datasetIds.length > 1" @click="deleteDataset">Delete DB</button>
+                <button v-if="!preloaded" type="button" class="background-color-1" @click="createNewDataset">New DB</button>
+                <button type="button" class="background-color-ko" @click="resetData">Reset</button>
+            </div>
+            <div class="button-group">
+                <button type="button" @click="globalReplace">Replace Text</button>
+                <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
+                <button type="button" class="no-print background-color-1" @click="print">Print</button>
+            </div>
+        </section>
+    </div>
 </template>
 
 <script lang="ts">
@@ -104,18 +63,16 @@ import { Character, Dataset, Taxon } from "@/datatypes"; // eslint-disable-line 
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import DB, { getAllDictionaryEntries } from "./db-storage";
 import { loadSDD } from "./sdd-load";
-import saveSDD from "./sdd-save";
+import saveSDD from "./sdd-save.js";
 import download from "@/tools/download";
 import { ObservableMap } from './tools/observablemap';
 import { Config } from './tools/config';
 import Vue from "vue";
 import { forEachHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
-import MultilangMenu from "@/components/MultilangMenu.vue";
 
 export default Vue.extend({
     name: "App",
-    components: { MultilangMenu },
     data() {
         return {
             store: Hazo.store,
@@ -123,9 +80,7 @@ export default Vue.extend({
             selectedBase: "",
             urlsToSync: [] as string[],
             syncProgress: 0,
-            drawer: true,
             preloaded: true,
-            tab: "taxon" as "taxon" | "character" | "tree",
         };
     },
     mounted() {
@@ -210,7 +165,7 @@ export default Vue.extend({
         removeFromDenyList(state: State) {
             this.store.do("removeStateFromDenyList", state);
         },
-        syncPictures() {
+        async syncPictures() {
             this.urlsToSync = [];
             for (const taxon of this.dataset.taxons) {
                 this.urlsToSync.push(...taxon.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
@@ -221,17 +176,8 @@ export default Vue.extend({
             for (const state of this.dataset.allStates()) {
                 this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {
-                const successes = [];
-                for (const result of results) {
-                    if (result.status === "fulfilled") {
-                        successes.push(result.value);
-                    }
-                }
-                console.log(`successes: ${successes.length}/${this.urlsToSync.length}`);
-                console.table(successes);
-                this.urlsToSync = [];
-            });
+            await uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress);
+            this.urlsToSync = [];
         },
         async push() {
             const json = JSON.stringify(encodeDataset(this.dataset));
@@ -530,7 +476,11 @@ export default Vue.extend({
             download(json, "hazo.json", this.dataset.id);
         },
         exportSDD() {
-            const xml = saveSDD(this.dataset);
+            const xml = saveSDD({
+                items: this.dataset.getTaxonsByIds(),
+                descriptors: this.dataset.getCharactersByIds(),
+                extraFields: this.dataset.extraFields,
+            });
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }

@@ -1,5 +1,5 @@
 <template>
-    <div class="wrap-flexbox">
+    <collapsible-panel label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
         <picture-frame v-if="picture" :key="picture.id"
             :editable="editable"
             :index="selectedPhotoIndex"
@@ -8,20 +8,24 @@
             @open-photo="openPhoto"
             @set-photo="setPhoto">
         </picture-frame>
-        <div class="horizontal-flexbox">
-            <v-btn icon @click="previousPicture"><v-icon>mdi-arrow-left</v-icon></v-btn>
-            <v-btn icon @click="nextPicture"><v-icon>mdi-arrow-right</v-icon></v-btn>
+        <div class="horizontal-flexbox space-between relative">
+            <div class="button-group">
+                <button type="button" @click="previousPicture">&lt;</button>
+                <button type="button" @click="nextPicture">&gt;</button>
+            </div>
             <div class="medium-padding">{{ indexText }}</div>
-            <v-btn icon @click="uploadPopup"><v-icon>mdi-upload</v-icon></v-btn>
-            <div v-if="displayUploadPopup" class="absolute over-everything thin-border medium-padding white-background">
-                <label>
-                    <input type="file" @change="uploadPicture" />
-                    <label for="uploadPicture" class="button background-color-1">Upload</label>
-                </label>
+            <div>
+                <button type="button" @click="uploadPopup">&#128621;</button>
+                <div v-if="displayUploadPopup" class="absolute over-everything thin-border medium-padding white-background">
+                    <label>
+                        <input type="file" @change="uploadPicture" />
+                        <label for="uploadPicture" class="button background-color-1">Upload</label>
+                    </label>
+                </div>
             </div>
             <add-item @add-item="addPicture" :value="addPictureUrl" class="flex-grow-1"></add-item>
         </div>
-    </div>
+    </collapsible-panel>
 </template>
 
 <script lang="ts">

@@ -1,12 +1,12 @@
 <template>
     <div class="vertical-flexbox space-between relative">
-        <v-btn icon v-if="editable" @click="deletePhoto" small class="absolute-top-right" color="error"><v-icon>mdi-delete</v-icon></v-btn>
+        <div v-if="editable" @click="deletePhoto" class="close white absolute-top-right"></div>
         <a @click="openPhoto" class="small-margin thin-border fill dark-background" href="#1">
             <img :src="url" :alt="picture.label">
         </a>
-        <v-btn color="primary" v-if="isRemoteUrl && isConnectedToHub" @click="uploadPhoto">Retrieve Photo</v-btn>
+        <button class="background-color-1" v-if="isRemoteUrl && isConnectedToHub" @click="uploadPhoto">Retrieve Photo</button>
         <div v-if="editable" class="horizontal-flexbox">
-            <v-text-field :value="picture.url" @change="setPhoto"></v-text-field>
+            <input :value="picture.url" @change="setPhoto" type="text" class="no-fixed-width flex-grow-1" />
         </div>
     </div>
 </template>

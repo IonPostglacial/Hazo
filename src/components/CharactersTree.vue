@@ -3,10 +3,11 @@
         <div class="horizontal-flexbox no-print">
             <div class="horizontal-flexbox">
                 <label for="lang-selector">Language</label>
-                <v-select solo dense name="lang" id="lang-selector" v-model="lang" :items="languageList">
-                </v-select>
+                <select name="lang" id="lang-selector" v-model="lang">
+                    <option v-for="(language, index) in languageList" :key="language.name" :value="index">{{ language.name }}</option>
+                </select>
             </div>
-            <v-btn @click="exportMarkdown">Export to Markdown</v-btn>
+            <button @click="exportMarkdown">Export to Markdown</button>
         </div>
         <div ref="interactive-tree">
         </div>
@@ -221,7 +222,7 @@ export default Vue.extend({
         selectedCharacter: Object as PropType<Character|undefined>,
     },
     data() {
-        const langFR = { text: "FR", field: "S", value:0 }, langEN = { text: "EN", field: "EN",value:1 }, langCN = { text: "CN", field: "CN",value:2 };
+        const langFR = { name: "FR", field: "S" }, langEN = { name: "EN", field: "EN" }, langCN = { name: "CN", field: "CN" };
 
         return {
             store: Hazo.store,
@@ -233,7 +234,7 @@ export default Vue.extend({
         dataset(): Dataset {
             return this.store.dataset;
         },
-        selectedLang(): { text: string, field: string } {
+        selectedLang(): { name: string, field: string } {
             return this.languageList[this.lang];
         },
         treeData(): D3Hierarchy {

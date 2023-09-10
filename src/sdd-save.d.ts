@@ -1,0 +1,1 @@
+export default function saveSDD(dataset: any): Document;
