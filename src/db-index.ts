@@ -6,28 +6,33 @@ const LANGUAGES_V1: Language[] = ["S", "V", "CN"];
 export const LANGUAGES: Language[] = LANGUAGES_V1;
 export type Name = Record<Language | string, string>;
 
-function createFamilyIndexStore(db: IDBDatabase, _previousVersion: number) {
+function createFamilyIndexStore(db: IDBDatabase, e: IDBVersionChangeEvent) {
+    console.log("previous", e.oldVersion);
     if (!db.objectStoreNames.contains(FAMILY_INDEX_STORE_NAME)) {
+        console.log("ga");
         const store = db.createObjectStore(FAMILY_INDEX_STORE_NAME, { keyPath: "id", autoIncrement: true });
         for (const langProp of LANGUAGES) {
             store.createIndex(langProp, langProp, { unique: false });
         }
     }
-    if (_previousVersion < 2) {
-        const store = db.createObjectStore(FAMILY_INDEX_STORE_NAME, { keyPath: "id", autoIncrement: true });
+    if (e.oldVersion < 2) {
+        const request = e.target;
+        if (request === null || !("transaction" in request) || !(request.transaction instanceof IDBTransaction)) return;
+        const tx = request.transaction;
+        const store = tx.objectStore(FAMILY_INDEX_STORE_NAME);
         store.createIndex("LA", "LA", { unique: false });
     }
 }
 
-function onUpgrade(db: IDBDatabase, previousVersion: number) {
-    createFamilyIndexStore(db, previousVersion);
+function onUpgrade(db: IDBDatabase, e: IDBVersionChangeEvent) {
+    createFamilyIndexStore(db, e);
 }
 
 function openNamesDatabase(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const rq = indexedDB.open(DB_NAME, DB_VERSION);
         rq.onupgradeneeded = function (event) {
-            onUpgrade(rq.result, event.oldVersion);
+            onUpgrade(rq.result, event);
         };
         rq.onerror = function () {
             alert("Impossible to store names index on your browser.");
