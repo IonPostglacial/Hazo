@@ -204,9 +204,10 @@ export class Dataset {
         });
     }
 
-    addTaxon(taxon: Taxon) {
+    addTaxon(taxon: Taxon): Taxon {
         const t = addItem("t", this.taxonsHierarchy, this.taxonsByIds, taxon);
         addFamilyPreset(this, t);
+        return t;
     }
 
     setTaxon(id: string, props: Partial<Taxon>) {
@@ -235,7 +236,7 @@ export class Dataset {
         parent.children.push(taxon);
     }
 
-    addCharacter(character: Character) {
+    addCharacter(character: Character): Character {
         const autoid = !character.id;
         const c = addItem("c", this.charactersHierarchy, this.charactersByIds, character);
         if (c.characterType === "discrete") {
@@ -253,6 +254,7 @@ export class Dataset {
                 c.inherentState = newState;
             }
         }
+        return c;
     }
 
     setCharacter(id: string, props: Partial<Character>) {
@@ -303,10 +305,11 @@ export class Dataset {
         return taxonFromId(this, taxonId)?.states ?? [];
     }
 
-    addState(state: State, character: DiscreteCharacter) {
+    addState(state: State, character: DiscreteCharacter): State {
         state.id = generateId("s", this.statesById, state);
         this.statesById.set(state.id, state);
         character.states.push(state);
+        return state;
     }
 
     removeState(state: State, character: DiscreteCharacter) {

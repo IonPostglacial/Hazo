@@ -36,12 +36,14 @@
         <HBox class="thin-border background-gradient-1 no-print">
             <div class="button-group">
                 <button type="button" @click="importFile">Import</button>
+                <button type="button" @click="importDescriptorFile">Import with descriptors</button>
                 <button type="button" @click="mergeFile">Merge</button>
                 <button type="button" @click="jsonExport">Export</button>
                 <button type="button" @click="exportSDD">Export SDD</button>
             </div>
             <Spacer></Spacer>
             <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
+            <input class="invisible" @change="fileUploadDescriptors" type="file" accept=".csv" name="import-descriptors" id="import-descriptors">
             <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
             <div class="button-group">
                 <button type="button" class="background-color-ok" @click="saveData">Save</button>
@@ -65,13 +67,14 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Taxon, allStates } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Character, Dataset, Taxon, allStates, createCharacter, createState, createTaxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import * as FS from "./fs-storage";
 import { loadSDD } from "./sdd-load";
 import saveSDD from "./sdd-save";
 import download from "@/tools/download";
 import { Config } from './tools/config';
+import { readTextFileAsync } from './tools/read-file-async';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
 import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
@@ -79,7 +82,7 @@ import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import HBox from "@/components/toolkit/HBox.vue";
 import VBox from "@/components/toolkit/VBox.vue";
 import Spacer from "@/components/toolkit/Spacer.vue";
-import { escape } from "./tools/parse-csv";
+import parseCSV, { escape, factorizeColumn, transposeCSV } from "./tools/parse-csv";
 
 export default {
     name: "App",
@@ -296,6 +299,9 @@ export default {
         importFile() {
             document.getElementById("import-data")?.click();
         },
+        importDescriptorFile() {
+            document.getElementById("import-descriptors")?.click();
+        },
         mergeFile() {
             document.getElementById("merge-data")?.click();
         },
@@ -413,65 +419,68 @@ export default {
             result.id = this.selectedBase;
             this.store.do("setDataset", result);
         },
-        boldUpload(file: File): Promise<null> {
-            return new Promise((resolve, reject) => {
-                const fileReader = new FileReader();
-                fileReader.onload = () => {
-                    if (typeof fileReader.result === "string") {
-                        highlightTaxonsDetails(fileReader.result, Object.fromEntries(this.dataset.taxonsByIds));
-                    }
-                    resolve(null);
-                };
-                fileReader.onerror = function () {
-                    reject(fileReader.error);
+        async fileUploadDescriptors(e: Event) {
+            if (!(e.target instanceof HTMLInputElement)) return;
+            const file = (e.target.files ?? [null])[0];
+            if (file === null) return;
+            const text = await readTextFileAsync(file);
+            const lines = parseCSV(text);
+            if (lines.length === 0) {
+                throw new Error("descriptor file should contain at least one header line");
+            }
+            const [header, ...body] = lines;
+            if (header.length < 2) {
+                throw new Error("descriptor file header should contain at least 2 columns");
+            }
+            const [_family, _taxa, ...characterNames] = header;
+            const [familyFact, taxaFact, ...characterColumns] = transposeCSV(body).map(factorizeColumn);
+            const familyIdsByLevel = familyFact.levels.map(name => this.dataset.addTaxon(createTaxon({ name: { S: name } })).id);
+            const taxaIdsByLevel: string[] = [];
+            for (const [i, taxaName] of taxaFact.levels.entries()) {
+                taxaIdsByLevel.push(this.dataset.addTaxon(createTaxon({ 
+                    parentId: familyIdsByLevel[familyFact.values[i]], 
+                    name: { S: taxaName } })).id);
+            }
+            for (const [charIndex, charName] of characterNames.entries()) {
+                const charFactor = characterColumns[charIndex];
+                const char = this.dataset.addCharacter(createCharacter({ name: { S: charName } }));
+                if (char.characterType !== "discrete") { throw new Error("character should be discrete"); }
+                const stateByLevel = charFactor.levels.map(name => this.dataset.addState(createState({ name: { S: name } }), char));
+                for (const [i, stateValue] of charFactor.values.entries()) {
+                    const taxonId = taxaIdsByLevel[taxaFact.values[i]];
+                    const state = stateByLevel[stateValue];
+                    this.dataset.setTaxonState(taxonId, state);
                 }
-                fileReader.readAsText(file);
-            });
+            }
+            this.store.do("setDataset", this.dataset);
         },
-        mergeCsv(file: File): Promise<null> {
-            return new Promise((resolve, reject) => {
-                const fileReader = new FileReader();
-                fileReader.onload = () => {
-                    if (typeof fileReader.result === "string") {
-                        const lines = fileReader.result.split("\n");
-                        const infosByName: Partial<Record<string, { author: string, url: string }>> = {};
-                        for (const line of lines) {
-                            const [name, author, url] = line.split(";");
-                            if (name && author && url) {
-                                infosByName[name] = { author, url };
-                            }
-                        }
-                        for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
-                            const info = infosByName[taxon.name.S];
-                            if (info) {
-                                taxon.author = info.author;
-                                taxon.website = info.url;
-                            }
-                        }
-                    }
-                    resolve(null);
-                };
-                fileReader.onerror = function () {
-                    reject(fileReader.error);
-                }
-                fileReader.readAsText(file);
-            });
+        async boldUpload(file: File) {
+            const text = await readTextFileAsync(file);
+            highlightTaxonsDetails(text, Object.fromEntries(this.dataset.taxonsByIds));
+            return null;
         },
-        jsonUpload(file: File): Promise<Dataset> {
-            return new Promise((resolve, reject) => {
-                const fileReader = new FileReader();
-                fileReader.onload = () => {
-                    if (typeof fileReader.result === "string") {
-                        const db = JSON.parse(fileReader.result);
-                        const dataset = decodeDataset(db);
-                        resolve(dataset);
-                    }
-                };
-                fileReader.onerror = function () {
-                    reject(fileReader.error);
+        async mergeCsv(file: File) {
+            const text = await readTextFileAsync(file);
+            const lines = parseCSV(text);
+            const infosByName: Partial<Record<string, { author: string, url: string }>> = {};
+            for (const [name, author, url] of lines) {
+                if (name && author && url) {
+                    infosByName[name] = { author, url };
                 }
-                fileReader.readAsText(file);
-            });
+            }
+            for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
+                const info = infosByName[taxon.name.S];
+                if (info) {
+                    taxon.author = info.author;
+                    taxon.website = info.url;
+                }
+            }
+        },
+        async jsonUpload(file: File): Promise<Dataset> {
+            const json = await readTextFileAsync(file);
+            const db = JSON.parse(json);
+            const dataset = decodeDataset(db);
+            return dataset;
         },
         displayTaxonStats() {
             let csv = new Map<string, string[]>();
