@@ -6,7 +6,7 @@ export async function migrateIndexedDbStorageToFileStorage() {
         return;
     }
     const datasetList = await dbList();
-    const awaits: Promise<void>[] = [];
+    const awaits: Promise<string>[] = [];
     for (const dsId of datasetList) {
         const ds = await dbLoad(dsId);
         awaits.push(fsStore(ds));
