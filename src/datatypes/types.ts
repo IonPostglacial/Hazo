@@ -71,7 +71,7 @@ export type Taxon = IHierarchicalItem & {
 	children: Taxon[];
 };
 
-export type CharacterPreset = "flowering" | "family";
+export type CharacterPreset = "flowering" | "family" | "map";
 
 export type CharacterType = "discrete" | "range";
 

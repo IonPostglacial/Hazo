@@ -58,9 +58,10 @@
                     </div>
                     <div v-if="selectedCharacter.characterType === 'discrete'">
                         <label class="item-property">Preset</label>
-                        <label><input type="radio" name="character-type" value="" v-model="selectedCharacter.preset">None</label>
-                        <label><input type="radio" name="character-type" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
-                        <label><input type="radio" name="character-type" value="family" v-model="selectedCharacter.preset">Family</label>
+                        <label><input type="radio" name="character-preset" value="" v-model="selectedCharacter.preset">None</label>
+                        <label><input type="radio" name="character-preset" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
+                        <label><input type="radio" name="character-preset" value="family" v-model="selectedCharacter.preset">Family</label>
+                        <label><input type="radio" name="character-preset" value="map" v-model="selectedCharacter.preset">Map</label>
                     </div>
                 </collapsible-panel>
                 <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
@@ -69,6 +70,23 @@
                     <flowering v-model="floweringMonth">
                     </flowering>
                 </div>
+                <VBox v-if="!printMode && isMapCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
+                    <HBox>
+                        <select v-if="maps.length > 0" name="lang" id="map-selector" v-model="selectedMapIndex">
+                            <option v-for="(map, i) in maps" :key="map.name" :value="i">{{ map.name }}</option>
+                        </select>
+                        <button type="button" @click="addStatesFromMapFeatures">
+                            Add {{ numberOfMapFeatures }} States
+                        </button>
+                    </HBox>
+                    <GeoView :v-if="geoJson" 
+                        :geo-json="geoJson" 
+                        :property="selectedMap?.property"
+                        :center-lat="selectedMap?.center[0]"
+                        :center-long="selectedMap?.center[1]"
+                        :scale="selectedMap?.scale">
+                    </GeoView>
+                </VBox>
                 <collapsible-panel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">
                     <div class="form-grid medium-padding">
                         <label for="range-min">From</label><input name="range-min" type="number" v-model="selectedCharacter.min" />
@@ -114,7 +132,7 @@
                 </collapsible-panel>
             </VBox>
         </div>
-        <HBox v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="scroll relative">
+        <HBox v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && (!selectedCharacter.preset || selectedCharacter.preset === 'map')" class="scroll relative">
             <collapsible-panel label="States">
                 <div class="scroll medium-padding white-background">
                     <label v-if="maybeInherentState">
@@ -177,25 +195,39 @@ import AddItem from "./AddItem.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import TreeMenu from "./toolkit/TreeMenu.vue";
+import UploadButton from "./toolkit/UploadButton.vue";
 import CharactersTree from "./CharactersTree.vue";
+import GeoView from "./GeoView.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Dataset, Character, Hierarchy, State, Picture, characterFromId } from "@/datatypes";
+import { Dataset, Character, Hierarchy, State, Picture, characterFromId, createState } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
+import { getMapsDirectory, loadText, storeText } from "@/fs-storage";
+
+
+type GeoMap = { name: string, fileName: string, center: [number, number], scale: number, property: string };
 
 export default {
     name: "CharactersTab",
-    components: { AddItem, CollapsiblePanel, Flowering, HBox, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel, VBox },
+    components: { AddItem, CollapsiblePanel, Flowering, GeoView, HBox, PictureBox, PopupGalery, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel, UploadButton, VBox },
     data() {
         return {
             store: Hazo.store,
             showLeftMenu: true,
             showBigImage: false,
+            maps: [
+                { name: "Mada admin 1", fileName: "MDG_adm1.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_1" },
+                { name: "Mada admin 2", fileName: "MDG_adm2.json", center: [46.518367, -18.546564], scale: 1200, property: "NAME_2" },
+                { name: "Mada admin 3", fileName: "MDG_adm3.json", center: [46.518367, -18.546564], scale: 1200, property: "NAME_3" },
+                { name: "Mada admin 4", fileName: "MDG_adm4.json", center: [46.518367, -18.546564], scale: 1200, property: "NAME_4" },
+            ] satisfies GeoMap[],
+            selectedMapIndex: 0,
+            geoJson: undefined as any,
             bigImages: [{id: "", hubUrl: "", url: "", label: ""} as Picture],
             selectedCharacterId: (this.$route.params.id as string) ?? "",
             printMode: false,
@@ -208,15 +240,34 @@ export default {
             if (this.selectedCharacter) {
                 this.store.do("selectCharacter", this.selectedCharacter);
             }
-        }
+        },
+        async selectedMapIndex() {
+            await this.loadGeoJson()
+        },
+    },
+    mounted() {
+        this.loadGeoJson();
     },
     computed: {
+        selectedMap(): GeoMap|undefined {
+            if (this.maps.length <= this.selectedMapIndex) { return undefined; }
+            return this.maps[this.selectedMapIndex];
+        },
+        numberOfMapFeatures(): number {
+            const map = this.selectedMap;
+            if (!map) { return 0; }
+            return this.geoJson?.features?.length ?? 0;
+        },
         isDiscreteCharacter(): boolean {
             return this.selectedCharacter?.characterType === "discrete";
         },
         isFloweringCharacter(): boolean {
             const ch = this.selectedCharacter;
             return ch?.characterType === "discrete" && ch.preset === "flowering";
+        },
+        isMapCharacter(): boolean {
+            const ch = this.selectedCharacter;
+            return ch?.characterType === "discrete" && ch.preset === "map";
         },
         isRangeCharacter(): boolean {
             return this.selectedCharacter?.characterType === "range";
@@ -256,6 +307,31 @@ export default {
         },
     },
     methods: {
+        async loadGeoJson() {
+            const selectedMap = this.selectedMap;
+            if (!selectedMap) { return  }
+            const mapName = selectedMap.fileName;
+            if (!mapName) { return; }
+            const dir = await getMapsDirectory();
+            try {
+                const text = await loadText(dir, mapName);
+                this.geoJson = JSON.parse(text);
+            } catch {
+                const geoFile = await fetch(`/${mapName}`);
+                this.geoJson = await geoFile.json();
+                storeText(dir, mapName, JSON.stringify(this.geoJson));
+            }
+        },
+        addStatesFromMapFeatures() {
+            const map = this.selectedMap;
+            const character = this.selectedCharacter;
+            if (!map || !character || character.characterType !== "discrete") { return; }
+            const stateNames: string[] = this.geoJson.features.map((f: any) => f.properties[map.property]);
+            const states = stateNames.map(name => createState({ name: { S: name } })).sort();
+            for (const state of states) {
+                this.store.do("addState", { state, character });
+            }
+        },
         isInherentState(state: State): boolean {
             const ch = this.selectedCharacter;
             return ch?.characterType === "discrete" && ch.inherentState ? ch.inherentState.id === state.id : false

@@ -1,4 +1,5 @@
 import { EncodedDataset } from "./features";
+import { readTextFileAsync } from "./tools/read-file-async";
 
 
 async function getDatasetsDirectory(): Promise<FileSystemDirectoryHandle> {
@@ -6,43 +7,33 @@ async function getDatasetsDirectory(): Promise<FileSystemDirectoryHandle> {
     return globalDir.getDirectoryHandle("datasets", { create: true });
 }
 
-export function datasetFromFile(id: string, file: File): Promise<EncodedDataset> {
-    return new Promise((resolve, reject) => {
-        const fileReader = new FileReader();
-        fileReader.onload = () => {
-            if (typeof fileReader.result === "string") {
-                if (fileReader.result) {
-                    try {
-                        const db = JSON.parse(fileReader.result);
-                        resolve(db);
-                    } catch (e) {
-                        console.warn(e);
-                        resolve({ id, taxons: [], characters: [], states: [], books: [], extraFields: [] });
-                    }
-                } else {
-                    resolve({ id, taxons: [], characters: [], states: [], books: [], extraFields: [] });
-                }
-            }
-        };
-        fileReader.onerror = function () {
-            reject(fileReader.error);
-        }
-        fileReader.readAsText(file);
-    });
+export async function getMapsDirectory(): Promise<FileSystemDirectoryHandle> {
+    const globalDir: FileSystemDirectoryHandle = await navigator.storage.getDirectory();
+    return globalDir.getDirectoryHandle("maps", { create: true });
 }
 
 export function fileNameFromDatasetId(id: string): string {
     return `${id}.hazo.json`;
 }
 
+export async function storeText(dir: FileSystemDirectoryHandle, fileName: string, text: string): Promise<string> {
+    const handle = await dir.getFileHandle(fileName, { create: true });
+    const file = await handle.createWritable({ keepExistingData: false });
+    await file.write(text);
+    await file.close();
+    return fileName;
+}
+
+export async function loadText(dir: FileSystemDirectoryHandle, fileName: string): Promise<string> {
+    const handle = await dir.getFileHandle(fileName, { create: true });
+    const file = await handle.getFile();
+    return readTextFileAsync(file);
+}
+
 export async function store(dataset: EncodedDataset): Promise<string> {
     const dir = await getDatasetsDirectory();
     const fileName = fileNameFromDatasetId(dataset.id);
-    const handle = await dir.getFileHandle(fileNameFromDatasetId(dataset.id), { create: true });
-    const file = await handle.createWritable({ keepExistingData: false });
-    const json = JSON.stringify(dataset);
-    await file.write(json);
-    await file.close();
+    await storeText(dir, fileName, JSON.stringify(dataset));
     return fileName;
 }
 
@@ -59,9 +50,12 @@ export async function list(): Promise<string[]> {
 
 export async function load(id: string): Promise<EncodedDataset> {
     const dir = await getDatasetsDirectory();
-    const handle = await dir.getFileHandle(fileNameFromDatasetId(id), { create: true });
-    const file = await handle.getFile();
-    return datasetFromFile(id, file);
+    const fileName = fileNameFromDatasetId(id);
+    try {
+        return JSON.parse(await loadText(dir, fileName));
+    } catch {
+        return { id, taxons: [], characters: [], states: [], books: [], extraFields: [] };
+    }
 }
 
 export async function remove(id: string) {
