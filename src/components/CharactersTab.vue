@@ -2,6 +2,7 @@
     <split-panel class="start-align flex-grow-1 scroll">
         <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
             :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
+            :autocomplete="true"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacter"
             @move-item-up="moveUp" @move-item-down="moveDown"

@@ -536,12 +536,23 @@ div.invisible {
     display: contents;
 }
 
-.grid-3 {
+.grid-n {
     min-width: 42ch;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
     grid-auto-rows: 3ch;
     row-gap: 1ch;
+}
+
+.grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.grid-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.grid-1 {
+    grid-template-columns: 1fr;
 }
 
 .vertical-flexbox {

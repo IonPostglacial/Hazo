@@ -6,10 +6,10 @@
                 @keydown.down="selectNextCompletion"
                 class="full-width" placeholder="Add an item" />
             <drop-down v-if="autocomplete && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
-                <div class="grid-3">
+                <div :class="'grid-n grid-' + nameFields?.length ?? 1">
                     <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents">
-                        <div v-for="lang in ['S', 'V', 'CN']" :key="lang" :class="['medium-padding', { 'background-color-1': i === selectedCompletion }]">
-                            {{ entry[lang] }}
+                        <div v-for="lang in nameFields" :key="lang.propertyName" :class="['medium-padding', { 'background-color-1': i === selectedCompletion }]">
+                            {{ entry[lang.propertyName] }}
                         </div>
                     </div>
                 </div>
@@ -27,12 +27,14 @@
 import DropDown from "@/components/toolkit/DropDown.vue";
 import HBox from "@/components/toolkit/HBox.vue";
 import { familiesWithNamesLike, Name } from "@/db-index";
+import { PropType } from "vue";
 
 export default {
   components: { DropDown, HBox },
     props: {
         value: String,
         autocomplete: Boolean,
+        nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
     },
     data() {
         return {
@@ -46,6 +48,7 @@ export default {
     watch: {
         text(val) {
             if (!this.autocomplete) return;
+            console.log(this.nameFields);
             if (val.length === 0) {
                 this.openAutoComplete = false;
                 this.selectedCompletion = -1;
@@ -85,7 +88,10 @@ export default {
                 this.addItem(this.text.split("\t"));
             } else {
                 const completed = this.completions[this.selectedCompletion];
-                this.addItem([completed.S, completed.V, completed.CN]);
+                const nameFields = this.nameFields;
+                if (typeof nameFields !== "undefined") {
+                    this.addItem(nameFields.map(f => completed[f.propertyName]));
+                }
             }
             this.text = "";
         },
