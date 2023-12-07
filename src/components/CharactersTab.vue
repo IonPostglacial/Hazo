@@ -80,13 +80,7 @@
                             Add {{ numberOfMapFeatures }} States
                         </button>
                     </HBox>
-                    <GeoView :v-if="geoJson" 
-                        :geo-json="geoJson"
-                        :file-name="selectedMap?.fileName"
-                        :property="selectedMap?.property"
-                        :center-lat="selectedMap?.center[0]"
-                        :center-long="selectedMap?.center[1]"
-                        :scale="selectedMap?.scale">
+                    <GeoView :v-if="geoJson" :geo-json="geoJson" :geo-map="selectedMap">
                     </GeoView>
                 </VBox>
                 <collapsible-panel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">

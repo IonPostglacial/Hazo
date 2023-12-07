@@ -11,17 +11,15 @@
 <script lang="ts">
 import * as d3 from "d3";
 import * as d3g from "d3-geo";
+import { PropType } from "vue";
+import { GeoMap } from "@/datatypes";
 
 
 export default {
     name: "CharactersTree",
     props: {
-        fileName: String,
+        geoMap: Object as PropType<GeoMap>,
         geoJson: Object,
-        property: String,
-        centerLat: Number,
-        centerLong: Number,
-        scale: Number,
     },
     data() {
         return {
@@ -51,8 +49,8 @@ export default {
             svg.attr("height", "600px");
             const path = d3g.geoPath();
             const projection = d3g.geoMercator()
-                .center([this.centerLat ?? 0, this.centerLong ?? 0])
-                .scale(this.scale ?? 3000)
+                .center(this.geoMap?.center ?? [0, 0])
+                .scale(this.geoMap?.scale ?? 3000)
                 .translate([200, 300]);
             path.projection(projection);
             const map = svg.selectAll("path")
@@ -66,11 +64,11 @@ export default {
                 .attr("class", function(d: any) { return "path " + d.id; })
                 .attr("transform", function(d: any) { return "translate(" + path.centroid(d) + ")"; })
                 .attr("dy", ".35em")
-                .text((d: any) => this.property ? d.properties[this.property] : "");
-            this.displayedFile = this.fileName;
+                .text((d: any) => this.geoMap?.property ? d.properties[this.geoMap?.property] : "");
+            this.displayedFile = this.geoMap?.fileName;
         },
         updateGraph() {
-            if (this.displayedFile === this.fileName) { return; }
+            if (this.displayedFile === this.geoMap?.fileName) { return; }
             this.loading = true;
             setTimeout(() => {
                 try {
