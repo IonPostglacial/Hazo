@@ -1,6 +1,9 @@
 <template>
     <div class="scroll">
-        <div ref="geo-viewer">
+        <div v-if="loading" class="absolute medium-square">
+            Loading...
+        </div>
+        <div ref="geo-viewer" :class="{ blurred: loading }">
         </div>
     </div>
 </template>
@@ -8,7 +11,6 @@
 <script lang="ts">
 import * as d3 from "d3";
 import * as d3g from "d3-geo";
-import download from "@/tools/download";
 
 
 export default {
@@ -25,17 +27,21 @@ export default {
             store: Hazo.store,
             maxHeight: 400,
             data: {} as any,
+            loading: false,
         };
     },
     async mounted() {
         this.updateGraph();
     },
-    updated() {
-        this.updateGraph();
+    watch: {
+        geoJson() {
+            this.updateGraph();
+        }
     },
     methods: {
-        updateD3(element: Element, _data: any, _maxHeight: number) {
+        updateD3() {
             if (typeof this.geoJson === "undefined" || !this.geoJson?.features) { return; }
+            const element = this.$refs["geo-viewer"] as Element;
             const el = d3.select(element);
             el.selectAll("svg").remove();
             const svg = el.append("svg");
@@ -61,7 +67,11 @@ export default {
                 .text((d: any) => this.property ? d.properties[this.property] : "");
         },
         updateGraph() {
-            this.updateD3(this.$refs["geo-viewer"] as Element, this.data, this.computeMaxHeight(false));
+            this.loading = true;
+            setTimeout(() => {
+                this.updateD3();
+                this.loading = false;
+            }, 0);
         },
         computeMaxHeight(fullHeight: boolean) {
             return fullHeight ? Math.max(document.body.clientHeight - 120, this.maxHeight) : this.maxHeight;
@@ -73,25 +83,6 @@ export default {
         minify() {
             this.maxHeight -= 300;
             this.updateGraph();
-        },
-        downloadSvg() {
-            const svg = (this.$refs["interactive-tree"] as Element).firstChild as SVGElement|null;
-            if (svg === null) { console.error("cannot export interactive tree"); return; }
-            const serializer = new XMLSerializer();
-            svg.querySelectorAll(".node circle").forEach(e => {
-                e.setAttribute("style", "fill:#fff;stroke:steelblue;stroke-width:3px;" + 
-                    e.getAttribute("style"));
-            });
-            svg.querySelectorAll(".node text").forEach(e => {
-                e.setAttribute("style", "font: 12px sans-serif;" + 
-                    e.getAttribute("style"));
-            });
-            svg.querySelectorAll(".link").forEach(e => {
-                e.setAttribute("style", "fill:none;stroke:#ccc;stroke-width:2px;" + 
-                    e.getAttribute("style"))
-            });
-            let source = serializer.serializeToString(svg);
-            download(source, "svg", "characters-tree");
         },
     }
 };

@@ -208,6 +208,7 @@ import { Dataset, Character, Hierarchy, State, Picture, characterFromId, createS
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 import { getMapsDirectory, loadText, storeText } from "@/fs-storage";
+import { Config } from "@/tools/config";
 
 
 type GeoMap = { name: string, fileName: string, center: [number, number], scale: number, property: string };
@@ -222,9 +223,9 @@ export default {
             showBigImage: false,
             maps: [
                 { name: "Mada admin 1", fileName: "MDG_adm1.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_1" },
-                { name: "Mada admin 2", fileName: "MDG_adm2.json", center: [46.518367, -18.546564], scale: 1200, property: "NAME_2" },
-                { name: "Mada admin 3", fileName: "MDG_adm3.json", center: [46.518367, -18.546564], scale: 1200, property: "NAME_3" },
-                { name: "Mada admin 4", fileName: "MDG_adm4.json", center: [46.518367, -18.546564], scale: 1200, property: "NAME_4" },
+                { name: "Mada admin 2", fileName: "MDG_adm2.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_2" },
+                { name: "Mada admin 3", fileName: "MDG_adm3.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_3" },
+                { name: "Mada admin 4", fileName: "MDG_adm4.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_4" },
             ] satisfies GeoMap[],
             selectedMapIndex: 0,
             geoJson: undefined as any,
@@ -317,7 +318,7 @@ export default {
                 const text = await loadText(dir, mapName);
                 this.geoJson = JSON.parse(text);
             } catch {
-                const geoFile = await fetch(`/${mapName}`);
+                const geoFile = await fetch(`${Config.siteUrl}${mapName}`);
                 this.geoJson = await geoFile.json();
                 storeText(dir, mapName, JSON.stringify(this.geoJson));
             }
