@@ -80,7 +80,8 @@
                         </button>
                     </HBox>
                     <GeoView :v-if="geoJson" 
-                        :geo-json="geoJson" 
+                        :geo-json="geoJson"
+                        :file-name="selectedMap?.fileName"
                         :property="selectedMap?.property"
                         :center-lat="selectedMap?.center[0]"
                         :center-long="selectedMap?.center[1]"
@@ -207,8 +208,6 @@ import PictureBox from "./PictureBox.vue";
 import { Dataset, Character, Hierarchy, State, Picture, characterFromId, createState, standardMaps, GeoMap, loadGeoJson } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
-import { getMapsDirectory, loadText, storeText } from "@/fs-storage";
-import { Config } from "@/tools/config";
 
 
 export default {
@@ -314,15 +313,6 @@ export default {
             const mapName = selectedMap.fileName;
             if (!mapName) { return; }
             this.geoJson = await loadGeoJson(mapName);
-            const dir = await getMapsDirectory();
-            try {
-                const text = await loadText(dir, mapName);
-                this.geoJson = JSON.parse(text);
-            } catch {
-                const geoFile = await fetch(`${Config.siteUrl}${mapName}`);
-                this.geoJson = await geoFile.json();
-                storeText(dir, mapName, JSON.stringify(this.geoJson));
-            }
         },
         addStatesFromMapFeatures() {
             const map = this.selectedMap;

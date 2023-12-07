@@ -16,6 +16,7 @@ import * as d3g from "d3-geo";
 export default {
     name: "CharactersTree",
     props: {
+        fileName: String,
         geoJson: Object,
         property: String,
         centerLat: Number,
@@ -28,6 +29,7 @@ export default {
             maxHeight: 400,
             data: {} as any,
             loading: false,
+            displayedFile: undefined as string|undefined
         };
     },
     async mounted() {
@@ -65,12 +67,19 @@ export default {
                 .attr("transform", function(d: any) { return "translate(" + path.centroid(d) + ")"; })
                 .attr("dy", ".35em")
                 .text((d: any) => this.property ? d.properties[this.property] : "");
+            this.displayedFile = this.fileName;
         },
         updateGraph() {
+            if (this.displayedFile === this.fileName) { return; }
             this.loading = true;
             setTimeout(() => {
-                this.updateD3();
-                this.loading = false;
+                try {
+                    this.updateD3();
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    this.loading = false;
+                }
             }, 0);
         },
         computeMaxHeight(fullHeight: boolean) {

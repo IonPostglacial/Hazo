@@ -31,9 +31,13 @@ export async function loadGeoJson(mapName: string) {
         const text = await loadText(dir, mapName);
         geoJson = JSON.parse(text);
     } catch {
-        const geoFile = await fetch(`${Config.siteUrl}${mapName}`);
-        geoJson = await geoFile.json();
-        storeText(dir, mapName, JSON.stringify(geoJson));
+        try {
+            const geoFile = await fetch(`${Config.siteUrl}${mapName}`);
+            geoJson = await geoFile.json();
+            storeText(dir, mapName, JSON.stringify(geoJson));
+        } catch (e) {
+            console.error(`error while loading map "${mapName}":`, e);
+        }
     }
     return geoJson;
 }

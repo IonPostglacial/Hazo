@@ -57,6 +57,7 @@
             </div>
             <Spacer></Spacer>
             <div class="button-group">
+                <button type="button" @click="addGeoCharacters(dataset)">Add Geo Characters</button>
                 <button @click="indexFamilies">Index Families</button>
                 <button type="button" @click="globalReplace">Replace Text</button>
                 <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
@@ -230,6 +231,18 @@ export default {
                 this.store.do("setDataset", decodeDataset(json));
             }
         },
+        async addGeoCharacters(ds: Dataset) {
+            const geoChar = createCharacter({ name: { S: "Geography" } });
+            const parent = ds.addCharacter(geoChar);
+            for (const map of standardMaps) {
+                const character = createCharacter({ name: { S: map.name }, parentId: parent.id });
+                character.preset = "map";
+                const geoJson = await loadGeoJson(map.fileName);
+                const stateNames: string[] = geoJson.features.map((f: any) => f.properties[map.property]);
+                character.states = stateNames.map(name => createState({ name: { S: name } })).sort();
+                ds.addCharacter(character);
+            }
+        },
         loadBase(id: string) {
             FS.load(id).then(async savedDataset => {
                 this.resetData();
@@ -242,19 +255,10 @@ export default {
                         createCharacter({ id: "c0", name: { S: "<TOP>" } }),
                         [], [], new Map(),
                     );
-                    const familyChar = createCharacter({ id: "c1", name: { S: "Family" } });
+                    const familyChar = createCharacter({ name: { S: "Family" } });
                     familyChar.preset = "family";
                     ds.addCharacter(familyChar);
-                    const geoChar = createCharacter({ id: "c2", name: { S: "Geography" } });
-                    ds.addCharacter(geoChar);
-                    for (const map of standardMaps) {
-                        const character = createCharacter({ name: { S: map.name }, parentId: geoChar.id });
-                        character.preset = "map";
-                        const geoJson = await loadGeoJson(map.fileName);
-                        const stateNames: string[] = geoJson.features.map((f: any) => f.properties[map.property]);
-                        character.states = stateNames.map(name => createState({ name: { S: name } })).sort();
-                        ds.addCharacter(character);
-                    }
+                    this.addGeoCharacters(ds);
                 }
                 ds.id = id;
                 this.store.do("setDataset", ds);
