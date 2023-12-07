@@ -204,14 +204,12 @@ import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Dataset, Character, Hierarchy, State, Picture, characterFromId, createState } from "@/datatypes";
+import { Dataset, Character, Hierarchy, State, Picture, characterFromId, createState, standardMaps, GeoMap, loadGeoJson } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 import { getMapsDirectory, loadText, storeText } from "@/fs-storage";
 import { Config } from "@/tools/config";
 
-
-type GeoMap = { name: string, fileName: string, center: [number, number], scale: number, property: string };
 
 export default {
     name: "CharactersTab",
@@ -221,12 +219,7 @@ export default {
             store: Hazo.store,
             showLeftMenu: true,
             showBigImage: false,
-            maps: [
-                { name: "Mada admin 1", fileName: "MDG_adm1.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_1" },
-                { name: "Mada admin 2", fileName: "MDG_adm2.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_2" },
-                { name: "Mada admin 3", fileName: "MDG_adm3.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_3" },
-                { name: "Mada admin 4", fileName: "MDG_adm4.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_4" },
-            ] satisfies GeoMap[],
+            maps: standardMaps,
             selectedMapIndex: 0,
             geoJson: undefined as any,
             bigImages: [{id: "", hubUrl: "", url: "", label: ""} as Picture],
@@ -240,6 +233,13 @@ export default {
             this.selectedCharacterId = to.params.id;
             if (this.selectedCharacter) {
                 this.store.do("selectCharacter", this.selectedCharacter);
+                const char = this.selectedCharacter;
+                if (char.characterType === "discrete" && char.preset === "map") {
+                    const i = this.maps.findIndex(m => m.name === char.name.S);
+                    if (i >= 0) {
+                        this.selectedMapIndex = i;
+                    }
+                }
             }
         },
         async selectedMapIndex() {
@@ -313,6 +313,7 @@ export default {
             if (!selectedMap) { return  }
             const mapName = selectedMap.fileName;
             if (!mapName) { return; }
+            this.geoJson = await loadGeoJson(mapName);
             const dir = await getMapsDirectory();
             try {
                 const text = await loadText(dir, mapName);

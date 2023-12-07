@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Taxon, allStates, createCharacter, createState, createTaxon } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Character, Dataset, Taxon, allStates, createCharacter, createState, createTaxon, loadGeoJson, standardMaps } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import * as FS from "./fs-storage";
 import { loadSDD } from "./sdd-load";
@@ -231,9 +231,31 @@ export default {
             }
         },
         loadBase(id: string) {
-            FS.load(id).then(savedDataset => {
+            FS.load(id).then(async savedDataset => {
                 this.resetData();
-                const ds = decodeDataset(savedDataset ?? { id });
+                let ds: Dataset;
+                if (savedDataset.taxons.length !== 0 || savedDataset.characters.length !== 0) {
+                    ds = decodeDataset(savedDataset);
+                } else {
+                    ds = new Dataset(id,
+                        createTaxon({ id: "t0", name: { S: "<TOP>" } }),
+                        createCharacter({ id: "c0", name: { S: "<TOP>" } }),
+                        [], [], new Map(),
+                    );
+                    const familyChar = createCharacter({ id: "c1", name: { S: "Family" } });
+                    familyChar.preset = "family";
+                    ds.addCharacter(familyChar);
+                    const geoChar = createCharacter({ id: "c2", name: { S: "Geography" } });
+                    ds.addCharacter(geoChar);
+                    for (const map of standardMaps) {
+                        const character = createCharacter({ name: { S: map.name }, parentId: geoChar.id });
+                        character.preset = "map";
+                        const geoJson = await loadGeoJson(map.fileName);
+                        const stateNames: string[] = geoJson.features.map((f: any) => f.properties[map.property]);
+                        character.states = stateNames.map(name => createState({ name: { S: name } })).sort();
+                        ds.addCharacter(character);
+                    }
+                }
                 ds.id = id;
                 this.store.do("setDataset", ds);
             });
@@ -241,7 +263,7 @@ export default {
         print() {
             window.print();
         },
-        createNewDataset() {
+        async createNewDataset() {
             let manualId = window.prompt("Dataset Id ?") ?? "#";
             while (this.datasetIds.includes(manualId)) {
                 manualId = manualId + " (other)";

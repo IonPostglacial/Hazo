@@ -1,4 +1,4 @@
-import { Character, CharacterPreset, State } from "./types";
+import { Character, CharacterPreset, DiscreteCharacter, State } from "./types";
 import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
 
@@ -11,7 +11,7 @@ type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 	detail?: string,
 }
 
-export function createCharacter(init: CharacterInit): Character {
+export function createCharacter(init: CharacterInit): DiscreteCharacter {
 	return {
 		...createHierarchicalItem(init),
 		type: "character",

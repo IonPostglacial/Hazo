@@ -116,3 +116,11 @@ export type DictionaryEntry = {
 export type Dictionary = {
 	entries: DictionaryEntry[],
 };
+
+export type GeoMap = { 
+	name: string, 
+	fileName: string, 
+	center: [number, number], 
+	scale: number, 
+	property: string 
+};
