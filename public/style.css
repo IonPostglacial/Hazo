@@ -147,6 +147,10 @@ ul {
     height: 120px;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
 input[type="search"],
 input[type="text"],
 .input-text {

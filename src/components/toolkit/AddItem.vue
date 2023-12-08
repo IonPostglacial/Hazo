@@ -7,8 +7,8 @@
                 class="full-width" placeholder="Add an item" />
             <drop-down v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
                 <div :class="'grid-n grid-' + nameFields?.length ?? 1">
-                    <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents">
-                        <div v-for="lang in nameFields" :key="lang.propertyName" :class="['medium-padding', { 'background-color-1': i === selectedCompletion }]">
+                    <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents blue-hover-line">
+                        <div v-for="lang in nameFields" :key="lang.propertyName" @click="selectAndEnter(i)" :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
                             {{ entry[lang.propertyName] }}
                         </div>
                     </div>
@@ -58,6 +58,10 @@ export default {
         }
     },
     methods: {
+        selectAndEnter(i: number) {
+            this.selectedCompletion = i;
+            this.addSingleItem();
+        },
         selectPreviousCompletion() {
             if (this.selectedCompletion > 0) {
                 this.selectedCompletion--;
