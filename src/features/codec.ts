@@ -219,7 +219,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 	});
 }
 
-function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, character: EncodedCharacter, states: Map<string, State>): Character {
+function decodeCharacter(character: EncodedCharacter, states: Map<string, State>): Character {
 	const item = decodeHierarchicalItem(character);
 	const charStates = new Map<string, State>();
 	for (const stateId of character.states) {
@@ -230,7 +230,7 @@ function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, charact
 	}
 	return createCharacter({
 		...item,
-		presetStates,
+		preset: character.preset,
 		states: Array.from(charStates.values()),
 		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
@@ -254,7 +254,7 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 		states.set(state.id, decodeState(state));
 	}
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
-		const decodedCharacter = decodeCharacter(ds.presetStates, character, states);
+		const decodedCharacter = decodeCharacter(character, states);
 		ds.addCharacter(decodedCharacter);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
