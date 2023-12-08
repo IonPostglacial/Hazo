@@ -226,6 +226,8 @@ import { DiscreteCharacter, Field, Picture, SelectableItem } from "@/datatypes/t
 import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
 
+const columns = ["menu", "props", "desc", "summary"];
+
 
 export default {
     name: "TaxonsTab",
@@ -236,6 +238,9 @@ export default {
         ColumnSelector, TextEditor,
     },
     data() {
+        const selectedCols = (""+localStorage.selectedTaxonColumns)
+            .split(",")
+            .filter(col => columns.includes(col));
         return {
             nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
             nameStore: familyNameStore,
@@ -249,7 +254,7 @@ export default {
             latexProgressText: "",
             selectingParent: false,
             selectedTaxonId: this.$route.params.id as string ?? "",
-            selectedColumns: ["menu", "props"]
+            selectedColumns: (selectedCols.length > 0) ? selectedCols : ["menu", "props"],
         }
     },
     watch: {
@@ -258,6 +263,9 @@ export default {
             if (this.selectedTaxon) {
                 this.store.do("selectTaxon", this.selectedTaxon);
             }
+        },
+        selectedColumns() {
+            localStorage.selectedTaxonColumns = this.selectedColumns.join(",");
         },
     },
     computed: {
