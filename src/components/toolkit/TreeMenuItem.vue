@@ -55,7 +55,7 @@
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { MenuEventHub } from "@/tools/menu-event-hub"; // eslint-disable-line no-unused-vars
-import AddItem from "../AddItem.vue";
+import AddItem from "./AddItem.vue";
 import HBox from "./HBox.vue";
 import VBox from "./VBox.vue";
 

@@ -57,8 +57,9 @@
             </div>
             <Spacer></Spacer>
             <div class="button-group">
-                <button type="button" @click="addGeoCharacters(dataset)">Add Geo Characters</button>
+                <button type="button" @click="addGeoCharacters(dataset)">Add Geo</button>
                 <button @click="indexFamilies">Index Families</button>
+                <button @click="indexCharacters">Index Characters</button>
                 <button type="button" @click="globalReplace">Replace Text</button>
                 <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
                 <button type="button" class="no-print background-color-1" @click="print">Print</button>
@@ -78,7 +79,7 @@ import { Config } from './tools/config';
 import { readTextFileAsync } from './tools/read-file-async';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { State } from "./datatypes/types";
-import { familiesWithNamesLike, Name, storefamily } from "@/db-index";
+import { Name, characterNameStore, familyNameStore } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import HBox from "@/components/toolkit/HBox.vue";
 import VBox from "@/components/toolkit/VBox.vue";
@@ -170,7 +171,7 @@ export default {
             this.loadBase(val);
         },
         searchFamily(val) {
-            familiesWithNamesLike("S", val).then(s => { this.matchingFamilies = s });
+            familyNameStore.namesLike("S", val).then(s => { this.matchingFamilies = s });
         },
     },
     methods: {
@@ -185,8 +186,14 @@ export default {
         },
         async indexFamilies() {
             for (const family of this.dataset.taxonsHierarchy.children) {
-                storefamily({ S: family.name.S, V: family.name.V ?? "", CN: family.name.CN ?? "" });
+                familyNameStore.store({ S: family.name.S, V: family.name.V ?? "", CN: family.name.CN ?? "" });
             }
+        },
+        async indexCharacters() {
+            forEachHierarchy(this.dataset.charactersHierarchy, ch => {
+                if (ch.id === "c0") { return; }
+                characterNameStore.store({ S: ch.name.S, V: ch.name.V ?? "", CN: ch.name.CN ?? "" });
+            });
         },
         syncPictures() {
             this.urlsToSync = [];

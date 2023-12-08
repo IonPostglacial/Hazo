@@ -5,7 +5,7 @@
                 @keydown.up="selectPreviousCompletion"
                 @keydown.down="selectNextCompletion"
                 class="full-width" placeholder="Add an item" />
-            <drop-down v-if="autocomplete && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
+            <drop-down v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
                 <div :class="'grid-n grid-' + nameFields?.length ?? 1">
                     <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents">
                         <div v-for="lang in nameFields" :key="lang.propertyName" :class="['medium-padding', { 'background-color-1': i === selectedCompletion }]">
@@ -26,14 +26,14 @@
 <script lang="ts">
 import DropDown from "@/components/toolkit/DropDown.vue";
 import HBox from "@/components/toolkit/HBox.vue";
-import { familiesWithNamesLike, Name } from "@/db-index";
+import { NameStore, Name } from "@/db-index";
 import { PropType } from "vue";
 
 export default {
   components: { DropDown, HBox },
     props: {
         value: String,
-        autocomplete: Boolean,
+        nameStore: Object as PropType<NameStore>,
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
     },
     data() {
@@ -47,13 +47,13 @@ export default {
     },
     watch: {
         text(val) {
-            if (!this.autocomplete) return;
+            if (!this.nameStore) return;
             if (val.length === 0) {
                 this.openAutoComplete = false;
                 this.selectedCompletion = -1;
             } else {
                 this.openAutoComplete = true;
-                familiesWithNamesLike("S", this.text).then(n => { this.completions = n; });
+                this.nameStore?.namesLike("S", this.text).then(n => { this.completions = n; });
             }
         }
     },
@@ -83,7 +83,7 @@ export default {
             this.$emit("add-item", { detail: value })
         },
         addSingleItem() {
-            if (!this.autocomplete || this.selectedCompletion === -1) {
+            if (!this.nameStore || this.selectedCompletion === -1) {
                 this.addItem(this.text.split("\t"));
             } else {
                 const completed = this.completions[this.selectedCompletion];

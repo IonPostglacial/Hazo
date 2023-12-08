@@ -1,7 +1,7 @@
 <template>
     <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <tree-menu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
-            :autocomplete="true"
+            :name-store="nameStore"
             :name-fields="nameFields"
             @move-item-up="moveUp" @move-item-down="moveDown"
             @add-item="addTaxon" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
@@ -224,6 +224,7 @@ import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, Picture, SelectableItem } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
+import { familyNameStore } from "@/db-index";
 
 
 export default {
@@ -237,6 +238,7 @@ export default {
     data() {
         return {
             nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
+            nameStore: familyNameStore,
             selectedSummaryLangId: 0,
             store: Hazo.store,
             showFields: false,

@@ -39,14 +39,14 @@
             </TreeMenuItem>
         </ul>
         <div class="flex-grow-1">&nbsp;</div>
-        <add-item v-if="editable" class="stick-to-bottom" :name-fields="nameFields" :autocomplete="autocomplete" @add-item="addItem({ value: $event.detail })"></add-item>
+        <add-item v-if="editable" class="stick-to-bottom" :value="[]" :name-fields="nameFields" :name-store="nameStore" @add-item="addItem({ value: $event.detail })"></add-item>
     </VBox> 
 </template>
 
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { createMenuEventHub } from "@/tools/menu-event-hub";
-import AddItem from "../AddItem.vue";
+import AddItem from "./AddItem.vue";
 import TreeMenuItem, { Button, MenuItem } from "./TreeMenuItem.vue";
 import HBox from "./HBox.vue";
 import VBox from "./VBox.vue";
@@ -54,6 +54,7 @@ import Spacer from "./Spacer.vue";
 import { HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
 import { iterHierarchy } from "@/datatypes/hierarchy";
+import { NameStore } from "@/db-index";
 
 
 export default {
@@ -65,7 +66,7 @@ export default {
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
         selectedItem: String,
         initOpen: Boolean,
-        autocomplete: Boolean,
+        nameStore: Object as PropType<NameStore>,
     },
     components:  { AddItem, HBox, Spacer, TreeMenuItem, VBox },
     data() {

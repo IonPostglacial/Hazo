@@ -39,7 +39,7 @@ import { Picture } from "@/datatypes";
 import { PropType } from "vue";
 import HBox from "./toolkit/HBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
-import AddItem from "./AddItem.vue";
+import AddItem from "./toolkit/AddItem.vue";
 import PictureFrame from "./PictureFrame.vue";
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import { Config } from "@/tools/config";

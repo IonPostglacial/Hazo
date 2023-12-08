@@ -2,7 +2,7 @@
     <split-panel class="start-align flex-grow-1 scroll">
         <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
             :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
-            :autocomplete="true"
+            :name-store="nameStore"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacter"
             @move-item-up="moveUp" @move-item-down="moveDown"
@@ -187,7 +187,7 @@
     </split-panel>
 </template>
 <script lang="ts">
-import AddItem from "./AddItem.vue";
+import AddItem from "./toolkit/AddItem.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import TreeMenu from "./toolkit/TreeMenu.vue";
@@ -203,6 +203,7 @@ import PictureBox from "./PictureBox.vue";
 import { Dataset, Character, Hierarchy, State, Picture, characterFromId, createState, standardMaps, GeoMap, loadGeoJson } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
+import { characterNameStore } from "@/db-index";
 
 
 export default {
@@ -211,6 +212,7 @@ export default {
     data() {
         return {
             store: Hazo.store,
+            nameStore: characterNameStore,
             showLeftMenu: true,
             showBigImage: false,
             maps: standardMaps,

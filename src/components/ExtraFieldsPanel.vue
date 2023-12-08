@@ -26,7 +26,7 @@
 
 <script lang="ts">
 import { PropType } from "vue";
-import AddItem from "./AddItem.vue";
+import AddItem from "./toolkit/AddItem.vue";
 import HBox from "./toolkit/HBox.vue";
 import { Field } from "@/datatypes";
 
