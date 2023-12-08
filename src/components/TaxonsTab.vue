@@ -182,6 +182,11 @@
                         <ul>
                             <li v-for="desc in itemDescription" :key="desc.character.id">
                                 {{ desc.character.name[selectedSummaryLangProperty] }}
+                                <GeoView 
+                                    v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
+                                    :geo-map="getGeoMap(desc.character)"
+                                    :selected-features="desc.states.map(s => s.name.S)">
+                                </GeoView>
                                 <ul v-if="desc.states.length > 0" class="indented">
                                     <li v-for="state in desc.states" :key="state.id">
                                         {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
@@ -203,9 +208,10 @@ import PopupGalery from "./PopupGalery.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
+import GeoView from "./GeoView.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain, taxonFromId, characterFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain, taxonFromId, characterFromId, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDown from "./toolkit/DropDownButton.vue";
@@ -222,7 +228,7 @@ import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
-import { DiscreteCharacter, Field, Picture, SelectableItem } from "@/datatypes/types";
+import { DiscreteCharacter, Field, GeoMap, Picture, SelectableItem } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
 
@@ -233,7 +239,7 @@ export default {
     name: "TaxonsTab",
     components: {
         CollapsiblePanel, DropDown, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
-        GoogleMap, Marker,
+        GeoView, GoogleMap, Marker,
         ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
         ColumnSelector, TextEditor,
     },
@@ -314,6 +320,9 @@ export default {
         }
     },
     methods: {
+        getGeoMap(ch: DiscreteCharacter): GeoMap|undefined {
+            return getCharacterMap(ch);
+        },
         exportCSV() {
             let content = "NV,NS,Family,Biblio\n";
             const tree = this.taxonTree;

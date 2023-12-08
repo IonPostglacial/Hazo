@@ -12,20 +12,20 @@
 import * as d3 from "d3";
 import * as d3g from "d3-geo";
 import { PropType } from "vue";
-import { GeoMap } from "@/datatypes";
+import { GeoMap, loadGeoJson } from "@/datatypes";
 
 
 export default {
     name: "CharactersTree",
     props: {
         geoMap: Object as PropType<GeoMap>,
-        geoJson: Object,
+        selectedFeatures: Array,
     },
     data() {
         return {
             store: Hazo.store,
+            geoJson: {} as any,
             maxHeight: 400,
-            data: {} as any,
             loading: false,
             displayedFile: undefined as string|undefined
         };
@@ -34,13 +34,29 @@ export default {
         this.updateGraph();
     },
     watch: {
-        geoJson() {
+        geoMap() {
             this.updateGraph();
+        },
+        selectedFeatures() {
+            this.updateFeatureSelection();
         }
     },
     methods: {
+        updateFeatureSelection() {
+            const property = this.geoMap?.property ?? "";
+            const element = this.$refs["geo-viewer"] as Element;
+            const el = d3.select(element);
+            const features = this.selectedFeatures ?? [];
+            el.selectAll("path").attr("fill", (d:any) => {
+                return features.includes(d.properties[property]) ? "rgb(37, 113, 212)" : "white";
+            });
+
+        },
         updateD3() {
-            if (typeof this.geoJson === "undefined" || !this.geoJson?.features) { return; }
+            const features = this.geoJson?.features;
+            const property = this.geoMap?.property;
+            console.log("update d3");
+            if (typeof this.geoJson === "undefined" || !features) { return; }
             const element = this.$refs["geo-viewer"] as Element;
             const el = d3.select(element);
             el.selectAll("svg").remove();
@@ -54,24 +70,29 @@ export default {
                 .translate([200, 300]);
             path.projection(projection);
             const map = svg.selectAll("path")
-                .data(this.geoJson?.features);
+                .data(features);
             map.enter()
                 .append("path")
-                .attr("fill","white")
+                .attr("fill", (d: any) => {
+                    if (typeof property === "undefined" || typeof this.selectedFeatures === "undefined") { return "white"; }
+                    return this.selectedFeatures.includes(d.properties[property]) ? "rgb(37, 113, 212)" : "white";
+                })
+                .attr("data-f", (d:any) => property? d.properties[property] : "")
                 .attr("stroke","black")
                 .attr("d", path as any)
                 .append("svg:title")
-                .attr("class", function(d: any) { return "path " + d.id; })
                 .attr("transform", function(d: any) { return "translate(" + path.centroid(d) + ")"; })
                 .attr("dy", ".35em")
-                .text((d: any) => this.geoMap?.property ? d.properties[this.geoMap?.property] : "");
+                .text((d: any) => property ? d.properties[property] : "");
             this.displayedFile = this.geoMap?.fileName;
         },
         updateGraph() {
-            if (this.displayedFile === this.geoMap?.fileName) { return; }
+            const mapName = this.geoMap?.fileName;
+            if (!mapName || this.displayedFile === mapName) { return; }
             this.loading = true;
-            setTimeout(() => {
+            setTimeout(async () => {
                 try {
+                    this.geoJson = await loadGeoJson(mapName)
                     this.updateD3();
                 } catch (e) {
                     console.error(e);

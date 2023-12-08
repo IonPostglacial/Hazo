@@ -1,5 +1,5 @@
 import { getMapsDirectory, loadText, storeText } from "@/fs-storage";
-import { Book, Field, GeoMap } from "./types";
+import { Book, Character, Field, GeoMap } from "./types";
 import { Config } from "@/tools/config";
 
 export const standardBooks: Book[] = [
@@ -40,4 +40,8 @@ export async function loadGeoJson(mapName: string) {
         }
     }
     return geoJson;
+}
+
+export function getCharacterMap(character: Character): GeoMap|undefined {
+    return standardMaps.find(m => m.name === character.name.S);
 }

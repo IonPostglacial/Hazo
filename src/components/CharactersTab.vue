@@ -76,11 +76,8 @@
                         <select v-if="maps.length > 0" name="lang" id="map-selector" v-model="selectedMapIndex">
                             <option v-for="(map, i) in maps" :key="map.name" :value="i">{{ map.name }}</option>
                         </select>
-                        <button type="button" @click="addStatesFromMapFeatures">
-                            Add {{ numberOfMapFeatures }} States
-                        </button>
                     </HBox>
-                    <GeoView :v-if="geoJson" :geo-json="geoJson" :geo-map="selectedMap">
+                    <GeoView :v-if="selectedMap" :geo-map="selectedMap">
                     </GeoView>
                 </VBox>
                 <collapsible-panel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">
@@ -200,7 +197,7 @@ import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Dataset, Character, Hierarchy, State, Picture, characterFromId, createState, standardMaps, GeoMap, loadGeoJson } from "@/datatypes";
+import { Dataset, Character, Hierarchy, State, Picture, characterFromId, standardMaps, GeoMap } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 import { characterNameStore } from "@/db-index";
@@ -217,7 +214,6 @@ export default {
             showBigImage: false,
             maps: standardMaps,
             selectedMapIndex: 0,
-            geoJson: undefined as any,
             bigImages: [{id: "", hubUrl: "", url: "", label: ""} as Picture],
             selectedCharacterId: (this.$route.params.id as string) ?? "",
             printMode: false,
@@ -238,22 +234,11 @@ export default {
                 }
             }
         },
-        async selectedMapIndex() {
-            await this.loadGeoJson()
-        },
-    },
-    mounted() {
-        this.loadGeoJson();
     },
     computed: {
         selectedMap(): GeoMap|undefined {
             if (this.maps.length <= this.selectedMapIndex) { return undefined; }
             return this.maps[this.selectedMapIndex];
-        },
-        numberOfMapFeatures(): number {
-            const map = this.selectedMap;
-            if (!map) { return 0; }
-            return this.geoJson?.features?.length ?? 0;
         },
         isDiscreteCharacter(): boolean {
             return this.selectedCharacter?.characterType === "discrete";
@@ -304,23 +289,6 @@ export default {
         },
     },
     methods: {
-        async loadGeoJson() {
-            const selectedMap = this.selectedMap;
-            if (!selectedMap) { return  }
-            const mapName = selectedMap.fileName;
-            if (!mapName) { return; }
-            this.geoJson = await loadGeoJson(mapName);
-        },
-        addStatesFromMapFeatures() {
-            const map = this.selectedMap;
-            const character = this.selectedCharacter;
-            if (!map || !character || character.characterType !== "discrete") { return; }
-            const stateNames: string[] = this.geoJson.features.map((f: any) => f.properties[map.property]);
-            const states = stateNames.map(name => createState({ name: { S: name } })).sort();
-            for (const state of states) {
-                this.store.do("addState", { state, character });
-            }
-        },
         isInherentState(state: State): boolean {
             const ch = this.selectedCharacter;
             return ch?.characterType === "discrete" && ch.inherentState ? ch.inherentState.id === state.id : false

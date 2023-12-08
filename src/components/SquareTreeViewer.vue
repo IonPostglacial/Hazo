@@ -7,7 +7,6 @@
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>
         </VBox>
-        <GeoView v-if="geographic && geoJson" :geo-json="geoJson" :geo-map="geoMap"></GeoView>
         <HBox v-if="!floweringMode" class="flex-wrap relative">
             <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
                     :style="item.pictures.length > 0 ? 'background-image: url(' + item.pictures[0].url + ')' : ''"
@@ -28,7 +27,7 @@
 
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Hierarchy, HierarchicalItem, characterFromId, standardMaps, loadGeoJson } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Hierarchy, HierarchicalItem, characterFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import GeoView from "./GeoView.vue";
 import HBox from "./toolkit/HBox.vue";
@@ -37,7 +36,7 @@ import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-import { DiscreteCharacter, GeoMap, SelectableItem } from "@/datatypes/types";
+import { DiscreteCharacter, SelectableItem } from "@/datatypes/types";
 
 
 export default {
@@ -53,9 +52,6 @@ export default {
         return {
             flowering: Months.fromStates(currentItems.filter(item => item.selected)),
             floweringMode: false,
-            geographic: false,
-            geoJson: undefined as unknown,
-            geoMap: undefined as GeoMap|undefined,
             isRoot: true,
             currentItems: currentItems,
             breadCrumbs: [] as Hierarchy<SelectableItem>[],
@@ -99,22 +95,9 @@ export default {
     methods: {
         updateCurrentItem(item: Hierarchy<SelectableItem>) {
             this.floweringMode = this.isFlowering(item);
-            this.geographic = this.isGeographic(item);
-            if (this.geographic) {
-                const geoMap =  standardMaps.find(m => m.name === item.name.S);
-                if (geoMap) {
-                    loadGeoJson(geoMap.fileName).then(geoJson => {
-                        this.geoJson = geoJson;
-                        this.geoMap = geoMap;
-                     });
-                }
-            }
         },
         resetCurrentItem() {
             this.floweringMode = false;
-            this.geographic = false;
-            this.geoMap = undefined;
-            this.geoJson = undefined;
         },
         nameFieldsForItem(item: any): Iterable<string> {
             return this.nameFields?.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
