@@ -46,7 +46,7 @@
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
             <li v-if="editable">
-                <add-item :value="''" class="medium-height full-line" @add-item="addItem"></add-item>
+                <AddItem class="medium-height full-line" @add-item="addItem"></AddItem>
             </li>
         </ul>
     </li>

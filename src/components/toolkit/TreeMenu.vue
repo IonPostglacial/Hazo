@@ -39,7 +39,7 @@
             </TreeMenuItem>
         </ul>
         <div class="flex-grow-1">&nbsp;</div>
-        <add-item v-if="editable" class="stick-to-bottom" :value="[]" :name-fields="nameFields" :name-store="nameStore" @add-item="addItem({ value: $event.detail })"></add-item>
+        <AddItem v-if="editable" class="stick-to-bottom" :name-fields="nameFields" :name-store="nameStore" @add-item="addItem({ value: $event.detail })"></AddItem>
     </VBox> 
 </template>
 

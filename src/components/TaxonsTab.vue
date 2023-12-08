@@ -25,7 +25,15 @@
                             <font-awesome-icon icon="fa-solid fa-paste" />
                         </button>
                     </div>
-                    <button @click="exportCSV">Export CSV</button>
+                    <drop-down label="Export">
+                        <VBox>
+                            <label class="button" for="importKml">KML</label>
+                            <button @click="exportCSV">Export CSV</button>
+                            <button type="button" @click="emptyZip">Folders</button>
+                            <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
+                            <router-link class="button" to="/taxons-stats">Stats</router-link>
+                        </VBox>
+                    </drop-down>
                     <div v-if="selectedTaxon" class="relative">
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
@@ -44,39 +52,9 @@
                     </div>
                     <Spacer></Spacer>
                     <div class="button-group">
-                        <drop-down label="Columns">
-                            <VBox>
-                                <column-selector name="Left Menu" 
-                                    value="menu" :magnifyable="false"
-                                    :selected="selectedColumns.includes('menu')"
-                                    @zoom-column="zoomColumn" @add-column="addColumn"
-                                    @remove-column="removeColumn"  />
-                                <column-selector name="Properties" 
-                                    value="props" :magnifyable="true"
-                                    :selected="selectedColumns.includes('props')"
-                                    @zoom-column="zoomColumn" @add-column="addColumn"
-                                    @remove-column="removeColumn" />
-                                <column-selector name="Descriptors" 
-                                    value="desc" :magnifyable="true"
-                                    :selected="selectedColumns.includes('desc')"
-                                    @zoom-column="zoomColumn" @add-column="addColumn"
-                                    @remove-column="removeColumn"  />
-                                <column-selector name="Summary" 
-                                    value="summary" :magnifyable="true"
-                                    :selected="selectedColumns.includes('summary')"
-                                    @zoom-column="zoomColumn" @add-column="addColumn"
-                                    @remove-column="removeColumn"  />
-                            </VBox>
-                        </drop-down>
-                        <drop-down label="Export">
-                            <VBox>
-                                <label class="button" for="importKml">KML</label>
-                                <button type="button" @click="emptyZip">Folders</button>
-                                <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
-                                <router-link class="button" to="/taxons-stats">Stats</router-link>
-                            </VBox>
-                        </drop-down>
-                        <button type="button" @click="showFields = !showFields">Extra Fields</button>
+                        <button v-for="col in minimizedColumns" @click="addColumn(col)">
+                            {{ columnName(col) }}
+                        </button>
                     </div>
                     <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
                 </HBox>
@@ -93,6 +71,9 @@
                 </GoogleMap>
                 <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
                     <VBox v-if="selectedColumns.includes('props')" :class="['scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
+                        <ColumnHeader label="Properties"
+                            @minimize="removeColumn('props')"
+                            @maximize="zoomColumn('props')"></ColumnHeader>
                         <picture-box :editable="editProperties"
                             @open-photo="openPhoto"
                             @add-photo="addItemPhoto"
@@ -167,34 +148,43 @@
                         </collapsible-panel>
                     </VBox>
                     <VBox v-if="selectedColumns.includes('desc')" class="scroll flex-grow-1">
-                        <section class="white-background medium-padding medium-margin thin-border">
+                        <ColumnHeader label="Descriptors"
+                            @minimize="removeColumn('desc')"
+                            @maximize="zoomColumn('desc')">
+                        </ColumnHeader>
+                        <section v-if="selectedTaxon.website.length > 0" class="white-background medium-padding medium-margin thin-border">
                             <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
                         </section>
-                        <collapsible-panel label="Description">
+                        <collapsible-panel label="Select descriptors">
                             <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="true" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                         </collapsible-panel>
                     </VBox>
-                    <collapsible-panel v-if="selectedColumns.includes('summary')" class="scroll" label="Description">
-                        <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
-                        <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
-                            <option v-for="(language, index) in nameFields" :key="language.label" :value="index">{{ language.label }}</option>
-                        </select>
-                        <ul>
-                            <li v-for="desc in itemDescription" :key="desc.character.id">
-                                {{ desc.character.name[selectedSummaryLangProperty] }}
-                                <GeoView 
-                                    v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
-                                    :geo-map="getGeoMap(desc.character)"
-                                    :selected-features="desc.states.map(s => s.name.S)">
-                                </GeoView>
-                                <ul v-if="desc.states.length > 0" class="indented">
-                                    <li v-for="state in desc.states" :key="state.id">
-                                        {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </collapsible-panel>
+                    <VBox v-if="selectedColumns.includes('summary')">
+                        <ColumnHeader label="Summary"
+                            @minimize="removeColumn('summary')"
+                            @maximize="zoomColumn('summary')"></ColumnHeader>
+                        <div class="thin-border medium-margin white-background scroll">
+                            <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
+                            <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
+                                <option v-for="(language, index) in nameFields" :key="language.label" :value="index">{{ language.label }}</option>
+                            </select>
+                            <ul class="big-margin-left">
+                                <li v-for="desc in itemDescription" :key="desc.character.id">
+                                    {{ desc.character.name[selectedSummaryLangProperty] }}
+                                    <GeoView 
+                                        v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
+                                        :geo-map="getGeoMap(desc.character)"
+                                        :selected-features="desc.states.map(s => s.name.S)">
+                                    </GeoView>
+                                    <ul v-if="desc.states.length > 0" class="indented">
+                                        <li v-for="state in desc.states" :key="state.id">
+                                            {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </VBox>
                 </split-panel>
             </VBox>
         </HBox>
@@ -218,7 +208,7 @@ import DropDown from "./toolkit/DropDownButton.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
-import ColumnSelector from "./ColumnSelector.vue";
+import ColumnHeader from "./ColumnHeader.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { createTexExporter, exportZipFolder, importKml } from "@/features";
@@ -233,7 +223,12 @@ import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
 
 const columns = ["menu", "props", "desc", "summary"];
-
+const columnNames: Record<string, string> = { 
+    menu: "Menu", 
+    props: "Properties", 
+    desc: "Descriptions", 
+    summary: "Summary"
+};
 
 export default {
     name: "TaxonsTab",
@@ -241,7 +236,7 @@ export default {
         CollapsiblePanel, DropDown, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
         GeoView, GoogleMap, Marker,
         ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
-        ColumnSelector, TextEditor,
+        ColumnHeader, TextEditor,
     },
     data() {
         const selectedCols = (""+localStorage.selectedTaxonColumns)
@@ -275,6 +270,9 @@ export default {
         },
     },
     computed: {
+        minimizedColumns(): string[] {
+            return columns.filter(col => !this.selectedColumns.includes(col));
+        },
         selectedSummaryLangProperty(): string {
             return this.nameFields[this.selectedSummaryLangId].propertyName;
         },
@@ -320,6 +318,9 @@ export default {
         }
     },
     methods: {
+        columnName(col: string): string {
+            return columnNames[col];
+        },
         getGeoMap(ch: DiscreteCharacter): GeoMap|undefined {
             return getCharacterMap(ch);
         },
@@ -352,6 +353,7 @@ export default {
             this.selectedColumns = [...this.selectedColumns, col];
         },
         removeColumn(col: string) {
+            if (this.selectedColumns.length === 2) { return; }
             this.selectedColumns = this.selectedColumns.filter(c => c != col);
         },
         pushStateToChildren(state: State) {

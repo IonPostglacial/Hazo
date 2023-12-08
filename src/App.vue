@@ -78,7 +78,7 @@ import download from "@/tools/download";
 import { Config } from './tools/config';
 import { readTextFileAsync } from './tools/read-file-async';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
-import { State } from "./datatypes/types";
+import { DiscreteCharacter, State } from "./datatypes/types";
 import { Name, characterNameStore, familyNameStore } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import HBox from "@/components/toolkit/HBox.vue";
@@ -246,8 +246,11 @@ export default {
                 character.preset = "map";
                 const geoJson = await loadGeoJson(map.fileName);
                 const stateNames: string[] = geoJson.features.map((f: any) => f.properties[map.property]);
-                character.states = stateNames.map(name => createState({ name: { S: name } })).sort();
-                ds.addCharacter(character);
+                const ch = ds.addCharacter(character);
+                stateNames
+                    .map(name => createState({ name: { S: name } }))
+                    .sort()
+                    .forEach(state => ds.addState(state, ch as DiscreteCharacter));
             }
         },
         loadBase(id: string) {

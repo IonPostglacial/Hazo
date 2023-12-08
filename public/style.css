@@ -318,8 +318,8 @@ div.invisible {
     margin: 2px;
 }
 
-.medium-margin {
-    margin: 4px;
+.big-margin-left {
+    margin-left: 16px;
 }
 
 .medium-margin-vertical {

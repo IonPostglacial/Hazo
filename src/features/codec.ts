@@ -231,7 +231,7 @@ function decodeCharacter(presetStates: Record<CharacterPreset, State[]>, charact
 	return createCharacter({
 		...item,
 		presetStates,
-		states: character.preset || Array.from(charStates.values()),
+		states: Array.from(charStates.values()),
 		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
 		inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
 		requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],

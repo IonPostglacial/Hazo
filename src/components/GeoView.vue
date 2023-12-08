@@ -55,7 +55,6 @@ export default {
         updateD3() {
             const features = this.geoJson?.features;
             const property = this.geoMap?.property;
-            console.log("update d3");
             if (typeof this.geoJson === "undefined" || !features) { return; }
             const element = this.$refs["geo-viewer"] as Element;
             const el = d3.select(element);
