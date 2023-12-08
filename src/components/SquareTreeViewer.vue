@@ -103,9 +103,7 @@ export default {
             if (this.geographic) {
                 const geoMap =  standardMaps.find(m => m.name === item.name.S);
                 if (geoMap) {
-                    console.log("load geo json", geoMap.fileName);
-                    loadGeoJson(geoMap.fileName).then(geoJson => { 
-                        console.log("loaded json");
+                    loadGeoJson(geoMap.fileName).then(geoJson => {
                         this.geoJson = geoJson;
                         this.geoMap = geoMap;
                      });

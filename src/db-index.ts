@@ -7,9 +7,7 @@ export const LANGUAGES: Language[] = LANGUAGES_V1;
 export type Name = Record<Language | string, string>;
 
 function createFamilyIndexStore(db: IDBDatabase, e: IDBVersionChangeEvent) {
-    console.log("previous", e.oldVersion);
     if (!db.objectStoreNames.contains(FAMILY_INDEX_STORE_NAME)) {
-        console.log("ga");
         const store = db.createObjectStore(FAMILY_INDEX_STORE_NAME, { keyPath: "id", autoIncrement: true });
         for (const langProp of LANGUAGES) {
             store.createIndex(langProp, langProp, { unique: false });

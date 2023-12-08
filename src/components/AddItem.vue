@@ -48,7 +48,6 @@ export default {
     watch: {
         text(val) {
             if (!this.autocomplete) return;
-            console.log(this.nameFields);
             if (val.length === 0) {
                 this.openAutoComplete = false;
                 this.selectedCompletion = -1;
