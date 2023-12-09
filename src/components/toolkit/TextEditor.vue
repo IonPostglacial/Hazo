@@ -48,7 +48,9 @@ onBeforeUnmount(() => {
 });
 
 onBeforeUpdate(() => {
-    editor.value.commands.setContent(props.modelValue);
+    if (!editor.value.isFocused) {
+        editor.value.commands.setContent(props.modelValue);
+    }
 });
 
 </script>
