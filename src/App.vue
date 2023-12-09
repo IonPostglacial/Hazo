@@ -35,12 +35,12 @@
         </HBox>
         <HBox class="thin-border background-gradient-1 no-print">
             <div class="button-group">
-                <button type="button" @click="importFile">Import</button>
+                <UploadButton @upload="importFile">Import</UploadButton>
                 <DropDownButton label="" :default-up="true">
                     <VBox>
-                        <button type="button" @click="importFile">Import</button>
-                        <button type="button" @click="importDescriptorFile">Import with descriptors</button>
-                        <button type="button" @click="mergeFile">Merge</button>
+                        <UploadButton @upload="importFile">Import</UploadButton>
+                        <UploadButton @upload="importDescriptorFile">Import with descriptors</UploadButton>
+                        <UploadButton @upload="mergeFile">Merge</UploadButton>
                     </VBox>
                 </DropDownButton>
             </div>
@@ -54,9 +54,6 @@
                 </DropDownButton>
             </div>
             <Spacer></Spacer>
-            <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
-            <input class="invisible" @change="fileUploadDescriptors" type="file" accept=".csv" name="import-descriptors" id="import-descriptors">
-            <input class="invisible" @change="fileMerge" type="file" accept=".sdd.xml,.json,application/xml" name="merge-data" id="merge-data">
             <div class="button-group">
                 <button type="button" class="background-color-ok" @click="saveData">Save</button>
                 <select v-if="!preloaded" v-model="selectedBase">
@@ -101,11 +98,12 @@ import DropDownButton from "@/components/toolkit/DropDownButton.vue";
 import HBox from "@/components/toolkit/HBox.vue";
 import VBox from "@/components/toolkit/VBox.vue";
 import Spacer from "@/components/toolkit/Spacer.vue";
+import UploadButton from "@/components/toolkit/UploadButton.vue";
 import parseCSV, { escape, factorizeColumn, transposeCSV } from "./tools/parse-csv";
 
 export default {
     name: "App",
-    components: { DropDownButton, HBox, Spacer, VBox },
+    components: { DropDownButton, HBox, Spacer, UploadButton, VBox },
     data() {
         return {
             store: Hazo.store,
@@ -349,32 +347,7 @@ export default {
         resetData() {
             this.store.do("resetData");
         },
-        importFile() {
-            document.getElementById("import-data")?.click();
-        },
-        importDescriptorFile() {
-            document.getElementById("import-descriptors")?.click();
-        },
-        mergeFile() {
-            document.getElementById("merge-data")?.click();
-        },
-        globalReplace() {
-            const pattern = window.prompt("Text pattern to replace") ?? "";
-            const replacement = window.prompt("Replacement") ?? "";
-            const re = new RegExp(pattern, "g");
-
-             (this.dataset.taxonsHierarchy)
-
-            forEachHierarchy(this.dataset.taxonsHierarchy, taxon => {
-                const newDetail = taxon.detail.replace(re, replacement);
-                this.store.do("setTaxon", { taxon: taxon, props: { detail: newDetail } });
-            });
-            forEachHierarchy(this.dataset.charactersHierarchy, character => {
-                const newDetail = character.detail.replace(re, replacement);
-                this.store.do("setCharacter", { character: character, props: { detail: newDetail } });
-            });
-        },
-        async fileRead(file: File): Promise<Dataset | null> {
+        async readFile(file: File): Promise<Dataset | null> {
             let result: Dataset | null = null;
             if (file.name.endsWith(".xml")) {
                 result = await loadSDD(file, this.dataset.extraFields);
@@ -385,96 +358,14 @@ export default {
             }
             return result;
         },
-        async mergeProperties(e: InputEvent) {
-            if (!(e.target instanceof HTMLInputElement)) return;
-
-            const result = await this.fileRead((e.target.files ?? [])[0]);
-            if (result === null) { return; }
-            const propertiesToMerge = (window.prompt("Properties to merge ?") ?? "").split(",");
-            const resultsByName: Record<string, Taxon> = {};
-            for (const item of Object.values(iterHierarchy(result.taxonsHierarchy))) {
-                resultsByName[item.name] = item;
-            }
-            for (const item of iterHierarchy(this.dataset.taxonsHierarchy)) {
-                const newInfo: any = resultsByName[item.name.S], anyItem: any = item;
-                if (typeof newInfo !== "undefined") {
-                    for (const prop of propertiesToMerge) {
-                        const value: any = newInfo[prop];
-                        const oldValue: any = anyItem[prop];
-                        if (typeof oldValue === "undefined" || oldValue === null || oldValue === "" && typeof value !== "undefined" && value !== null) {
-                            anyItem[prop] = value;
-                        }
-                    }
-                }
-            }
-        },
-        async fileMergeHierarchies(e: InputEvent) {
-            if (!(e.target instanceof HTMLInputElement)) return;
-
-            const result = await this.fileRead((e.target.files ?? [])[0]);
-
-            if (result !== null) {
-                for (const taxon of result.taxonsHierarchy.children) {
-                    this.store.do("addTaxon", taxon);
-                }
-                for (const character of result.charactersHierarchy.children) {
-                    this.store.do("addCharacter", character);
-                }
-            }
-        },
-        async fileMerge(e: Event) {
-            if (!(e.target instanceof HTMLInputElement)) return;
-
-            const file = (e.target.files ?? [])[0];
-
-            if (typeof file === "undefined") return;
-
-            if (file.name.endsWith(".csv")) {
-                this.mergeCsv(file);
-                return;
-            }
-
-            const result = await this.fileRead(file);
-
-            if (result !== null) {
-                const existingTaxonsByIds = this.dataset.taxonsByIds;
-                for (const taxon of iterHierarchy(result.taxonsHierarchy)) {
-                    const existing = existingTaxonsByIds.get(taxon.id);
-                    if (typeof existing !== "undefined") {
-                        existing.name.S = existing.name.S ?? taxon.name.S;
-                        existing.name.EN = existing.name.EN ?? taxon.name.EN;
-                        existing.name.CN = existing.name.CN ?? taxon.name.CN;
-                        existing.name.V = existing.name.V ?? taxon.name.V;
-                        existing.pictures = existing.pictures ?? taxon.pictures;
-                        existing.bookInfoByIds = existing.bookInfoByIds ?? taxon.bookInfoByIds;
-                        existing.specimenLocations = existing.specimenLocations ?? taxon.specimenLocations;
-                        existing.author = existing.author ?? taxon.author;
-                        existing.vernacularName2 = existing.vernacularName2 ?? taxon.vernacularName2;
-                        existing.name2 = existing.name2 ?? taxon.name2;
-                        existing.meaning = existing.meaning ?? taxon.meaning;
-                        existing.herbariumPicture = existing.herbariumPicture ?? taxon.herbariumPicture;
-                        existing.website = existing.website ?? taxon.website;
-                        existing.noHerbier = existing.noHerbier ?? taxon.noHerbier;
-                        existing.fasc = existing.fasc ?? taxon.fasc;
-                        existing.page = existing.page ?? taxon.page;
-                        existing.detail = existing.detail ?? taxon.detail;
-                        existing.extra = existing.extra ?? taxon.extra;
-                    }
-                }
-            }
-        },
-        async fileUpload(e: Event) {
-            if (!(e.target instanceof HTMLInputElement)) return;
-
-            const result = await this.fileRead((e.target.files ?? [])[0]);
+        async importFile(file: File) {
+            const result = await this.readFile(file);
             if (typeof result === "undefined" || result === null) return;
 
             result.id = this.selectedBase;
             this.store.do("setDataset", result);
         },
-        async fileUploadDescriptors(e: Event) {
-            if (!(e.target instanceof HTMLInputElement)) return;
-            const file = (e.target.files ?? [null])[0];
+        async importDescriptorFile(file: File) {
             if (file === null) return;
             const text = await readTextFileAsync(file);
             const lines = parseCSV(text);
@@ -505,7 +396,42 @@ export default {
                     this.dataset.setTaxonState(taxonId, state);
                 }
             }
-            this.store.do("setDataset", this.dataset);
+            this.store.do("setDataset", this.dataset);           
+        },
+        async mergeFile(file: File) {
+            const result = await this.readFile(file);
+            if (result === null) { return; }
+            const propertiesToMerge = (window.prompt("Properties to merge ?") ?? "").split(",");
+            const resultsByName: Record<string, Taxon> = {};
+            for (const item of Object.values(iterHierarchy(result.taxonsHierarchy))) {
+                resultsByName[item.name] = item;
+            }
+            for (const item of iterHierarchy(this.dataset.taxonsHierarchy)) {
+                const newInfo: any = resultsByName[item.name.S], anyItem: any = item;
+                if (typeof newInfo !== "undefined") {
+                    for (const prop of propertiesToMerge) {
+                        const value: any = newInfo[prop];
+                        const oldValue: any = anyItem[prop];
+                        if (typeof oldValue === "undefined" || oldValue === null || oldValue === "" && typeof value !== "undefined" && value !== null) {
+                            anyItem[prop] = value;
+                        }
+                    }
+                }
+            }
+        },
+        globalReplace() {
+            const pattern = window.prompt("Text pattern to replace") ?? "";
+            const replacement = window.prompt("Replacement") ?? "";
+            const re = new RegExp(pattern, "g");
+
+            forEachHierarchy(this.dataset.taxonsHierarchy, taxon => {
+                const newDetail = taxon.detail.replace(re, replacement);
+                this.store.do("setTaxon", { taxon: taxon, props: { detail: newDetail } });
+            });
+            forEachHierarchy(this.dataset.charactersHierarchy, character => {
+                const newDetail = character.detail.replace(re, replacement);
+                this.store.do("setCharacter", { character: character, props: { detail: newDetail } });
+            });
         },
         async boldUpload(file: File) {
             const text = await readTextFileAsync(file);
