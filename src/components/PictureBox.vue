@@ -8,7 +8,7 @@
             @open-photo="openPhoto"
             @set-photo="setPhoto">
         </picture-frame>
-        <HBox class="relative">
+        <HBox class="relative center-items">
             <div class="button-group">
                 <button type="button" @click="previousPicture">
                     <font-awesome-icon icon="fa-solid fa-arrow-left" />
@@ -17,7 +17,7 @@
                     <font-awesome-icon icon="fa-solid fa-arrow-right" />
                 </button>
             </div>
-            <div class="medium-padding">{{ indexText }}</div>
+            <div class="medium-padding nowrap">{{ indexText }}</div>
             <div>
                 <button type="button" @click="uploadPopup">
                     <font-awesome-icon icon="fa-solid fa-upload" />
