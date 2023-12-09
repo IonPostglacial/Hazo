@@ -1,10 +1,10 @@
 <template>
-    <dialog v-if="open" class="over-everything white" open>
-        <HBox>
-            <div class="nowrap no-vertical-overflow flex-grow-1">{{ titleText }}</div>
+    <dialog class="white medium-padding thin-border" ref="dialog">
+        <HBox class="center-items medium-padding">
+            <div class="nowrap no-vertical-overflow flex-grow-1">{{ title }}</div>
             <div class="close" @click="close"></div>
         </HBox>
-        <PictureGalery :images="images" @image-selected="handleImageSelected"></PictureGalery>
+        <PictureGalery :images="images"></PictureGalery>
     </dialog>
 </template>
 <script lang="ts">
@@ -18,21 +18,24 @@ export default {
     name: "PopupGalery",
     components: { HBox, PictureGalery },
     props: {
+        title: String,
         images: { type: Array as PropType<Picture[]>, required: true },
         open: Boolean,
     },
-    data() {
-        return {
-            titleText: this.images.length > 0 ? this.images[0].label : "",
-        };
+    watch: {
+        open() {
+            const dialog = this.$refs.dialog as HTMLDialogElement;
+            if (this.open) {
+                dialog.showModal();
+            } else {
+                dialog.close();
+            }
+        }
     },
     methods: {
         close() {
             this.$emit("closed");
         },
-        handleImageSelected({ picture } : { picture: Picture, index: number }) {
-            this.titleText = picture.label;
-        }
     }
 }
 </script>

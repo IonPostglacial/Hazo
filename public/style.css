@@ -36,6 +36,10 @@ select,
     user-select: none;
 }
 
+dialog::backdrop {
+    backdrop-filter: blur(10px);
+}
+
 #app .ProseMirror {
     flex-grow: 1;
 }
@@ -260,7 +264,7 @@ input[type="text"].no-fixed-width {
 }
 
 .background-gradient-1 {
-    background: linear-gradient(0deg, rgb(219, 219, 219) 5%, rgb(221, 221, 221) 22%);
+    background: linear-gradient(0deg, rgb(219, 219, 219) 5%, rgb(227, 223, 223) 22%);
 }
 
 .background-color-1 {
@@ -423,6 +427,10 @@ div.invisible {
 	border: 1px solid #ddd;
 }
 
+.vertical-flexbox > .thin-border + .thin-border {
+    border-top: none;
+}
+
 .flex-grow-1 {
     flex-grow: 1;
 }
@@ -534,6 +542,11 @@ div.invisible {
 
 .lightgrey-background {
 	background-color: #edeff0;
+}
+
+.glass-background {
+    background-color: #edeff09c;
+    backdrop-filter: blur(10px);
 }
 
 .white-background {

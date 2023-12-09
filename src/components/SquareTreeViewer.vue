@@ -1,6 +1,6 @@
 <template>
-    <VBox>
-        <VBox class="stick-to-top white-background">
+    <VBox class="white-background">
+        <VBox class="stick-to-top glass-background thin-border">
             <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
             <div v-if="breadCrumbs.length > 0" class="flex-wrap button-group">
                 <button type="button" @click="backToTop">Top</button>

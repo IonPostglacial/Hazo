@@ -1,5 +1,5 @@
 <template>
-    <HBox class="center-items background-gradient-1">
+    <HBox class="center-items glass-background thin-border">
         <b class="medium-padding">{{ label }}</b>
         <Spacer></Spacer>
         <div class="button-group">

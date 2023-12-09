@@ -8,7 +8,7 @@
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
         <HBox class="scroll flex-grow-1">
-            <popup-galery :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
+            <popup-galery :title="selectedTaxon?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
             <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
             <VBox class="flex-grow-1">
                 <HBox class="no-print medium-padding thin-border">
@@ -89,7 +89,7 @@
                         </picture-box>
                         <collapsible-panel label="Properties">
                             <div class="scroll large-max-width form-grid medium-padding">
-                                <div v-if="editProperties" class="display-contents">
+                                <div class="display-contents">
                                     <label>NS</label>
                                     <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" />
                                     <label>Author</label>
@@ -105,8 +105,7 @@
                                     NV 2</item-property-field>
 
                                 <label>Website</label>
-                                <input v-if="editProperties" type="text" v-model="selectedTaxon.website" />
-                                <a v-if="!editProperties" target="_blank" :href="selectedTaxon.website">{{ selectedTaxon.website }}</a>
+                                <input type="text" v-model="selectedTaxon.website" />
 
                                 <label>Meaning</label>
                                 <textarea :readonly="!editProperties" v-model="selectedTaxon.meaning"></textarea>
@@ -158,18 +157,16 @@
                             @minimize="removeColumn('desc')"
                             @maximize="zoomColumn('desc')">
                         </ColumnHeader>
-                        <section v-if="selectedTaxon.website.length > 0" class="white-background medium-padding medium-margin thin-border">
-                            <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
-                        </section>
-                        <collapsible-panel label="Select descriptors">
-                            <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="true" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
-                        </collapsible-panel>
+                        <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="true" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
                     </VBox>
-                    <VBox v-if="selectedColumns.includes('summary')">
+                    <VBox v-if="selectedColumns.includes('summary')" class="scroll">
                         <ColumnHeader class="stick-to-top" label="Summary"
                             @minimize="removeColumn('summary')"
                             @maximize="zoomColumn('summary')"></ColumnHeader>
-                        <div class="thin-border medium-margin white-background scroll flex-grow-1">
+                        <section v-if="selectedTaxon.website.length > 0" class="white-background medium-padding medium-margin thin-border">
+                            <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
+                        </section>
+                        <div class="thin-border medium-margin white-background flex-grow-1">
                             <HBox>
                                 <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
                                 <Spacer></Spacer>

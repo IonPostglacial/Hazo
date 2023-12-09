@@ -10,7 +10,7 @@
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
         <div class="scroll flex-grow-1">
-            <popup-galery v-if="!printMode" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
+            <popup-galery v-if="!printMode" :title="selectedCharacter?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
             <VBox class="scroll flex-grow-1">
                 <HBox class="stick-to-top medium-padding thin-border background-gradient-1 no-print">
                     <button v-if="showLeftMenu" @click="showLeftMenu = false">

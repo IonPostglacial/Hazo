@@ -1,6 +1,6 @@
 <template>
     <VBox>
-        <VBox class="stick-to-top white-background thin-border">
+        <VBox class="stick-to-top glass-background thin-border">
             <HBox class="thin-margin center-items">
                 <input class="flex-grow-1" type="search" @input="updateSearchFilter" :value="visibleFilter" placeholder="Filter" />
                 <Spacer></Spacer>
