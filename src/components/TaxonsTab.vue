@@ -43,7 +43,7 @@
                     <div v-if="selectedTaxon" class="relative">
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
-                            <div class="absolute white-background thin-border big-max-height medium-padding scroll over-everything width-l" style="top:32px;">
+                            <div class="absolute white-background thin-border big-max-height scroll over-everything width-l" style="top:32px;">
                                 <tree-menu :items="taxonTree"
                                     :name-fields="nameFields"
                                     @select-item="changeSelectedTaxonParent" v-slot="menuProps">
