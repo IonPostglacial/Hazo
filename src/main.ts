@@ -16,13 +16,13 @@ import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
         faLanguage, faCaretDown, faCaretUp, faPlus, faMinus, faPrint, 
         faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faClose,
         faBold, faItalic, faUnderline,
-        faCopy, faPaste, faUpload, faNotdef, faFileLines } from "@fortawesome/free-solid-svg-icons";
+        faCopy, faPaste, faUpload, faFileLines, faSquareXmark } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faArrowUp, faArrowDown, faArrowLeft, faArrowRight,
     faCaretDown, faCaretUp, faLanguage, faPlus, faMinus, faPrint, 
     faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faClose,
     faBold, faItalic, faUnderline,
-    faCopy, faPaste, faUpload, faNotdef, faFileLines);
+    faCopy, faPaste, faUpload, faSquareXmark, faFileLines);
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),

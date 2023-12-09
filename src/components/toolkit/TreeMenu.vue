@@ -14,8 +14,8 @@
                 </HBox>
             </HBox>
             <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox button-group">
-                <button @click="$emit('unselected')" title="unselect">
-                    <font-awesome-icon icon="fa-solid fa-notdef" />
+                <button v-if="selectedItem" @click="$emit('unselected')" title="unselect">
+                    <font-awesome-icon icon="fa-solid fa-square-xmark" />
                 </button>
                 <li v-for="nameField in nameFields" :key="nameField.propertyName" :class="['flex-grow-1', 'button', 'no-list-style', { 'background-color-1': visibleColumns[nameField.propertyName] }]" @click="toggleColumnVisibility(nameField.propertyName)">
                     {{ nameField.label }}
