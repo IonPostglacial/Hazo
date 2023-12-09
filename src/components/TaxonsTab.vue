@@ -43,7 +43,7 @@
                     <div v-if="selectedTaxon" class="relative">
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
-                            <div class="absolute white-background thin-border big-max-height medium-padding scroll" style="top:32px;">
+                            <div class="absolute white-background thin-border big-max-height medium-padding scroll over-everything width-l" style="top:32px;">
                                 <tree-menu :items="taxonTree"
                                     :name-fields="nameFields"
                                     @select-item="changeSelectedTaxonParent" v-slot="menuProps">
@@ -53,7 +53,10 @@
                         </div>
                         <div v-if="!selectingParent" class="button-group">
                             <button type="button" v-for="parent in taxonParentChain(dataset, selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
-                            <button type="button" @click="openSelectParentDropdown" class="background-color-1">{{ selectedTaxon.name.S }}</button>
+                            <button type="button" @click="openSelectParentDropdown" class="background-color-1">
+                                {{ selectedTaxon.name.S }}
+                                <font-awesome-icon icon="fa-solid fa-caret-down" />
+                            </button>
                         </div>
                     </div>
                     <Spacer></Spacer>

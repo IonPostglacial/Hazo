@@ -448,6 +448,10 @@ div.invisible {
     width: 200px;
 }
 
+.width-l {
+    width: min(90vw, 60ch);
+}
+
 .text-ellipsed {
     overflow: hidden;
     text-overflow: ellipsis;
