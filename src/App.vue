@@ -36,10 +36,22 @@
         <HBox class="thin-border background-gradient-1 no-print">
             <div class="button-group">
                 <button type="button" @click="importFile">Import</button>
-                <button type="button" @click="importDescriptorFile">Import with descriptors</button>
-                <button type="button" @click="mergeFile">Merge</button>
+                <DropDownButton label="" :default-up="true">
+                    <VBox>
+                        <button type="button" @click="importFile">Import</button>
+                        <button type="button" @click="importDescriptorFile">Import with descriptors</button>
+                        <button type="button" @click="mergeFile">Merge</button>
+                    </VBox>
+                </DropDownButton>
+            </div>
+            <div class="button-group">
                 <button type="button" @click="jsonExport">Export</button>
-                <button type="button" @click="exportSDD">Export SDD</button>
+                <DropDownButton label="" :default-up="true">
+                    <VBox>
+                        <button type="button" @click="jsonExport">Export</button>
+                        <button type="button" @click="exportSDD">Export SDD</button>
+                    </VBox>
+                </DropDownButton>
             </div>
             <Spacer></Spacer>
             <input class="invisible" @change="fileUpload" type="file" accept=".sdd.xml,.json,.csv,application/xml" name="import-data" id="import-data">
@@ -56,14 +68,18 @@
                 <button type="button" class="background-color-ko" @click="resetData">Reset</button>
             </div>
             <Spacer></Spacer>
-            <div class="button-group">
-                <button type="button" @click="addGeoCharacters(dataset)">Add Geo</button>
-                <button @click="indexFamilies">Index Families</button>
-                <button @click="indexCharacters">Index Characters</button>
-                <button type="button" @click="globalReplace">Replace Text</button>
-                <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
-                <button type="button" class="no-print background-color-1" @click="print">Print</button>
-            </div>
+            <DropDownButton label="More Actions" :default-up="true">
+                <VBox>
+                    <button type="button" @click="addGeoCharacters(dataset)">Add Geo</button>
+                    <button @click="indexFamilies">Index Families</button>
+                    <button @click="indexCharacters">Index Characters</button>
+                    <button type="button" @click="globalReplace">Replace Text</button>
+                    <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
+                </VBox>
+            </DropDownButton>
+            <button type="button" class="no-print background-color-1" @click="print">
+                <font-awesome-icon icon="fa-solid fa-print" />
+            </button>
         </HBox>
     </VBox>
 </template>
@@ -81,6 +97,7 @@ import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { DiscreteCharacter, State } from "./datatypes/types";
 import { Name, characterNameStore, familyNameStore } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
+import DropDownButton from "@/components/toolkit/DropDownButton.vue";
 import HBox from "@/components/toolkit/HBox.vue";
 import VBox from "@/components/toolkit/VBox.vue";
 import Spacer from "@/components/toolkit/Spacer.vue";
@@ -88,7 +105,7 @@ import parseCSV, { escape, factorizeColumn, transposeCSV } from "./tools/parse-c
 
 export default {
     name: "App",
-    components: { HBox, Spacer, VBox },
+    components: { DropDownButton, HBox, Spacer, VBox },
     data() {
         return {
             store: Hazo.store,

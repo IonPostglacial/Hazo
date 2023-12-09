@@ -18,8 +18,12 @@
         <textarea type="text" v-if="multiline" v-model="text" class="flex-grow-1 input-text"
             rows="1" placeholder="Add multiple items">
         </textarea>
-        <button @click="multiline = !multiline" title="Activate multiline mode">¶</button>
-        <button @click="add" title="Add an item" class="background-color-1">Add</button>
+        <button @click="multiline = !multiline" title="Activate multiline mode">
+            <font-awesome-icon icon="fa-solid fa-file-lines" />
+        </button>
+        <button @click="add" title="Add an item" class="background-color-1">
+            <font-awesome-icon icon="fa-solid fa-plus" />
+        </button>
     </HBox>
 </template>
 

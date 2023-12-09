@@ -31,15 +31,15 @@
                             <font-awesome-icon icon="fa-solid fa-paste" />
                         </button>
                     </div>
-                    <drop-down label="Export">
+                    <DropDownButton label="Export">
                         <VBox>
                             <label class="button" for="importKml">KML</label>
-                            <button @click="exportCSV">Export CSV</button>
+                            <button @click="exportCSV">CSV</button>
                             <button type="button" @click="emptyZip">Folders</button>
                             <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
                             <router-link class="button" to="/taxons-stats">Stats</router-link>
                         </VBox>
-                    </drop-down>
+                    </DropDownButton>
                     <div v-if="selectedTaxon" class="relative">
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
@@ -210,7 +210,7 @@ import { GoogleMap, Marker } from "vue3-google-map";
 import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain, taxonFromId, characterFromId, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
-import DropDown from "./toolkit/DropDownButton.vue";
+import DropDownButton from "./toolkit/DropDownButton.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
@@ -239,7 +239,7 @@ const columnNames: Record<string, string> = {
 export default {
     name: "TaxonsTab",
     components: {
-        CollapsiblePanel, DropDown, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
+        CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
         GeoView, GoogleMap, Marker,
         ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
         ColumnHeader, TextEditor,
