@@ -235,6 +235,10 @@ input[type="text"].no-fixed-width {
     top: 0;
 }
 
+.scroll .stick-to-top + * .stick-to-top {
+    top: 32px;
+}
+
 .stick-to-bottom {
     bottom: 0;
 }

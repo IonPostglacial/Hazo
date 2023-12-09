@@ -1,6 +1,6 @@
 <template>
-    <HBox class="center-items">
-        <b>{{ label }}</b>
+    <HBox class="center-items background-gradient-1">
+        <b class="medium-padding">{{ label }}</b>
         <Spacer></Spacer>
         <div class="button-group">
             <button @click="emit('maximize')">

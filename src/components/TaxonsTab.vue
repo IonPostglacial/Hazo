@@ -12,6 +12,12 @@
             <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
             <VBox class="flex-grow-1">
                 <HBox class="no-print medium-padding thin-border">
+                    <button v-if="selectedColumns.includes('menu')" @click="removeColumn('menu')">
+                        <font-awesome-icon icon="fa-solid fa-arrow-left" />
+                    </button>
+                    <button v-if="!selectedColumns.includes('menu')" @click="addColumn('menu')">
+                        <font-awesome-icon icon="fa-solid fa-arrow-right" />
+                    </button>
                     <HBox>
                         <router-link class="button" :to="'/print-taxons/' + selectedTaxonId" title="print">
                             <font-awesome-icon icon="fa-solid fa-print" />
@@ -71,7 +77,7 @@
                 </GoogleMap>
                 <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
                     <VBox v-if="selectedColumns.includes('props')" :class="['scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
-                        <ColumnHeader label="Properties"
+                        <ColumnHeader class="stick-to-top" label="Properties"
                             @minimize="removeColumn('props')"
                             @maximize="zoomColumn('props')"></ColumnHeader>
                         <picture-box :editable="editProperties"
@@ -148,7 +154,7 @@
                         </collapsible-panel>
                     </VBox>
                     <VBox v-if="selectedColumns.includes('desc')" class="scroll flex-grow-1">
-                        <ColumnHeader label="Descriptors"
+                        <ColumnHeader class="stick-to-top" label="Descriptors"
                             @minimize="removeColumn('desc')"
                             @maximize="zoomColumn('desc')">
                         </ColumnHeader>
@@ -160,7 +166,7 @@
                         </collapsible-panel>
                     </VBox>
                     <VBox v-if="selectedColumns.includes('summary')">
-                        <ColumnHeader label="Summary"
+                        <ColumnHeader class="stick-to-top" label="Summary"
                             @minimize="removeColumn('summary')"
                             @maximize="zoomColumn('summary')"></ColumnHeader>
                         <div class="thin-border medium-margin white-background scroll">
@@ -353,7 +359,10 @@ export default {
             this.selectedColumns = [...this.selectedColumns, col];
         },
         removeColumn(col: string) {
-            if (this.selectedColumns.length === 2) { return; }
+            if (col !== 'menu') {
+                const columnsExceptMenu = this.selectedColumns.filter(col => col !== 'menu');
+                if (columnsExceptMenu.length === 1) { return; }
+            }
             this.selectedColumns = this.selectedColumns.filter(c => c != col);
         },
         pushStateToChildren(state: State) {
