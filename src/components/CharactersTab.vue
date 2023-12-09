@@ -13,11 +13,22 @@
             <popup-galery v-if="!printMode" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
             <VBox class="scroll flex-grow-1">
                 <HBox class="stick-to-top medium-padding thin-border background-gradient-1 no-print">
-                    <button type="button" @click="showLeftMenu = !showLeftMenu">Left Menu</button>
-                    <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">Print</button>
+                    <button v-if="showLeftMenu" @click="showLeftMenu = false">
+                        <font-awesome-icon icon="fa-solid fa-arrow-left" />
+                    </button>
+                    <button v-if="!showLeftMenu" @click="showLeftMenu = true">
+                        <font-awesome-icon icon="fa-solid fa-arrow-right" />
+                    </button>
+                    <button type="button" @click="printPresentation" :class="{'background-color-1': printMode}">
+                        <font-awesome-icon icon="fa-solid fa-print" />
+                    </button>
                     <div class="button-group">
-                        <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">Copy</button>
-                        <button type="button" @click="pasteItem">Paste</button>
+                        <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyItem">
+                            <font-awesome-icon icon="fa-solid fa-copy" />
+                        </button>
+                        <button type="button" @click="pasteItem">
+                            <font-awesome-icon icon="fa-solid fa-paste" />
+                        </button>
                         <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyStates">Copy States</button>
                         <button type="button" @click="pasteStates">Paste States</button>
                     </div>

@@ -1,5 +1,5 @@
 <template>
-    <collapsible-panel label="Pictures" class="centered-text thin-border medium-margin white-background wrap-flexbox">
+    <collapsible-panel label="Pictures" class="thin-border medium-margin white-background wrap-flexbox">
         <picture-frame v-if="picture" :key="picture.id"
             :editable="editable"
             :index="selectedPhotoIndex"

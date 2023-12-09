@@ -1,8 +1,8 @@
 <template>
-  <VBox class="thin-border medium-margin white-background flex-grow-1">
-        <HBox>
-            <b class="flex-grow-1 medium-margin">{{ label }}</b>
-            <VBox @click="open = !open" class="small-square blue-circle-hover thin-margin flex-centered">
+  <VBox class="thin-border medium-margin white-background">
+        <HBox @click="open = !open" class="clickable center-items">
+            <b class="flex-grow-1 medium-padding">{{ label }}</b>
+            <VBox class="small-square blue-circle-hover thin-margin flex-centered">
                 <div :class="open ? 'bottom-arrow' : 'left-arrow'">&nbsp;</div>
             </VBox>
         </HBox>

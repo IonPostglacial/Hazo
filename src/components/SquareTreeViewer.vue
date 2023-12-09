@@ -2,7 +2,7 @@
     <VBox>
         <VBox class="stick-to-top white-background">
             <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-            <div class="flex-wrap button-group">
+            <div v-if="breadCrumbs.length > 0" class="flex-wrap button-group">
                 <button type="button" @click="backToTop">Top</button>
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>

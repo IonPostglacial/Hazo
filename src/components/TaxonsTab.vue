@@ -169,11 +169,14 @@
                         <ColumnHeader class="stick-to-top" label="Summary"
                             @minimize="removeColumn('summary')"
                             @maximize="zoomColumn('summary')"></ColumnHeader>
-                        <div class="thin-border medium-margin white-background scroll">
-                            <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
-                            <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
-                                <option v-for="(language, index) in nameFields" :key="language.label" :value="index">{{ language.label }}</option>
-                            </select>
+                        <div class="thin-border medium-margin white-background scroll flex-grow-1">
+                            <HBox>
+                                <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
+                                <Spacer></Spacer>
+                                <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
+                                    <option v-for="(language, index) in nameFields" :key="language.label" :value="index">{{ language.label }}</option>
+                                </select>
+                            </HBox>
                             <ul class="big-margin-left">
                                 <li v-for="desc in itemDescription" :key="desc.character.id">
                                     {{ desc.character.name[selectedSummaryLangProperty] }}
