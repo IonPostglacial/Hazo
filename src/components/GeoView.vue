@@ -60,8 +60,10 @@ export default {
             const el = d3.select(element);
             el.selectAll("svg").remove();
             const svg = el.append("svg");
-            svg.attr("width", "600px");
-            svg.attr("height", "600px");
+            svg.attr("viewBox", "0 0 600 600")
+            svg.attr("preserveAspectRatio", "xMinYMin meet")
+            // svg.attr("width", "600px");
+            // svg.attr("height", "600px");
             const path = d3g.geoPath();
             const projection = d3g.geoMercator()
                 .center(this.geoMap?.center ?? [0, 0])
