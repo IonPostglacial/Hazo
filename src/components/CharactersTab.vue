@@ -185,11 +185,9 @@
                                 <div class="close" @click="removeState(state)"></div>
                             </label>
                         </li>
-                        <li>
-                            <add-item @add-item="addState"></add-item>
-                        </li>
                     </ul>
                 </div>
+                <add-item class="stick-to-bottom" @add-item="addState"></add-item>
             </collapsible-panel>
         </HBox>
     </split-panel>

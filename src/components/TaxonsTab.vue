@@ -174,7 +174,7 @@
                                 <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
                                 <Spacer></Spacer>
                                 <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
-                                    <option v-for="(language, index) in nameFields" :key="language.label" :value="index">{{ language.label }}</option>
+                                    <option v-for="(language, index) in charNameFields" :key="language.label" :value="index">{{ language.label }}</option>
                                 </select>
                             </HBox>
                             <ul class="big-margin-left">
@@ -253,6 +253,7 @@ export default {
             .filter(col => columns.includes(col));
         return {
             nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
+            charNameFields: [{ label: 'NS', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             nameStore: familyNameStore,
             selectedSummaryLangId: 0,
             store: Hazo.store,
@@ -283,7 +284,7 @@ export default {
             return columns.filter(col => !this.selectedColumns.includes(col));
         },
         selectedSummaryLangProperty(): string {
-            return this.nameFields[this.selectedSummaryLangId].propertyName;
+            return this.charNameFields[this.selectedSummaryLangId].propertyName;
         },
         leftMenuSize(): number {
             return this.selectedColumns.includes("menu") ? 25 : 0;
