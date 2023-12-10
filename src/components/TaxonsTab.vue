@@ -168,7 +168,7 @@
                         </section>
                         <div class="thin-border medium-margin white-background flex-grow-1">
                             <HBox>
-                                <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name[selectedSummaryLangProperty] }}</i> {{ selectedTaxon.author }}</div>
+                                <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                                 <Spacer></Spacer>
                                 <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
                                     <option v-for="(language, index) in charNameFields" :key="language.label" :value="index">{{ language.label }}</option>
