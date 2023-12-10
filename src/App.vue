@@ -69,6 +69,7 @@
                     <button type="button" @click="addGeoCharacters(dataset)">Add Geo</button>
                     <button @click="indexFamilies">Index Families</button>
                     <button @click="indexCharacters">Index Characters</button>
+                    <button @click="indexStates">Index States</button>
                     <button type="button" @click="globalReplace">Replace Text</button>
                     <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
                 </VBox>
@@ -91,7 +92,7 @@ import { Config } from './tools/config';
 import { readTextFileAsync } from './tools/read-file-async';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { DiscreteCharacter, State } from "./datatypes/types";
-import { Name, characterNameStore, familyNameStore } from "@/db-index";
+import { Name, characterNameStore, familyNameStore, stateNameStore } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import DropDownButton from "@/components/toolkit/DropDownButton.vue";
 import HBox from "@/components/toolkit/HBox.vue";
@@ -207,6 +208,14 @@ export default {
             forEachHierarchy(this.dataset.charactersHierarchy, ch => {
                 if (ch.id === "c0") { return; }
                 characterNameStore.store({ S: ch.name.S, EN: ch.name.EN ?? "", CN: ch.name.CN ?? "" });
+            });
+        },
+        async indexStates() {
+            forEachHierarchy(this.dataset.charactersHierarchy, ch => {
+                if (ch.id === "c0" || ch.characterType !== "discrete") { return; }
+                for (const state of ch.states) {
+                    stateNameStore.store({ S: state.name.S, EN: state.name.EN ?? "", CN: state.name.CN ?? "" });
+                }
             });
         },
         syncPictures() {

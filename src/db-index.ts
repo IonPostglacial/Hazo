@@ -67,7 +67,7 @@ class IndexStore implements NameStore {
     async store(name: Name): Promise<void> {
         indexStore(this.storeName, "readwrite").then(store => 
             store.put(Object.fromEntries(Object.entries(name)
-                .map(([k, v]) => [k, v.toLowerCase()]))));
+                .map(([k, v]) => [k, v?.toLowerCase() ?? ""]))));
     }
     
     async delete(id: string): Promise<void> {

@@ -1,7 +1,7 @@
 <template>
     <split-panel class="start-align flex-grow-1 scroll">
         <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
-            :name-fields="[{ label: 'NS', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }]"
+            :name-fields="nameFields"
             :name-store="nameStore"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacter"
@@ -187,7 +187,7 @@
                         </li>
                     </ul>
                 </div>
-                <add-item class="stick-to-bottom" @add-item="addState"></add-item>
+                <add-item class="stick-to-bottom" @add-item="addState" :name-fields="nameFields" :name-store="stateNameStore"></add-item>
             </collapsible-panel>
         </HBox>
     </split-panel>
@@ -209,7 +209,7 @@ import PictureBox from "./PictureBox.vue";
 import { Dataset, Character, Hierarchy, State, Picture, characterFromId, standardMaps, GeoMap } from "@/datatypes";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
-import { characterNameStore } from "@/db-index";
+import { characterNameStore, stateNameStore } from "@/db-index";
 
 
 export default {
@@ -219,6 +219,8 @@ export default {
         return {
             store: Hazo.store,
             nameStore: characterNameStore,
+            stateNameStore: stateNameStore,
+            nameFields: [{ label: 'NS', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             showLeftMenu: true,
             showBigImage: false,
             maps: standardMaps,
