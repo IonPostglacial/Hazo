@@ -463,25 +463,9 @@ div.invisible {
     height: 18px;
 }
 
-.close,
-.move-up,
-.move-down {
+.close {
     width: 18px;
     height: 18px;
-}
-
-.move-up,
-.move-down {
-    user-select: none;
-    opacity: 0.3;
-    line-height: 18px;
-    padding: 0 3px;
-    font-size: 17px;
-}
-
-.move-up:hover,
-.move-down:hover {
-    opacity: 1;
 }
 
 .close {

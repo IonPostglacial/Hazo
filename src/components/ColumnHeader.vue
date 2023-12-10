@@ -3,10 +3,10 @@
         <b class="medium-padding">{{ label }}</b>
         <Spacer></Spacer>
         <div class="button-group">
-            <button @click="emit('maximize')">
+            <button v-if="!hideActions" @click="emit('maximize')">
                 <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
             </button>
-            <button @click="emit('minimize')">
+            <button v-if="!hideActions" @click="emit('minimize')">
                 <font-awesome-icon icon="fa-solid fa-close" />
             </button>
         </div>
@@ -19,5 +19,5 @@ import Spacer from "./toolkit/Spacer.vue";
 
 const emit = defineEmits(["maximize", "minimize"]);
 
-const { label } = defineProps({ label: String });
+const { label, hideActions } = defineProps({ label: String, hideActions: Boolean });
 </script>

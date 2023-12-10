@@ -15,9 +15,11 @@
                     <button v-if="selectedColumns.includes('menu')" @click="removeColumn('menu')">
                         <font-awesome-icon icon="fa-solid fa-arrow-left" />
                     </button>
-                    <button v-if="!selectedColumns.includes('menu')" @click="addColumn('menu')">
-                        <font-awesome-icon icon="fa-solid fa-arrow-right" />
-                    </button>
+                    <div class="button-group">
+                        <button v-for="col in minimizedColumns" @click="addColumn(col)">
+                            {{ columnName(col) }}
+                        </button>
+                    </div>
                     <HBox>
                         <router-link class="button" :to="'/print-taxons/' + selectedTaxonId" title="print">
                             <font-awesome-icon icon="fa-solid fa-print" />
@@ -31,15 +33,6 @@
                             <font-awesome-icon icon="fa-solid fa-paste" />
                         </button>
                     </div>
-                    <DropDownButton label="Export">
-                        <VBox>
-                            <label class="button" for="importKml">KML</label>
-                            <button @click="exportCSV">CSV</button>
-                            <button type="button" @click="emptyZip">Folders</button>
-                            <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
-                            <router-link class="button" to="/taxons-stats">Stats</router-link>
-                        </VBox>
-                    </DropDownButton>
                     <div v-if="selectedTaxon" class="relative">
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
@@ -60,11 +53,15 @@
                         </div>
                     </div>
                     <Spacer></Spacer>
-                    <div class="button-group">
-                        <button v-for="col in minimizedColumns" @click="addColumn(col)">
-                            {{ columnName(col) }}
-                        </button>
-                    </div>
+                    <DropDownButton label="Export">
+                        <VBox>
+                            <label class="button" for="importKml">KML</label>
+                            <button @click="exportCSV">CSV</button>
+                            <button type="button" @click="emptyZip">Folders</button>
+                            <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
+                            <router-link class="button" to="/taxons-stats">Stats</router-link>
+                        </VBox>
+                    </DropDownButton>
                     <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
                 </HBox>
                 <GoogleMap v-if="selectedTaxon && showMap"
