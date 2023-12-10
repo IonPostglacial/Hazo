@@ -1,7 +1,7 @@
 <template>
     <split-panel class="start-align flex-grow-1 scroll">
         <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
-            :name-fields="[{ label: 'Name', propertyName: 'S'}, { label: '中文名', propertyName: 'CN' }]"
+            :name-fields="[{ label: 'NS', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }]"
             :name-store="nameStore"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacter"
@@ -441,10 +441,10 @@ export default {
             this.bigImages = state.pictures;
         },
         addCharacter(e: { value: string[], parentId: string }) {
-            const [name, nameCN] = e.value;
+            const [name, nameEN, nameCN] = e.value;
             this.store.do("addCharacter", createCharacter({
                 presetStates: this.dataset.presetStates,
-                name: { S: name, FR: name, CN: nameCN }, 
+                name: { S: name, FR: name, EN: nameEN, CN: nameCN }, 
                 parentId: e.parentId,
             }));
         },

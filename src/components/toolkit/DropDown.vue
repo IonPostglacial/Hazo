@@ -1,6 +1,6 @@
 <template>
     <div ref="menu" v-show="open" :class="['absolute', 'thin-border', 'white-background', 'medium-padding', 
-            'over-everything', { 'drop-up': dropUp }]">
+            'over-everything', 'max-height-screen', 'scroll', { 'drop-up': dropUp }]">
         <slot></slot>
     </div>
 </template>

@@ -207,7 +207,7 @@ export default {
         async indexCharacters() {
             forEachHierarchy(this.dataset.charactersHierarchy, ch => {
                 if (ch.id === "c0") { return; }
-                characterNameStore.store({ S: ch.name.S, V: ch.name.V ?? "", CN: ch.name.CN ?? "" });
+                characterNameStore.store({ S: ch.name.S, EN: ch.name.EN ?? "", CN: ch.name.CN ?? "" });
             });
         },
         syncPictures() {

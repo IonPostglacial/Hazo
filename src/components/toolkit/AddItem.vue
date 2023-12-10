@@ -9,7 +9,7 @@
                 <div :class="'grid-n grid-' + nameFields?.length ?? 1">
                     <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents blue-hover-line">
                         <div v-for="lang in nameFields" :key="lang.propertyName" @click="selectAndEnter(i)" :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
-                            {{ entry[lang.propertyName] }}
+                            {{ capitalizeFirstLetter(entry[lang.propertyName]) }}
                         </div>
                     </div>
                 </div>
@@ -50,18 +50,23 @@ export default {
         };
     },
     watch: {
-        text(val) {
+        async text(val) {
             if (!this.nameStore) return;
             if (val.length === 0) {
                 this.openAutoComplete = false;
                 this.selectedCompletion = -1;
             } else {
                 this.openAutoComplete = true;
-                this.nameStore?.namesLike("S", this.text).then(n => { this.completions = n; });
+                const c = await this.nameStore?.namesLike("S", this.text);
+                this.completions = c ?? [];
             }
         }
     },
     methods: {
+        capitalizeFirstLetter(s: string|undefined) {
+            if (typeof s === "undefined") { return ""; }
+            return s.charAt(0).toUpperCase() + s.slice(1);
+        },
         selectAndEnter(i: number) {
             this.selectedCompletion = i;
             this.addSingleItem();
@@ -97,7 +102,8 @@ export default {
                 const completed = this.completions[this.selectedCompletion];
                 const nameFields = this.nameFields;
                 if (typeof nameFields !== "undefined") {
-                    this.addItem(nameFields.map(f => completed[f.propertyName]));
+                    console.log(completed);
+                    this.addItem(nameFields.map(f => this.capitalizeFirstLetter(completed[f.propertyName])));
                 }
             }
             this.text = "";
