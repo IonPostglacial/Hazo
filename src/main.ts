@@ -7,7 +7,6 @@ import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsStats from "./components/TaxonsStats.vue";
 import CharactersTab from "./components/CharactersTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
-import NamesDictionary from "./components/NamesDictionary.vue";
 import debounce from "./tools/debounce";
 // @ts-ignore
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -33,7 +32,6 @@ const router = VueRouter.createRouter({
         { path: "/print-taxons/:id?", component: TaxonPresentation },
         { path: "/characters/:id?", component: CharactersTab },
         { path: "/characters-tree", component: CharactersTree, props: _ => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
-        { path: "/dictionary", component: NamesDictionary },
     ]
 });
 

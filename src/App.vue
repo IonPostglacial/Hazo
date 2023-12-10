@@ -14,7 +14,6 @@
                 <router-link class="button" :to="'/taxons/' + store.selectedTaxon">Taxons</router-link>
                 <router-link class="button" :to="'/characters/' + store.selectedCharacter">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
-                <router-link class="button" to="/dictionary">Names Dictionary</router-link>
             </div>
             <Spacer></Spacer>
             <div class="button-group">
