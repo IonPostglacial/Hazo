@@ -154,12 +154,14 @@
                             <li v-for="state in statesToDisplay" :key="state.id" class="white-background thin-border">
                                 <VBox>
                                     <HBox class="thin-border center-items">
-                                        <button @click="moveStateUp(state)">
-                                            <font-awesome-icon icon="fa-solid fa-arrow-up" />
-                                        </button>
-                                        <button @click="moveStateDown(state)">
-                                            <font-awesome-icon icon="fa-solid fa-arrow-down" />
-                                        </button>
+                                        <div class="button-group">
+                                            <button @click="moveStateUp(state)">
+                                                <font-awesome-icon icon="fa-solid fa-arrow-up" />
+                                            </button>
+                                            <button @click="moveStateDown(state)">
+                                                <font-awesome-icon icon="fa-solid fa-arrow-down" />
+                                            </button>
+                                        </div>
                                         <label>
                                             Only show taxons having it<input name="allow" type="checkbox" @input="onlyAllowState(state)" :checked="stateInAllowList(state)">
                                         </label>
@@ -172,7 +174,7 @@
                                         </button>
                                     </HBox>
                                     <label class="medium-padding rounded nowrap horizontal-flexbox">
-                                        <div class="form-grid">
+                                        <div class="form-grid flex-grow-1">
                                             <label>Name FR</label><input type="text" class="flex-grow-1" v-model="state.name.S" />
                                             <label>Name EN</label><input type="text" class="flex-grow-1" v-model="state.name.EN" />
                                             <label>Name CN</label><input type="text" class="flex-grow-1" v-model="state.name.CN" />
