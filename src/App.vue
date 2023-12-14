@@ -112,7 +112,6 @@ export default {
             urlsToSync: [] as string[],
             syncProgress: 0,
             preloaded: true,
-            searchFamily: "",
             matchingFamilies: [] as Name[],
         };
     },
@@ -184,9 +183,6 @@ export default {
     watch: {
         selectedBase(val) {
             this.loadBase(val);
-        },
-        searchFamily(val) {
-            familyNameStore.namesLike("S", val).then(s => { this.matchingFamilies = s });
         },
     },
     methods: {

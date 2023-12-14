@@ -1,12 +1,14 @@
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const DB_NAME = "NamesIndex";
 const FAMILY_INDEX_STORE_NAME = "FamilyIndexStore";
 const CHARACTER_INDEX_STORE_NAME = "CharacterIndexStore";
 const STATES_INDEX_STORE_NAME = "StateIndexStore";
-export type Language = "S" | "V" | "CN" | "LA";
+export type Language = "S" | "V" | "CN" | "LA" | "FR" | "EN";
 const LANGUAGES_V1: Language[] = ["S", "V", "CN"];
-export const LANGUAGES: Language[] = LANGUAGES_V1;
+const LANGUAGES_V5: Language[] = LANGUAGES_V1.concat(["FR", "EN"])
+export const LANGUAGES: Language[] = LANGUAGES_V5;
 export type Name = Record<Language | string, string>;
+export type Completion = { id: string | number | symbol | undefined, values: Name };
 
 function createIndexStore(db: IDBDatabase, storeName: string, e: IDBVersionChangeEvent) {
     if (!db.objectStoreNames.contains(storeName)) {
@@ -21,6 +23,14 @@ function createIndexStore(db: IDBDatabase, storeName: string, e: IDBVersionChang
         const tx = request.transaction;
         const store = tx.objectStore(storeName);
         store.createIndex("LA", "LA", { unique: false });
+    }
+    if (e.oldVersion < 5) {
+        const request = e.target;
+        if (request === null || !("transaction" in request) || !(request.transaction instanceof IDBTransaction)) return;
+        const tx = request.transaction;
+        const store = tx.objectStore(storeName);
+        store.createIndex("FR", "FR", { unique: false });
+        store.createIndex("EN", "EN", { unique: false });
     }
 }
 
@@ -54,7 +64,7 @@ async function indexStore(storeName: string, mode: IDBTransactionMode): Promise<
 export interface NameStore {
     store(name: Name): Promise<void>;
     delete(id: string): Promise<void>;
-    namesLike(propName: Language, prefix: string): Promise<Name[]>;
+    namesLike(prefix: string): Promise<Completion[]>;
 }
 
 class IndexStore implements NameStore {
@@ -74,16 +84,16 @@ class IndexStore implements NameStore {
         indexStore(this.storeName, "readwrite").then(store => store.delete(id));
     }
     
-    async namesLike(propName: Language, prefix: string): Promise<Name[]> {
+    private async namesLikeProperty(propName: Language, prefix: string): Promise<Completion[]> {
         const search = prefix.toLowerCase();
         const store = await indexStore(this.storeName, "readonly");
         return new Promise((resolve, reject) => {
-            var result: Name[] = [];
+            const result: Completion[] = [];
             const cur = store.index(propName).openCursor(IDBKeyRange.bound(search, search + "\uffff"), "next")
             cur.onsuccess = function () {
-                var cursor = this.result;
+                const cursor = this.result;
                 if (cursor) {
-                    result.push(cursor.value);
+                    result.push({ id: cursor.key as string, values: cursor.value});
                     cursor.continue();
                 } else {
                     resolve(result);
@@ -93,6 +103,10 @@ class IndexStore implements NameStore {
                 reject(this.error);
             }
         });
+    }
+
+    async namesLike(prefix: string): Promise<Completion[]> {
+        return [...new Map((await Promise.all(LANGUAGES.map(lang => this.namesLikeProperty(lang, prefix)))).flat().map(c => [c.id, c])).values()];
     }
 }
 

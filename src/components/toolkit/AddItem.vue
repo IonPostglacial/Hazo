@@ -9,7 +9,7 @@
                 <div :class="'grid-n grid-' + nameFields?.length ?? 1">
                     <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents blue-hover-line">
                         <div v-for="lang in nameFields" :key="lang.propertyName" @click="selectAndEnter(i)" :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
-                            {{ capitalizeFirstLetter(entry[lang.propertyName]) }}
+                            {{ capitalizeFirstLetter(entry.values[lang.propertyName]) }}
                         </div>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
 <script lang="ts">
 import DropDown from "@/components/toolkit/DropDown.vue";
 import HBox from "@/components/toolkit/HBox.vue";
-import { NameStore, Name } from "@/db-index";
+import { NameStore, Completion } from "@/db-index";
 import { PropType } from "vue";
 
 export default {
@@ -45,7 +45,7 @@ export default {
             multiline: false,
             text: this.value ?? "",
             openAutoComplete: false,
-            completions: [] as Name[],
+            completions: [] as Completion[],
             selectedCompletion: -1,
         };
     },
@@ -57,7 +57,7 @@ export default {
                 this.selectedCompletion = -1;
             } else {
                 this.openAutoComplete = true;
-                const c = await this.nameStore?.namesLike("S", this.text);
+                const c = await this.nameStore?.namesLike(this.text);
                 this.completions = c ?? [];
             }
         }
@@ -103,7 +103,7 @@ export default {
                 const nameFields = this.nameFields;
                 if (typeof nameFields !== "undefined") {
                     console.log(completed);
-                    this.addItem(nameFields.map(f => this.capitalizeFirstLetter(completed[f.propertyName])));
+                    this.addItem(nameFields.map(f => this.capitalizeFirstLetter(completed.values[f.propertyName])));
                 }
             }
             this.text = "";
