@@ -51,7 +51,7 @@
                         </picture-box>
                         <collapsible-panel v-if="!printMode && (typeof selectedCharacter !== 'undefined')" label="Identification">
                             <div class="scroll large-max-width form-grid medium-padding">
-                                <label>NS</label>
+                                <label>Name FR</label>
                                 <input class="flex-grow-1" type="text" v-model="selectedCharacter.name.S" />
                                 <label>Name EN</label>
                                 <input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" />
@@ -232,7 +232,7 @@ export default {
             store: Hazo.store,
             nameStore: characterNameStore,
             stateNameStore: stateNameStore,
-            nameFields: [{ label: 'NS', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
+            nameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             showLeftMenu: true,
             showBigImage: false,
             maps: standardMaps,
