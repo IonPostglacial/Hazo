@@ -1,50 +1,56 @@
 <template>
-    <div class="outer-wheel">
-        <div id="wheel" @click="selectMonth" class="wheel">
-            <div v-for="month, i in months" :class="['month', 'rotation-' + i + '-11', { selected: hasMonth(i) }]">{{ month }}</div>
-        </div>
-        <div id="inner-wheel" class="inner-wheel"></div>
+    <div class="relative">
+        <button class="absolute-top-right" @click="downloadSVG">
+            <font-awesome-icon icon="fa-solid fa-download" />
+        </button>
+        <svg ref="svg" version="1.1" width="300" height="300" xmlns="http://www.w3.org/2000/svg" @click="wheelClicked">
+            <clipPath id="outer-circle">
+                <circle cx="150" cy="150" r="145" />
+            </clipPath>
+            <clipPath id="winter">
+                <rect x="50%" y="0" width="50%" height="50%" />
+            </clipPath>
+            <clipPath id="spring">
+                <rect x="50%" y="50%" width="50%" height="50%" />
+            </clipPath>
+            <clipPath id="summer">
+                <rect x="0" y="50%" width="50%" height="50%" />
+            </clipPath>
+            <clipPath id="autumn">
+                <rect x="0" y="0" width="50%" height="50%" />
+            </clipPath>
+            <circle cx="150" cy="150" r="145" fill="white" stroke="black" stroke-width="2" />
+            <polygon v-for="month, i in months"
+                :data-month="i"
+                points="150 0, 236.60254037844385 0, 150 150" 
+                :transform="'rotate(' + (30 + 30 * i) + ')'" 
+                transform-origin="center" 
+                stroke="black" 
+                :fill="hasMonth(i) ? '#84bf3d' : 'white'"
+                :title="month"
+                clip-path="url(#outer-circle)">
+            </polygon>
+            <circle cx="150" cy="150" r="100" fill="#afe5ff" stroke="black" stroke-width="2" clip-path="url(#winter)" />
+            <circle cx="150" cy="150" r="100" fill="#84bf3d" stroke="black" stroke-width="2" clip-path="url(#spring)" />
+            <circle cx="150" cy="150" r="100" fill="#ffdf34" stroke="black" stroke-width="2" clip-path="url(#summer)" />
+            <circle cx="150" cy="150" r="100" fill="#eaa256" stroke="black" stroke-width="2" clip-path="url(#autumn)" />
+            <text v-for="month, i in months" class="month-text" x="50%" y="50%" 
+                :transform="'rotate(' + (45 + 30 * i) + ') translate(0 -135)'" 
+                :data-month="i"
+                transform-origin="center" font-size="14" 
+                text-anchor="middle" dominant-baseline="central" 
+                fill="black">
+                {{ month }}
+            </text>
+        </svg>
     </div>
 </template>
 
 <script lang="ts">
 import Months from "@/datatypes/Months";
+import download from "@/tools/download";
 import { PropType } from "vue";
 
-const ZONE_RATIO = 12 / (2 * Math.PI);
-
-function trigoAngle(cx: number, cy: number, px: number, py: number): number {
-    const rx = px - cx;
-    const ry = py - cy;
-    let theta = Math.atan(ry / rx);
-    if (rx < 0) {
-        if (ry > 0) {
-            theta += Math.PI
-        } else {
-            theta -= Math.PI;
-        }
-    }
-    theta += Math.PI / 2;
-    if (theta < 0) {
-        theta += 2 * Math.PI;
-    }
-    return theta;
-}
-
-function elementCenter(e: Element) {
-    const elementRect = e.getBoundingClientRect();
-    return [
-        (elementRect.left + elementRect.right) / 2,
-        (elementRect.top + elementRect.bottom) / 2,
-    ];
-}
-
-function eventDocumentPosition(e: MouseEvent) {
-    return [
-        e.pageX - window.scrollX,
-        e.pageY - window.scrollY,
-    ];
-}
 
 export default {
     props: {
@@ -56,136 +62,40 @@ export default {
         };
     },
     methods: {
-        hasMonth(month: number): boolean {
-            return this.modelValue.includes(month);
+        downloadSVG() {
+            const svg = this.$refs.svg as SVGElement;
+            download(svg.outerHTML, "svg", "flowering");
         },
-        selectMonth(e: MouseEvent) {
-            e.stopPropagation();
-            const wheel = e.target as Element;
-            const [centerX, centerY] = elementCenter(wheel);
-            const [clickX, clickY] = eventDocumentPosition(e);
-            const angle = trigoAngle(centerX, centerY, clickX, clickY);
-            const monthIndex = (angle * ZONE_RATIO | 0);
-            const selectedMonth = monthIndex;
-            let newVal = [];
-            if (this.modelValue.includes(selectedMonth)) {
-                this.$emit("month-unselected", monthIndex);
-                newVal = this.modelValue.filter(v => v === selectedMonth);
+        wheelClicked(e: MouseEvent) {
+            if (e.target == null || !(e.target instanceof SVGElement)) { return; }
+            const month = e.target?.dataset?.month;
+            if (month) {
+                const monthIndex = parseInt(month);
+                if (!Number.isNaN(monthIndex) && monthIndex >= 0 && monthIndex < 12) {
+                    this.toggleMonth(monthIndex);
+                }
+            }
+        },
+        toggleMonth(month: number) {
+            let newVal: number[] = [];
+            if (this.modelValue.includes(month)) {
+                this.$emit("month-unselected", month);
+                newVal = this.modelValue.filter(m => m !== month);
             } else {
-                this.$emit("month-selected", monthIndex);
-                newVal = [...this.modelValue, selectedMonth];
+                this.$emit("month-selected", month);
+                newVal = [...this.modelValue, month];
             }
             this.$emit("update:modelValue", newVal);
+        },
+        hasMonth(month: number): boolean {
+            return this.modelValue.includes(month);
         },
     },
 };
 </script>
 
 <style>
-	.month {
-	    position: absolute;
-	    top: 0;
-	    bottom: 0;
-	    left: 0;
-	    right: 0;
-	    border-radius: 300px;
-	    text-align: center;
-	}
-
-	.month.selected {
-	    background: conic-gradient(#7abb39 1deg 15deg, transparent 15deg 346deg, #7abb39 346deg 360deg);
-	}
-
-    .outer-wheel {
-        display: inline-block;
-        position: relative;
-        width: 300px;
-        height: 300px;
-        width: 300px;
-        height: 300px;
-        border-radius: 300px;
-        transform: rotate(-0.5deg);
-        border: 2px solid #515151;
-        background: conic-gradient(
-            #515151 calc(0 * 30deg) calc(0 * 30deg + 1deg), transparent calc(0 * 30deg + 1deg) calc((1 + 0) * 30deg),
-            #515151 calc(1 * 30deg) calc(1 * 30deg + 1deg), transparent calc(1 * 30deg + 1deg) calc((1 + 1) * 30deg),
-            #515151 calc(2 * 30deg) calc(2 * 30deg + 1deg), transparent calc(2 * 30deg + 1deg) calc((1 + 2) * 30deg),
-            #515151 calc(3 * 30deg) calc(3 * 30deg + 1deg), transparent calc(3 * 30deg + 1deg) calc((1 + 3) * 30deg),
-            #515151 calc(4 * 30deg) calc(4 * 30deg + 1deg), transparent calc(4 * 30deg + 1deg) calc((1 + 4) * 30deg),
-            #515151 calc(5 * 30deg) calc(5 * 30deg + 1deg), transparent calc(5 * 30deg + 1deg) calc((1 + 5) * 30deg),
-            #515151 calc(6 * 30deg) calc(6 * 30deg + 1deg), transparent calc(6 * 30deg + 1deg) calc((1 + 6) * 30deg),
-            #515151 calc(7 * 30deg) calc(7 * 30deg + 1deg), transparent calc(7 * 30deg + 1deg) calc((1 + 7) * 30deg),
-            #515151 calc(8 * 30deg) calc(8 * 30deg + 1deg), transparent calc(8 * 30deg + 1deg) calc((1 + 8) * 30deg),
-            #515151 calc(9 * 30deg) calc(9 * 30deg + 1deg), transparent calc(9 * 30deg + 1deg) calc((1 + 9) * 30deg),
-            #515151 calc(10 * 30deg) calc(10 * 30deg + 1deg), transparent calc(10 * 30deg + 1deg) calc((1 + 10) * 30deg),
-            #515151 calc(11 * 30deg) calc(11 * 30deg + 1deg), transparent calc(11 * 30deg + 1deg) calc((1 + 11) * 30deg));
+    .month-text {
+        user-select: none;
     }
-
-    .wheel {
-	    border-radius: 300px;
-            display: inline-block;
-            width: 100%;
-            height: 100%;
-    }
-
-	.rotation-0-11 {
-	    transform: rotate(calc(0 * 30deg + 15deg));
-	}
-
-	.rotation-1-11 {
-	    transform: rotate(calc(1 * 30deg + 15deg));
-	}
-
-	.rotation-2-11 {
-	    transform: rotate(calc(2 * 30deg + 15deg));
-	}
-
-	.rotation-3-11 {
-	    transform: rotate(calc(3 * 30deg + 15deg));
-	}
-
-	.rotation-4-11 {
-	    transform: rotate(calc(4 * 30deg + 15deg));
-	}
-
-	.rotation-5-11 {
-	    transform: rotate(calc(5 * 30deg + 15deg));
-	}
-
-	.rotation-6-11 {
-	    transform: rotate(calc(6 * 30deg + 15deg));
-	}
-
-	.rotation-7-11 {
-	    transform: rotate(calc(7 * 30deg + 15deg));
-	}
-
-	.rotation-8-11 {
-	    transform: rotate(calc(8 * 30deg + 15deg));
-	}
-
-	.rotation-9-11 {
-	    transform: rotate(calc(9 * 30deg + 15deg));
-	}
-
-	.rotation-10-11 {
-	    transform: rotate(calc(10 * 30deg + 15deg));
-	}
-
-	.rotation-11-11 {
-	    transform: rotate(calc(11 * 30deg + 15deg));
-	}
-
-	.inner-wheel {
-	    display: inline-block;
-	    position: absolute;
-	    top: 48px;
-	    left: 48px;
-	    width: 200px;
-	    height: 200px;
-	    border-radius: 200px;
-        transform: rotate(-30deg);
-	    background: conic-gradient(#afe5ff 0deg 90deg, #84bf3d 90deg 180deg, #ffdf34 180deg 270deg, #eaa256 270deg 360deg);
-	    border: 2px solid #515151;
-	}
 </style>
