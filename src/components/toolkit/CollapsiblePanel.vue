@@ -3,7 +3,8 @@
         <HBox @click="open = !open" class="clickable center-items">
             <b class="flex-grow-1 medium-padding">{{ label }}</b>
             <VBox class="small-square blue-circle-hover thin-margin flex-centered">
-                <div :class="open ? 'bottom-arrow' : 'left-arrow'">&nbsp;</div>
+                <font-awesome-icon v-if="open" icon="fa-solid fa-chevron-down" />
+                <font-awesome-icon v-if="!open" icon="fa-solid fa-chevron-up" />
             </VBox>
         </HBox>
         <div :class="open ? '' : 'invisible'">

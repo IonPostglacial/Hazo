@@ -3,8 +3,8 @@
         <HBox class="medium-height center-items">
             <div class="indent">&nbsp;</div>
             <VBox v-on:click="toggleOpen" :class="['small-square', 'blue-circle-hover', 'thin-margin', 'flex-centered', { 'visibility-hidden': !hasArrows }]">
-                <div v-if="open" class="bottom-arrow">&nbsp;</div>
-                <div v-if="!open" class="left-arrow">&nbsp;</div>
+                <font-awesome-icon v-if="open" icon="fa-solid fa-chevron-down" />
+                <font-awesome-icon v-if="!open" icon="fa-solid fa-chevron-right" />
             </VBox>
             <HBox class="flex-centered unselectable">{{ prettyId }}</HBox>
         </HBox>
