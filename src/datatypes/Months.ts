@@ -1,36 +1,24 @@
+import { MultilangText } from "@/datatypes";
+
 const Months = {
-    NAMES: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEV"],
-    JAN: 1,
-    FEB: 2,
-    MAR: 4,
-    APR: 8,
-    MAY: 16,
-    JUN: 32,
-    JUL: 64,
-    AUG: 128,
-    SEP: 256,
-    OCT: 512,
-    NOV: 1024,
-    DEC: 2048,
-    floweringStates: [
-        { id: "s_month_jan", type: "state" as const, name: { S: "JAN" }, pictures: [], },
-        { id: "s_month_feb", type: "state" as const, name: { S: "FEB" }, pictures: [], },
-        { id: "s_month_mar", type: "state" as const, name: { S: "MAR" }, pictures: [], },
-        { id: "s_month_apr", type: "state" as const, name: { S: "APR" }, pictures: [], },
-        { id: "s_month_may", type: "state" as const, name: { S: "MAY" }, pictures: [], },
-        { id: "s_month_jun", type: "state" as const, name: { S: "JUN" }, pictures: [], },
-        { id: "s_month_jul", type: "state" as const, name: { S: "JUL" }, pictures: [], },
-        { id: "s_month_aug", type: "state" as const, name: { S: "AUG" }, pictures: [], },
-        { id: "s_month_sep", type: "state" as const, name: { S: "SEP" }, pictures: [], },
-        { id: "s_month_oct", type: "state" as const, name: { S: "OCT" }, pictures: [], },
-        { id: "s_month_nov", type: "state" as const, name: { S: "NOV" }, pictures: [], },
-        { id: "s_month_dec", type: "state" as const, name: { S: "DEC" }, pictures: [], },
-    ],
-    fromStates(currentItems: {id: string}[]): number {
-        let flowering = 0;
+    NAMES: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"],
+    JAN: 0,
+    FEB: 1,
+    MAR: 2,
+    APR: 3,
+    MAY: 4,
+    JUN: 5,
+    JUL: 6,
+    AUG: 7,
+    SEP: 8,
+    OCT: 9,
+    NOV: 10,
+    DEC: 11,
+    fromStates(currentItems: {id: string, name: MultilangText }[]): number[] {
+        let flowering = [];
         for (const item of currentItems) {
-            const monthIndex = Months.floweringStates.findIndex(s => s.id === item.id);
-            flowering |= (1 << monthIndex);
+            const monthIndex = (Months as any)[item.name.S];
+            flowering.push(monthIndex);
         }
         return flowering;
     },
@@ -41,15 +29,6 @@ const Months = {
         } else {
             return "???";
         }
-    },
-    has(bitset: number, month: number): boolean {
-        return (bitset & month) !== 0;
-    },
-    with(bitset: number, month: number): number {
-        return bitset | month;
-    },
-    without(bitset: number, month: number): number {
-        return bitset & ~month;
     },
 };
 

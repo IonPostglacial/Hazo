@@ -151,7 +151,10 @@ export default {
             this.$emit("item-selection-toggled", { item: inherentState });
         },
         monthToggled(monthIndex: number) {
-            this.$emit("item-selection-toggled", { item: Months.floweringStates[monthIndex] });
+            const character = this.breadCrumbs[this.breadCrumbs.length - 1];
+            const ch = characterFromId(Hazo.store.dataset, character.id);
+            if (typeof ch === "undefined" || ch.characterType !== "discrete") { return; }
+            this.$emit("item-selection-toggled", { item: ch.states[monthIndex] });
         },
         backToTop() {
             this.isRoot = true;

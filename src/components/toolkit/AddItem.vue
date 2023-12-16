@@ -102,7 +102,6 @@ export default {
                 const completed = this.completions[this.selectedCompletion];
                 const nameFields = this.nameFields;
                 if (typeof nameFields !== "undefined") {
-                    console.log(completed);
                     this.addItem(nameFields.map(f => this.capitalizeFirstLetter(completed.values[f.propertyName])));
                 }
             }

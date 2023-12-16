@@ -174,6 +174,14 @@ export function createStore() {
         addState(payload: { state: State, character: DiscreteCharacter }) {
             store.dataset.addState(payload.state, payload.character);
         },
+        setStates(payload: { states: State[], character: DiscreteCharacter }) {
+            const c = characterFromId(store.dataset, payload.character.id);
+            if (typeof c === "undefined" || c.characterType !== "discrete") { return; }
+            store.dataset.removeAllCharacterStates(c);
+            payload.states.forEach(state => {
+                store.dataset.addState(state, c);
+            });
+        },
         moveTaxonUp(taxon: Taxon) {
             moveCharacterUp(store.dataset.taxonsHierarchy, store.dataset.taxonsByIds, taxon);
         },
@@ -206,6 +214,11 @@ export function createStore() {
         },
         removeState(payload: { state: State, character: DiscreteCharacter }) {
             store.dataset.removeState(payload.state, payload.character);
+        },
+        removeStates(payload: { states: State[], character: DiscreteCharacter }) {
+            payload.states.forEach(state => {
+                store.dataset.removeState(state, payload.character);
+            })
         },
         addStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, picture: Picture }) {
             const c = characterFromId(store.dataset, payload.character?.id);

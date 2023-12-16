@@ -50,7 +50,7 @@
                             :pictures="selectedCharacter.pictures">
                         </picture-box>
                         <collapsible-panel v-if="!printMode && (typeof selectedCharacter !== 'undefined')" label="Identification">
-                            <div class="scroll large-max-width form-grid medium-padding">
+                            <form class="large-max-width form-grid medium-padding">
                                 <label>Name FR</label>
                                 <input class="flex-grow-1" type="text" v-model="selectedCharacter.name.S" />
                                 <label>Name EN</label>
@@ -61,24 +61,22 @@
                                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
                                 <label class="item-property">Type</label>
                                 <div>
-                                    <label><input type="radio" name="character-type" value="discrete" v-model="selectedCharacter.characterType">Discrete</label>
-                                    <label><input type="radio" name="character-type" value="range" v-model="selectedCharacter.characterType">Range</label>
+                                    <label><input type="radio" value="discrete" v-model="selectedCharacter.characterType">Discrete</label>
+                                    <label><input type="radio" value="range" v-model="selectedCharacter.characterType">Range</label>
                                 </div>
                                 <div class="display-contents" v-if="selectedCharacter.characterType === 'discrete'">
                                     <label class="item-property">Preset</label>
                                     <div>
-                                        <label><input type="radio" name="character-preset" value="" v-model="selectedCharacter.preset">None</label>
-                                        <label><input type="radio" name="character-preset" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
-                                        <label><input type="radio" name="character-preset" value="family" v-model="selectedCharacter.preset">Family</label>
-                                        <label><input type="radio" name="character-preset" value="map" v-model="selectedCharacter.preset">Map</label>
+                                        <label><input type="radio" value="" v-model="selectedCharacter.preset">None</label>
+                                        <label><input type="radio" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
                                     </div>
                                 </div>
-                            </div>
+                            </form>
                         </collapsible-panel>
                         <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
                         </characters-tree>
                         <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
-                            <flowering v-model="floweringMonth">
+                            <flowering v-model="floweringMonths">
                             </flowering>
                         </div>
                         <VBox v-if="!printMode && isMapCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
@@ -147,7 +145,7 @@
                         </label>
                     </VBox>
                 </VBox>
-                <VBox v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && (!selectedCharacter.preset || selectedCharacter.preset === 'map')" class="scroll relative">
+                <VBox v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="scroll relative">
                     <ColumnHeader class="stick-to-top" label="States" :hide-actions="true"></ColumnHeader>
                     <div class="medium-padding flex-grow-1">
                         <ul class="no-list-style flex-grow-1">
@@ -218,7 +216,8 @@ import CharactersPresentation from "./CharactersPresentation.vue";
 import ColumnHeader from "./ColumnHeader.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Dataset, Character, Hierarchy, State, Picture, characterFromId, standardMaps, GeoMap } from "@/datatypes";
+import { Dataset, Character, Hierarchy, State, Picture, characterFromId, standardMaps, GeoMap, createState } from "@/datatypes";
+import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 import { characterNameStore, stateNameStore } from "@/db-index";
@@ -240,7 +239,7 @@ export default {
             bigImages: [{id: "", hubUrl: "", url: "", label: ""} as Picture],
             selectedCharacterId: (this.$route.params.id as string) ?? "",
             printMode: false,
-            floweringMonth: 0,
+            floweringMonths: [],
         };
     },
     watch: {
@@ -249,13 +248,18 @@ export default {
             if (this.selectedCharacter) {
                 this.store.do("selectCharacter", this.selectedCharacter);
                 const char = this.selectedCharacter;
-                if (char.characterType === "discrete" && char.preset === "map") {
-                    const i = this.maps.findIndex(m => m.name === char.name.S);
-                    if (i >= 0) {
-                        this.selectedMapIndex = i;
+                if (char.characterType === "discrete") {
+                    if (char.preset === "map") {
+                        const i = this.maps.findIndex(m => m.name === char.name.S);
+                        if (i >= 0) {
+                            this.selectedMapIndex = i;
+                        }
                     }
                 }
             }
+        },
+        preset() {
+            this.syncPreset();
         },
     },
     computed: {
@@ -267,12 +271,12 @@ export default {
             return this.selectedCharacter?.characterType === "discrete";
         },
         isFloweringCharacter(): boolean {
-            const ch = this.selectedCharacter;
-            return ch?.characterType === "discrete" && ch.preset === "flowering";
+            if (!this.selectedCharacter || this.selectedCharacter.characterType !== "discrete") { return false; }
+            return this.selectedCharacter?.preset === "flowering";
         },
         isMapCharacter(): boolean {
-            const ch = this.selectedCharacter;
-            return ch?.characterType === "discrete" && ch.preset === "map";
+            if (!this.selectedCharacter || this.selectedCharacter.characterType !== "discrete") { return false; }
+            return this.selectedCharacter?.preset === "map";
         },
         isRangeCharacter(): boolean {
             return this.selectedCharacter?.characterType === "range";
@@ -312,6 +316,17 @@ export default {
         },
     },
     methods: {
+        syncPreset() {
+            if (typeof this.selectedCharacter === "undefined") { return; }
+            const character = this.selectedCharacter;
+            if (character.characterType === "discrete") {
+                if (character.preset === "flowering") {
+                    this.store.do("setStates", { states: Months.NAMES.map(name => createState({
+                        name: { S: name, FR: name, EN: name },
+                    })), character });
+                }
+            }
+        },
         isInherentState(state: State): boolean {
             const ch = this.selectedCharacter;
             return ch?.characterType === "discrete" && ch.inherentState ? ch.inherentState.id === state.id : false
@@ -455,7 +470,6 @@ export default {
         addCharacter(e: { value: string[], parentId: string }) {
             const [name, nameEN, nameCN] = e.value;
             this.store.do("addCharacter", createCharacter({
-                presetStates: this.dataset.presetStates,
                 name: { S: name, FR: name, EN: nameEN, CN: nameCN }, 
                 parentId: e.parentId,
             }));

@@ -1,18 +1,7 @@
 <template>
     <div class="outer-wheel">
         <div id="wheel" @click="selectMonth" class="wheel">
-            <div :class="['month', 'rotation-0-11', { selected: hasMonth(1) }]">J</div>
-            <div :class="['month', 'rotation-1-11', { selected: hasMonth(2) }]">F</div>
-            <div :class="['month', 'rotation-2-11', { selected: hasMonth(4) }]">M</div>
-            <div :class="['month', 'rotation-3-11', { selected: hasMonth(8) }]">A</div>
-            <div :class="['month', 'rotation-4-11', { selected: hasMonth(16) }]">M</div>
-            <div :class="['month', 'rotation-5-11', { selected: hasMonth(32) }]">J</div>
-            <div :class="['month', 'rotation-6-11', { selected: hasMonth(64) }]">J</div>
-            <div :class="['month', 'rotation-7-11', { selected: hasMonth(128) }]">A</div>
-            <div :class="['month', 'rotation-8-11', { selected: hasMonth(256) }]">S</div>
-            <div :class="['month', 'rotation-9-11', { selected: hasMonth(512) }]">O</div>
-            <div :class="['month', 'rotation-10-11', { selected: hasMonth(1024) }]">N</div>
-            <div :class="['month', 'rotation-11-11', { selected: hasMonth(2048) }]">D</div>
+            <div v-for="month, i in months" :class="['month', 'rotation-' + i + '-11', { selected: hasMonth(i) }]">{{ month }}</div>
         </div>
         <div id="inner-wheel" class="inner-wheel"></div>
     </div>
@@ -20,6 +9,7 @@
 
 <script lang="ts">
 import Months from "@/datatypes/Months";
+import { PropType } from "vue";
 
 const ZONE_RATIO = 12 / (2 * Math.PI);
 
@@ -58,11 +48,16 @@ function eventDocumentPosition(e: MouseEvent) {
 
 export default {
     props: {
-        modelValue: { type: Number, required: true },
+        modelValue: { type: Object as PropType<number[]>, required: true },
+    },
+    data() {
+        return {
+            months: Months.NAMES,
+        };
     },
     methods: {
         hasMonth(month: number): boolean {
-            return Months.has(this.modelValue, month);
+            return this.modelValue.includes(month);
         },
         selectMonth(e: MouseEvent) {
             e.stopPropagation();
@@ -71,14 +66,14 @@ export default {
             const [clickX, clickY] = eventDocumentPosition(e);
             const angle = trigoAngle(centerX, centerY, clickX, clickY);
             const monthIndex = (angle * ZONE_RATIO | 0);
-            const selectedMonth = 1 << monthIndex;
-            let newVal = 0;
-            if (Months.has(this.modelValue, selectedMonth)) {
+            const selectedMonth = monthIndex;
+            let newVal = [];
+            if (this.modelValue.includes(selectedMonth)) {
                 this.$emit("month-unselected", monthIndex);
-                newVal = Months.without(this.modelValue, selectedMonth);
+                newVal = this.modelValue.filter(v => v === selectedMonth);
             } else {
                 this.$emit("month-selected", monthIndex);
-                newVal = Months.with(this.modelValue, selectedMonth);
+                newVal = [...this.modelValue, selectedMonth];
             }
             this.$emit("update:modelValue", newVal);
         },

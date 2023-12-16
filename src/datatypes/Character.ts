@@ -1,15 +1,25 @@
 import { Character, CharacterPreset, DiscreteCharacter, State } from "./types";
 import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
+import Months from "./Months";
+import { createState } from "./State";
 
 type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
-	presetStates?: Record<CharacterPreset, State[]>
 	inherentState?: State,
-	states?: State[] | CharacterPreset,
-	preset?: string,
+	states?: State[],
+	preset?: CharacterPreset,
 	inapplicableStates?: State[],
 	requiredStates?: State[],
 	detail?: string,
+}
+
+function defaultStates(init: CharacterInit): State[] {
+	if (init.preset === "flowering") {
+		return Months.NAMES.map(name => createState({
+			name: { S: name, FR: name, EN: name },
+		}));
+	}
+	return [];
 }
 
 export function createCharacter(init: CharacterInit): DiscreteCharacter {
@@ -17,7 +27,7 @@ export function createCharacter(init: CharacterInit): DiscreteCharacter {
 		...createHierarchicalItem(init),
 		type: "character",
 		characterType: "discrete",
-		states: init.states ?? [],
+		states: init.states ?? defaultStates(init),
 		inherentState: init.inherentState,
 		inapplicableStates: init.inapplicableStates ?? [],
 		requiredStates: init.requiredStates ?? [],

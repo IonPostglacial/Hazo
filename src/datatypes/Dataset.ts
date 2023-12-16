@@ -1,9 +1,8 @@
-import { SelectableItem, Book, Character, CharacterPreset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon } from "./types";
+import { SelectableItem, Book, Character, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
 import { generateId } from "@/tools/generateid";
-import Month from "./Months";
 
 
 function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>): T {
@@ -177,8 +176,7 @@ export class Dataset {
     statesById: Map<string, State>;
     taxonsByIds: Map<string, Taxon>;
     charactersByIds: Map<string, Character>;
-    presetStates: Record<CharacterPreset, State[]> = {
-        flowering: Month.floweringStates,
+    presetStates: Record<"family", State[]> = {
         family: [],
     };
 
@@ -310,6 +308,13 @@ export class Dataset {
         this.statesById.set(state.id, state);
         character.states.push(state);
         return state;
+    }
+
+    removeAllCharacterStates(character: DiscreteCharacter) {
+        const ch = characterFromId(this, character.id);
+        if (ch && ch.characterType === "discrete") {
+            ch.states = [];
+        }
     }
 
     removeState(state: State, character: DiscreteCharacter) {

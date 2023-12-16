@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, taxonFromId } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, taxonFromId, createState } from "@/datatypes";
 import { createCharacter, CharacterPreset } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
@@ -253,7 +253,24 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 	for (const state of dataset?.states ?? []) {
 		states.set(state.id, decodeState(state));
 	}
+	const unusedStates = new Set(states.keys());
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
+		const oldStates = character.states;
+		const uniqueStates = oldStates.filter(s => unusedStates.has(s));
+		if (uniqueStates.length < oldStates.length) {
+			console.warn("duplicate states", character);
+			const duplicateStates = oldStates.filter(s => !unusedStates.has(s));
+			const newStates = duplicateStates.flatMap(id => {
+				const state = states.get(id);
+				if (typeof state === "undefined") {
+					return [];
+				}
+				return createState({ ...state, id: "" }); 
+			});
+			newStates.forEach(s => states.set(s.id, s));
+			character.states = [...uniqueStates, ...newStates.map(s => s.id)];
+		}
+		oldStates.forEach(s => unusedStates.delete(s));
 		const decodedCharacter = decodeCharacter(character, states);
 		ds.addCharacter(decodedCharacter);
 	}
