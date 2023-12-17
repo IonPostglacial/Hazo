@@ -3,8 +3,10 @@ import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
 import Months from "./Months";
 import { createState } from "./State";
+import { generateId } from "@/tools/generateid";
 
 type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
+	statesById?: Map<string, State>,
 	inherentState?: State,
 	states?: State[],
 	preset?: CharacterPreset,
@@ -14,20 +16,29 @@ type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 }
 
 function defaultStates(init: CharacterInit): State[] {
-	if (init.preset === "flowering") {
-		return Months.NAMES.map(name => createState({
-			name: { S: name, FR: name, EN: name },
-		}));
+	const statesById = init.statesById;
+	if (init.preset === "flowering" && statesById) {
+		return Months.NAMES.map(name => {
+			const state = createState({
+				id: generateId("s", statesById, { id: "" }), name: { S: name, FR: name, EN: name },
+			});
+			statesById.set(state.id, state);
+			return state;
+		});
 	}
 	return [];
 }
 
 export function createCharacter(init: CharacterInit): DiscreteCharacter {
+	let states = init.states;
+	if (!states || states.length === 0) {
+		states = defaultStates(init);
+	}
 	return {
 		...createHierarchicalItem(init),
 		type: "character",
 		characterType: "discrete",
-		states: init.states ?? defaultStates(init),
+		states,
 		inherentState: init.inherentState,
 		inapplicableStates: init.inapplicableStates ?? [],
 		requiredStates: init.requiredStates ?? [],

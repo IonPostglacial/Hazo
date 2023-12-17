@@ -1,5 +1,5 @@
 import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, taxonFromId, createState } from "@/datatypes";
-import { createCharacter, CharacterPreset } from "@/datatypes";
+import { createCharacter } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
 import { map } from "@/tools/iter";
@@ -219,7 +219,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 	});
 }
 
-function decodeCharacter(character: EncodedCharacter, states: Map<string, State>): Character {
+function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<string, State>): Character {
 	const item = decodeHierarchicalItem(character);
 	const charStates = new Map<string, State>();
 	for (const stateId of character.states) {
@@ -229,6 +229,7 @@ function decodeCharacter(character: EncodedCharacter, states: Map<string, State>
 		}
 	}
 	return createCharacter({
+		statesById: new Map(ds.statesById),
 		...item,
 		preset: character.preset,
 		states: Array.from(charStates.values()),
@@ -271,7 +272,7 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 			character.states = [...uniqueStates, ...newStates.map(s => s.id)];
 		}
 		oldStates.forEach(s => unusedStates.delete(s));
-		const decodedCharacter = decodeCharacter(character, states);
+		const decodedCharacter = decodeCharacter(ds, character, states);
 		ds.addCharacter(decodedCharacter);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
