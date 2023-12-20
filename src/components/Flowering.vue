@@ -7,17 +7,11 @@
             <clipPath id="outer-circle">
                 <circle cx="150" cy="150" r="145" />
             </clipPath>
-            <clipPath id="winter">
-                <rect x="50%" y="0" width="50%" height="50%" />
+            <clipPath id="dry">
+                <rect x="0" y="0" width="50%" height="100%" transform="rotate(-30)" transform-origin="center"  />
             </clipPath>
-            <clipPath id="spring">
-                <rect x="50%" y="50%" width="50%" height="50%" />
-            </clipPath>
-            <clipPath id="summer">
-                <rect x="0" y="50%" width="50%" height="50%" />
-            </clipPath>
-            <clipPath id="autumn">
-                <rect x="0" y="0" width="50%" height="50%" />
+            <clipPath id="wet">
+                <rect x="50%" y="0" width="50%" height="100%" transform="rotate(-30)" transform-origin="center" />
             </clipPath>
             <circle cx="150" cy="150" r="145" fill="white" stroke="black" stroke-width="2" />
             <polygon v-for="month, i in months"
@@ -30,10 +24,8 @@
                 :title="month"
                 clip-path="url(#outer-circle)">
             </polygon>
-            <circle cx="150" cy="150" r="100" fill="#afe5ff" stroke="black" stroke-width="2" clip-path="url(#winter)" />
-            <circle cx="150" cy="150" r="100" fill="#84bf3d" stroke="black" stroke-width="2" clip-path="url(#spring)" />
-            <circle cx="150" cy="150" r="100" fill="#ffdf34" stroke="black" stroke-width="2" clip-path="url(#summer)" />
-            <circle cx="150" cy="150" r="100" fill="#eaa256" stroke="black" stroke-width="2" clip-path="url(#autumn)" />
+            <circle cx="150" cy="150" r="100" fill="#eae178" stroke="black" stroke-width="2" clip-path="url(#dry)" />
+            <circle cx="150" cy="150" r="100" fill="#6ec2c1" stroke="black" stroke-width="2" clip-path="url(#wet)" />
             <text v-for="month, i in months" class="month-text" x="50%" y="50%" 
                 :transform="'rotate(' + (45 + 30 * i) + ') translate(0 -135)'" 
                 :data-month="i"
