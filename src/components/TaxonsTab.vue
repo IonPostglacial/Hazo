@@ -157,7 +157,13 @@
                             @minimize="removeColumn('desc')"
                             @maximize="zoomColumn('desc')">
                         </ColumnHeader>
-                        <SquareTreeViewer class="large-max-width" :name-fields="['S', 'EN', 'CN']" :editable="true" :rootItems="itemDescriptorTree" @item-selection-toggled="taxonStateToggle" @item-open="openCharacter"></SquareTreeViewer>
+                        <SquareTreeViewer class="large-max-width" 
+                            :name-fields="['S', 'EN', 'CN']" 
+                            :rootItems="itemDescriptorTree"
+                            :selected-items="selectedStateIds"
+                            @item-selection-toggled="taxonStateToggle" 
+                            @item-open="openCharacter">
+                        </SquareTreeViewer>
                     </VBox>
                     <VBox v-if="selectedColumns.includes('summary')" class="scroll">
                         <ColumnHeader class="stick-to-top" label="Summary"
@@ -229,7 +235,7 @@ import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
-import { DiscreteCharacter, Field, GeoMap, Picture, SelectableItem } from "@/datatypes/types";
+import { DiscreteCharacter, Field, GeoMap, Picture, BasicInfo } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
 import Flowering from "./Flowering.vue";
@@ -285,6 +291,9 @@ export default {
         },
     },
     computed: {
+        selectedStateIds(): string[] {
+            return this.selectedTaxon?.states.map(s => s.id) ?? [];
+        },
         minimizedColumns(): string[] {
             return columns.filter(col => !this.selectedColumns.includes(col));
         },
@@ -317,7 +326,7 @@ export default {
         specimenLocations(): { lat: number, lng: number }[] {
             return this.selectedTaxon?.specimenLocations ?? [];
         },
-        itemDescriptorTree(): Hierarchy<SelectableItem> {
+        itemDescriptorTree(): Hierarchy<BasicInfo> {
             if (typeof this.selectedTaxon !== "undefined") {
                 return taxonCharactersTree(this.selectedTaxon, this.dataset.charactersHierarchy);
             } else {

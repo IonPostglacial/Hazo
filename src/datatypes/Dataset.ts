@@ -1,4 +1,4 @@
-import { SelectableItem, Book, Character, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon } from "./types";
+import { SelectableItem, Book, Character, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, BasicInfo } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
@@ -61,24 +61,21 @@ export function moveCharacterDown<T extends HierarchicalItem>(hierarchy: Hierarc
     }
 }
 
-export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<SelectableItem> {
+export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<BasicInfo> {
     const dependencyHierarchy = transformHierarchy(charactersHierarchy, {
         filter: character => isApplicable({ character, taxon }),
-        map(character): Hierarchy<SelectableItem> {
+        map(character): Hierarchy<BasicInfo> {
             const characterStates = character.characterType === "range" ? [] : character.states.map(s => Object.assign({
                 type: "state",
                 parentId: character.id,
-                selected: taxon.states.some(state => state.id === s.id),
             }, s));
             const clonedChildren = clone(character.children);
-            const characterChildren: Hierarchy<SelectableItem>[] = [...clonedChildren];
+            const characterChildren: Hierarchy<BasicInfo>[] = [...clonedChildren];
             for (const state of characterStates) {
-                const inherentCharacter: Character & { selected?: boolean } | undefined = clonedChildren.find(characterChild =>
+                const inherentCharacter: Character | undefined = clonedChildren.find(characterChild =>
                     characterChild.characterType === "range" ? undefined : characterChild.inherentState?.id === state.id);
                 if (typeof inherentCharacter === "undefined") {
-                    characterChildren.push({ ...state, hidden: false, children: [] });
-                } else {
-                    inherentCharacter.selected = state.selected;
+                    characterChildren.push({ ...state, children: [] });
                 }
             }
             return { ...character, children: characterChildren };

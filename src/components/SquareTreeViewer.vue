@@ -21,7 +21,7 @@
                         {{ item.name[field] }}
                     </div>
                 </div>
-                <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item as HierarchicalItem)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
+                <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item as HierarchicalItem)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </SquareCard>
         </HBox>
         <div v-if="floweringMode">
@@ -42,30 +42,30 @@ import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-import { DiscreteCharacter, SelectableItem } from "@/datatypes/types";
+import { DiscreteCharacter, BasicInfo } from "@/datatypes/types";
 
 
 export default {
     name: "SquareTreeViewer",
     components: { Flowering, GeoView, HBox, SquareCard, VBox },
     props: {
-        editable: Boolean,
-        rootItems: Object as PropType<Hierarchy<SelectableItem>>,
+        selectedItems: Object as PropType<string[]>,
+        rootItems: Object as PropType<Hierarchy<BasicInfo>>,
         nameFields: Array as PropType<string[]>,
     },
     data() {
         const currentItems = [...this.rootItems!.children];
         return {
-            flowering: Months.fromStates(currentItems.filter(item => item.selected)),
+            flowering: Months.fromStates(currentItems.filter(s => this.selectedItems?.includes(s.id))),
             floweringMode: false,
             isRoot: true,
             currentItems: currentItems,
-            breadCrumbs: [] as Hierarchy<SelectableItem>[],
+            breadCrumbs: [] as Hierarchy<BasicInfo>[],
             menuFilter: "",
         };
     },
     watch: {
-        rootItems(newRootItems: Hierarchy<SelectableItem>) {
+        rootItems(newRootItems: Hierarchy<BasicInfo>) {
             let currentlyOpenItem = newRootItems;
             for (const breadCrumb of this.breadCrumbs) {
                 const it = currentlyOpenItem.children.find(it => it.id === breadCrumb.id);
@@ -75,20 +75,17 @@ export default {
             if (typeof currentlyOpenItem !== "undefined") {
                 this.updateCurrentItem(currentlyOpenItem);
                 this.currentItems = [...currentlyOpenItem.children];
-                this.flowering = Months.fromStates(this.currentItems.filter(item => item.selected));
+                this.flowering = Months.fromStates(this.currentItems.filter(s => this.isSelected(s)));
             }
         },
-        currentItems(items: Hierarchy<SelectableItem>[]) {
-            this.flowering = Months.fromStates(items.filter(item => item.selected));
+        currentItems(items: Hierarchy<BasicInfo>[]) {
+            this.flowering = Months.fromStates(items.filter(item => this.isSelected(item)));
         }
     },
     computed: {
-        itemsToDisplay(): Iterable<Hierarchy<SelectableItem>> {
+        itemsToDisplay(): Iterable<Hierarchy<BasicInfo>> {
             if (!this.currentItems) return [];
-            const shouldDisplayItem = (item: SelectableItem) => {
-                if (!this.editable && item.selected === false) {
-                    return false;
-                }
+            const shouldDisplayItem = (item: BasicInfo) => {
                 if (this.menuFilter !== "") {
                     return item.name.S.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
                 } else {
@@ -99,10 +96,10 @@ export default {
         },
     },
     methods: {
-        monthsFromItem(_item: Hierarchy<SelectableItem>): number[] {
+        monthsFromItem(_item: Hierarchy<BasicInfo>): number[] {
             return [];
         },
-        updateCurrentItem(item: Hierarchy<SelectableItem>) {
+        updateCurrentItem(item: Hierarchy<BasicInfo>) {
             this.floweringMode = this.isFlowering(item);
         },
         resetCurrentItem() {
@@ -111,29 +108,37 @@ export default {
         nameFieldsForItem(item: any): Iterable<string> {
             return this.nameFields?.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
         },
-        isClickable(item: Hierarchy<SelectableItem>): boolean {
+        isClickable(item: Hierarchy<BasicInfo>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
-        isSelected(item: Hierarchy<SelectableItem>): boolean {
-            return item.selected ?? false;
+        isSelected(item: Hierarchy<BasicInfo>): boolean {
+            if ((item as any)?.type === "character") {
+                const ch = item as Character;
+                if (ch.characterType === "discrete" && typeof ch.inherentState !== "undefined") {
+                    return this.selectedItems?.includes(ch.inherentState.id) ?? false;
+                } else {
+                    return false;
+                }
+            }
+            return this.selectedItems?.includes(item.id) ?? false;
         },
-        isSelectable(item: Hierarchy<SelectableItem>): boolean {
-            return this.editable && item.children.length === 0;
+        isSelectable(item: Hierarchy<BasicInfo>): boolean {
+            return item.children.length === 0;
         },
-        hasChildren(item: Hierarchy<SelectableItem>): boolean {
+        hasChildren(item: Hierarchy<BasicInfo>): boolean {
             return item.children.length > 0;
         },
-        isFlowering(item: Hierarchy<SelectableItem>): boolean {
+        isFlowering(item: Hierarchy<BasicInfo>): boolean {
             return (item as HierarchicalItem).type === "character" &&
                     (item as Character).characterType === "discrete" &&
                     (item as DiscreteCharacter).preset === "flowering"
         },
-        isGeographic(item: Hierarchy<SelectableItem>): boolean {
+        isGeographic(item: Hierarchy<BasicInfo>): boolean {
             return (item as HierarchicalItem).type === "character" &&
                     (item as Character).characterType === "discrete" &&
                     (item as DiscreteCharacter).preset === "map"
         },
-        openItem(item: Hierarchy<SelectableItem>) {
+        openItem(item: Hierarchy<BasicInfo>) {
             this.isRoot = false;
             this.updateCurrentItem(item);
             if (item.children.length > 0) {
@@ -171,7 +176,7 @@ export default {
             this.currentItems = [...this.rootItems!.children];
             this.breadCrumbs = [];
         },
-        goToBreadCrumb(breadCrumb: Hierarchy<SelectableItem>) {
+        goToBreadCrumb(breadCrumb: Hierarchy<BasicInfo>) {
             this.updateCurrentItem(breadCrumb);
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
