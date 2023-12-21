@@ -257,7 +257,7 @@ export default {
             .filter(col => columns.includes(col));
         return {
             nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
-            charNameFields: [{ label: 'NS', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
+            charNameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             nameStore: familyNameStore,
             selectedSummaryLangId: 0,
             store: Hazo.store,
