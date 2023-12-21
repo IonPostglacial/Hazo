@@ -11,16 +11,21 @@
             <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">
-                <div v-for="field in nameFieldsForItem(item)" :key="field"
-                        :title="item.name[field]"
-                        :class="['thin-border', 'medium-padding', 'text-ellipsed', isSelected(item) ? 'background-color-1' : 'white-background', { 'text-underlined': isClickable(item) }]">
-                    {{ item.name[field] }}
+                <template v-slot:background>
+                    <flowering v-if="isFlowering(item)" :model-value="monthsFromItem(item)"></flowering>
+                </template>
+                <div class="display-contents">
+                    <div v-for="field in nameFieldsForItem(item)" :key="field"
+                            :title="item.name[field]"
+                            :class="['text-ellipsed', 'round-sides', isSelected(item) ? 'background-color-1' : 'glass-background']">
+                        {{ item.name[field] }}
+                    </div>
                 </div>
                 <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item as HierarchicalItem)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </SquareCard>
         </HBox>
         <div v-if="floweringMode">
-            <flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled"></flowering>
+            <flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></flowering>
         </div>
     </VBox>
 </template>
@@ -94,6 +99,9 @@ export default {
         },
     },
     methods: {
+        monthsFromItem(_item: Hierarchy<SelectableItem>): number[] {
+            return [];
+        },
         updateCurrentItem(item: Hierarchy<SelectableItem>) {
             this.floweringMode = this.isFlowering(item);
         },

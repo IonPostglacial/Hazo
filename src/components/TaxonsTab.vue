@@ -183,8 +183,9 @@
                                         :geo-map="getGeoMap(desc.character)"
                                         :selected-features="desc.states.map(s => s.name.S)">
                                     </GeoView>
-                                    <Flowering v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'flowering'" :model-value="monthsFromStates(desc.states)">
-
+                                    <Flowering v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'flowering'" 
+                                        :model-value="monthsFromStates(desc.states)"
+                                        class="limited-width">
                                     </Flowering>
                                     <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                         <li v-for="state in desc.states" :key="state.id">

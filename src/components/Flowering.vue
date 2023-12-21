@@ -3,7 +3,7 @@
         <button class="absolute-top-right" @click="downloadSVG">
             <font-awesome-icon icon="fa-solid fa-download" />
         </button>
-        <svg ref="svg" version="1.1" width="300" height="300" xmlns="http://www.w3.org/2000/svg" @click="wheelClicked">
+    <svg ref="svg" version="1.1" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" @click="wheelClicked">
             <clipPath id="outer-circle">
                 <circle cx="150" cy="150" r="145" />
             </clipPath>

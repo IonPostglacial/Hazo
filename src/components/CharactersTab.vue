@@ -76,7 +76,7 @@
                         <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
                         </characters-tree>
                         <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
-                            <flowering v-model="floweringMonths">
+                            <flowering v-model="floweringMonths" class="limited-width">
                             </flowering>
                         </div>
                         <VBox v-if="!printMode && isMapCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
