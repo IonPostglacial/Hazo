@@ -162,7 +162,8 @@
                     <VBox v-if="selectedColumns.includes('summary')" class="scroll">
                         <ColumnHeader class="stick-to-top" label="Summary"
                             @minimize="removeColumn('summary')"
-                            @maximize="zoomColumn('summary')"></ColumnHeader>
+                            @maximize="zoomColumn('summary')">
+                        </ColumnHeader>
                         <section v-if="selectedTaxon.website.length > 0" class="white-background medium-padding medium-margin thin-border">
                             <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
                         </section>
@@ -182,7 +183,10 @@
                                         :geo-map="getGeoMap(desc.character)"
                                         :selected-features="desc.states.map(s => s.name.S)">
                                     </GeoView>
-                                    <ul v-if="desc.states.length > 0" class="indented">
+                                    <Flowering v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'flowering'" :model-value="monthsFromStates(desc.states)">
+
+                                    </Flowering>
+                                    <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                         <li v-for="state in desc.states" :key="state.id">
                                             {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
                                         </li>
@@ -227,6 +231,8 @@ import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, GeoMap, Picture, SelectableItem } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
+import Flowering from "./Flowering.vue";
+import Months from "@/datatypes/Months";
 
 const columns = ["menu", "props", "desc", "summary"];
 const columnNames: Record<string, string> = { 
@@ -239,11 +245,12 @@ const columnNames: Record<string, string> = {
 export default {
     name: "TaxonsTab",
     components: {
-        CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
-        GeoView, GoogleMap, Marker,
-        ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
-        ColumnHeader, TextEditor,
-    },
+    CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
+    GeoView, GoogleMap, Marker,
+    ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
+    ColumnHeader, TextEditor,
+    Flowering
+},
     data() {
         const selectedCols = (""+localStorage.selectedTaxonColumns)
             .split(",")
@@ -325,6 +332,9 @@ export default {
         }
     },
     methods: {
+        monthsFromStates(states: State[]): number[] {
+            return Months.fromStates(states);
+        },
         columnName(col: string): string {
             return columnNames[col];
         },

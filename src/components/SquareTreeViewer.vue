@@ -8,8 +8,8 @@
             </div>
         </VBox>
         <HBox v-if="!floweringMode" class="flex-wrap relative">
-            <component v-for="item in itemsToDisplay" :key="item.id" :is="isClickable(item) ? 'button' : 'div'" type="button" class="medium-square relative vertical-flexbox full-background thin-border white-background medium-padding medium-margin"
-                    :style="item.pictures.length > 0 ? 'background-image: url(' + item.pictures[0].url + ')' : ''"
+            <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
+                    :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">
                 <div v-for="field in nameFieldsForItem(item)" :key="field"
                         :title="item.name[field]"
@@ -17,7 +17,7 @@
                     {{ item.name[field] }}
                 </div>
                 <button v-if="item.parentId && hasChildren(item)" @click.stop="selectWithoutOpening(item as HierarchicalItem)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
-            </component>
+            </SquareCard>
         </HBox>
         <div v-if="floweringMode">
             <flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled"></flowering>
@@ -30,6 +30,7 @@ import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem, characterFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import GeoView from "./GeoView.vue";
+import SquareCard from "./toolkit/SquareCard.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import { Character } from "@/datatypes";
@@ -41,7 +42,7 @@ import { DiscreteCharacter, SelectableItem } from "@/datatypes/types";
 
 export default {
     name: "SquareTreeViewer",
-    components: { Flowering, GeoView, HBox, VBox },
+    components: { Flowering, GeoView, HBox, SquareCard, VBox },
     props: {
         editable: Boolean,
         rootItems: Object as PropType<Hierarchy<SelectableItem>>,
