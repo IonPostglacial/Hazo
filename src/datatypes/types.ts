@@ -48,10 +48,6 @@ export type IHierarchicalItem = BasicInfo & {
 	hidden: boolean;
 };
 
-export type SelectableItem = IHierarchicalItem & {
-	selected?: boolean
-}
-
 export type Taxon = IHierarchicalItem & {
 	type: "taxon";
 	states: State[];

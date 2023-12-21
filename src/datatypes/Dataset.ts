@@ -1,4 +1,4 @@
-import { SelectableItem, Book, Character, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, BasicInfo } from "./types";
+import { Book, Character, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, BasicInfo } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
