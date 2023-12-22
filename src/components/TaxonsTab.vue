@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div v-if="!selectingParent" class="button-group">
-                            <button type="button" v-for="parent in taxonParentChain(dataset, selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent.id)">{{ parent.name.S }}</button>
+                            <button type="button" v-for="parent in taxonParentChain(dataset, selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent)">{{ parent.name.S }}</button>
                             <button type="button" @click="openSelectParentDropdown" class="background-color-1">
                                 {{ selectedTaxon.name.S }}
                                 <font-awesome-icon icon="fa-solid fa-caret-down" />
@@ -240,6 +240,8 @@ import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
 import Flowering from "./Flowering.vue";
 import Months from "@/datatypes/Months";
+import { useHazoStore } from "@/store";
+import { mapActions, mapState } from "pinia";
 
 const columns = ["menu", "props", "desc", "summary"];
 const columnNames: Record<string, string> = { 
@@ -252,12 +254,12 @@ const columnNames: Record<string, string> = {
 export default {
     name: "TaxonsTab",
     components: {
-    CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
-    GeoView, GoogleMap, Marker,
-    ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
-    ColumnHeader, TextEditor,
-    Flowering
-},
+        CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
+        GeoView, GoogleMap, Marker,
+        ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
+        ColumnHeader, TextEditor,
+        Flowering
+    },
     data() {
         const selectedCols = (""+localStorage.selectedTaxonColumns)
             .split(",")
@@ -283,7 +285,7 @@ export default {
         $route(to: any) {
             this.selectedTaxonId = to.params.id;
             if (this.selectedTaxon) {
-                this.store.do("selectTaxon", this.selectedTaxon);
+                this.selectTaxon(this.selectedTaxon);
             }
         },
         selectedColumns() {
@@ -291,6 +293,7 @@ export default {
         },
     },
     computed: {
+        ...mapState(useHazoStore, ["selectedTaxon", "statesAllowList", "statesDenyList"]),
         selectedStateIds(): string[] {
             return this.selectedTaxon?.states.map(s => s.id) ?? [];
         },
@@ -310,11 +313,11 @@ export default {
             return this.store.dataset as Dataset;
         },
         taxonTree(): Taxon {
-            if (this.store.statesAllowList.length > 0 || this.store.statesDenyList.length > 0) {
+            if (this.statesAllowList.length > 0 || this.statesDenyList.length > 0) {
                 return transformHierarchy(this.dataset.taxonsHierarchy, {
                     map: t => t,
-                    filter: t => taxonOrAnyChildHasStates(t, this.store.statesAllowList) && 
-                        (this.store.statesDenyList.length == 0 || !taxonHasStates(t, this.store.statesDenyList)),
+                    filter: t => taxonOrAnyChildHasStates(t, this.statesAllowList) && 
+                        (this.statesDenyList.length == 0 || !taxonHasStates(t, this.statesDenyList)),
                 });
             } else {
                 return this.dataset.taxonsHierarchy;
@@ -342,6 +345,7 @@ export default {
         }
     },
     methods: {
+        ...mapActions(useHazoStore, ["selectTaxon", "copyTaxon"]),
         monthsFromStates(states: State[]): number[] {
             return Months.fromStates(states);
         },
@@ -401,7 +405,7 @@ export default {
         },
         copyItem() {
             if (this.selectedTaxon) {
-                this.store.do("copyTaxon", this.selectedTaxon);
+                this.copyTaxon(this.selectedTaxon);
             }
         },
         pasteItem() {
@@ -424,9 +428,6 @@ export default {
                 this.store.do("changeTaxonParent", { taxon: this.selectedTaxon, newParentId: id });
             }
             this.selectingParent = false;
-        },
-        selectTaxon(id: string) {
-            this.selectedTaxonId = id;
         },
         addTaxon(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;

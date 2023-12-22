@@ -2,17 +2,17 @@
     <VBox class="lightgrey-background height-full">
         <HBox class="thin-border background-gradient-1 no-print centered-text">
             <div class="button-group">
-                <button v-for="state in store.statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
+                <button v-for="state in statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
                     {{ state.name.S }}
                 </button>
-                <button v-for="state in store.statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
+                <button v-for="state in statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
                     {{ state.name.S }}
                 </button>
             </div>
             <Spacer></Spacer>
             <div class="button-group">
-                <router-link class="button" :to="'/taxons/' + store.selectedTaxon">Taxons</router-link>
-                <router-link class="button" :to="'/characters/' + store.selectedCharacter">Characters</router-link>
+                <router-link class="button" :to="'/taxons/' + selectedTaxon">Taxons</router-link>
+                <router-link class="button" :to="'/characters/' + selectedCharacter">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
             </div>
             <Spacer></Spacer>
@@ -100,6 +100,8 @@ import VBox from "@/components/toolkit/VBox.vue";
 import Spacer from "@/components/toolkit/Spacer.vue";
 import UploadButton from "@/components/toolkit/UploadButton.vue";
 import parseCSV, { escape, factorizeColumn, transposeCSV } from "./tools/parse-csv";
+import { useHazoStore } from "./store";
+import { mapActions, mapState } from "pinia";
 
 export default {
     name: "App",
@@ -127,7 +129,7 @@ export default {
             }
             const preloadedDataset = JSON.parse(preloadedDatasetText);
             FS.store(preloadedDataset).then(() => {
-                    this.store.do("setConnectedToHub", true);
+                    this.setConnectedToHub(true);
                     this.store.do("setDataset", decodeDataset(preloadedDataset));
                     this.selectedBase = preloadedDataset.id;
                 });
@@ -135,12 +137,12 @@ export default {
             this.preloaded = false;
             fetch(Config.datasetRegistry).then(res => {
                 if (res.ok) {
-                    this.store.do("setConnectedToHub", true);
+                    this.setConnectedToHub(true);
                 } else {
                     const timerId = window.setInterval(() => {
                         fetch(Config.datasetRegistry).then(res => {
                             if (res.ok) {
-                                this.store.do("setConnectedToHub", true);
+                                this.setConnectedToHub(true);
                                 window.clearInterval(timerId);
                             }
                         })
@@ -173,11 +175,9 @@ export default {
         }
     },
     computed: {
+        ...mapState(useHazoStore, ["connectedToHub", "selectedTaxon", "selectedCharacter", "statesAllowList", "statesDenyList"]),
         dataset(): Dataset {
             return this.store.dataset;
-        },
-        connectedToHub(): boolean {
-            return this.store.connectedToHub;
         },
     },
     watch: {
@@ -186,14 +186,15 @@ export default {
         },
     },
     methods: {
+        ...mapActions(useHazoStore, ["setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
         openHub() {
             window.open(Config.datasetRegistry);
         },
         removeFromAllowList(state: State) {
-            this.store.do("removeStateFromAllowList", state);
+            this.removeStateFromAllowList(state);
         },
         removeFromDenyList(state: State) {
-            this.store.do("removeStateFromDenyList", state);
+            this.removeStateFromAllowList(state);
         },
         async indexFamilies() {
             for (const family of this.dataset.taxonsHierarchy.children) {

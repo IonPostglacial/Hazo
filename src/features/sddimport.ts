@@ -55,10 +55,9 @@ function hierarchicalItemFromSdd(id: string, representation: Representation, pho
     return data;
 }
 
-function characterFromSdd(presetStates: Record<CharacterPreset, State[]>, character: sdd_Character, photosByRef: Record<string, string>, statesById: Map<string, State>): Character {
+function characterFromSdd(character: sdd_Character, photosByRef: Record<string, string>, statesById: Map<string, State>): Character {
     return createCharacter({
         ...hierarchicalItemFromSdd(character.id, character, photosByRef),
-        presetStates,
         detail: character.detail,
         inapplicableStates: character.inapplicableStatesRefs?.map(s => statesById.get(s.ref)!),
     });
@@ -89,7 +88,7 @@ function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record
         parentId: taxon.parentId,
     });
     for (const field of fields) {
-        ((field.std) ? t : t.extra)[field.id] = findInDescription(taxon.detail, field.label);
+        ((field.std) ? t : t.extra as any)[field.id] = findInDescription(taxon.detail, field.label);
     }
     return t;
 }
@@ -124,7 +123,7 @@ function extractTaxonsHierarchy(ds: Dataset, sddContent: sdd_Dataset, extraField
 
 function extractCharactersHierarchy(ds: Dataset, sddContent: sdd_Dataset, statesById: Map<string, State>, photosByRef: Record<string, string>) {
 	for (const character of sddContent.characters) {
-		ds.addCharacter(characterFromSdd(ds.presetStates, character, photosByRef, statesById));
+		ds.addCharacter(characterFromSdd(character, photosByRef, statesById));
 	}
 }
 

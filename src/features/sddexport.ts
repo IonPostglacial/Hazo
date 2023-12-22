@@ -57,7 +57,7 @@ function taxonToSdd(taxon: Taxon, dataset: Dataset): SddTaxonData {
 		mediaObjectsRefs: taxon.pictures.map(pic => ({ ref: pic.id })),
 		label: `${taxon.name.S} / ${taxon.author} / ${taxon.name.CN}`,
 		detail: "" + dataset.extraFields.map(function(field) {
-			const value = ((field.std) ? taxon : taxon.extra)[field.id];
+			const value = ((field.std) ? taxon : taxon.extra as any)[field.id];
 			if (typeof value === "undefined" || value === null || value == "") {
 				return "";
 			}

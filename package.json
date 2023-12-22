@@ -23,13 +23,14 @@
     "@tiptap/extension-underline": "^2.0.0-beta.220",
     "@tiptap/pm": "^2.0.0-beta.220",
     "@tiptap/vue-3": "^2.0.0-beta.220",
+    "@types/wicg-file-system-access": "^2020.9.5",
     "d3": "^7.8.2",
     "jszip": "^3.5.0",
+    "pinia": "^2.1.7",
     "split.js": "^1.6.4",
     "vue": "^3.2.0",
     "vue-router": "^4.0.0",
-    "vue3-google-map": "^0.15.0",
-    "@types/wicg-file-system-access": "^2020.9.5"
+    "vue3-google-map": "^0.15.0"
   },
   "devDependencies": {
     "@types/d3": "^5.16.3",

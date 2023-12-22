@@ -1,5 +1,6 @@
 import * as Vue from "vue";
 import * as VueRouter from "vue-router";
+import { createPinia } from "pinia";
 import App from "./App.vue";
 import { createStore } from "./store";
 import TaxonPresentation from "./components/TaxonPresentation.vue";
@@ -43,13 +44,17 @@ declare global {
     }
 }
 
+const pinia = createPinia();
+const app = Vue.createApp(App);
+app.use(pinia);
+app.use(router);
+app.component("font-awesome-icon", FontAwesomeIcon);
+
+
 globalThis.Hazo = {
     store: createStore()
 };
 
-const app = Vue.createApp(App);
-app.use(router);
-app.component("font-awesome-icon", FontAwesomeIcon);
 app.mount("#app");
 
 function adaptSize() {

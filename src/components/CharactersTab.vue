@@ -27,7 +27,7 @@
                     <button type="button" @click="pasteItem">
                         <font-awesome-icon icon="fa-solid fa-paste" />
                     </button>
-                    <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyStates">Copy States</button>
+                    <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyCurrentStates">Copy States</button>
                     <button type="button" @click="pasteStates">Paste States</button>
                 </div>
             </HBox>
@@ -221,6 +221,8 @@ import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 import { characterNameStore, stateNameStore } from "@/db-index";
+import { useHazoStore } from "@/store";
+import { mapActions, mapState } from "pinia";
 
 
 export default {
@@ -246,7 +248,7 @@ export default {
         $route(to: any) {
             this.selectedCharacterId = to.params.id;
             if (this.selectedCharacter) {
-                this.store.do("selectCharacter", this.selectedCharacter);
+                this.selectCharacter(this.selectedCharacter);
                 const char = this.selectedCharacter;
                 if (char.characterType === "discrete") {
                     if (char.preset === "map") {
@@ -263,6 +265,7 @@ export default {
         },
     },
     computed: {
+        ...mapState(useHazoStore, ["selectedCharacter", "statesAllowList", "statesDenyList"]),
         selectedMap(): GeoMap|undefined {
             if (this.maps.length <= this.selectedMapIndex) { return undefined; }
             return this.maps[this.selectedMapIndex];
@@ -316,6 +319,7 @@ export default {
         },
     },
     methods: {
+        ...mapActions(useHazoStore, ["addStateToAllowList", "addStateToDenyList", "copyCharacter", "copyStates", "selectCharacter"]),
         syncPreset() {
             if (typeof this.selectedCharacter === "undefined") { return; }
             const character = this.selectedCharacter;
@@ -332,25 +336,25 @@ export default {
             return ch?.characterType === "discrete" && ch.inherentState ? ch.inherentState.id === state.id : false
         },
         stateInAllowList(state: State): boolean {
-            return this.store.statesAllowList.some(s => s.id === state.id);
+            return this.statesAllowList.some(s => s.id === state.id);
         },
         stateInDenyList(state: State): boolean {
-            return this.store.statesDenyList.some(s => s.id === state.id);
+            return this.statesDenyList.some(s => s.id === state.id);
         },
         onlyAllowState(state: State|undefined) {
             if (!state) return;
             if (this.stateInAllowList(state)) {
-                this.store.do("removeStateFromAllowList", state);
+                this.removeStateFromAllowList(state);
             } else {
-                this.store.do("addStateToAllowList", state);
+                this.addStateToAllowList(state);
             }
         },
         denyState(state: State|undefined) {
             if (!state) return;
             if (this.stateInDenyList(state)) {
-                this.store.do("removeStateFromDenyList", state);
+                this.removeStateFromDenyList(state);
             } else {
-                this.store.do("addStateToDenyList", state);
+                this.addStateToDenyList(state);
             }
         },
         exportStates() {
@@ -368,14 +372,14 @@ export default {
         },
         copyItem() {
             if (this.selectedCharacter) {
-                this.store.do("copyCharacter", this.selectedCharacter);
+                this.copyCharacter(this.selectedCharacter);
             }
         },
         pasteItem() {
             this.store.do("pasteCharacter", this.selectedCharacterId);
         },
-        copyStates() {
-            this.store.do("copyStates", Array.from(this.dataset.characterStates(this.selectedCharacter)));
+        copyCurrentStates() {
+            this.copyStates(Array.from(this.dataset.characterStates(this.selectedCharacter)));
         },
         pasteStates() {
             this.store.do("pasteStates", this.selectedCharacterId);
@@ -400,9 +404,6 @@ export default {
             if (this.selectedCharacter?.characterType === "discrete") {
                 this.store.do("setInherentState", { character: this.selectedCharacter!, state });
             }
-        },
-        selectCharacter(id: string) {
-            this.selectedCharacterId = id;
         },
         addCharacterPhoto(e: {detail: {value: string[]}}) {
             if (!this.selectedCharacter) { return; }

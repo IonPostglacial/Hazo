@@ -52,7 +52,7 @@
 import { Dataset, Description, Taxon, taxonDescriptions, taxonFromId } from '@/datatypes'; // eslint-disable-line no-unused-vars
 import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
-import { Character, State } from '@/datatypes/types';
+import { Character, MultilangText, State } from '@/datatypes/types';
 import Flowering from "@/components/Flowering.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
 import HBox from './toolkit/HBox.vue';
@@ -120,7 +120,7 @@ export default {
         descriptions(taxon: Taxon): Description[] {
             return taxonDescriptions(this.dataset, taxon);
         },
-        monthsFromStates(states: {id: string}[]): number {
+        monthsFromStates(states: { id: string, name: MultilangText }[]): number[] {
             return Months.fromStates(states);
         },
     }

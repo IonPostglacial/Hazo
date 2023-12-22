@@ -1,3 +1,4 @@
+import { defineStore } from "pinia";
 import { Character, DictionaryEntry, Field, Picture, Hierarchy, standardBooks, Taxon, cloneHierarchy, createTaxon, createCharacter } from "./datatypes";
 import { Dataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId } from './datatypes/Dataset';
 import { DiscreteCharacter, State } from "./datatypes/types";
@@ -20,27 +21,114 @@ function setState(states: State[], state: State, selected: boolean) {
     }
 }
 
-export function createStore() {
-    const undoStack: (()=>void)[] = [];
-    const actions = {
+export const useHazoStore = defineStore('hazo', {
+    state: () => ({
+        selectedTaxon: "",
+        selectedCharacter: "",
+        dictionary: { entries: new Array<DictionaryEntry>() },
+        connectedToHub: false,
+        copiedTaxon: null as null | Hierarchy<Taxon>,
+        copiedCharacter: null as null | Hierarchy<Character>,
+        copiedStates: [] as State[],
+        statesAllowList: [] as State[],
+        statesDenyList: [] as State[],
+    }),
+    actions: {
+        addStateToAllowList(state: State) {
+            this.statesAllowList = [...this.statesAllowList, state];
+        },
+        removeStateFromAllowList(state: State) {
+            this.statesAllowList = this.statesAllowList.filter(s => s.id !== state.id);
+        },
+        addStateToDenyList(state: State) {
+            this.statesDenyList = [...this.statesDenyList, state];
+        },
+        removeStateFromDenyList(state: State) {
+            this.statesDenyList = this.statesDenyList.filter(s => s.id !== state.id);
+        },
         setConnectedToHub(connectedToHub: boolean) {
-            store.connectedToHub = connectedToHub;
+            this.connectedToHub = connectedToHub;
         },
         selectTaxon(taxon: Taxon) {
-            store.selectedTaxon = taxon.id;
+            this.selectedTaxon = taxon.id;
         },
         selectCharacter(character: Character) {
-            store.selectedCharacter = character.id;
+            this.selectedCharacter = character.id;
         },
         copyTaxon(taxon: Taxon) {
-            store.copiedTaxon = cloneHierarchy(taxon);
+            this.copiedTaxon = cloneHierarchy(taxon);
         },
+        copyCharacter(character: Character) {
+            const clonedCharacter = cloneHierarchy(character);
+            clonedCharacter.requiredStates = clone(clonedCharacter.requiredStates);
+            clonedCharacter.inapplicableStates = clone(clonedCharacter.inapplicableStates);
+            if (clonedCharacter.characterType === "discrete") {
+                clonedCharacter.states = clone(clonedCharacter.states);
+                clonedCharacter.inherentState = clone(clonedCharacter.inherentState);
+            }
+            this.copiedCharacter = clonedCharacter;
+        },
+        copyStates(states: State[] | undefined) {
+            if (typeof states !== "undefined") {
+                this.copiedStates = clone(states);
+                this.copiedStates.forEach(s => s.id = "s-" + makeid(8));
+            }
+        },
+    }
+});
+
+export function createStore() {
+    const hazoStore = useHazoStore();
+    const undoStack: (()=>void)[] = [];
+    const actions = {
         pasteTaxon(targetId: string) {
-            if (store.copiedTaxon !== null) {
-                const taxon = cloneHierarchy(store.copiedTaxon);
+            if (hazoStore.copiedTaxon !== null) {
+                const taxon = cloneHierarchy(hazoStore.copiedTaxon);
                 taxon.parentId = targetId;
                 fixParentIds(taxon);
                 store.dataset.addTaxon(taxon);
+            }
+        },
+        pasteCharacter(targetId: string) {
+            if (hazoStore.copiedCharacter === null) return;
+            const character = cloneHierarchy(hazoStore.copiedCharacter);
+            const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
+            const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
+            character.requiredStates = [];
+            character.inapplicableStates = [];
+            if (character.characterType === "discrete") {
+                const oldStates = character.states;
+                character.states = [];
+                for (const oldState of oldStates) {
+                    const newState = clone(oldState);
+                    newState.id = "";
+                    store.dataset.addState(newState, character);
+                    if (oldRequiredStatesIds.includes(oldState.id)) {
+                        character.requiredStates.push(newState);
+                    }
+                    if (oldInapplicableStatesIds.includes(oldState.id)) {
+                        character.inapplicableStates.push(newState);
+                    }
+                }
+            }
+            const newParent = characterFromId(store.dataset, targetId);
+            if (newParent?.characterType === "discrete" && hazoStore.copiedCharacter?.characterType === "discrete") {
+                if (newParent && hazoStore.copiedCharacter?.inherentState?.id) {
+                    hazoStore.copiedCharacter.inherentState.id = "s-auto-" + hazoStore.copiedCharacter.id;
+                    newParent.states.push(hazoStore.copiedCharacter.inherentState);
+                }
+            }
+            character.parentId = targetId;
+            fixParentIds(character);
+            store.dataset.addCharacter(character);
+        },
+        pasteStates(characterId: string) {
+            for (const s of hazoStore.copiedStates) {
+                const stateToAdd = clone(s);
+                const character = characterFromId(store.dataset, characterId);
+                if (typeof character !== "undefined" && character.characterType === "discrete") {
+                    store.dataset.addState(stateToAdd, character);
+                }
             }
         },
         addTaxon(taxon: Taxon) {
@@ -79,64 +167,6 @@ export function createStore() {
         removeTaxonPicture(payload: { taxon: Taxon, index: number }) {
             const t = taxonFromId(store.dataset, payload.taxon.id);
             if (t) t.pictures.splice(payload.index, 1);
-        },
-        copyCharacter(character: Character) {
-            const clonedCharacter = cloneHierarchy(character);
-            clonedCharacter.requiredStates = clone(clonedCharacter.requiredStates);
-            clonedCharacter.inapplicableStates = clone(clonedCharacter.inapplicableStates);
-            if (clonedCharacter.characterType === "discrete") {
-                clonedCharacter.states = clone(clonedCharacter.states);
-                clonedCharacter.inherentState = clone(clonedCharacter.inherentState);
-            }
-            store.copiedCharacter = clonedCharacter;
-        },
-        pasteCharacter(targetId: string) {
-            if (store.copiedCharacter === null) return;
-            const character = cloneHierarchy(store.copiedCharacter);
-            const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
-            const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
-            character.requiredStates = [];
-            character.inapplicableStates = [];
-            if (character.characterType === "discrete") {
-                const oldStates = character.states;
-                character.states = [];
-                for (const oldState of oldStates) {
-                    const newState = clone(oldState);
-                    newState.id = "";
-                    store.dataset.addState(newState, character);
-                    if (oldRequiredStatesIds.includes(oldState.id)) {
-                        character.requiredStates.push(newState);
-                    }
-                    if (oldInapplicableStatesIds.includes(oldState.id)) {
-                        character.inapplicableStates.push(newState);
-                    }
-                }
-            }
-            const newParent = characterFromId(store.dataset, targetId);
-            if (newParent?.characterType === "discrete" && store.copiedCharacter?.characterType === "discrete") {
-                if (newParent && store.copiedCharacter?.inherentState?.id) {
-                    store.copiedCharacter.inherentState.id = "s-auto-" + store.copiedCharacter.id;
-                    newParent.states.push(store.copiedCharacter.inherentState);
-                }
-            }
-            character.parentId = targetId;
-            fixParentIds(character);
-            store.dataset.addCharacter(character);
-        },
-        copyStates(states: State[] | undefined) {
-            if (typeof states !== "undefined") {
-                store.copiedStates = clone(states);
-                store.copiedStates.forEach(s => s.id = "s-" + makeid(8));
-            }
-        },
-        pasteStates(characterId: string) {
-            for (const s of store.copiedStates) {
-                const stateToAdd = clone(s);
-                const character = characterFromId(store.dataset, characterId);
-                if (typeof character !== "undefined" && character.characterType === "discrete") {
-                    store.dataset.addState(stateToAdd, character);
-                }
-            }
         },
         addCharacter(character: Character) {
             store.dataset.addCharacter(character);
@@ -293,18 +323,6 @@ export function createStore() {
             store.dataset.taxonsHierarchy = createTaxon({ id: "t0", name: { S: "<TOP>" } });
             store.dataset.charactersHierarchy = createCharacter({ id: "c0", name: { S: "<TOP>" } });
         },
-        addStateToAllowList(state: State) {
-            store.statesAllowList = [...store.statesAllowList, state];
-        },
-        removeStateFromAllowList(state: State) {
-            store.statesAllowList = store.statesAllowList.filter(s => s.id !== state.id);
-        },
-        addStateToDenyList(state: State) {
-            store.statesDenyList = [...store.statesDenyList, state];
-        },
-        removeStateFromDenyList(state: State) {
-            store.statesDenyList = store.statesDenyList.filter(s => s.id !== state.id);
-        },
     };
     function perform<Action extends keyof typeof actions>(action: Action, ...params: Parameters<typeof actions[Action]>) {
         if (store.dbg) {
@@ -321,15 +339,7 @@ export function createStore() {
             new Array<Field>(),
             new Map(),
         ),
-        selectedTaxon: "",
-        selectedCharacter: "",
         dictionary: { entries: new Array<DictionaryEntry>() },
-        connectedToHub: false,
-        copiedTaxon: null as null | Hierarchy<Taxon>,
-        copiedCharacter: null as null | Hierarchy<Character>,
-        copiedStates: [] as State[],
-        statesAllowList: [] as State[],
-        statesDenyList: [] as State[],
         get charactersHierarchy() {
             return this.dataset.charactersHierarchy;
         },

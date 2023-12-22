@@ -4,7 +4,7 @@
         <button type="button" @click="openPhoto" class="small-margin thin-border fill dark-background">
             <img :src="url" :alt="picture.label">
         </button>
-        <button class="background-color-1" v-if="isRemoteUrl && isConnectedToHub" @click="uploadPhoto">Retrieve Photo</button>
+        <button class="background-color-1" v-if="isRemoteUrl && connectedToHub" @click="uploadPhoto">Retrieve Photo</button>
         <HBox v-if="editable">
             <input :value="picture.url" @change="setPhoto" type="text" class="no-fixed-width flex-grow-1" />
         </HBox>
@@ -17,6 +17,8 @@ import { Picture, uploadPicture } from "@/datatypes";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
+import { useHazoStore } from "@/store";
+import { mapState } from "pinia";
 
 
 export default {
@@ -27,18 +29,16 @@ export default {
         picture: { type: Object as PropType<Picture>, required: true },
     },
     computed: {
+        ...mapState(useHazoStore, ["connectedToHub"]),
         url(): string|undefined {
             return this.isRemoteUrl ? this.picture?.url : this.picture?.hubUrl; 
         },
         isRemoteUrl(): boolean {
             return typeof this.picture?.hubUrl === "undefined";
         },
-        isConnectedToHub(): boolean {
-            return Hazo.store.connectedToHub;
-        },
     },
     mounted() {
-        if (Hazo.store.connectedToHub && typeof this.picture !== "undefined" && typeof this.picture.hubUrl === "undefined") {
+        if (this.connectedToHub && typeof this.picture !== "undefined" && typeof this.picture.hubUrl === "undefined") {
             this.uploadPhoto();
         }
     },
