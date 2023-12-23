@@ -216,7 +216,7 @@ import CharactersPresentation from "./CharactersPresentation.vue";
 import ColumnHeader from "./ColumnHeader.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Dataset, Character, Hierarchy, State, Picture, characterFromId, standardMaps, GeoMap, createState } from "@/datatypes";
+import { Dataset, Character, Hierarchy, State, Picture, characterFromId, standardMaps, GeoMap, createState, characterStates } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
@@ -304,7 +304,7 @@ export default {
             const parent = characterFromId(this.dataset, parentId);
             if (typeof parent === "undefined")
                 return[];
-            return Array.from(this.dataset.characterStates(parent));
+            return Array.from(characterStates(parent));
         },
         parentStatesExceptInherent(): State[] {
             const ch = this.selectedCharacter;
@@ -314,7 +314,7 @@ export default {
             const childrenInherentStateIds = this.selectedCharacter?.children
                 .map(c => c.characterType === "range" ? undefined : c.inherentState?.id)
                 .filter(s => typeof s !== "undefined") ?? [];
-            return Array.from(this.dataset.characterStates(this.selectedCharacter)).
+            return Array.from(characterStates(this.selectedCharacter)).
                 filter(s => !childrenInherentStateIds.includes(s.id));
         },
     },
@@ -379,7 +379,7 @@ export default {
             this.store.do("pasteCharacter", this.selectedCharacterId);
         },
         copyCurrentStates() {
-            this.copyStates(Array.from(this.dataset.characterStates(this.selectedCharacter)));
+            this.copyStates(Array.from(characterStates(this.selectedCharacter)));
         },
         pasteStates() {
             this.store.do("pasteStates", this.selectedCharacterId);

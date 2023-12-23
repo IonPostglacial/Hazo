@@ -1,10 +1,10 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, Dataset, Field, iterHierarchy, State, Taxon } from "@/datatypes";
+import { addCharacter, addTaxon, Character, createDataset, Dataset, Field, iterHierarchy, setTaxonState, State, Taxon } from "@/datatypes";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
 import { createCharacter } from "@/datatypes/Character";
 import { createTaxon } from "@/datatypes/Taxon";
-import { CharacterPreset, IHierarchicalItem } from "@/datatypes/types";
+import { IHierarchicalItem } from "@/datatypes/types";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
@@ -117,13 +117,13 @@ function extractStatesById(sddContent: sdd_Dataset, photosByRef: Record<string, 
 
 function extractTaxonsHierarchy(ds: Dataset, sddContent: sdd_Dataset, extraFields: Field[], photosByRef: Record<string, string>) {
 	for (const taxon of sddContent.taxons) {
-        ds.addTaxon(taxonFromSdd(taxon, extraFields, photosByRef));
+        addTaxon(ds, taxonFromSdd(taxon, extraFields, photosByRef));
 	}
 }
 
 function extractCharactersHierarchy(ds: Dataset, sddContent: sdd_Dataset, statesById: Map<string, State>, photosByRef: Record<string, string>) {
 	for (const character of sddContent.characters) {
-		ds.addCharacter(characterFromSdd(character, photosByRef, statesById));
+		addCharacter(ds, characterFromSdd(character, photosByRef, statesById));
 	}
 }
 
@@ -140,13 +140,20 @@ export function datasetFromSdd(dataset: sdd_Dataset, extraFields: Field[]): Data
 	const photosByRef = extractPhotosByRef(dataset);
 	const statesById = extractStatesById(dataset, photosByRef);
     const statesByTaxons = extractStatesByTaxons(dataset);
-    const ds = new Dataset("0", createTaxon({ id: "t0", name: { S: "<TOP>" }}), createCharacter({ id: "c0", name: { S: "<TOP>" } }), [], [], statesById);
+    const ds = createDataset({ 
+        id: "0", 
+        taxonsHierarchy: createTaxon({ id: "t0", name: { S: "<TOP>" }}), 
+        charactersHierarchy: createCharacter({ id: "c0", name: { S: "<TOP>" } }), 
+        books: [], 
+        extraFields: [], 
+        statesById 
+    });
     extractTaxonsHierarchy(ds, dataset, extraFields, photosByRef);
     for (const taxon of iterHierarchy(ds.taxonsHierarchy)) {
         statesByTaxons.get(taxon.id)?.forEach(stateId => {
             const state = statesById.get(stateId);
             if (typeof state !== "undefined") {
-                ds.setTaxonState(taxon.id, state);
+                setTaxonState(ds, taxon.id, state);
             }
         });
     }

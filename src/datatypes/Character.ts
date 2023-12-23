@@ -52,3 +52,7 @@ export function characterHasState(ch: Character, state: { id: string }|undefined
 	return typeof state !== "undefined" && ch?.characterType === "discrete" &&
 		(ch?.states.some(s => s.id === state.id) ?? false);
 }
+
+export function characterStates(character: Character | undefined): State[] {
+    return character?.characterType === "discrete" ? character.states : [];
+}

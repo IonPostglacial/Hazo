@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import type { Character, Dataset, Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { characterStates, type Character, type Dataset, type Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import HBox from "./toolkit/HBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
@@ -61,7 +61,7 @@ const hierarchyToD3 = (dataset: Dataset, hierarchy: Hierarchy<Character>, item: 
         color: item.color,
         children: [
             ...charChildren.map(child => hierarchyToD3(dataset, hierarchy, child, langFields)),
-            ...dataset.characterStates(item)
+            ...characterStates(item)
                 .filter((s: any) => !inherentStateIds.includes(s.id))
                 .map((s: any) => ({ id: s.id, name: nameMultilang(s, langFields), children: [], color: s.color }))
         ]

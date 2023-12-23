@@ -1,3 +1,5 @@
+import { Hierarchy } from "./hierarchy";
+
 export type Book = {
     id: string;
     label: string;
@@ -119,4 +121,16 @@ export type GeoMap = {
 	center: [number, number], 
 	scale: number, 
 	property: string 
+};
+
+export type Dataset = {
+    id: string,
+    taxonsHierarchy: Hierarchy<Taxon>,
+    charactersHierarchy: Hierarchy<Character>,
+    books: Book[],
+    extraFields: Field[],
+    statesById: Map<string, State>,
+    taxonsByIds: Map<string, Taxon>,
+    charactersByIds: Map<string, Character>,
+    presetStates: Record<"family", State[]>,
 };

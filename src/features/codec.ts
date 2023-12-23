@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, taxonFromId, createState } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, taxonFromId, createState, addTaxon, addCharacter, setTaxonState, characterStates, createDataset } from "@/datatypes";
 import { createCharacter } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
@@ -106,9 +106,9 @@ function encodeTaxon(taxon: Taxon, picIds: Set<string>, allStates: CharactersSta
 	};
 }
 
-function encodeCharacter(dataset: Dataset, character: Character, picIds: Set<string>) {
+function encodeCharacter(character: Character, picIds: Set<string>) {
 	return {
-		states: Array.from(dataset.characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
+		states: Array.from(characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
 		preset: character.characterType === "discrete" ? character.preset : undefined,
 		inherentStateId: character.characterType === "discrete" ? character.inherentState?.id : '',
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
@@ -152,7 +152,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	const characters: ReturnType<typeof encodeCharacter>[] = [];
 	forEachHierarchy(dataset.charactersHierarchy, character => {
 		if (character.id !== "c0") {
-			characters.push(encodeCharacter(dataset, character, picIds));
+			characters.push(encodeCharacter(character, picIds));
 		}
 		if (character.characterType === "discrete") {
 			for (const state of character.states) {
@@ -240,21 +240,21 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 }
 
 export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset {
-	const states = new Map<string, State>();
+	const statesById = new Map<string, State>();
 	const books = standardBooks.slice();
-	const ds = new Dataset(
-		dataset?.id ?? "0",
-		createTaxon({ id: "t0", name: { S: "<TOP>" } }),
-		createCharacter({ id: "c0", name: { S: "<TOP>" } }),
+	const ds = createDataset({
+		id: dataset?.id ?? "0",
+		taxonsHierarchy: createTaxon({ id: "t0", name: { S: "<TOP>" } }),
+		charactersHierarchy: createCharacter({ id: "c0", name: { S: "<TOP>" } }),
 		books,
-		dataset?.extraFields ?? [],
-		states,
-	);
+		extraFields: dataset?.extraFields ?? [],
+		statesById,
+	});
 
 	for (const state of dataset?.states ?? []) {
-		states.set(state.id, decodeState(state));
+		statesById.set(state.id, decodeState(state));
 	}
-	const unusedStates = new Set(states.keys());
+	const unusedStates = new Set(statesById.keys());
 	for (const character of (dataset?.characters ?? dataset?.descriptors ?? [])) {
 		const oldStates = character.states;
 		const uniqueStates = oldStates.filter(s => unusedStates.has(s));
@@ -262,27 +262,27 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 			console.warn("duplicate states", character);
 			const duplicateStates = oldStates.filter(s => !unusedStates.has(s));
 			const newStates = duplicateStates.flatMap(id => {
-				const state = states.get(id);
+				const state = statesById.get(id);
 				if (typeof state === "undefined") {
 					return [];
 				}
 				return createState({ ...state, id: "" }); 
 			});
-			newStates.forEach(s => states.set(s.id, s));
+			newStates.forEach(s => statesById.set(s.id, s));
 			character.states = [...uniqueStates, ...newStates.map(s => s.id)];
 		}
 		oldStates.forEach(s => unusedStates.delete(s));
-		const decodedCharacter = decodeCharacter(ds, character, states);
-		ds.addCharacter(decodedCharacter);
+		const decodedCharacter = decodeCharacter(ds, character, statesById);
+		addCharacter(ds, decodedCharacter);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
-		ds.addTaxon(decodeTaxon(taxon, books));
+		addTaxon(ds, decodeTaxon(taxon, books));
 		taxon.descriptions.forEach(d => {
 			for (const stateId of d.statesIds) {
 				const t = taxonFromId(ds, taxon.id);
-				const state = states.get(stateId);
+				const state = statesById.get(stateId);
 				if (typeof t !== "undefined" && typeof state !== "undefined") {
-					ds.setTaxonState(t.id, state);
+					setTaxonState(ds, t.id, state);
 				}
 			}
 		});

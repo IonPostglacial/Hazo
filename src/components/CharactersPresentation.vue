@@ -9,7 +9,7 @@
             </characters-tree>
         </center>
         <HBox class="flex-wrap">
-            <VBox v-for="state in dataset.characterStates(character)"
+            <VBox v-for="state in characterStates(character)"
                     :key="state.id"
                     class="width-m thin-border medium-margin">
                 <HBox class="flex-grow-1 center-items">
@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import type { Character, Dataset } from "@/datatypes";
+import { Character, Dataset, characterStates } from "@/datatypes";
 import { PropType } from "vue";
 import CharactersTree from "./CharactersTree.vue";
 import HBox from "./toolkit/HBox.vue";
@@ -41,6 +41,7 @@ export default {
         dataset: {type: Object as PropType<Dataset>, required: true },
         character: { type: Object as PropType<Character>, required: true },
     },
+    methods: { characterStates }
 };
 </script>
 

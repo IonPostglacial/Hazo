@@ -393,7 +393,7 @@ export default {
         pushStateToChildren(state: State) {
             if (typeof this.selectedTaxon === "undefined") return;
             forEachHierarchy(this.selectedTaxon, child => {
-                this.dataset.setTaxonState(child.id, state);
+                this.store.do("setTaxonState", { taxon: child, state, has: true });
             });
         },
         async importKml(e: Event) {
