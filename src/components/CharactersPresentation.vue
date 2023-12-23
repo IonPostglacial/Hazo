@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, characterStates } from "@/datatypes";
+import { Character, characterStates } from "@/datatypes";
 import { PropType } from "vue";
 import CharactersTree from "./CharactersTree.vue";
 import HBox from "./toolkit/HBox.vue";
@@ -38,7 +38,6 @@ import Spacer from "./toolkit/Spacer.vue";
 export default {
     components: { CharactersTree, HBox, Spacer, VBox },
     props: {
-        dataset: {type: Object as PropType<Dataset>, required: true },
         character: { type: Object as PropType<Character>, required: true },
     },
     methods: { characterStates }

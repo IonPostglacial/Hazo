@@ -4,9 +4,9 @@
             :name-fields="nameFields"
             :name-store="nameStore"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
-            @add-item="addCharacter"
+            @add-item="addCharacterHandler"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @unselected="selectedCharacterId = ''" @delete-item="deleteCharacter" v-slot="menuProps">
+            @unselected="selectedCharacterId = ''" @delete-item="deleteCharacterHandler" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
         <VBox>
@@ -28,7 +28,7 @@
                         <font-awesome-icon icon="fa-solid fa-paste" />
                     </button>
                     <button v-if="(typeof selectedCharacter !== 'undefined')" type="button" @click="copyCurrentStates">Copy States</button>
-                    <button type="button" @click="pasteStates">Paste States</button>
+                    <button type="button" @click="pasteCurrentStates">Paste States</button>
                 </div>
             </HBox>
             <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
@@ -37,9 +37,7 @@
                     <popup-galery v-if="!printMode" :title="selectedCharacter?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
                     <VBox class="flex-grow-1">
                         <div v-if="(typeof selectedCharacter !== 'undefined' && printMode)" class="white-background">
-                            <characters-presentation
-                                :dataset="dataset"
-                                :character="selectedCharacter">
+                            <characters-presentation :character="selectedCharacter">
                             </characters-presentation>
                         </div>
                         <picture-box v-if="!printMode && (typeof selectedCharacter !== 'undefined')" :editable="true"
@@ -101,7 +99,7 @@
                                     <ul class="indented no-list-style">
                                         <li class="medium-padding" v-for="state in parentStates" :key="state.id">
                                             <label>
-                                                <input type="radio" :checked="isInherentState(state)" name="inherent-state" @change="setInherentState(state)" />
+                                                <input type="radio" :checked="isInherentState(state)" name="inherent-state" @change="setCurrentInherentState(state)" />
                                                 {{ state.name.S }}
                                             </label>
                                         </li>
@@ -112,7 +110,7 @@
                                     <ul class="indented no-list-style">
                                         <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                             <label>
-                                                <input type="checkbox" @change="setRequiredState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.requiredStates.some(s => s.id === state.id) : false" />
+                                                <input type="checkbox" @change="setCurrentRequiredState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.requiredStates.some(s => s.id === state.id) : false" />
                                                 {{ state.name.S }}
                                             </label>
                                         </li>
@@ -123,7 +121,7 @@
                                     <ul class="indented no-list-style">
                                         <li class="medium-padding" v-for="state in parentStatesExceptInherent" :key="state.id">
                                             <label>
-                                            <input type="checkbox" @change="setInapplicableState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.inapplicableStates.some(s => s.id === state.id) : false" />
+                                            <input type="checkbox" @change="setCurrentInapplicableState(state, ($event.target as any).checked)" :checked="selectedCharacter ? selectedCharacter.inapplicableStates.some(s => s.id === state.id) : false" />
                                             {{ state.name.S }}
                                             </label>
                                         </li>
@@ -153,10 +151,10 @@
                                 <VBox>
                                     <HBox class="thin-border center-items">
                                         <div class="button-group">
-                                            <button @click="moveStateUp(state)">
+                                            <button @click="moveCurrentStateUp(state)">
                                                 <font-awesome-icon icon="fa-solid fa-arrow-up" />
                                             </button>
-                                            <button @click="moveStateDown(state)">
+                                            <button @click="moveCurrentStateDown(state)">
                                                 <font-awesome-icon icon="fa-solid fa-arrow-down" />
                                             </button>
                                         </div>
@@ -167,7 +165,7 @@
                                             Only show taxons without it<input name="deny" type="checkbox" @input="denyState(state)" :checked="stateInDenyList(state)">
                                         </label>
                                         <Spacer></Spacer>
-                                        <button @click="removeState(state)">
+                                        <button @click="removeCurrentState(state)">
                                             <font-awesome-icon icon="fa-solid fa-close" />
                                         </button>
                                     </HBox>
@@ -194,7 +192,7 @@
                             </li>
                         </ul>
                     </div>
-                    <add-item class="stick-to-bottom" @add-item="addState" :name-fields="nameFields" :name-store="stateNameStore"></add-item>
+                    <add-item class="stick-to-bottom" @add-item="addStateHandler" :name-fields="nameFields" :name-store="stateNameStore"></add-item>
                 </VBox>
             </split-panel>
         </VBox>
@@ -213,15 +211,16 @@ import SplitPanel from "./toolkit/SplitPanel.vue";
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
-import ColumnHeader from "./ColumnHeader.vue";
+import ColumnHeader from "./toolkit/ColumnHeader.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Dataset, Character, Hierarchy, State, Picture, characterFromId, standardMaps, GeoMap, createState, characterStates } from "@/datatypes";
+import { Character, State, Picture, standardMaps, GeoMap, createState, characterStates } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
 import { characterNameStore, stateNameStore } from "@/db-index";
-import { useHazoStore } from "@/store";
+import { useHazoStore } from "@/stores/hazo";
+import { useDatasetStore } from "@/stores/dataset";
 import { mapActions, mapState } from "pinia";
 
 
@@ -230,7 +229,6 @@ export default {
     components: { AddItem, CollapsiblePanel, ColumnHeader, Flowering, GeoView, HBox, PictureBox, PopupGalery, Spacer, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel, UploadButton, VBox },
     data() {
         return {
-            store: Hazo.store,
             nameStore: characterNameStore,
             stateNameStore: stateNameStore,
             nameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
@@ -266,6 +264,7 @@ export default {
     },
     computed: {
         ...mapState(useHazoStore, ["selectedCharacter", "statesAllowList", "statesDenyList"]),
+        ...mapState(useDatasetStore, ["charactersHierarchy"]),
         selectedMap(): GeoMap|undefined {
             if (this.maps.length <= this.selectedMapIndex) { return undefined; }
             return this.maps[this.selectedMapIndex];
@@ -288,20 +287,14 @@ export default {
             const ch = this.selectedCharacter;
             return ch?.characterType === "range" ? undefined : ch?.inherentState;
         },
-        dataset(): Dataset {
-            return this.store.dataset;
-        },
-        charactersHierarchy(): Hierarchy<Character> {
-            return this.store.dataset.charactersHierarchy;
-        },
         selectedCharacter(): Character|undefined {
-            return characterFromId(this.dataset, this.selectedCharacterId);
+            return this.characterWithId(this.selectedCharacterId);
         },
         parentStates(): State[] {
             const parentId = this.selectedCharacter?.parentId;
             if (typeof parentId === "undefined")
                 return[];
-            const parent = characterFromId(this.dataset, parentId);
+            const parent = this.characterWithId(parentId);
             if (typeof parent === "undefined")
                 return[];
             return Array.from(characterStates(parent));
@@ -319,13 +312,23 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useHazoStore, ["addStateToAllowList", "addStateToDenyList", "copyCharacter", "copyStates", "selectCharacter"]),
+        ...mapActions(useHazoStore, ["addStateToAllowList", "addStateToDenyList", "copyCharacter", "copyStates", "pasteCharacter", "pasteStates", "selectCharacter"]),
+        ...mapActions(useDatasetStore, [
+            "addCharacter", "removeCharacter", 
+            "moveCharacterDown", "moveCharacterUp",
+            "addCharacterPicture", "setCharacterPicture", "removeCharacterPicture",
+            "characterWithId", "setStates", 
+            "addState", "removeState",
+            "moveStateDown", "moveStateUp",
+            "addStatePicture", "setStatePicture", "removeStatePicture",
+            "setInapplicableState", "setInherentState", "setRequiredState",
+        ]),
         syncPreset() {
             if (typeof this.selectedCharacter === "undefined") { return; }
             const character = this.selectedCharacter;
             if (character.characterType === "discrete") {
                 if (character.preset === "flowering") {
-                    this.store.do("setStates", { states: Months.NAMES.map(name => createState({
+                    this.setStates({ states: Months.NAMES.map(name => createState({
                         name: { S: name, FR: name, EN: name },
                     })), character });
                 }
@@ -376,33 +379,33 @@ export default {
             }
         },
         pasteItem() {
-            this.store.do("pasteCharacter", this.selectedCharacterId);
+            this.pasteCharacter(this.selectedCharacterId);
         },
         copyCurrentStates() {
             this.copyStates(Array.from(characterStates(this.selectedCharacter)));
         },
-        pasteStates() {
-            this.store.do("pasteStates", this.selectedCharacterId);
+        pasteCurrentStates() {
+            this.pasteStates(this.selectedCharacterId);
         },
         moveUp(item: Character) {
-            this.store.do("moveCharacterUp", item);
+            this.moveCharacterUp(item);
         },
         moveDown(item: Character) {
-            this.store.do("moveCharacterDown", item);
+            this.moveCharacterDown(item);
         },
-        setInapplicableState(state: State, selected: boolean) {
+        setCurrentInapplicableState(state: State, selected: boolean) {
             if (this.selectedCharacter?.characterType === "discrete") {
-                this.store.do("setInapplicableState", { character: this.selectedCharacter!, state, selected });
+                this.setInapplicableState({ character: this.selectedCharacter!, state, selected });
             }
         },
-        setRequiredState(state: State, selected: boolean) {
+        setCurrentRequiredState(state: State, selected: boolean) {
             if (this.selectedCharacter?.characterType === "discrete") {
-                this.store.do("setRequiredState", { character: this.selectedCharacter!, state, selected });
+                this.setRequiredState({ character: this.selectedCharacter!, state, selected });
             }
         },
-        setInherentState(state: State) {
+        setCurrentInherentState(state: State) {
             if (this.selectedCharacter?.characterType === "discrete") {
-                this.store.do("setInherentState", { character: this.selectedCharacter!, state });
+                this.setInherentState({ character: this.selectedCharacter!, state });
             }
         },
         addCharacterPhoto(e: {detail: {value: string[]}}) {
@@ -410,7 +413,7 @@ export default {
 
             const [url, label] = e.detail.value;
             const numberOfPhotos = this.selectedCharacter!.pictures.length;
-            this.store.do("addCharacterPicture", {
+            this.addCharacterPicture({
                 character: this.selectedCharacter,
                 picture: normalizePicture({
                     id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
@@ -423,7 +426,7 @@ export default {
         setCharacterPhoto(e: {detail: {index: number, src: string, hubUrl: string}}) {
             if (!this.selectedCharacter) { return; }
 
-            this.store.do("setCharacterPicture", {
+            this.setCharacterPicture({
                 character: this.selectedCharacter,
                 index: e.detail.index,
                 picture: normalizePicture({ ...this.selectedCharacter.pictures[e.detail.index], url: e.detail.src, hubUrl: e.detail.hubUrl })
@@ -432,12 +435,12 @@ export default {
         deleteCharacterPhoto(e: {detail: {index: number}}) {
             if (!this.selectedCharacter) { return; }
 
-            this.store.do("removeCharacterPicture", { character: this.selectedCharacter, index: e.detail.index });
+            this.removeCharacterPicture({ character: this.selectedCharacter, index: e.detail.index });
         },
         addStatePhoto(state: State, e: {detail: {value: string}}) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             const numberOfPhotos = state.pictures.length;
-            this.store.do("addStatePicture", {
+            this.addStatePicture({
                 character: this.selectedCharacter,
                 state: state,
                 picture: normalizePicture({
@@ -451,7 +454,7 @@ export default {
         setStatePhoto(state: State, e: {detail: {index: number, src: string, hubUrl: string}}) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             if (state) {
-                this.store.do("setStatePicture", {
+                this.setStatePicture({
                     character: this.selectedCharacter,
                     state: state,
                     index: e.detail.index,
@@ -461,33 +464,33 @@ export default {
         },
         deleteStatePhoto(state: State, e: {detail: {index: number}}) {
             if (this.selectedCharacter?.characterType === "discrete") {
-                this.store.do("removeStatePicture", { character: this.selectedCharacter, state: state, index: e.detail.index });
+                this.removeStatePicture({ character: this.selectedCharacter, state: state, index: e.detail.index });
             }
         },
         openStatePhoto(state: State) {
             this.showBigImage = true;
             this.bigImages = state.pictures;
         },
-        addCharacter(e: { value: string[], parentId: string }) {
+        addCharacterHandler(e: { value: string[], parentId: string }) {
             const [name, nameEN, nameCN] = e.value;
-            this.store.do("addCharacter", createCharacter({
+            this.addCharacter(createCharacter({
                 name: { S: name, FR: name, EN: nameEN, CN: nameCN }, 
                 parentId: e.parentId,
             }));
         },
-        deleteCharacter(e: { itemId: string}) {
-            const characterToDelete = characterFromId(this.dataset, e.itemId);
+        deleteCharacterHandler(e: { itemId: string}) {
+            const characterToDelete = this.characterWithId(e.itemId);
             if (typeof characterToDelete !== "undefined") {
-                this.store.do("removeCharacter", characterToDelete);
+                this.removeCharacter(characterToDelete);
             } else {
                 console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
             }
         },
-        addState(e: {detail: string[]}) {
+        addStateHandler(e: {detail: string[]}) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
             const [name, nameEN, nameCN, color, description] = e.detail;
-            this.store.do("addState", {
+            this.addState({
                 state: {
                     id: "",
                     type: "state",
@@ -499,19 +502,19 @@ export default {
                 character: this.selectedCharacter,
             });
         },
-        moveStateUp(state: State) {
+        moveCurrentStateUp(state: State) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") return;
-            this.store.do("moveStateUp", { character: this.selectedCharacter, state });
+            this.moveStateUp({ character: this.selectedCharacter, state });
         },
-        moveStateDown(state: State) {
+        moveCurrentStateDown(state: State) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") return;
-            this.store.do("moveStateDown", { character: this.selectedCharacter, state });
+            this.moveStateDown({ character: this.selectedCharacter, state });
         },
-        removeState(state: State) {
+        removeCurrentState(state: State) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
-            this.store.do("removeState", { character: this.selectedCharacter!, state });
+            this.removeState({ character: this.selectedCharacter!, state });
         },
         openDescriptionPhoto() {
             this.showBigImage = true;
@@ -519,4 +522,4 @@ export default {
         },
     }
 };
-</script>
+</script>@/stores/store

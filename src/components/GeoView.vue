@@ -23,7 +23,6 @@ export default {
     },
     data() {
         return {
-            store: Hazo.store,
             geoJson: {} as any,
             maxHeight: 400,
             loading: false,

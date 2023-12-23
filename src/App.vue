@@ -66,7 +66,7 @@
             <Spacer></Spacer>
             <DropDownButton label="More Actions" :default-up="true">
                 <VBox>
-                    <button type="button" @click="addGeoCharacters(dataset)">Add Geo</button>
+                    <button type="button" @click="addGeoCharacters">Add Geo</button>
                     <button @click="indexFamilies">Index Families</button>
                     <button @click="indexCharacters">Index Characters</button>
                     <button @click="indexStates">Index States</button>
@@ -82,11 +82,10 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Taxon, allStates, createDataset, createCharacter, createState, createTaxon, addTaxon, addCharacter, loadGeoJson, standardMaps, setTaxonState, addState } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import { encodeDataset, decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
+import { Character, Dataset, Taxon, createDataset, createCharacter, createState, createTaxon, addCharacter, loadGeoJson, standardMaps } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import * as FS from "./fs-storage";
 import { loadSDD } from "./sdd-load";
-import saveSDD from "./sdd-save";
 import download from "@/tools/download";
 import { Config } from './tools/config';
 import { readTextFileAsync } from './tools/read-file-async';
@@ -100,7 +99,8 @@ import VBox from "@/components/toolkit/VBox.vue";
 import Spacer from "@/components/toolkit/Spacer.vue";
 import UploadButton from "@/components/toolkit/UploadButton.vue";
 import parseCSV, { escape, factorizeColumn, transposeCSV } from "./tools/parse-csv";
-import { useHazoStore } from "./store";
+import { useHazoStore } from "@/stores/hazo";
+import { useDatasetStore } from "./stores/dataset";
 import { mapActions, mapState } from "pinia";
 
 export default {
@@ -108,7 +108,6 @@ export default {
     components: { DropDownButton, HBox, Spacer, UploadButton, VBox },
     data() {
         return {
-            store: Hazo.store,
             datasetIds: [] as string[],
             selectedBase: "",
             urlsToSync: [] as string[],
@@ -129,10 +128,10 @@ export default {
             }
             const preloadedDataset = JSON.parse(preloadedDatasetText);
             FS.store(preloadedDataset).then(() => {
-                    this.setConnectedToHub(true);
-                    this.store.do("setDataset", decodeDataset(preloadedDataset));
-                    this.selectedBase = preloadedDataset.id;
-                });
+                this.setConnectedToHub(true);
+                this.setDataset(decodeDataset(preloadedDataset));
+                this.selectedBase = preloadedDataset.id;
+            });
         } else {
             this.preloaded = false;
             fetch(Config.datasetRegistry).then(res => {
@@ -160,7 +159,7 @@ export default {
                             this.datasetIds.push(fetchedDataset.id);
                         }
                         FS.store(fetchedDataset).then(() => {
-                            this.store.do("setDataset", decodeDataset(fetchedDataset));
+                            this.setDataset(decodeDataset(fetchedDataset));
                             this.selectedBase = fetchedDataset.id;
                         });
                     });
@@ -176,9 +175,7 @@ export default {
     },
     computed: {
         ...mapState(useHazoStore, ["connectedToHub", "selectedTaxon", "selectedCharacter", "statesAllowList", "statesDenyList"]),
-        dataset(): Dataset {
-            return this.store.dataset;
-        },
+        ...mapState(useDatasetStore, ["charactersHierarchy", "extraFields", "id", "taxonsByIds", "taxonsHierarchy"]),
     },
     watch: {
         selectedBase(val) {
@@ -187,6 +184,7 @@ export default {
     },
     methods: {
         ...mapActions(useHazoStore, ["setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
+        ...mapActions(useDatasetStore, ["addCharacter", "addState", "addTaxon", "allStates", "encodeToHazoJson", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
         openHub() {
             window.open(Config.datasetRegistry);
         },
@@ -197,18 +195,18 @@ export default {
             this.removeStateFromAllowList(state);
         },
         async indexFamilies() {
-            for (const family of this.dataset.taxonsHierarchy.children) {
+            for (const family of this.taxonsHierarchy.children) {
                 familyNameStore.store({ S: family.name.S, V: family.name.V ?? "", CN: family.name.CN ?? "" });
             }
         },
         async indexCharacters() {
-            forEachHierarchy(this.dataset.charactersHierarchy, ch => {
+            forEachHierarchy(this.charactersHierarchy, ch => {
                 if (ch.id === "c0") { return; }
                 characterNameStore.store({ S: ch.name.S, EN: ch.name.EN ?? "", CN: ch.name.CN ?? "" });
             });
         },
         async indexStates() {
-            forEachHierarchy(this.dataset.charactersHierarchy, ch => {
+            forEachHierarchy(this.charactersHierarchy, ch => {
                 if (ch.id === "c0" || ch.characterType !== "discrete") { return; }
                 for (const state of ch.states) {
                     stateNameStore.store({ S: state.name.S, EN: state.name.EN ?? "", CN: state.name.CN ?? "" });
@@ -217,13 +215,13 @@ export default {
         },
         syncPictures() {
             this.urlsToSync = [];
-            for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
+            for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
                 this.urlsToSync.push(...taxon.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            for (const character of iterHierarchy(this.dataset.charactersHierarchy)) {
+            for (const character of iterHierarchy(this.charactersHierarchy)) {
                 this.urlsToSync.push(...character.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
-            for (const state of allStates(this.dataset)) {
+            for (const state of this.allStates()) {
                 this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
             }
             uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {
@@ -237,9 +235,9 @@ export default {
             });
         },
         async push() {
-            const json = JSON.stringify(encodeDataset(this.dataset));
+            const json = JSON.stringify(this.encodeToHazoJson());
             const data = new FormData();
-            data.append("db-file-upload", new Blob([json], {type : "application/json"}), this.dataset.id + ".hazo.json");
+            data.append("db-file-upload", new Blob([json], {type : "application/json"}), this.selectedBase + ".hazo.json");
             const res = await fetch(Config.datasetRegistry + "api/datasets", {
                 method: "POST",
                 body: data,
@@ -249,33 +247,32 @@ export default {
             }
         },
         async pull() {
-            const res = await fetch(Config.datasetRegistry + "private/" + encodeURI(this.dataset.id.replace(" ", "_")) + ".hazo.json");
+            const res = await fetch(Config.datasetRegistry + "private/" + encodeURI(this.selectedBase.replace(" ", "_")) + ".hazo.json");
             if (res.status === 403) {
                 alert("You should connect to the Hub to be able to download files.");
             } else {
                 const json = await res.json();
                 this.resetData();
-                this.store.do("setDataset", decodeDataset(json));
+                this.setDataset(decodeDataset(json));
             }
         },
-        async addGeoCharacters(ds: Dataset) {
+        async addGeoCharacters() {
             const geoChar = createCharacter({ name: { S: "Geography" } });
-            const parent = addCharacter(ds, geoChar);
+            const parent = this.addCharacter(geoChar);
             for (const map of standardMaps) {
                 const character = createCharacter({ name: { S: map.name }, parentId: parent.id });
                 character.preset = "map";
                 const geoJson = await loadGeoJson(map.fileName);
                 const stateNames: string[] = geoJson.features.map((f: any) => f.properties[map.property]);
-                const ch = addCharacter(ds, character);
+                const ch = this.addCharacter(character);
                 stateNames
                     .map(name => createState({ name: { S: name } }))
                     .sort()
-                    .forEach(state => addState(ds, state, ch as DiscreteCharacter));
+                    .forEach(state => this.addState({ state, character: ch as DiscreteCharacter }));
             }
         },
         loadBase(id: string) {
             FS.load(id).then(async savedDataset => {
-                this.resetData();
                 let ds: Dataset;
                 if (savedDataset.taxons.length !== 0 || savedDataset.characters.length !== 0) {
                     ds = decodeDataset(savedDataset);
@@ -291,10 +288,10 @@ export default {
                     const familyChar = createCharacter({ name: { S: "Family" } });
                     familyChar.preset = "family";
                     addCharacter(ds, familyChar);
-                    this.addGeoCharacters(ds);
+                    this.addGeoCharacters();
                 }
                 ds.id = id;
-                this.store.do("setDataset", ds);
+                this.setDataset(ds);
             });
         },
         print() {
@@ -311,16 +308,13 @@ export default {
         saveData() {
             const taxons: Record<string, Taxon> = {};
             const characters: Record<string, Character> = {};
-            for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
+            for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
                 taxons[taxon.id] = taxon;
             }
-            for (const character of iterHierarchy(this.dataset.charactersHierarchy)) {
+            for (const character of iterHierarchy(this.charactersHierarchy)) {
                 characters[character.id] = character;
             }
-            if (!this.dataset.id) {
-                this.dataset.id = this.selectedBase;
-            }
-            FS.store(encodeDataset(this.dataset)).then(() => {
+            FS.store(this.encodeToHazoJson()).then(() => {
                 if (this.connectedToHub) {
                     this.push();
                 }
@@ -335,30 +329,25 @@ export default {
                     newId = "";
                 }
             }
-            await FS.remove(this.dataset.id);
-            const i = this.datasetIds.indexOf(this.dataset.id);
-            this.dataset.id = newId;
-            await FS.store(encodeDataset(this.dataset));
+            await FS.remove(this.selectedBase);
+            const i = this.datasetIds.indexOf(this.selectedBase);
+            this.selectedBase = newId;
+            await FS.store(this.encodeToHazoJson());
             this.datasetIds[i] = newId;
             this.selectedBase = newId;
         },
         async deleteDataset() {
-            if (typeof this.dataset !== "undefined") {
-                const i = this.datasetIds.indexOf(this.dataset.id);
-                this.datasetIds.splice(i, 1);
-                await FS.remove(this.dataset.id);
-                if (this.datasetIds.length > 0) {
-                    this.selectedBase = this.datasetIds[0];
-                }
+            const i = this.datasetIds.indexOf(this.selectedBase);
+            this.datasetIds.splice(i, 1);
+            await FS.remove(this.selectedBase);
+            if (this.datasetIds.length > 0) {
+                this.selectedBase = this.datasetIds[0];
             }
-        },
-        resetData() {
-            this.store.do("resetData");
         },
         async readFile(file: File): Promise<Dataset | null> {
             let result: Dataset | null = null;
             if (file.name.endsWith(".xml")) {
-                result = await loadSDD(file, this.dataset.extraFields);
+                result = await loadSDD(file, this.extraFields);
             } else if (file.name.endsWith(".json")) {
                 result = await this.jsonUpload(file);
             } else if (file.name.endsWith(".bold.csv")) {
@@ -371,7 +360,7 @@ export default {
             if (typeof result === "undefined" || result === null) return;
 
             result.id = this.selectedBase;
-            this.store.do("setDataset", result);
+            this.setDataset(result);
         },
         async importDescriptorFile(file: File) {
             if (file === null) return;
@@ -386,25 +375,27 @@ export default {
             }
             const [_family, _taxa, ...characterNames] = header;
             const [familyFact, taxaFact, ...characterColumns] = transposeCSV(body).map(factorizeColumn);
-            const familyIdsByLevel = familyFact.levels.map(name => addTaxon(this.dataset, createTaxon({ name: { S: name } })).id);
-            const taxaIdsByLevel: string[] = [];
+            const familyIdsByLevel = familyFact.levels.map(name => this.addTaxon(createTaxon({ name: { S: name } })).id);
+            const taxaByLevel: Taxon[] = [];
             for (const [i, taxaName] of taxaFact.levels.entries()) {
-                taxaIdsByLevel.push(addTaxon(this.dataset, createTaxon({ 
+                taxaByLevel.push(this.addTaxon(createTaxon({ 
                     parentId: familyIdsByLevel[familyFact.values[i]], 
-                    name: { S: taxaName } })).id);
+                    name: { S: taxaName } })));
             }
             for (const [charIndex, charName] of characterNames.entries()) {
                 const charFactor = characterColumns[charIndex];
-                const char = addCharacter(this.dataset, createCharacter({ name: { S: charName } }));
-                if (char.characterType !== "discrete") { throw new Error("character should be discrete"); }
-                const stateByLevel = charFactor.levels.map(name => addState(this.dataset, createState({ name: { S: name } }), char));
+                const character = this.addCharacter(createCharacter({ name: { S: charName } }));
+                if (character.characterType !== "discrete") { throw new Error("character should be discrete"); }
+                const stateByLevel = charFactor.levels.map(name => this.addState({ 
+                    state: createState({ name: { S: name } }), 
+                    character 
+                }));
                 for (const [i, stateValue] of charFactor.values.entries()) {
-                    const taxonId = taxaIdsByLevel[taxaFact.values[i]];
+                    const taxonId = taxaByLevel[taxaFact.values[i]];
                     const state = stateByLevel[stateValue];
-                    setTaxonState(this.dataset, taxonId, state);
+                    this.setTaxonState({ taxon: taxonId, state, has: true });
                 }
-            }
-            this.store.do("setDataset", this.dataset);           
+            }          
         },
         async mergeFile(file: File) {
             const result = await this.readFile(file);
@@ -414,7 +405,7 @@ export default {
             for (const item of Object.values(iterHierarchy(result.taxonsHierarchy))) {
                 resultsByName[item.name] = item;
             }
-            for (const item of iterHierarchy(this.dataset.taxonsHierarchy)) {
+            for (const item of iterHierarchy(this.taxonsHierarchy)) {
                 const newInfo: any = resultsByName[item.name.S], anyItem: any = item;
                 if (typeof newInfo !== "undefined") {
                     for (const prop of propertiesToMerge) {
@@ -432,18 +423,18 @@ export default {
             const replacement = window.prompt("Replacement") ?? "";
             const re = new RegExp(pattern, "g");
 
-            forEachHierarchy(this.dataset.taxonsHierarchy, taxon => {
+            forEachHierarchy(this.taxonsHierarchy, taxon => {
                 const newDetail = taxon.detail.replace(re, replacement);
-                this.store.do("setTaxon", { taxon: taxon, props: { detail: newDetail } });
+                this.setTaxon({ taxon: taxon, props: { detail: newDetail } });
             });
-            forEachHierarchy(this.dataset.charactersHierarchy, character => {
+            forEachHierarchy(this.charactersHierarchy, character => {
                 const newDetail = character.detail.replace(re, replacement);
-                this.store.do("setCharacter", { character: character, props: { detail: newDetail } });
+                this.setCharacter({ character: character, props: { detail: newDetail } });
             });
         },
         async boldUpload(file: File) {
             const text = await readTextFileAsync(file);
-            highlightTaxonsDetails(text, Object.fromEntries(this.dataset.taxonsByIds));
+            highlightTaxonsDetails(text, Object.fromEntries(this.taxonsByIds));
             return null;
         },
         async mergeCsv(file: File) {
@@ -455,7 +446,7 @@ export default {
                     infosByName[name] = { author, url };
                 }
             }
-            for (const taxon of iterHierarchy(this.dataset.taxonsHierarchy)) {
+            for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
                 const info = infosByName[taxon.name.S];
                 if (info) {
                     taxon.author = info.author;
@@ -484,19 +475,20 @@ export default {
                     pushCsvLine(child, [...path, taxon.name.S]);
                 }
             }
-            for (const taxon of this.dataset.taxonsHierarchy.children) {
+            for (const taxon of this.taxonsHierarchy.children) {
                 pushCsvLine(taxon, []);
             }
-            download([...csv.values()].map(line => line.join(",")).join("\n"), "stats.csv", this.dataset.id);
+            download([...csv.values()].map(line => line.join(",")).join("\n"), "stats.csv", this.selectedBase);
         },
         jsonExport() {
-            const json = JSON.stringify(encodeDataset(this.dataset));
-            download(json, "hazo.json", this.dataset.id);
+            const json = JSON.stringify(this.encodeToHazoJson());
+            download(json, "hazo.json", this.selectedBase);
         },
         exportSDD() {
-            const xml = saveSDD(this.dataset);
+            const xml = this.encodeToSdd();
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
         }
     }
 };
 </script>
+./stores/store

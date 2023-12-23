@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Hierarchy, HierarchicalItem, characterFromId } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering from "./Flowering.vue";
 import GeoView from "./GeoView.vue";
 import SquareCard from "./toolkit/SquareCard.vue";
@@ -43,6 +43,8 @@ import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
 import { DiscreteCharacter, BasicInfo } from "@/datatypes/types";
+import { mapActions } from "pinia";
+import { useDatasetStore } from "@/stores/dataset";
 
 
 export default {
@@ -96,6 +98,7 @@ export default {
         },
     },
     methods: {
+        ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
         monthsFromItem(_item: Hierarchy<BasicInfo>): number[] {
             return [];
         },
@@ -152,21 +155,21 @@ export default {
         },
         selectWithoutOpening(character: HierarchicalItem) {
             if (character.type !== "character" || character.characterType !== "discrete") return;
-            const ch = characterFromId(Hazo.store.dataset, character.id);
+            const ch = this.characterWithId(character.id);
             let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
             if (typeof inherentState === "undefined") {
-                const parentCharacter = characterFromId(Hazo.store.dataset, character.parentId);
+                const parentCharacter = this.characterWithId(character.parentId);
                 if (typeof parentCharacter !== "undefined" && parentCharacter.characterType === "discrete") {
                     inherentState = { id: "s" + makeid(8), type: "state", name: clone(character.name), pictures: [] };
-                    Hazo.store.do("addState", { state: inherentState, character: parentCharacter });
-                    Hazo.store.do("setInherentState", { state: inherentState, character });
+                    this.addState({ state: inherentState, character: parentCharacter });
+                    this.setInherentState({ state: inherentState, character });
                 }
             }
             this.$emit("item-selection-toggled", { item: inherentState });
         },
         monthToggled(monthIndex: number) {
             const character = this.breadCrumbs[this.breadCrumbs.length - 1];
-            const ch = characterFromId(Hazo.store.dataset, character.id);
+            const ch = this.characterWithId(character.id);
             if (typeof ch === "undefined" || ch.characterType !== "discrete") { return; }
             this.$emit("item-selection-toggled", { item: ch.states[monthIndex] });
         },

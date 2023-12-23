@@ -17,9 +17,9 @@
                     Icon:&nbsp;
                 <input type="text" v-model="field.icon">
                 </label>
-                <div class="close" style="width: 42px;" @click="removeExtraField(field.id)">&nbsp;</div>
+                <div class="close" style="width: 42px;" @click="removeExtraFieldHandler(field.id)">&nbsp;</div>
             </li>
-            <add-item @add-item="addExtraField"></add-item>
+            <add-item @add-item="addExtraFieldHandler"></add-item>
         </ul>
     </div>
 </template>
@@ -29,21 +29,19 @@ import { PropType } from "vue";
 import AddItem from "./toolkit/AddItem.vue";
 import HBox from "./toolkit/HBox.vue";
 import { Field } from "@/datatypes";
+import { mapActions } from "pinia";
+import { useDatasetStore } from "@/stores/dataset";
 
 export default {
     components: { AddItem, HBox },
     props: { showFields: Boolean, extraFields: Array as PropType<Field[]> },
-    data() {
-        return {
-            store: Hazo.store,
-        }
-    },
     methods: {
-        addExtraField(e: { detail: string[] }) {
-            this.store.do("addExtraField", { detail: e.detail[0] });
+        ...mapActions(useDatasetStore, ["addExtraField", "removeExtraField"]),
+        addExtraFieldHandler(e: { detail: string[] }) {
+            this.addExtraField({ detail: e.detail[0] });
         },
-        removeExtraField(id: string) {
-            this.store.do("removeExtraField", id);
+        removeExtraFieldHandler(id: string) {
+            this.removeExtraField(id);
         },
         close() {
             this.$emit("closed");

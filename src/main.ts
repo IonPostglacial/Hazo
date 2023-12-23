@@ -1,8 +1,8 @@
 import * as Vue from "vue";
 import * as VueRouter from "vue-router";
 import { createPinia } from "pinia";
+import { useDatasetStore } from "./stores/dataset";
 import App from "./App.vue";
-import { createStore } from "./store";
 import TaxonPresentation from "./components/TaxonPresentation.vue";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsStats from "./components/TaxonsStats.vue";
@@ -32,40 +32,28 @@ const router = VueRouter.createRouter({
         { path: "/taxons/:id?", component: TaxonsTab },
         { path: "/print-taxons/:id?", component: TaxonPresentation },
         { path: "/characters/:id?", component: CharactersTab },
-        { path: "/characters-tree", component: CharactersTree, props: _ => ({ charactersHierarchy: Hazo.store.charactersHierarchy }) },
-    ]
+        { 
+            path: "/characters-tree", 
+            component: CharactersTree, props: _ => {
+                const store = useDatasetStore();
+                return { 
+                    charactersHierarchy: store.charactersHierarchy
+                };
+            },
+        },
+    ],
 });
-
-declare global {
-    namespace globalThis {
-        namespace Hazo {
-            export const store: ReturnType<typeof createStore>
-        }
-    }
-}
 
 const pinia = createPinia();
 const app = Vue.createApp(App);
 app.use(pinia);
 app.use(router);
 app.component("font-awesome-icon", FontAwesomeIcon);
-
-
-globalThis.Hazo = {
-    store: createStore()
-};
-
 app.mount("#app");
 
 function adaptSize() {
     document.documentElement.style.setProperty("--viewport-height", `${0.01 * window.innerHeight}px`);
 }
-
-document.addEventListener("keydown", function(e) {
-    if (e.ctrlKey && e.key == "z") {
-        Hazo.store.undo();
-    }
-});
 
 window.addEventListener("load", function () {
     adaptSize();

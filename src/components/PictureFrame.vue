@@ -17,7 +17,7 @@ import { Picture, uploadPicture } from "@/datatypes";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
-import { useHazoStore } from "@/store";
+import { useHazoStore } from "@/stores/hazo";
 import { mapState } from "pinia";
 
 
@@ -67,4 +67,4 @@ export default {
         },
     }
 }
-</script>
+</script>@/stores/store

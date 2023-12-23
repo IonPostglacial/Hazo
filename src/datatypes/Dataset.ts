@@ -145,7 +145,7 @@ function removeStateWithoutCharacter(ds: Dataset, state: State) {
 }
 
 export function taxonFromId(ds: Dataset, id: string | undefined): Taxon | undefined {
-    if (typeof id === "undefined") {
+    if (typeof id === "undefined" || id === "") {
         return undefined;
     } else {
         return ds.taxonsByIds.get(id);
@@ -153,7 +153,7 @@ export function taxonFromId(ds: Dataset, id: string | undefined): Taxon | undefi
 }
 
 export function characterFromId(ds: Dataset, id: string | undefined): Character | undefined {
-    if (typeof id === "undefined") {
+    if (typeof id === "undefined" || id === "") {
         return undefined;
     } else {
         return ds.charactersByIds.get(id);

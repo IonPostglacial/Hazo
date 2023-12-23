@@ -14,8 +14,8 @@
 </template>
 
 <script setup lang="ts">
-import HBox from "./toolkit/HBox.vue";
-import Spacer from "./toolkit/Spacer.vue";
+import HBox from "./HBox.vue";
+import Spacer from "./Spacer.vue";
 
 const emit = defineEmits(["maximize", "minimize"]);
 

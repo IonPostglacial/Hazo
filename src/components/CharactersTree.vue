@@ -27,12 +27,14 @@
 </template>
 
 <script lang="ts">
-import { characterStates, type Character, type Dataset, type Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { characterStates, type Character, type Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import HBox from "./toolkit/HBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import * as d3 from "d3";
 import download from "@/tools/download";
+import { mapState } from "pinia";
+import { useDatasetStore } from "@/stores/dataset";
 
 type D3Hierarchy = { id: string, name: string, url?: string, children: D3Hierarchy[]|null, color?: string, _children?: D3Hierarchy };
 type D3HierarchyNode = d3.HierarchyNode<any> & { color?: string, _children?: any };
@@ -51,23 +53,6 @@ function nameMultilang(item: any, langFields: {name: string, field: string}[]): 
     return langFields.map(field => item.name[field.field]).filter(n => n).join(", ")
 }
 
-const hierarchyToD3 = (dataset: Dataset, hierarchy: Hierarchy<Character>, item: any, langFields: {name: string, field: string}[]): D3Hierarchy => {
-    const charChildren: Character[] = item?.children ?? [];
-    const inherentStateIds = charChildren.map(c => c.characterType === "discrete" ? c.inherentState?.id : undefined);
-    return {
-        id: item.id,
-        name: nameMultilang(item, langFields),
-        url: (item.id ? ("characters/" + item.id) : undefined),
-        color: item.color,
-        children: [
-            ...charChildren.map(child => hierarchyToD3(dataset, hierarchy, child, langFields)),
-            ...characterStates(item)
-                .filter((s: any) => !inherentStateIds.includes(s.id))
-                .map((s: any) => ({ id: s.id, name: nameMultilang(s, langFields), children: [], color: s.color }))
-        ]
-    };
-};
-
 export default {
     name: "CharactersTree",
     components: { HBox, Spacer },
@@ -75,10 +60,10 @@ export default {
         selectedCharacter: Object as PropType<Character|undefined>,
     },
     data() {
+        const store = useDatasetStore();
         const langFR = { name: "FR", field: "S" }, langEN = { name: "EN", field: "EN" }, langCN = { name: "CN", field: "CN" };
-        const hierarchy = this.selectedCharacter ? this.selectedCharacter : Hazo.store.dataset.charactersHierarchy;
+        const hierarchy = this.selectedCharacter ? this.selectedCharacter : store.charactersHierarchy;
         return {
-            store: Hazo.store,
             languageList: [langFR, langEN, langCN],
             maxHeight: 400,
             lang: 0,
@@ -91,19 +76,17 @@ export default {
         }
     },
     computed: {
-        dataset(): Dataset {
-            return this.store.dataset;
-        },
+        ...mapState(useDatasetStore, ["charactersHierarchy"]),
         selectedLang(): { name: string, field: string } {
             return this.languageList[this.lang];
         },
         treeData(): D3Hierarchy {
-            const hierarchy = this.store.dataset.charactersHierarchy;
+            const hierarchy = this.charactersHierarchy;
             const topLevelItems = hierarchy.children;
             if (this.selectedCharacter) {
-                return hierarchyToD3(this.dataset, hierarchy, this.selectedCharacter, [this.selectedLang]);
+                return this.hierarchyToD3(hierarchy, this.selectedCharacter, [this.selectedLang]);
             } else {
-                return { id: hierarchy.id, name: "Characters", children: topLevelItems.map(ch => hierarchyToD3(this.dataset, hierarchy, ch, [this.selectedLang])) };
+                return { id: hierarchy.id, name: "Characters", children: topLevelItems.map(ch => this.hierarchyToD3(hierarchy, ch, [this.selectedLang])) };
             }
         },
     },
@@ -114,6 +97,22 @@ export default {
         this.updateGraph();
     },
     methods: {
+        hierarchyToD3(hierarchy: Hierarchy<Character>, item: any, langFields: {name: string, field: string}[]): D3Hierarchy {
+            const charChildren: Character[] = item?.children ?? [];
+            const inherentStateIds = charChildren.map(c => c.characterType === "discrete" ? c.inherentState?.id : undefined);
+            return {
+                id: item.id,
+                name: nameMultilang(item, langFields),
+                url: (item.id ? ("characters/" + item.id) : undefined),
+                color: item.color,
+                children: [
+                    ...charChildren.map(child => this.hierarchyToD3(hierarchy, child, langFields)),
+                    ...characterStates(item)
+                        .filter((s: any) => !inherentStateIds.includes(s.id))
+                        .map((s: any) => ({ id: s.id, name: nameMultilang(s, langFields), children: [], color: s.color }))
+                ]
+            };
+        },
         updateD3(element: Element, treeData: D3Hierarchy, maxHeight: number) {
             const vue = this;
             const MAX_WIDTH = window.innerWidth;
@@ -303,10 +302,10 @@ export default {
             this.updateD3(this.$refs["interactive-tree"] as Element, this.treeData, this.computeMaxHeight(!this.selectedCharacter));
         },
         exportMarkdown() {
-            download(hierarchyToMarkdown(hierarchyToD3(this.dataset, this.store.dataset.charactersHierarchy, this.selectedCharacter ?? this.store.dataset.charactersHierarchy, [this.selectedLang])), "md");
+            download(hierarchyToMarkdown(this.hierarchyToD3(this.charactersHierarchy, this.selectedCharacter ?? this.charactersHierarchy, [this.selectedLang])), "md");
         },
         exportMarkdownAllLangs() {
-            download(hierarchyToMarkdown(hierarchyToD3(this.dataset, this.store.dataset.charactersHierarchy, this.selectedCharacter ?? this.store.dataset.charactersHierarchy, this.languageList)), "md");
+            download(hierarchyToMarkdown(this.hierarchyToD3(this.charactersHierarchy, this.selectedCharacter ?? this.charactersHierarchy, this.languageList)), "md");
         },
         computeMaxHeight(fullHeight: boolean) {
             return fullHeight ? Math.max(document.body.clientHeight - 120, this.maxHeight) : this.maxHeight;

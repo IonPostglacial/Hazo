@@ -4,12 +4,12 @@
             :name-store="nameStore"
             :name-fields="nameFields"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @add-item="addTaxon" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
+            @add-item="addTaxonHandler" @unselected="selectedTaxonId = ''" @delete-item="removeTaxonHandler" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
         </tree-menu>
         <HBox class="scroll flex-grow-1">
             <popup-galery :title="selectedTaxon?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
-            <extra-fields-panel :showFields="showFields" :extraFields="dataset.extraFields" @closed="showFields = false"></extra-fields-panel>
+            <extra-fields-panel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false"></extra-fields-panel>
             <VBox class="flex-grow-1">
                 <HBox class="no-print medium-padding thin-border">
                     <button v-if="selectedColumns.includes('menu')" @click="removeColumn('menu')">
@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div v-if="!selectingParent" class="button-group">
-                            <button type="button" v-for="parent in taxonParentChain(dataset, selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent)">{{ parent.name.S }}</button>
+                            <button type="button" v-for="parent in taxonParentChain(selectedTaxon.id)" :key="parent.id" @click="selectTaxon(parent)">{{ parent.name.S }}</button>
                             <button type="button" @click="openSelectParentDropdown" class="background-color-1">
                                 {{ selectedTaxon.name.S }}
                                 <font-awesome-icon icon="fa-solid fa-caret-down" />
@@ -114,7 +114,7 @@
                                     N° Herbier</item-property-field>
                                 <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
                                     Herbarium Picture</item-property-field>
-                                <item-property-field v-for="extraField in dataset.extraFields" :key="extraField.id"
+                                <item-property-field v-for="extraField in extraFields" :key="extraField.id"
                                         :icon="extraField.icon"
                                         :model-value="extraProperty(extraField)"
                                         @input="setExtraProperty"
@@ -123,7 +123,7 @@
                                 </item-property-field>
                             </div>
                         </collapsible-panel>
-                        <collapsible-panel v-for="book in dataset.books" :key="book.id" :label="book.label">
+                        <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
                             <div v-if="selectedTaxon && selectedTaxon.bookInfoByIds">
                                 <div v-if="selectedTaxon.bookInfoByIds[book.id]">
                                     <label class="medium-margin">
@@ -218,17 +218,17 @@ import SplitPanel from "./toolkit/SplitPanel.vue";
 import GeoView from "./GeoView.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Dataset, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonDescriptions, taxonParentChain, taxonFromId, characterFromId, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonParentChain, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDownButton from "./toolkit/DropDownButton.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
-import ColumnHeader from "./ColumnHeader.vue";
+import ColumnHeader from "./toolkit/ColumnHeader.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
-import { createTexExporter, exportZipFolder, importKml } from "@/features";
+import { exportZipFolder, importKml } from "@/features";
 import { createTaxon, taxonHasState, taxonHasStates } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
@@ -240,13 +240,15 @@ import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
 import Flowering from "./Flowering.vue";
 import Months from "@/datatypes/Months";
-import { useHazoStore } from "@/store";
 import { mapActions, mapState } from "pinia";
+import { useHazoStore } from "@/stores/hazo";
+import { useDatasetStore } from "@/stores/dataset";
+
 
 const columns = ["menu", "props", "desc", "summary"];
 const columnNames: Record<string, string> = { 
     menu: "Menu", 
-    props: "Properties", 
+    props: "Properties",
     desc: "Descriptions", 
     summary: "Summary"
 };
@@ -269,7 +271,6 @@ export default {
             charNameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             nameStore: familyNameStore,
             selectedSummaryLangId: 0,
-            store: Hazo.store,
             showFields: false,
             showBigImage: false,
             showMap: false,
@@ -293,7 +294,8 @@ export default {
         },
     },
     computed: {
-        ...mapState(useHazoStore, ["selectedTaxon", "statesAllowList", "statesDenyList"]),
+        ...mapState(useHazoStore, ["statesAllowList", "statesDenyList"]),
+        ...mapState(useDatasetStore, ["books", "charactersHierarchy", "extraFields", "taxonsHierarchy"]),
         selectedStateIds(): string[] {
             return this.selectedTaxon?.states.map(s => s.id) ?? [];
         },
@@ -309,29 +311,26 @@ export default {
         rightPaneSize(): number {
             return this.selectedColumns.includes("menu") ? 75 : 100;
         },
-        dataset(): Dataset {
-            return this.store.dataset as Dataset;
-        },
         taxonTree(): Taxon {
             if (this.statesAllowList.length > 0 || this.statesDenyList.length > 0) {
-                return transformHierarchy(this.dataset.taxonsHierarchy, {
+                return transformHierarchy(this.taxonsHierarchy, {
                     map: t => t,
                     filter: t => taxonOrAnyChildHasStates(t, this.statesAllowList) && 
                         (this.statesDenyList.length == 0 || !taxonHasStates(t, this.statesDenyList)),
                 });
             } else {
-                return this.dataset.taxonsHierarchy;
+                return this.taxonsHierarchy;
             }
         },
         selectedTaxon(): Taxon|undefined {
-            return taxonFromId(this.dataset, this.selectedTaxonId);
+            return this.taxonWithId(this.selectedTaxonId);
         },
         specimenLocations(): { lat: number, lng: number }[] {
             return this.selectedTaxon?.specimenLocations ?? [];
         },
         itemDescriptorTree(): Hierarchy<BasicInfo> {
             if (typeof this.selectedTaxon !== "undefined") {
-                return taxonCharactersTree(this.selectedTaxon, this.dataset.charactersHierarchy);
+                return taxonCharactersTree(this.selectedTaxon, this.charactersHierarchy);
             } else {
                 return createCharacter({ id: "c0", name: { S: '' }, detail: ""});
             }
@@ -340,12 +339,18 @@ export default {
             if (typeof this.selectedTaxon === "undefined") {
                 return [];
             } else {
-                return taxonDescriptions(this.dataset, this.selectedTaxon);
+                return this.taxonDescriptions(this.selectedTaxon);
             }
         }
     },
     methods: {
-        ...mapActions(useHazoStore, ["selectTaxon", "copyTaxon"]),
+        ...mapActions(useHazoStore, ["pasteTaxon", "selectTaxon", "copyTaxon"]),
+        ...mapActions(useDatasetStore, [
+            "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxonPicture", "removeTaxonPicture",
+            "characterWithId", "taxonWithId",
+            "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
+            "createTexExporter", "taxonDescriptions", "taxonParentChain",
+        ]),
         monthsFromStates(states: State[]): number[] {
             return Months.fromStates(states);
         },
@@ -358,7 +363,7 @@ export default {
         exportCSV() {
             let content = "NV,NS,Family,Biblio\n";
             const tree = this.taxonTree;
-            const c = characterFromId(this.dataset, "c277");
+            const c = this.characterWithId("c277");
             if (!c || c.characterType !== "discrete") return;
             const states = new Set(c.states.map(s=>s.id));
             function writeCSV(node: Taxon, level: number, family: string) {
@@ -373,9 +378,6 @@ export default {
             }
             writeCSV(tree, 0, "");
             download(content, "csv", "summary");
-        },
-        taxonParentChain(ds: Dataset, id: string | undefined): Taxon[] {
-            return taxonParentChain(ds, id);
         },
         zoomColumn(col: string) {
             this.selectedColumns = ["menu", col];
@@ -393,7 +395,7 @@ export default {
         pushStateToChildren(state: State) {
             if (typeof this.selectedTaxon === "undefined") return;
             forEachHierarchy(this.selectedTaxon, child => {
-                this.store.do("setTaxonState", { taxon: child, state, has: true });
+                this.setTaxonState({ taxon: child, state, has: true });
             });
         },
         async importKml(e: Event) {
@@ -401,7 +403,7 @@ export default {
             
             const positions = await importKml((e.target.files ?? [])[0]);
 
-            this.store.do("setTaxonLocations", { taxon: this.selectedTaxon, positions });
+            this.setTaxonLocations({ taxon: this.selectedTaxon, positions });
         },
         copyItem() {
             if (this.selectedTaxon) {
@@ -409,13 +411,13 @@ export default {
             }
         },
         pasteItem() {
-            this.store.do("pasteTaxon", this.selectedTaxonId);
+            this.pasteTaxon(this.selectedTaxonId);
         },
         moveUp(item: Taxon) {
-            this.store.do("moveTaxonUp", item);
+            this.moveTaxonUp(item);
         },
         moveDown(item: Taxon) {
-            this.store.do("moveTaxonDown", item);
+            this.moveTaxonDown(item);
         },
         openSelectParentDropdown() {
             this.selectingParent = true;
@@ -425,22 +427,22 @@ export default {
         },
         changeSelectedTaxonParent(id: string) {
             if (this.selectedTaxon) {
-                this.store.do("changeTaxonParent", { taxon: this.selectedTaxon, newParentId: id });
+                this.changeTaxonParent({ taxon: this.selectedTaxon, newParentId: id });
             }
             this.selectingParent = false;
         },
-        addTaxon(e: {value: string[], parentId: string }) {
+        addTaxonHandler(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;
-            this.store.do("addTaxon", createTaxon({
+            this.addTaxon(createTaxon({
                 ...createHierarchicalItem({ id: "", name: { S: name, V: vernacularName, CN: nameCN}, detail: "", pictures: [], }),
-                bookInfoByIds: Object.fromEntries(this.dataset.books!.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
+                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
             }));
         },
-        removeTaxon(e: { itemId: string }) {
-            const taxonToRemove = taxonFromId(this.dataset, e.itemId);
+        removeTaxonHandler(e: { itemId: string }) {
+            const taxonToRemove = this.taxonWithId(e.itemId);
             if (taxonToRemove) {
-                this.store.do("removeTaxon", taxonToRemove);
+                this.removeTaxon(taxonToRemove);
             }
         },
         setProperty(e: { detail: { property: string, value: string } }) {
@@ -456,7 +458,7 @@ export default {
 
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
                 const selected = !taxonHasState(this.selectedTaxon, stateToAdd);
-                this.store.do("setTaxonState", { taxon: this.selectedTaxon, state: stateToAdd, has: selected });
+                this.setTaxonState({ taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
         },
         openCharacter(e: { item: DiscreteCharacter }) {
@@ -473,12 +475,12 @@ export default {
                 return;
             }
             const numberOfPhotos = this.selectedTaxon.pictures.length;
-            this.store.do("addTaxonPicture", { taxon: this.selectedTaxon, picture: normalizePicture({ id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value, hubUrl: undefined }) });
+            this.addTaxonPicture({ taxon: this.selectedTaxon, picture: normalizePicture({ id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value, hubUrl: undefined }) });
         },
         setItemPhoto(e: {detail: {index: number, src: string, hubUrl: string}}) {
             if (!this.selectedTaxon) { return; }
 
-            this.store.do("setTaxonPicture", {
+            this.setTaxonPicture({
                 taxon: this.selectedTaxon,
                 index: e.detail.index,
                 picture: normalizePicture({ ...this.selectedTaxon!.pictures[e.detail.index], url: e.detail.src, hubUrl: e.detail.hubUrl }),
@@ -487,18 +489,18 @@ export default {
         deleteItemPhoto(e: {detail: { index: number }}) {
             if (!this.selectedTaxon) { return; }
 
-            this.store.do("removeTaxonPicture", { taxon: this.selectedTaxon, index: e.detail.index });
+            this.removeTaxonPicture({ taxon: this.selectedTaxon, index: e.detail.index });
         },
         openPhoto(_: Event & {detail: { index: number }}) {
             this.bigImages = this.selectedTaxon!.pictures;
             this.showBigImage = true;
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.selectedTaxon ?? this.dataset.taxonsHierarchy!);
+            const zipTxt = await exportZipFolder(this.selectedTaxon ?? this.taxonsHierarchy!);
             download(zipTxt, "zip", undefined, true);
         },
         texExport() {
-            const taxonToTex = createTexExporter(this.dataset);
+            const taxonToTex = this.createTexExporter();
             taxonToTex.onProgress((current, max) =>  { this.latexProgressText = " [" + current + " / " + max + "]" });
             taxonToTex.export().then(tex => {
                 download(tex, "zip", undefined, true);
@@ -506,4 +508,4 @@ export default {
         },
     }
 };
-</script>
+</script>@/stores/store@/stores/hazo

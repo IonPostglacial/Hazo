@@ -11,3 +11,14 @@ export function createState(init: StateInit): State {
         pictures: init.pictures ?? [], 
     };
 }
+
+export function setState(states: State[], state: State, selected: boolean) {
+    if (selected) {
+        states.push(state);
+    } else {
+        const i = states.findIndex(s => s.id === state.id);
+        if (i >= 0) {
+            states.splice(i, 1);
+        }
+    }
+}

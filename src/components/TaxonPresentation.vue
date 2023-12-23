@@ -49,7 +49,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Dataset, Description, Taxon, taxonDescriptions, taxonFromId } from '@/datatypes'; // eslint-disable-line no-unused-vars
+import { Description, Taxon } from '@/datatypes';
 import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, MultilangText, State } from '@/datatypes/types';
@@ -57,6 +57,8 @@ import Flowering from "@/components/Flowering.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
 import HBox from './toolkit/HBox.vue';
 import Spacer from './toolkit/Spacer.vue';
+import { mapActions, mapState } from "pinia";
+import { useDatasetStore } from "@/stores/dataset";
 
 
 export default {
@@ -65,7 +67,6 @@ export default {
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,
-            store: Hazo.store,
             lang: "S",
             selectedTaxonId: (this.$route.params.id as string|undefined) ?? "",
         }
@@ -76,18 +77,16 @@ export default {
         },
     },
     computed: {
-        dataset(): Dataset {
-            return this.store.dataset as Dataset;
-        },
+        ...mapState(useDatasetStore, ["taxonsHierarchy"]),
         selectedTaxon(): Taxon|undefined {
-            return taxonFromId(this.dataset, this.selectedTaxonId);
+            return this.taxonWithId(this.selectedTaxonId);
         },
         itemsToDisplay(): Iterable<Taxon> {
             if (this.selectedTaxon) {
                 return iterHierarchy(this.selectedTaxon);
             } else {
                 const items: Taxon[] = [];
-                forEachLeaves(this.dataset.taxonsHierarchy, t => {
+                forEachLeaves(this.taxonsHierarchy, t => {
                     items.push(t);
                 });
                 return items;
@@ -95,6 +94,7 @@ export default {
         },
     },
     methods: {
+        ...mapActions(useDatasetStore, ["taxonDescriptions", "taxonWithId"]),
         charName(ch: Character): string {
             const n:any = ch.name ?? {};
             return n[this.lang];
@@ -118,7 +118,7 @@ export default {
             return ch.characterType === "discrete" && ch.preset === "flowering";
         },
         descriptions(taxon: Taxon): Description[] {
-            return taxonDescriptions(this.dataset, taxon);
+            return this.taxonDescriptions(taxon);
         },
         monthsFromStates(states: { id: string, name: MultilangText }[]): number[] {
             return Months.fromStates(states);
