@@ -6,10 +6,13 @@
                 @keydown.down="selectNextCompletion"
                 class="full-width" placeholder="Add an item" />
             <drop-down v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
-                <div :class="'grid-n grid-' + nameFields?.length ?? 1">
-                    <div v-for="(entry, i) in completions" :key="entry.id" class="display-contents blue-hover-line">
+                <div :class="'grid-n grid-' + ((nameFields?.length ?? 1) + 1)">
+                    <div v-for="(entry, i) in completions" :key="i" class="display-contents blue-hover-line">
                         <div v-for="lang in nameFields" :key="lang.propertyName" @click="selectAndEnter(i)" :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
-                            {{ capitalizeFirstLetter(entry.values[lang.propertyName]) }}
+                            {{ entry[lang.propertyName] }}
+                        </div>
+                        <div :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
+                            (in {{ entry.origin }})
                         </div>
                     </div>
                 </div>
@@ -30,15 +33,15 @@
 <script lang="ts">
 import DropDown from "@/components/toolkit/DropDown.vue";
 import HBox from "@/components/toolkit/HBox.vue";
-import { NameStore, Completion } from "@/db-index";
+import { WordStore, Completion, Language } from "@/db-index";
 import { PropType } from "vue";
 
 export default {
   components: { DropDown, HBox },
     props: {
         value: String,
-        nameStore: Object as PropType<NameStore>,
-        nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
+        nameStore: Object as PropType<WordStore>,
+        nameFields: Array as PropType<Array<{ label: string, propertyName: Language }>>,
     },
     data() {
         return {
@@ -63,10 +66,6 @@ export default {
         }
     },
     methods: {
-        capitalizeFirstLetter(s: string|undefined) {
-            if (typeof s === "undefined") { return ""; }
-            return s.charAt(0).toUpperCase() + s.slice(1);
-        },
         selectAndEnter(i: number) {
             this.selectedCompletion = i;
             this.addSingleItem();
@@ -102,7 +101,7 @@ export default {
                 const completed = this.completions[this.selectedCompletion];
                 const nameFields = this.nameFields;
                 if (typeof nameFields !== "undefined") {
-                    this.addItem(nameFields.map(f => this.capitalizeFirstLetter(completed.values[f.propertyName])));
+                    this.addItem(nameFields.map(f => completed[f.propertyName]));
                 }
             }
             this.text = "";

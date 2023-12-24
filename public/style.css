@@ -569,6 +569,18 @@ div.invisible {
     row-gap: 1ch;
 }
 
+.grid-6 {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.grid-5 {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.grid-4 {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
 .grid-3 {
     grid-template-columns: 1fr 1fr 1fr;
 }

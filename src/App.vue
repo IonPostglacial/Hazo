@@ -196,20 +196,39 @@ export default {
         },
         async indexFamilies() {
             for (const family of this.taxonsHierarchy.children) {
-                familyNameStore.store({ S: family.name.S, V: family.name.V ?? "", CN: family.name.CN ?? "" });
+                familyNameStore.store({ origin: this.selectedBase, name: { 
+                    S: family.name.S, 
+                    V: family.name.V ?? "", 
+                    EN: family.name.EN ?? "",
+                    FR: family.name.FR ?? "",
+                    CN: family.name.CN ?? "" ,
+                } });
             }
         },
         async indexCharacters() {
             forEachHierarchy(this.charactersHierarchy, ch => {
                 if (ch.id === "c0") { return; }
-                characterNameStore.store({ S: ch.name.S, EN: ch.name.EN ?? "", CN: ch.name.CN ?? "" });
+                characterNameStore.store({ origin: this.selectedBase, name: { 
+                    S: ch.name.S,
+                    V: ch.name.V ?? "",
+                    EN: ch.name.EN ?? "",
+                    FR: ch.name.FR ?? "", 
+                    CN: ch.name.CN ?? "",
+                } });
             });
         },
         async indexStates() {
             forEachHierarchy(this.charactersHierarchy, ch => {
                 if (ch.id === "c0" || ch.characterType !== "discrete") { return; }
                 for (const state of ch.states) {
-                    stateNameStore.store({ S: state.name.S, EN: state.name.EN ?? "", CN: state.name.CN ?? "" });
+                    stateNameStore.store({ origin: this.selectedBase, 
+                        name: { 
+                            S: state.name.S,
+                            V: ch.name.V ?? "",
+                            EN: state.name.EN ?? "",
+                            FR: state.name.FR ?? "", 
+                            CN: state.name.CN ?? "" } 
+                        });
                 }
             });
         },

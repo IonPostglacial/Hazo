@@ -56,7 +56,7 @@ import Spacer from "./Spacer.vue";
 import { HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
 import { iterHierarchy } from "@/datatypes/hierarchy";
-import { NameStore } from "@/db-index";
+import { WordStore } from "@/db-index";
 
 
 export default {
@@ -68,7 +68,7 @@ export default {
         nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
         selectedItem: String,
         initOpen: Boolean,
-        nameStore: Object as PropType<NameStore>,
+        nameStore: Object as PropType<WordStore>,
     },
     components:  { AddItem, HBox, Spacer, TreeMenuItem, VBox },
     data() {

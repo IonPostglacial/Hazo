@@ -1,36 +1,40 @@
-const DB_VERSION = 5;
-const DB_NAME = "NamesIndex";
+const DB_VERSION = 1;
+const DB_NAME = "WordsIndex";
 const FAMILY_INDEX_STORE_NAME = "FamilyIndexStore";
 const CHARACTER_INDEX_STORE_NAME = "CharacterIndexStore";
 const STATES_INDEX_STORE_NAME = "StateIndexStore";
-export type Language = "S" | "V" | "CN" | "LA" | "FR" | "EN";
-const LANGUAGES_V1: Language[] = ["S", "V", "CN"];
-const LANGUAGES_V5: Language[] = LANGUAGES_V1.concat(["FR", "EN"])
-export const LANGUAGES: Language[] = LANGUAGES_V5;
+export type Language = "S" | "V" | "CN" | "FR" | "EN";
+const LANGUAGES_V1: Language[] = ["S", "V", "EN", "FR", "CN"];
+export const LANGUAGES: Language[] = LANGUAGES_V1;
 export type Name = Record<Language | string, string>;
-export type Completion = { id: string | number | symbol | undefined, values: Name };
+export type IndexInput = { name: Record<Language, string>, origin: string };
+export type IndexEntry = Record<Language, string> & { origin: string, words: string[] };
+export type Completion = IndexEntry;
 
-function createIndexStore(db: IDBDatabase, storeName: string, e: IDBVersionChangeEvent) {
-    if (!db.objectStoreNames.contains(storeName)) {
-        const store = db.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });
-        for (const langProp of LANGUAGES) {
-            store.createIndex(langProp, langProp, { unique: false });
+export function validateIndexEntry(entry: unknown): entry is IndexEntry {
+    if (typeof entry === "object" && entry !== null && 
+        "origin" in entry && typeof entry.origin === "string" &&
+        "words" in entry && Array.isArray(entry.words) &&
+        "S" in entry && typeof entry.S === "string") {
+            return true;
+        } else {
+            return false;
         }
-    }
-    if (e.oldVersion < 2) {
-        const request = e.target;
-        if (request === null || !("transaction" in request) || !(request.transaction instanceof IDBTransaction)) return;
-        const tx = request.transaction;
-        const store = tx.objectStore(storeName);
-        store.createIndex("LA", "LA", { unique: false });
-    }
-    if (e.oldVersion < 5) {
-        const request = e.target;
-        if (request === null || !("transaction" in request) || !(request.transaction instanceof IDBTransaction)) return;
-        const tx = request.transaction;
-        const store = tx.objectStore(storeName);
-        store.createIndex("FR", "FR", { unique: false });
-        store.createIndex("EN", "EN", { unique: false });
+}
+
+function processIndexInput(input: IndexInput): IndexEntry {
+    const words = Object.values(input.name)
+        .flatMap(name => 
+            name.split(/[\s,/;.]+/)
+                .filter(s => s !== "" && s !== " ")
+                .map(s => s.toLowerCase()));
+    return { ...input.name, words, origin: input.origin };
+}
+
+function createIndexStore(db: IDBDatabase, storeName: string, _e: IDBVersionChangeEvent) {
+    if (!db.objectStoreNames.contains(storeName)) {
+        const store = db.createObjectStore(storeName, { keyPath: LANGUAGES });
+        store.createIndex("words", "words", { multiEntry: true, unique: false });
     }
 }
 
@@ -61,52 +65,51 @@ async function indexStore(storeName: string, mode: IDBTransactionMode): Promise<
     return db.transaction(storeName, mode).objectStore(storeName);
 }
 
-export interface NameStore {
-    store(name: Name): Promise<void>;
+export interface WordStore {
+    store(name: IndexInput): Promise<void>;
     delete(id: string): Promise<void>;
     namesLike(prefix: string): Promise<Completion[]>;
 }
 
-class IndexStore implements NameStore {
+class IndexStore implements WordStore {
     private storeName: string;
 
     constructor(storeName: string) {
         this.storeName = storeName;
     }
 
-    async store(name: Name): Promise<void> {
-        indexStore(this.storeName, "readwrite").then(store => 
-            store.put(Object.fromEntries(Object.entries(name)
-                .map(([k, v]) => [k, v?.toLowerCase() ?? ""]))));
+    async store(input: IndexInput): Promise<void> {
+        const store = await indexStore(this.storeName, "readwrite");
+        const entry = processIndexInput(input);
+        store.put(entry);
     }
     
     async delete(id: string): Promise<void> {
         indexStore(this.storeName, "readwrite").then(store => store.delete(id));
     }
     
-    private async namesLikeProperty(propName: Language, prefix: string): Promise<Completion[]> {
+    async namesLike(prefix: string): Promise<Completion[]> {
         const search = prefix.toLowerCase();
         const store = await indexStore(this.storeName, "readonly");
         return new Promise((resolve, reject) => {
-            const result: Completion[] = [];
-            const cur = store.index(propName).openCursor(IDBKeyRange.bound(search, search + "\uffff"), "next")
+            const result = new Map<string, Completion>();
+            const cur = store.index("words").openCursor(IDBKeyRange.bound(search, search + "\uffff"), "next")
             cur.onsuccess = function () {
                 const cursor = this.result;
                 if (cursor) {
-                    result.push({ id: cursor.key as string, values: cursor.value});
+                    const value: unknown = cursor.value;
+                    if (validateIndexEntry(value)) {
+                        result.set(""+cursor.primaryKey, value);
+                    }
                     cursor.continue();
                 } else {
-                    resolve(result);
+                    resolve([...result.values()]);
                 }
             };
             cur.onerror = function () {
                 reject(this.error);
             }
         });
-    }
-
-    async namesLike(prefix: string): Promise<Completion[]> {
-        return [...new Map((await Promise.all(LANGUAGES.map(lang => this.namesLikeProperty(lang, prefix)))).flat().map(c => [c.id, c])).values()];
     }
 }
 
