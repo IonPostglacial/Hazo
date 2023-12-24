@@ -34,45 +34,54 @@
 
 <script lang="ts">
 import { taxonsStats } from "@/features";
-import { Taxon, Dataset, iterHierarchy, taxonFromId } from "@/datatypes";
+import { Character, Taxon, iterHierarchy } from "@/datatypes";
+import { mapActions, mapState } from "pinia";
+import { useDatasetStore } from "@/stores/dataset";
+import { Counts } from "@/features/hierarchystats";
 
 export default {
     data() {
-        const dataset = Hazo.store.dataset;
-        const stats = taxonsStats(dataset.taxonsHierarchy);
-        const chars = Array.from(iterHierarchy(dataset.charactersHierarchy));
-        let statesCount = 0;
-        let picsCount = 0;
-        for (const char of chars) {
-            picsCount += char.pictures.length;
+        const stats: Counts = {
+            families: [],
+            gender: 0,
+            taxa: [],
+            species: [],
+        };
+        const chars: Character[] = [];
+        return {
+            stats,
+            chars,
+            statesCount: 0,
+            picsCount: 0,
+        };
+    },
+    mounted() {
+        this.stats = taxonsStats(this.taxonsHierarchy);
+        this.chars = Array.from(iterHierarchy(this.charactersHierarchy));
+        this.statesCount = 0;
+        this.picsCount = 0;
+        for (const char of this.chars) {
+            this.picsCount += char.pictures.length;
             if (char.characterType === "discrete") {
-                statesCount += char.states.length;
+                this.statesCount += char.states.length;
                 for (const state of char.states) {
-                    picsCount += state.pictures.length;
+                    this.picsCount += state.pictures.length;
                 }
             }
         }
-        for (const taxon of iterHierarchy(dataset.taxonsHierarchy)) {
-            picsCount += taxon.pictures.length;
+        for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
+            this.picsCount += taxon.pictures.length;
         }
-        return {
-            store: Hazo.store,
-            stats,
-            chars,
-            statesCount,
-            picsCount
-        };
     },
     computed: {
-        dataset(): Dataset {
-            return this.store.dataset as Dataset;
-        },
+        ...mapState(useDatasetStore, ["charactersHierarchy", "taxonsHierarchy"]),
     },
     methods: {
+        ...mapActions(useDatasetStore, ["taxonWithId"]),
         getFamilyName(t: Taxon|undefined): string {
             var family = t;
             while (typeof family?.parentId !== "undefined") {
-                family = taxonFromId(this.dataset, family.parentId);
+                family = this.taxonWithId(family.parentId);
             }
             return family?.name.S ?? "";
         },

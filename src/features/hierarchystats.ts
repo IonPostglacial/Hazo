@@ -1,6 +1,6 @@
 import { Hierarchy, Taxon } from "@/datatypes";
 
-type Counts = {
+export type Counts = {
     families: Taxon[],
     gender: number,
     taxa: Taxon[],

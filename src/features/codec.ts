@@ -1,4 +1,5 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, taxonFromId, createState, addTaxon, addCharacter, setTaxonState, characterStates, createDataset } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates } from "@/datatypes";
+import { taxonFromId, addTaxon, addCharacter, setTaxonState, createDataset } from "@/datatypes/Dataset";
 import { createCharacter } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";

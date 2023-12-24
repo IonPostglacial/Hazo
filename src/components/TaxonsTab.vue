@@ -218,7 +218,7 @@ import SplitPanel from "./toolkit/SplitPanel.vue";
 import GeoView from "./GeoView.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Description, Hierarchy, State, Taxon, taxonCharactersTree, taxonParentChain, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Description, Hierarchy, State, Taxon, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDownButton from "./toolkit/DropDownButton.vue";
@@ -330,7 +330,7 @@ export default {
         },
         itemDescriptorTree(): Hierarchy<BasicInfo> {
             if (typeof this.selectedTaxon !== "undefined") {
-                return taxonCharactersTree(this.selectedTaxon, this.charactersHierarchy);
+                return this.taxonCharactersTree(this.selectedTaxon, this.charactersHierarchy);
             } else {
                 return createCharacter({ id: "c0", name: { S: '' }, detail: ""});
             }
@@ -349,7 +349,7 @@ export default {
             "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxonPicture", "removeTaxonPicture",
             "characterWithId", "taxonWithId",
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
-            "createTexExporter", "taxonDescriptions", "taxonParentChain",
+            "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree",
         ]),
         monthsFromStates(states: State[]): number[] {
             return Months.fromStates(states);
@@ -508,4 +508,4 @@ export default {
         },
     }
 };
-</script>@/stores/store@/stores/hazo
+</script>

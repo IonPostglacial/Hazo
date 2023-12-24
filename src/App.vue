@@ -82,7 +82,8 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Taxon, createDataset, createCharacter, createState, createTaxon, addCharacter, loadGeoJson, standardMaps } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Character, Dataset, Taxon, createCharacter, createState, createTaxon, loadGeoJson, standardMaps } from "@/datatypes";
+import { createDataset } from "@/datatypes/Dataset"; 
 import { decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import * as FS from "./fs-storage";
 import { loadSDD } from "./sdd-load";
@@ -295,6 +296,8 @@ export default {
                 let ds: Dataset;
                 if (savedDataset.taxons.length !== 0 || savedDataset.characters.length !== 0) {
                     ds = decodeDataset(savedDataset);
+                    ds.id = id;
+                    this.setDataset(ds);
                 } else {
                     ds = createDataset( {
                         id,
@@ -306,11 +309,11 @@ export default {
                     });
                     const familyChar = createCharacter({ name: { S: "Family" } });
                     familyChar.preset = "family";
-                    addCharacter(ds, familyChar);
+                    ds.id = id;
+                    this.setDataset(ds);
+                    this.addCharacter(familyChar);
                     this.addGeoCharacters();
-                }
-                ds.id = id;
-                this.setDataset(ds);
+                } 
             });
         },
         print() {

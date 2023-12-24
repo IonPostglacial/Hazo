@@ -1,14 +1,13 @@
 import JSZip from "jszip";
-import { Dataset, Description, iterHierarchy, Picture, Taxon, taxonDescriptions } from "@/datatypes";
+import { Description, Hierarchy, iterHierarchy, Picture, Taxon } from "@/datatypes";
 import generateFileName from "./generatefilename";
 import { join, map } from "@/tools/iter";
 
-export function createTexExporter(d: Dataset) {
-    const dataset = d;
+export function createTexExporter(taxonsHierarchy: Hierarchy<Taxon>, taxonDescriptions: (taxon: Taxon) => Array<Description> ) {
     const progressListeners: ((progress: number, progressMax: number) => void)[] = [];
     const pictureNameByUrl = new Map<string, string>();
     const photos: string[] = [];
-    for (const taxon of iterHierarchy(dataset.taxonsHierarchy)) {
+    for (const taxon of iterHierarchy(taxonsHierarchy)) {
         if (taxon.pictures.length > 0) {
             const photo = taxon.pictures[0];
             pictureNameByUrl.set(photo.url, generateFileName(taxon.name.S) + ".jpg");
@@ -43,7 +42,7 @@ export function createTexExporter(d: Dataset) {
             \\end{block}
             \\begin{block}{Description}
             \\begin{itemize}
-            ${join(map(taxonDescriptions(dataset, taxon), descriptionTemplate), "\n")}
+            ${join(map(taxonDescriptions(taxon), descriptionTemplate), "\n")}
             \\end{itemize}
             \\end{block}
         \\end{frame}
@@ -77,7 +76,7 @@ export function createTexExporter(d: Dataset) {
 
             \\section{Taxons}
 
-            ${join(map(iterHierarchy(dataset.taxonsHierarchy), taxonTemplate), "\n")}
+            ${join(map(iterHierarchy(taxonsHierarchy), taxonTemplate), "\n")}
 
             \\end{document}
         `;

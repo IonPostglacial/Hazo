@@ -218,7 +218,7 @@ import { Character, State, Picture, standardMaps, GeoMap, createState, character
 import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
-import { characterNameStore, stateNameStore } from "@/db-index";
+import { Language, characterNameStore, stateNameStore } from "@/db-index";
 import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
 import { mapActions, mapState } from "pinia";
@@ -231,7 +231,7 @@ export default {
         return {
             nameStore: characterNameStore,
             stateNameStore: stateNameStore,
-            nameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
+            nameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }] satisfies Array<{ label: string, propertyName: Language }>,
             showLeftMenu: true,
             showBigImage: false,
             maps: standardMaps,
