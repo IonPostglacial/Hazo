@@ -23,12 +23,17 @@ export function validateIndexEntry(entry: unknown): entry is IndexEntry {
 }
 
 function processIndexInput(input: IndexInput): IndexEntry {
-    const words = Object.values(input.name)
-        .flatMap(name => 
-            name.split(/[\s,/;.]+/)
+    const names = Object.entries(input.name).map(([k, v]) => [k, v ?? ""]);
+    const words = names
+        .flatMap(([_, name]) => {
+            if (typeof name !== "string") {
+                return [];
+            }
+            return name.split(/[\s,/;.]+/)
                 .filter(s => s !== "" && s !== " ")
-                .map(s => s.toLowerCase()));
-    return { ...input.name, words, origin: input.origin };
+                .map(s => s.toLowerCase())
+        });
+    return { ...Object.fromEntries(names), words, origin: input.origin };
 }
 
 function createIndexStore(db: IDBDatabase, storeName: string, _e: IDBVersionChangeEvent) {
@@ -81,7 +86,12 @@ class IndexStore implements WordStore {
     async store(input: IndexInput): Promise<void> {
         const store = await indexStore(this.storeName, "readwrite");
         const entry = processIndexInput(input);
-        store.put(entry);
+        try {
+            store.put(entry);
+        } catch(e) {
+            console.error(`error inserting entry '${JSON.stringify(entry)}'`);
+            console.error(e);
+        }
     }
     
     async delete(id: string): Promise<void> {

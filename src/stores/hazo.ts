@@ -1,9 +1,11 @@
 import { defineStore, mapActions } from "pinia";
-import { Character, DictionaryEntry, Hierarchy, Taxon, cloneHierarchy, State } from "../datatypes";
+import { Character, DictionaryEntry, Hierarchy, Taxon, cloneHierarchy, State, forEachHierarchy } from "../datatypes";
 import clone from "../tools/clone";
 import makeid from '../tools/makeid';
 import { fixParentIds } from "../tools/fixes";
 import { useDatasetStore } from "./dataset";
+import { Dataset } from "../datatypes";
+import { characterNameStore, familyNameStore, stateNameStore } from "@/db-index";
 
 export const useHazoStore = defineStore("hazo", {
     state: () => ({
@@ -17,6 +19,19 @@ export const useHazoStore = defineStore("hazo", {
         statesAllowList: [] as State[],
         statesDenyList: [] as State[],
     }),
+    getters: {
+        indexedDatasets(): string[] {
+            const ids = window.localStorage.getItem("indexedDatasets");
+            if (ids) {
+                try {
+                    return JSON.parse(ids);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            return [];
+        }
+    },
     actions: {
         ...mapActions(useDatasetStore, ["addCharacter", "addTaxon", "addState", "characterWithId"]),
         addStateToAllowList(state: State) {
@@ -109,5 +124,48 @@ export const useHazoStore = defineStore("hazo", {
                 }
             }
         },
-    }
+        indexDataset(ds: Dataset) {
+            const indexed = this.indexedDatasets;
+            if (!indexed.includes(ds.id)) {
+                for (const family of ds.taxonsHierarchy.children) {
+                    familyNameStore.store({ origin: ds.id, name: { 
+                        S: family.name.S, 
+                        V: family.name.V ?? "", 
+                        EN: family.name.EN ?? "",
+                        FR: family.name.FR ?? "",
+                        CN: family.name.CN ?? "" ,
+                    } });
+                }
+                forEachHierarchy(ds.charactersHierarchy, ch => {
+                    if (ch.id === "c0") { return; }
+                    characterNameStore.store({ origin: ds.id, name: { 
+                        S: ch.name.S,
+                        V: ch.name.V ?? "",
+                        EN: ch.name.EN ?? "",
+                        FR: ch.name.FR ?? "", 
+                        CN: ch.name.CN ?? "",
+                    } });
+                });
+                forEachHierarchy(ds.charactersHierarchy, ch => {
+                    if (ch.id === "c0" || ch.characterType !== "discrete") { return; }
+                    for (const state of ch.states) {
+                        stateNameStore.store({ origin: ds.id, 
+                            name: { 
+                                S: state.name.S,
+                                V: ch.name.V ?? "",
+                                EN: state.name.EN ?? "",
+                                FR: state.name.FR ?? "", 
+                                CN: state.name.CN ?? "" } 
+                            });
+                    }
+                });
+                indexed.push(ds.id);
+                window.localStorage.setItem("indexedDatasets", JSON.stringify(indexed));
+            }
+        },
+        index() {
+            const dsStore = useDatasetStore();
+            this.indexDataset(dsStore);
+        },
+    },
 });

@@ -184,7 +184,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useHazoStore, ["setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
+        ...mapActions(useHazoStore, ["indexDataset", "setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
         ...mapActions(useDatasetStore, ["addCharacter", "addState", "addTaxon", "allStates", "encodeToHazoJson", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
         openHub() {
             window.open(Config.datasetRegistry);
@@ -297,6 +297,7 @@ export default {
                 if (savedDataset.taxons.length !== 0 || savedDataset.characters.length !== 0) {
                     ds = decodeDataset(savedDataset);
                     ds.id = id;
+                    this.indexDataset(ds);
                     this.setDataset(ds);
                 } else {
                     ds = createDataset( {
@@ -313,7 +314,7 @@ export default {
                     this.setDataset(ds);
                     this.addCharacter(familyChar);
                     this.addGeoCharacters();
-                } 
+                }
             });
         },
         print() {
@@ -328,6 +329,7 @@ export default {
             this.selectedBase = manualId;
         },
         saveData() {
+            this.index();
             const taxons: Record<string, Taxon> = {};
             const characters: Record<string, Character> = {};
             for (const taxon of iterHierarchy(this.taxonsHierarchy)) {

@@ -32,19 +32,30 @@ export const useDatasetStore = defineStore("dataset", {
             return allStates(this);
         },
         addTaxon(taxon: Taxon): Taxon {
-            return addTaxon(this.$state, taxon);
+            this.$patch((ds) => {
+                taxon = addTaxon(ds, taxon);
+            });
+            return taxon;
         },
         setTaxon({taxon, props} : {taxon: Taxon, props: Partial<Taxon>}) {
-            setTaxon(this.$state, taxon.id, props);
+            this.$patch((ds) => {
+                setTaxon(ds, taxon.id, props);
+            });
         },
         addTaxons(taxons: Taxon[]) {
-            taxons.forEach(t => this.addTaxon(t));
+            this.$patch((ds) => {
+                taxons.forEach(t => addTaxon(ds, t));
+            });
         },
         removeTaxon(taxon: Taxon) {
-            removeTaxon(this.$state, taxon.id);
+            this.$patch((ds) => {
+                removeTaxon(ds, taxon.id);
+            });
         },
         changeTaxonParent(e: { taxon: Taxon, newParentId: string }) {
-            changeTaxonParent(this.$state, e.taxon.id, e.newParentId);
+            this.$patch((ds) => {
+                changeTaxonParent(ds, e.taxon.id, e.newParentId);
+            });
         },
         addTaxonPicture(payload: { taxon: Taxon, picture: Picture }) {
             const t = taxonFromId(this.$state, payload.taxon.id);

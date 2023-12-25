@@ -91,15 +91,15 @@
                             <div class="scroll large-max-width form-grid medium-padding">
                                 <div class="display-contents">
                                     <label>NS</label>
-                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="selectedTaxon.name.S" />
+                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="name.S" />
                                     <label>Author</label>
                                     <input type="text" v-model="selectedTaxon.author" />
                                 </div>
                                 <item-property-field v-model="selectedTaxon.name2" :editable="editProperties">
                                     Synonymous</item-property-field>
-                                <item-property-field v-model="selectedTaxon.name.CN" :editable="editProperties">
+                                <item-property-field v-model="name.CN" :editable="editProperties">
                                     中文名</item-property-field>
-                                <item-property-field v-model="selectedTaxon.name.V" :editable="editProperties">
+                                <item-property-field v-model="name.V" :editable="editProperties">
                                     NV</item-property-field>
                                 <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editProperties">
                                     NV 2</item-property-field>
@@ -243,6 +243,8 @@ import Months from "@/datatypes/Months";
 import { mapActions, mapState } from "pinia";
 import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
+import { multilangTextEquals } from "@/tools/multilangtextequal";
+import debounce from "@/tools/debounce";
 
 
 const columns = ["menu", "props", "desc", "summary"];
@@ -266,8 +268,14 @@ export default {
         const selectedCols = (""+localStorage.selectedTaxonColumns)
             .split(",")
             .filter(col => columns.includes(col));
+        const selectedTaxonId = this.$route.params.id as string ?? "";
+        const store = useDatasetStore();
+        const taxon = store.taxonWithId(selectedTaxonId);
+        const taxonNameFields = [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }];
+        const name = Object.fromEntries(taxonNameFields.map(field => [field.propertyName, taxon?.name[field.propertyName] ?? ""]));
         return {
-            nameFields: [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }],
+            name,
+            nameFields: taxonNameFields,
             charNameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             nameStore: familyNameStore,
             selectedSummaryLangId: 0,
@@ -278,7 +286,7 @@ export default {
             editProperties: true,
             latexProgressText: "",
             selectingParent: false,
-            selectedTaxonId: this.$route.params.id as string ?? "",
+            selectedTaxonId,
             selectedColumns: (selectedCols.length > 0) ? selectedCols : ["menu", "props"],
         }
     },
@@ -289,8 +297,21 @@ export default {
                 this.selectTaxon(this.selectedTaxon);
             }
         },
+        selectedTaxon() {
+            if (this.selectedTaxon) {
+                Object.assign(this.name, this.selectedTaxon.name);
+            }
+        },
         selectedColumns() {
             localStorage.selectedTaxonColumns = this.selectedColumns.join(",");
+        },
+        "name": {
+            handler: debounce(500, function (this: any) {
+                if (this.selectedTaxon && !multilangTextEquals(this.selectedTaxon.name, this.name)) {
+                    this.setTaxon({ taxon: this.selectedTaxon, props: { name: {...this.name} } });
+                }
+            }),
+            deep: true,
         },
     },
     computed: {
@@ -346,7 +367,7 @@ export default {
     methods: {
         ...mapActions(useHazoStore, ["pasteTaxon", "selectTaxon", "copyTaxon"]),
         ...mapActions(useDatasetStore, [
-            "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxonPicture", "removeTaxonPicture",
+            "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxon", "setTaxonPicture", "removeTaxonPicture",
             "characterWithId", "taxonWithId",
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
             "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree",

@@ -8,11 +8,11 @@
             <drop-down v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
                 <div :class="'grid-n grid-' + ((nameFields?.length ?? 1) + 1)">
                     <div v-for="(entry, i) in completions" :key="i" class="display-contents blue-hover-line">
-                        <div v-for="lang in nameFields" :key="lang.propertyName" @click="selectAndEnter(i)" :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
+                        <div v-for="lang in nameFields" :key="lang.propertyName" @click="selectAndEnter(i)" :class="['nowrap', 'cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
                             {{ entry[lang.propertyName] }}
                         </div>
                         <div :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
-                            (in {{ entry.origin }})
+                            ({{ entry.origin }})
                         </div>
                     </div>
                 </div>
