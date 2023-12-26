@@ -6,14 +6,23 @@
                 @keydown.down="selectNextCompletion"
                 class="full-width" placeholder="Add an item" />
             <drop-down v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
-                <div :class="'grid-n grid-' + ((nameFields?.length ?? 1) + 1)">
+                <div class="grid-n grid-2-autocomplete stretch-items">
                     <div v-for="(entry, i) in completions" :key="i" class="display-contents blue-hover-line">
-                        <div v-for="lang in nameFields" :key="lang.propertyName" @click="selectAndEnter(i)" :class="['nowrap', 'cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
-                            {{ entry[lang.propertyName] }}
-                        </div>
-                        <div :class="['cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
-                            ({{ entry.origin }})
-                        </div>
+                        <VBox v-if="nameFields && nameFields.length > 0"  @click="selectAndEnter(i)" :class="['nowrap', 'cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
+                            <div :key="nameFields[0].propertyName" class="main-name">
+                                {{ entry[nameFields[0].propertyName] }}
+                            </div>
+                            <HBox class="gap-1">
+                                <div v-for="lang in nameFields.slice(1)" :key="lang.propertyName" class="secondary-name">
+                                    {{ entry[lang.propertyName] }}
+                                </div>
+                            </HBox>
+                        </VBox>
+                        <HBox @click="selectAndEnter(i)" :class="['cell', 'center-items', 'clickable', 'origin-name', { 'background-color-1': i === selectedCompletion }]">
+                            <div>
+                                {{ entry.origin }}
+                            </div>
+                        </HBox>
                     </div>
                 </div>
             </drop-down>
@@ -33,11 +42,12 @@
 <script lang="ts">
 import DropDown from "@/components/toolkit/DropDown.vue";
 import HBox from "@/components/toolkit/HBox.vue";
+import VBox from "@/components/toolkit/VBox.vue";
 import { WordStore, Completion, Language } from "@/db-index";
 import { PropType } from "vue";
 
 export default {
-  components: { DropDown, HBox },
+  components: { DropDown, HBox, VBox },
     props: {
         value: String,
         nameStore: Object as PropType<WordStore>,
@@ -120,3 +130,22 @@ export default {
     }
 };
 </script>
+
+<style scoped>
+    .grid-2-autocomplete {
+        grid-template-columns: 1fr 10ch;
+    }
+
+    .origin-name {
+        font-style: italic;
+        color: grey;
+    }
+
+    .main-name {
+        font-size: 1.2em;
+    }
+
+    .secondary-name {
+        font-size: 0.8em;
+    }
+</style>

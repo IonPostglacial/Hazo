@@ -565,8 +565,7 @@ div.invisible {
 .grid-n {
     min-width: 42ch;
     display: grid;
-    grid-auto-rows: 3ch;
-    row-gap: 1ch;
+    grid-auto-rows: 5ch;
 }
 
 .grid-6 {
@@ -603,6 +602,14 @@ div.invisible {
 
 .center-items {
     align-items: center;
+}
+
+.stretch-items {
+    align-items: stretch;
+}
+
+.gap-1 {
+    gap: 1ch;
 }
 
 .horizontal-flexbox {
