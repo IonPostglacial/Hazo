@@ -67,9 +67,6 @@
             <DropDownButton label="More Actions" :default-up="true">
                 <VBox>
                     <button type="button" @click="addGeoCharacters">Add Geo</button>
-                    <button @click="indexFamilies">Index Families</button>
-                    <button @click="indexCharacters">Index Characters</button>
-                    <button @click="indexStates">Index States</button>
                     <button type="button" @click="globalReplace">Replace Text</button>
                     <button type="button" class="no-print" @click="displayTaxonStats">Taxons Stats</button>
                 </VBox>
@@ -92,7 +89,7 @@ import { Config } from './tools/config';
 import { readTextFileAsync } from './tools/read-file-async';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
 import { DiscreteCharacter, State } from "./datatypes/types";
-import { Name, characterNameStore, familyNameStore, stateNameStore } from "@/db-index";
+import { Name } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import DropDownButton from "@/components/toolkit/DropDownButton.vue";
 import HBox from "@/components/toolkit/HBox.vue";
@@ -184,7 +181,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useHazoStore, ["indexDataset", "setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
+        ...mapActions(useHazoStore, ["index", "indexDataset", "setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
         ...mapActions(useDatasetStore, ["addCharacter", "addState", "addTaxon", "allStates", "encodeToHazoJson", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
         openHub() {
             window.open(Config.datasetRegistry);
@@ -194,44 +191,6 @@ export default {
         },
         removeFromDenyList(state: State) {
             this.removeStateFromAllowList(state);
-        },
-        async indexFamilies() {
-            for (const family of this.taxonsHierarchy.children) {
-                familyNameStore.store({ origin: this.selectedBase, name: { 
-                    S: family.name.S, 
-                    V: family.name.V ?? "", 
-                    EN: family.name.EN ?? "",
-                    FR: family.name.FR ?? "",
-                    CN: family.name.CN ?? "" ,
-                } });
-            }
-        },
-        async indexCharacters() {
-            forEachHierarchy(this.charactersHierarchy, ch => {
-                if (ch.id === "c0") { return; }
-                characterNameStore.store({ origin: this.selectedBase, name: { 
-                    S: ch.name.S,
-                    V: ch.name.V ?? "",
-                    EN: ch.name.EN ?? "",
-                    FR: ch.name.FR ?? "", 
-                    CN: ch.name.CN ?? "",
-                } });
-            });
-        },
-        async indexStates() {
-            forEachHierarchy(this.charactersHierarchy, ch => {
-                if (ch.id === "c0" || ch.characterType !== "discrete") { return; }
-                for (const state of ch.states) {
-                    stateNameStore.store({ origin: this.selectedBase, 
-                        name: { 
-                            S: state.name.S,
-                            V: ch.name.V ?? "",
-                            EN: state.name.EN ?? "",
-                            FR: state.name.FR ?? "", 
-                            CN: state.name.CN ?? "" } 
-                        });
-                }
-            });
         },
         syncPictures() {
             this.urlsToSync = [];
