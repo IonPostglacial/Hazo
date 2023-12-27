@@ -182,22 +182,30 @@
                                 </select>
                             </HBox>
                             <ul class="big-margin-left">
-                                <li v-for="desc in itemDescription" :key="desc.character.id">
+                                <li v-for="desc in taxonDescriptions(selectedTaxon)" :key="desc.character.id">
                                     {{ desc.character.name[selectedSummaryLangProperty] }}
                                     <GeoView 
                                         v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
                                         :geo-map="getGeoMap(desc.character)"
                                         :selected-features="desc.states.map(s => s.name.S)">
                                     </GeoView>
-                                    <Flowering v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'flowering'" 
-                                        :model-value="monthsFromStates(desc.states)"
-                                        class="limited-width">
-                                    </Flowering>
                                     <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                         <li v-for="state in desc.states" :key="state.id">
                                             {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
                                         </li>
                                     </ul>
+                                </li>
+                                <li>
+                                    Calendar
+                                    <ul>
+                                        <li v-for="track in calendarTracks">
+                                            <span :style="'color:' + track.color">{{ track.name }}</span>
+                                        </li>
+                                    </ul>
+                                    <Flowering
+                                        :model-value="calendarTracks"
+                                        class="limited-width">
+                                    </Flowering>
                                 </li>
                             </ul>
                         </div>
@@ -238,7 +246,7 @@ import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, GeoMap, Picture, BasicInfo } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
-import Flowering from "./Flowering.vue";
+import Flowering, { Track } from "./Flowering.vue";
 import Months from "@/datatypes/Months";
 import { mapActions, mapState } from "pinia";
 import { useHazoStore } from "@/stores/hazo";
@@ -254,6 +262,8 @@ const columnNames: Record<string, string> = {
     desc: "Descriptions", 
     summary: "Summary"
 };
+
+const palette = ["#84bf3d", "red", "blue", "orange", "purple"];
 
 export default {
     name: "TaxonsTab",
@@ -356,13 +366,29 @@ export default {
                 return createCharacter({ id: "c0", name: { S: '' }, detail: ""});
             }
         },
-        itemDescription(): Description[] {
-            if (typeof this.selectedTaxon === "undefined") {
-                return [];
-            } else {
-                return this.taxonDescriptions(this.selectedTaxon);
+        itemFloweringDescription(): Description[] {
+            return this.taxonDescriptions(this.selectedTaxon)
+                .filter(
+                    desc => desc.character.characterType === "discrete" && 
+                    desc.character.preset === "flowering"
+                );
+        },
+        calendarTracks(): Track[] {
+            const tracks: Track[] = [];
+            let color = 0;
+            for (const desc of this.itemFloweringDescription) {
+                if (desc.character.characterType !== "discrete" || desc.character.preset !== "flowering") {
+                    continue;
+                }
+                tracks.push({
+                    name: desc.character.name.S,
+                    color: desc.character.color ?? palette[color++],
+                    data: Months.fromStates(desc.states),
+                });
+                if (color >= palette.length) { color = 0; }
             }
-        }
+            return tracks;
+        },
     },
     methods: {
         ...mapActions(useHazoStore, ["pasteTaxon", "selectTaxon", "copyTaxon"]),
@@ -372,9 +398,6 @@ export default {
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
             "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree",
         ]),
-        monthsFromStates(states: State[]): number[] {
-            return Months.fromStates(states);
-        },
         columnName(col: string): string {
             return columnNames[col];
         },

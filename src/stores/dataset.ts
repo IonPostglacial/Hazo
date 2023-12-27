@@ -76,7 +76,8 @@ export const useDatasetStore = defineStore("dataset", {
             const t = taxonFromId(this.$state, payload.taxon.id);
             if (t) t.pictures.splice(payload.index, 1);
         },
-        taxonDescriptions(taxon: Taxon): Array<Description> {
+        taxonDescriptions(taxon: Taxon|undefined): Array<Description> {
+            if (typeof taxon === "undefined") { return []; }
             return taxonDescriptions(this.$state, taxon);
         },
         characterWithId(id: string | undefined): Character | undefined {

@@ -35,6 +35,7 @@ export type MultilangText = {
 
 export type BasicInfo = {
 	id: string;
+	type: string;
 	name: MultilangText;
 	pictures: Picture[];
 };
@@ -76,6 +77,7 @@ export type CharacterType = "discrete" | "range";
 export type AnyCharacter = IHierarchicalItem & {
 	type: "character";
 	detail: string;
+	color?: string,
 	inapplicableStates: State[];
 	requiredStates: State[];
 	children: Character[];

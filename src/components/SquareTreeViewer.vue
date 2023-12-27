@@ -12,7 +12,7 @@
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">
                 <template v-slot:background>
-                    <flowering v-if="isFlowering(item)" :model-value="monthsFromItem(item)"></flowering>
+                    <Flowering v-if="isFlowering(item)" :model-value="monthsFromItem(item)"></Flowering>
                 </template>
                 <div class="display-contents">
                     <div v-for="field in nameFieldsForItem(item)" :key="field"
@@ -25,7 +25,7 @@
             </SquareCard>
         </HBox>
         <div v-if="floweringMode">
-            <flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></flowering>
+            <Flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></Flowering>
         </div>
     </VBox>
 </template>
@@ -33,7 +33,7 @@
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
-import Flowering from "./Flowering.vue";
+import Flowering, { Track } from "./Flowering.vue";
 import GeoView from "./GeoView.vue";
 import SquareCard from "./toolkit/SquareCard.vue";
 import HBox from "./toolkit/HBox.vue";
@@ -42,10 +42,22 @@ import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-import { DiscreteCharacter, BasicInfo } from "@/datatypes/types";
+import { DiscreteCharacter, BasicInfo, MultilangText } from "@/datatypes/types";
 import { mapActions } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 
+
+function floweringFromStates(color: string, currentItems: 
+    {
+        id: string;
+        name: MultilangText;
+    }[]) {
+    return [{
+        name: "",
+        color,
+        data: Months.fromStates(currentItems),
+    }]
+}
 
 export default {
     name: "SquareTreeViewer",
@@ -58,8 +70,6 @@ export default {
     data() {
         const currentItems = [...this.rootItems!.children];
         return {
-            flowering: Months.fromStates(currentItems.filter(s => this.selectedItems?.includes(s.id))),
-            floweringMode: false,
             isRoot: true,
             currentItems: currentItems,
             breadCrumbs: [] as Hierarchy<BasicInfo>[],
@@ -75,16 +85,35 @@ export default {
                 currentlyOpenItem = it;
             }
             if (typeof currentlyOpenItem !== "undefined") {
-                this.updateCurrentItem(currentlyOpenItem);
                 this.currentItems = [...currentlyOpenItem.children];
-                this.flowering = Months.fromStates(this.currentItems.filter(s => this.isSelected(s)));
             }
         },
-        currentItems(items: Hierarchy<BasicInfo>[]) {
-            this.flowering = Months.fromStates(items.filter(item => this.isSelected(item)));
-        }
     },
     computed: {
+        floweringMode(): boolean {
+            if (this.currentCharacter) {
+                return this.isFlowering(this.currentCharacter);
+            }
+            return false;
+        },
+        flowering(): Track[] {
+            return this.flowering = floweringFromStates(this.currentCharacter?.color ?? "#84bf3d", this.currentItems.filter(item => this.isSelected(item)));
+        },
+        currentCharacter(): DiscreteCharacter|undefined {
+            if (this.breadCrumbs.length === 0) {
+                if (this.rootItems?.type === "character") {
+                    const ch = this.rootItems as DiscreteCharacter;
+                    if (typeof ch === "undefined" || ch.characterType !== "discrete") { return undefined; }
+                    return ch;
+                }
+                return undefined;
+            } else {
+                const character = this.breadCrumbs[this.breadCrumbs.length - 1];
+                const ch = this.characterWithId(character.id);
+                if (typeof ch === "undefined" || ch.characterType !== "discrete") { return undefined; }
+                return ch;
+            }
+        },
         itemsToDisplay(): Iterable<Hierarchy<BasicInfo>> {
             if (!this.currentItems) return [];
             const shouldDisplayItem = (item: BasicInfo) => {
@@ -99,14 +128,8 @@ export default {
     },
     methods: {
         ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
-        monthsFromItem(_item: Hierarchy<BasicInfo>): number[] {
+        monthsFromItem(_item: Hierarchy<BasicInfo>): Track[] {
             return [];
-        },
-        updateCurrentItem(item: Hierarchy<BasicInfo>) {
-            this.floweringMode = this.isFlowering(item);
-        },
-        resetCurrentItem() {
-            this.floweringMode = false;
         },
         nameFieldsForItem(item: any): Iterable<string> {
             return this.nameFields?.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
@@ -143,7 +166,6 @@ export default {
         },
         openItem(item: Hierarchy<BasicInfo>) {
             this.isRoot = false;
-            this.updateCurrentItem(item);
             if (item.children.length > 0) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...item.children];
@@ -175,12 +197,10 @@ export default {
         },
         backToTop() {
             this.isRoot = true;
-            this.resetCurrentItem();
             this.currentItems = [...this.rootItems!.children];
             this.breadCrumbs = [];
         },
         goToBreadCrumb(breadCrumb: Hierarchy<BasicInfo>) {
-            this.updateCurrentItem(breadCrumb);
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
             this.currentItems = [...breadCrumb.children];

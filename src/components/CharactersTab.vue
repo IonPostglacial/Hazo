@@ -55,6 +55,8 @@
                                 <input class="flex-grow-1" type="text" v-model="selectedCharacter.name.EN" />
                                 <label>Name CN</label>
                                 <input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" />
+                                <label>Color</label>
+                                <input class="flex-grow-1" type="color" v-model="selectedCharacter.color" />
                                 <label class="item-property">Detail</label>
                                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
                                 <label class="item-property">Type</label>
@@ -74,8 +76,8 @@
                         <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
                         </characters-tree>
                         <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
-                            <flowering v-model="floweringMonths" class="limited-width">
-                            </flowering>
+                            <Flowering v-model="tracks" class="limited-width">
+                            </Flowering>
                         </div>
                         <VBox v-if="!printMode && isMapCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
                             <HBox>
@@ -228,6 +230,9 @@ export default {
     name: "CharactersTab",
     components: { AddItem, CollapsiblePanel, ColumnHeader, Flowering, GeoView, HBox, PictureBox, PopupGalery, Spacer, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel, UploadButton, VBox },
     data() {
+        const selectedCharacterId = (this.$route.params.id as string) ?? "";
+        const dsStore = useDatasetStore();
+        const selectedCharacter = dsStore.characterWithId(selectedCharacterId);
         return {
             nameStore: characterNameStore,
             stateNameStore: stateNameStore,
@@ -237,15 +242,16 @@ export default {
             maps: standardMaps,
             selectedMapIndex: 0,
             bigImages: [{id: "", hubUrl: "", url: "", label: ""} as Picture],
-            selectedCharacterId: (this.$route.params.id as string) ?? "",
+            selectedCharacterId,
             printMode: false,
-            floweringMonths: [],
+            tracks: [{ name: "test", color: selectedCharacter?.color ?? "#84bf3d", data: [] }],
         };
     },
     watch: {
         $route(to: any) {
             this.selectedCharacterId = to.params.id;
             if (this.selectedCharacter) {
+                this.tracks[0].color = this.selectedCharacter.color ?? "#84bf3d";
                 this.selectCharacter(this.selectedCharacter);
                 const char = this.selectedCharacter;
                 if (char.characterType === "discrete") {

@@ -30,7 +30,7 @@
                                     <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
                                 </HBox>
                             </HBox>
-                            <flowering v-if="isFlowering(description)" :model-value="monthsFromStates(description.states)">
+                            <flowering v-if="isFlowering(description)" :model-value="tracksFromStates(description.states)">
                             </flowering>
                             <HBox v-if="!isFlowering(description)">
                                 <div>{{ charName(description.character) }}<span class="spaced">:</span></div>
@@ -53,13 +53,24 @@ import { Description, Taxon } from '@/datatypes';
 import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, MultilangText, State } from '@/datatypes/types';
-import Flowering from "@/components/Flowering.vue";
+import Flowering, { Track } from "@/components/Flowering.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
 import HBox from './toolkit/HBox.vue';
 import Spacer from './toolkit/Spacer.vue';
 import { mapActions, mapState } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 
+function floweringFromStates(currentItems: 
+    {
+        id: string;
+        name: MultilangText;
+    }[]) {
+    return [{
+        name: "",
+        color: "#84bf3d",
+        data: Months.fromStates(currentItems),
+    }]
+}
 
 export default {
     name: "TaxonPresentation",
@@ -120,8 +131,8 @@ export default {
         descriptions(taxon: Taxon): Description[] {
             return this.taxonDescriptions(taxon);
         },
-        monthsFromStates(states: { id: string, name: MultilangText }[]): number[] {
-            return Months.fromStates(states);
+        tracksFromStates(states: { id: string, name: MultilangText }[]): Track[] {
+            return floweringFromStates(states);
         },
     }
 }

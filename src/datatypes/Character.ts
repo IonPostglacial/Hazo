@@ -7,6 +7,7 @@ import { generateId } from "@/tools/generateid";
 
 type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 	statesById?: Map<string, State>,
+	color?: string,
 	inherentState?: State,
 	states?: State[],
 	preset?: CharacterPreset,
@@ -39,6 +40,7 @@ export function createCharacter(init: CharacterInit): DiscreteCharacter {
 		type: "character",
 		characterType: "discrete",
 		states,
+		color: init.color ?? "#84bf3d",
 		inherentState: init.inherentState,
 		inapplicableStates: init.inapplicableStates ?? [],
 		requiredStates: init.requiredStates ?? [],
