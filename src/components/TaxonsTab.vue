@@ -243,7 +243,7 @@ import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { normalizePicture } from "@/datatypes/picture";
 import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
-import { DiscreteCharacter, Field, GeoMap, Picture, BasicInfo } from "@/datatypes/types";
+import { DiscreteCharacter, Field, GeoMap, Picture, Item } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
 import { familyNameStore } from "@/db-index";
 import Flowering, { Track } from "./Flowering.vue";
@@ -359,7 +359,7 @@ export default {
         specimenLocations(): { lat: number, lng: number }[] {
             return this.selectedTaxon?.specimenLocations ?? [];
         },
-        itemDescriptorTree(): Hierarchy<BasicInfo> {
+        itemDescriptorTree(): Hierarchy<Item> {
             if (typeof this.selectedTaxon !== "undefined") {
                 return this.taxonCharactersTree(this.selectedTaxon, this.charactersHierarchy);
             } else {
@@ -478,7 +478,7 @@ export default {
         addTaxonHandler(e: {value: string[], parentId: string }) {
             const [name, vernacularName, nameCN] = e.value;
             this.addTaxon(createTaxon({
-                ...createHierarchicalItem({ id: "", name: { S: name, V: vernacularName, CN: nameCN}, detail: "", pictures: [], }),
+                ...createHierarchicalItem({ id: "", type: "taxon", name: { S: name, V: vernacularName, CN: nameCN}, detail: "", pictures: [], }),
                 bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
             }));

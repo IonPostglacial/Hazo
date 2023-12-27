@@ -21,7 +21,7 @@
                         {{ item.name[field] }}
                     </div>
                 </div>
-                <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item as HierarchicalItem)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
+                <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </SquareCard>
         </HBox>
         <div v-if="floweringMode">
@@ -32,17 +32,16 @@
 
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Hierarchy, HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering, { Track } from "./Flowering.vue";
 import GeoView from "./GeoView.vue";
 import SquareCard from "./toolkit/SquareCard.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
-import { Character } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-import { DiscreteCharacter, BasicInfo, MultilangText } from "@/datatypes/types";
+import { DiscreteCharacter, Item, MultilangText } from "@/datatypes/types";
 import { mapActions } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 
@@ -63,21 +62,21 @@ export default {
     name: "SquareTreeViewer",
     components: { Flowering, GeoView, HBox, SquareCard, VBox },
     props: {
-        selectedItems: Object as PropType<string[]>,
-        rootItems: Object as PropType<Hierarchy<BasicInfo>>,
-        nameFields: Array as PropType<string[]>,
+        selectedItems: Array<string>,
+        rootItems: Object as PropType<Hierarchy<Item>>,
+        nameFields: Array<string>,
     },
     data() {
         const currentItems = [...this.rootItems!.children];
         return {
             isRoot: true,
             currentItems: currentItems,
-            breadCrumbs: [] as Hierarchy<BasicInfo>[],
+            breadCrumbs: new Array<Hierarchy<Item>>,
             menuFilter: "",
         };
     },
     watch: {
-        rootItems(newRootItems: Hierarchy<BasicInfo>) {
+        rootItems(newRootItems: Hierarchy<Item>) {
             let currentlyOpenItem = newRootItems;
             for (const breadCrumb of this.breadCrumbs) {
                 const it = currentlyOpenItem.children.find(it => it.id === breadCrumb.id);
@@ -102,7 +101,7 @@ export default {
         currentCharacter(): DiscreteCharacter|undefined {
             if (this.breadCrumbs.length === 0) {
                 if (this.rootItems?.type === "character") {
-                    const ch = this.rootItems as DiscreteCharacter;
+                    const ch = this.rootItems;
                     if (typeof ch === "undefined" || ch.characterType !== "discrete") { return undefined; }
                     return ch;
                 }
@@ -114,9 +113,9 @@ export default {
                 return ch;
             }
         },
-        itemsToDisplay(): Iterable<Hierarchy<BasicInfo>> {
+        itemsToDisplay(): Iterable<Hierarchy<Item>> {
             if (!this.currentItems) return [];
-            const shouldDisplayItem = (item: BasicInfo) => {
+            const shouldDisplayItem = (item: Item) => {
                 if (this.menuFilter !== "") {
                     return item.name.S.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
                 } else {
@@ -128,43 +127,42 @@ export default {
     },
     methods: {
         ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
-        monthsFromItem(_item: Hierarchy<BasicInfo>): Track[] {
+        monthsFromItem(_item: Hierarchy<Item>): Track[] {
             return [];
         },
         nameFieldsForItem(item: any): Iterable<string> {
             return this.nameFields?.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
         },
-        isClickable(item: Hierarchy<BasicInfo>): boolean {
+        isClickable(item: Hierarchy<Item>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);
         },
-        isSelected(item: Hierarchy<BasicInfo>): boolean {
-            if ((item as any)?.type === "character") {
-                const ch = item as Character;
-                if (ch.characterType === "discrete" && typeof ch.inherentState !== "undefined") {
-                    return this.selectedItems?.includes(ch.inherentState.id) ?? false;
+        isSelected(item: Hierarchy<Item>): boolean {
+            if (item?.type === "character") {
+                if (item.characterType === "discrete" && typeof item.inherentState !== "undefined") {
+                    return this.selectedItems?.includes(item.inherentState.id) ?? false;
                 } else {
                     return false;
                 }
             }
             return this.selectedItems?.includes(item.id) ?? false;
         },
-        isSelectable(item: Hierarchy<BasicInfo>): boolean {
+        isSelectable(item: Hierarchy<Item>): boolean {
             return item.children.length === 0;
         },
-        hasChildren(item: Hierarchy<BasicInfo>): boolean {
+        hasChildren(item: Hierarchy<Item>): boolean {
             return item.children.length > 0;
         },
-        isFlowering(item: Hierarchy<BasicInfo>): boolean {
-            return (item as HierarchicalItem).type === "character" &&
-                    (item as Character).characterType === "discrete" &&
-                    (item as DiscreteCharacter).preset === "flowering"
+        isFlowering(item: Hierarchy<Item>): boolean {
+            return item.type === "character" &&
+                item.characterType === "discrete" &&
+                item.preset === "flowering"
         },
-        isGeographic(item: Hierarchy<BasicInfo>): boolean {
-            return (item as HierarchicalItem).type === "character" &&
-                    (item as Character).characterType === "discrete" &&
-                    (item as DiscreteCharacter).preset === "map"
+        isGeographic(item: Hierarchy<Item>): boolean {
+            return item.type === "character" &&
+                item.characterType === "discrete" &&
+                item.preset === "map"
         },
-        openItem(item: Hierarchy<BasicInfo>) {
+        openItem(item: Hierarchy<Item>) {
             this.isRoot = false;
             if (item.children.length > 0) {
                 this.breadCrumbs.push(item);
@@ -175,14 +173,14 @@ export default {
                 this.$emit("item-selection-toggled", { item });
             }
         },
-        selectWithoutOpening(character: HierarchicalItem) {
+        selectWithoutOpening(character: Item) {
             if (character.type !== "character" || character.characterType !== "discrete") return;
             const ch = this.characterWithId(character.id);
             let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
             if (typeof inherentState === "undefined") {
                 const parentCharacter = this.characterWithId(character.parentId);
                 if (typeof parentCharacter !== "undefined" && parentCharacter.characterType === "discrete") {
-                    inherentState = { id: "s" + makeid(8), type: "state", name: clone(character.name), pictures: [] };
+                    inherentState = { id: "s" + makeid(8), type: "state", name: clone(character.name), detail: character.detail, pictures: [] };
                     this.addState({ state: inherentState, character: parentCharacter });
                     this.setInherentState({ state: inherentState, character });
                 }
@@ -200,7 +198,7 @@ export default {
             this.currentItems = [...this.rootItems!.children];
             this.breadCrumbs = [];
         },
-        goToBreadCrumb(breadCrumb: Hierarchy<BasicInfo>) {
+        goToBreadCrumb(breadCrumb: Hierarchy<Item>) {
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
             this.currentItems = [...breadCrumb.children];

@@ -1,4 +1,4 @@
-import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, BasicInfo } from "./types";
+import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, BasicInfo, Item } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
@@ -61,7 +61,7 @@ export function moveCharacterDown<T extends HierarchicalItem>(hierarchy: Hierarc
     }
 }
 
-export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<BasicInfo> {
+export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<Item> {
     const dependencyHierarchy = transformHierarchy(charactersHierarchy, {
         filter: character => isApplicable({ character, taxon }),
         map(character): Hierarchy<BasicInfo> {
@@ -124,6 +124,7 @@ function addFamilyPreset(ds: Dataset, taxon: Taxon) {
         id: "s-auto-" + taxon.id,
         type: "state",
         name: clone(taxon.name),
+        detail: taxon.detail,
         pictures: clone(taxon.pictures),
     });
 }
@@ -213,7 +214,8 @@ export function addCharacter(ds: Dataset, character: Character): Character {
             const newState: State = {
                 id: "s-auto-" + c.id,
                 type: "state",
-                name: Object.assign({}, c.name), pictures: []
+                name: Object.assign({}, c.name), pictures: [],
+                detail: c.detail,
             };
             addState(ds, newState, parentCharacter);
             c.inherentState = newState;

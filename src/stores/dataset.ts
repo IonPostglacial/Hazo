@@ -1,4 +1,4 @@
-import { BasicInfo, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter } from "@/datatypes";
+import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter } from "@/datatypes";
 import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree } from "@/datatypes/Dataset";
 import { defineStore } from "pinia";
 import clone from '@/tools/clone';
@@ -22,7 +22,7 @@ export const useDatasetStore = defineStore("dataset", {
         taxonParentChain(id: string | undefined): Taxon[] {
             return taxonParentChain(this.$state, id);
         },
-        taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<BasicInfo> {
+        taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<Item> {
             return taxonCharactersTree(taxon, charactersHierarchy);
         },
         createTexExporter() {

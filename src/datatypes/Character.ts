@@ -36,7 +36,7 @@ export function createCharacter(init: CharacterInit): DiscreteCharacter {
 		states = defaultStates(init);
 	}
 	return {
-		...createHierarchicalItem(init),
+		...createHierarchicalItem({ ...init, type: "character" as const }),
 		type: "character",
 		characterType: "discrete",
 		states,

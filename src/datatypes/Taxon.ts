@@ -19,7 +19,7 @@ interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
 
 export function createTaxon(init: TaxonInit): Taxon {
 	return {
-		...createHierarchicalItem(init),
+		...createHierarchicalItem({ ...init, type: "taxon" }),
 		type: "taxon",
 		states: [],
 		bookInfoByIds: init.bookInfoByIds ?? {},

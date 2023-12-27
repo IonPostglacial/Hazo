@@ -5,7 +5,7 @@ export type Book = {
     label: string;
 };
 
-export type Picture= {
+export type Picture = {
 	id: string;
 	url: string;
 	label: string;
@@ -35,23 +35,23 @@ export type MultilangText = {
 
 export type BasicInfo = {
 	id: string;
-	type: string;
 	name: MultilangText;
+	detail : string;
 	pictures: Picture[];
 };
 
 export type State = BasicInfo & {
 	type: "state";
-	description?: string;
 	color?: string;
 };
 
-export type IHierarchicalItem = BasicInfo & {
+export type AnyHierarchicalItem = BasicInfo & {
+	type: "character" | "taxon",
 	parentId?: string;
 	hidden: boolean;
 };
 
-export type Taxon = IHierarchicalItem & {
+export type Taxon = AnyHierarchicalItem & {
 	type: "taxon";
 	states: State[];
 	author: string;
@@ -70,11 +70,12 @@ export type Taxon = IHierarchicalItem & {
 	children: Taxon[];
 };
 
+export type ItemType = "state" | "character" | "taxon";
 export type CharacterPreset = "flowering" | "family" | "map";
-
 export type CharacterType = "discrete" | "range";
 
-export type AnyCharacter = IHierarchicalItem & {
+
+export type AnyCharacter = AnyHierarchicalItem & {
 	type: "character";
 	detail: string;
 	color?: string,
@@ -84,6 +85,7 @@ export type AnyCharacter = IHierarchicalItem & {
 };
 
 export type HierarchicalItem = Taxon | DiscreteCharacter | RangeCharacter;
+export type Item = State | Character | Taxon;
 
 export type RangeCharacter = AnyCharacter & {
 	characterType: "range",

@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, IHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, AnyHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates } from "@/datatypes";
 import { taxonFromId, addTaxon, addCharacter, setTaxonState, createDataset } from "@/datatypes/Dataset";
 import { createCharacter } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
@@ -126,10 +126,10 @@ function decodeState(encoded: EncodedState): State {
 		name: {
 			S: encoded.name,
 			CN: encoded.nameCN,
-			EN: encoded.nameEN,	
+			EN: encoded.nameEN,
 		},
 		pictures: picturesFromPhotos(encoded.photos),
-		description: encoded.description,
+		detail: encoded.description ?? "",
 		color: encoded.color,		
 	}
 }
@@ -141,7 +141,7 @@ function encodeState(state: State, picIds: Set<string>): EncodedState {
 		nameEN: state.name.EN ?? "",
 		nameCN: state.name.CN ?? "",
 		photos: deduplicatePicsIds(state.pictures, picIds),
-		description: state.description,
+		description: state.detail,
 		color: state.color,
 	};
 }
@@ -174,7 +174,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	};
 }
 
-function decodeHierarchicalItem(item: EncodedHierarchicalItem): IHierarchicalItem {
+function decodeHierarchicalItem(item: EncodedHierarchicalItem): AnyHierarchicalItem {
 	return createHierarchicalItem({
 		...item,
 		name: {

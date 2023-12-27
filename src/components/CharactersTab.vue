@@ -178,7 +178,7 @@
                                             <label>Name CN</label><input type="text" class="flex-grow-1" v-model="state.name.CN" />
                                             <label>Color</label><input type="color" v-model="state.color">
                                             <label>Description</label>
-                                            <textarea v-model="state.description" class="input-text" pleceholder="description"></textarea>
+                                            <textarea v-model="state.detail" class="input-text" pleceholder="description"></textarea>
                                         </div>
                                         <picture-box
                                             class="scroll"
@@ -502,7 +502,7 @@ export default {
                     type: "state",
                     name: { S: name, FR: name, EN: nameEN, CN: nameCN },
                     color,
-                    description,
+                    detail: description,
                     pictures: []
                 },
                 character: this.selectedCharacter,
