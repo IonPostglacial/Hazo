@@ -195,7 +195,7 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li>
+                                <li v-if="calendarTracks.length > 0">
                                     Calendar
                                     <ul>
                                         <li v-for="track in calendarTracks">
