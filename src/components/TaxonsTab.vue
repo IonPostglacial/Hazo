@@ -75,7 +75,7 @@
                         :options="{ title: selectedTaxon ? selectedTaxon.name : '', position }"
                     />
                 </GoogleMap>
-                <split-panel v-if="selectedTaxon" class="flex-grow-1 horizontal-flexbox scroll">
+                <split-panel v-if="selectedTaxon && taxonValue" class="flex-grow-1 horizontal-flexbox scroll">
                     <VBox v-if="selectedColumns.includes('props')" :class="['scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
                         <ColumnHeader class="stick-to-top" label="Properties"
                             @minimize="removeColumn('props')"
@@ -91,28 +91,28 @@
                             <div class="scroll large-max-width form-grid medium-padding">
                                 <div class="display-contents">
                                     <label>NS</label>
-                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="name.S" />
+                                    <input class="italic" type="text" lang="lat" spellcheck="false" v-model="taxonValue.name.S" />
                                     <label>Author</label>
-                                    <input type="text" v-model="selectedTaxon.author" />
+                                    <input type="text" v-model="taxonValue.author" />
                                 </div>
-                                <item-property-field v-model="selectedTaxon.name2" :editable="editProperties">
+                                <item-property-field v-model="taxonValue.name2" :editable="editProperties">
                                     Synonymous</item-property-field>
-                                <item-property-field v-model="name.CN" :editable="editProperties">
+                                <item-property-field v-model="taxonValue.name.CN" :editable="editProperties">
                                     中文名</item-property-field>
-                                <item-property-field v-model="name.V" :editable="editProperties">
+                                <item-property-field v-model="taxonValue.name.V" :editable="editProperties">
                                     NV</item-property-field>
-                                <item-property-field v-model="selectedTaxon.vernacularName2" :editable="editProperties">
+                                <item-property-field v-model="taxonValue.vernacularName2" :editable="editProperties">
                                     NV 2</item-property-field>
 
                                 <label>Website</label>
-                                <input type="text" v-model="selectedTaxon.website" />
+                                <input type="text" v-model="taxonValue.website" />
 
                                 <label>Meaning</label>
-                                <textarea :readonly="!editProperties" v-model="selectedTaxon.meaning"></textarea>
+                                <textarea :readonly="!editProperties" v-model="taxonValue.meaning"></textarea>
 
-                                <item-property-field v-model="selectedTaxon.noHerbier" :editable="editProperties">
+                                <item-property-field v-model="taxonValue.noHerbier" :editable="editProperties">
                                     N° Herbier</item-property-field>
-                                <item-property-field v-model="selectedTaxon.herbariumPicture" :editable="editProperties">
+                                <item-property-field v-model="taxonValue.herbariumPicture" :editable="editProperties">
                                     Herbarium Picture</item-property-field>
                                 <item-property-field v-for="extraField in extraFields" :key="extraField.id"
                                         :icon="extraField.icon"
@@ -226,7 +226,7 @@ import SplitPanel from "./toolkit/SplitPanel.vue";
 import GeoView from "./GeoView.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Description, Hierarchy, State, Taxon, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Description, Hierarchy, State, Taxon, taxonPropertiesEquals, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDownButton from "./toolkit/DropDownButton.vue";
@@ -251,8 +251,8 @@ import Months from "@/datatypes/Months";
 import { mapActions, mapState } from "pinia";
 import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
-import { multilangTextEquals } from "@/tools/multilangtextequal";
 import debounce from "@/tools/debounce";
+import clone from "@/tools/clone";
 
 
 const columns = ["menu", "props", "desc", "summary"];
@@ -282,9 +282,9 @@ export default {
         const store = useDatasetStore();
         const taxon = store.taxonWithId(selectedTaxonId);
         const taxonNameFields = [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }];
-        const name = Object.fromEntries(taxonNameFields.map(field => [field.propertyName, taxon?.name[field.propertyName] ?? ""]));
+        const taxonValue = taxon ? createTaxon(taxon) : undefined;
         return {
-            name,
+            taxonValue,
             nameFields: taxonNameFields,
             charNameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             nameStore: familyNameStore,
@@ -309,16 +309,16 @@ export default {
         },
         selectedTaxon() {
             if (this.selectedTaxon) {
-                Object.assign(this.name, this.selectedTaxon.name);
+                this.taxonValue = clone(this.selectedTaxon);
             }
         },
         selectedColumns() {
             localStorage.selectedTaxonColumns = this.selectedColumns.join(",");
         },
-        "name": {
+        "taxonValue": {
             handler: debounce(500, function (this: any) {
-                if (this.selectedTaxon && !multilangTextEquals(this.selectedTaxon.name, this.name)) {
-                    this.setTaxon({ taxon: this.selectedTaxon, props: { name: {...this.name} } });
+                if (this.selectedTaxon && !taxonPropertiesEquals(this.selectedTaxon, this.taxonValue)) {
+                    this.setTaxon({ taxon: this.selectedTaxon, props: clone(this.taxonValue) });
                 }
             }),
             deep: true,

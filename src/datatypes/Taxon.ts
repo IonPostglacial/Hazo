@@ -1,3 +1,4 @@
+import { multilangTextEquals } from "@/tools/multilangtextequal";
 import { createHierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
 import { BookInfo, State, Taxon } from "./types";
 
@@ -37,6 +38,31 @@ export function createTaxon(init: TaxonInit): Taxon {
 		extra: init.extra ?? {},
 		children: [],
 	};
+}
+
+export function taxonPropertiesEquals(taxon: Taxon, other: Taxon): boolean {
+	return multilangTextEquals(taxon.name, other.name) &&
+		taxon.author === other.author &&
+		taxon.name2 === other.name2 &&
+		taxon.vernacularName2 === other.vernacularName2 &&
+		taxon.website === other.website &&
+		taxon.noHerbier === other.noHerbier &&
+		taxon.herbariumPicture === other.herbariumPicture &&
+		taxon.detail === other.detail &&
+		taxon.page === other.page &&
+		taxon.fasc === other.fasc &&
+		taxon.meaning === other.meaning &&
+		((
+			typeof taxon.bookInfoByIds === "undefined" &&
+			typeof other.bookInfoByIds === taxon.bookInfoByIds
+		 ) ||
+			Object.entries(taxon.bookInfoByIds ?? {})
+				.every(([id, bookInfo]) => {
+					const otherBookInfo = (other.bookInfoByIds ?? {})[id];
+					return bookInfo.fasc === otherBookInfo.fasc &&
+						bookInfo.page === otherBookInfo.page &&
+						bookInfo.detail === otherBookInfo.detail;
+				}));
 }
 
 export function taxonHasState(taxon: Taxon, state: State) {
