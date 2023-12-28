@@ -1,14 +1,14 @@
 <template>
     <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <tree-menu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
+        <TreeMenu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
             :name-fields="nameFields"
             :name-store="nameStore"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacterHandler"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @unselected="selectedCharacterId = ''" @delete-item="deleteCharacterHandler" v-slot="menuProps">
+            @unselected="selectedCharacterId = ''" @delete-item="removeCharacter" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
-        </tree-menu>
+        </TreeMenu>
         <VBox>
             <HBox class="stick-to-top medium-padding thin-border no-print">
                 <button v-if="showLeftMenu" @click="showLeftMenu = false">
@@ -483,14 +483,6 @@ export default {
                 name: { S: name, FR: name, EN: nameEN, CN: nameCN }, 
                 parentId: e.parentId,
             }));
-        },
-        deleteCharacterHandler(e: { itemId: string}) {
-            const characterToDelete = this.characterWithId(e.itemId);
-            if (typeof characterToDelete !== "undefined") {
-                this.removeCharacter(characterToDelete);
-            } else {
-                console.warn(`Trying to delete character with id ${e.itemId} which doesn't exist.`, this.charactersHierarchy);
-            }
         },
         addStateHandler(e: {detail: string[]}) {
             if (this.selectedCharacter?.characterType !== "discrete") return;

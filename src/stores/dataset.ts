@@ -47,7 +47,8 @@ export const useDatasetStore = defineStore("dataset", {
                 taxons.forEach(t => addTaxon(ds, t));
             });
         },
-        removeTaxon(taxon: Taxon) {
+        removeTaxon(taxon: { id: string } |undefined) {
+            if (typeof taxon === "undefined") { return; }
             this.$patch((ds) => {
                 removeTaxon(ds, taxon.id);
             });
@@ -92,7 +93,8 @@ export const useDatasetStore = defineStore("dataset", {
         addCharacters(characters: Character[]) {
             characters.forEach(c => this.addCharacter(c));
         },
-        removeCharacter(character: Character) {
+        removeCharacter(character: { id: string } |undefined) {
+            if (typeof character === "undefined") { return; }
             removeCharacter(this.$state, character.id);
         },
         addCharacterPicture(payload: { character: Character, picture: Picture }) {

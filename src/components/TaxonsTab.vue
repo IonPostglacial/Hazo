@@ -1,12 +1,12 @@
 <template>
     <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <tree-menu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+        <TreeMenu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-store="nameStore"
             :name-fields="nameFields"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @add-item="addTaxonHandler" @unselected="selectedTaxonId = ''" @delete-item="removeTaxonHandler" v-slot="menuProps">
+            @add-item="addTaxonHandler" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
             <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
-        </tree-menu>
+        </TreeMenu>
         <HBox class="scroll flex-grow-1">
             <popup-galery :title="selectedTaxon?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
             <extra-fields-panel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false"></extra-fields-panel>
@@ -482,15 +482,6 @@ export default {
                 bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
                 parentId: e.parentId
             }));
-        },
-        removeTaxonHandler(e: { itemId: string }) {
-            const taxonToRemove = this.taxonWithId(e.itemId);
-            if (taxonToRemove) {
-                this.removeTaxon(taxonToRemove);
-            }
-        },
-        setProperty(e: { detail: { property: string, value: string } }) {
-            (this.selectedTaxon as any)[e.detail.property] = e.detail.value;
         },
         setExtraProperty(e: { detail: { property: string, value: string } }) {
             this.selectedTaxon!.extra[e.detail.property] = e.detail.value;
