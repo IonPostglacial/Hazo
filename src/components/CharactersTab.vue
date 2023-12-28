@@ -67,8 +67,8 @@
                                 <div class="display-contents" v-if="selectedCharacter.characterType === 'discrete'">
                                     <label class="item-property">Preset</label>
                                     <div>
-                                        <label><input type="radio" value="" v-model="selectedCharacter.preset">None</label>
-                                        <label><input type="radio" value="flowering" v-model="selectedCharacter.preset">Flowering</label>
+                                        <label><input type="radio" value="" v-model="preset">None</label>
+                                        <label><input type="radio" value="flowering" v-model="preset">Flowering</label>
                                     </div>
                                 </div>
                             </form>
@@ -216,7 +216,7 @@ import CharactersPresentation from "./CharactersPresentation.vue";
 import ColumnHeader from "./toolkit/ColumnHeader.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Character, State, Picture, standardMaps, GeoMap, createState, characterStates } from "@/datatypes";
+import { Character, State, Picture, standardMaps, GeoMap, createState, characterStates, CharacterPreset } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
@@ -233,7 +233,12 @@ export default {
         const selectedCharacterId = (this.$route.params.id as string) ?? "";
         const dsStore = useDatasetStore();
         const selectedCharacter = dsStore.characterWithId(selectedCharacterId);
+        let preset: CharacterPreset|undefined;
+        if (selectedCharacter && selectedCharacter.characterType === "discrete" && selectedCharacter.preset) {
+            preset = selectedCharacter.preset;
+        }
         return {
+            preset,
             nameStore: characterNameStore,
             stateNameStore: stateNameStore,
             nameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }] satisfies Array<{ label: string, propertyName: Language }>,
@@ -333,6 +338,7 @@ export default {
             if (typeof this.selectedCharacter === "undefined") { return; }
             const character = this.selectedCharacter;
             if (character.characterType === "discrete") {
+                character.preset = this.preset;
                 if (character.preset === "flowering") {
                     this.setStates({ states: Months.NAMES.map(name => createState({
                         name: { S: name, FR: name, EN: name },
