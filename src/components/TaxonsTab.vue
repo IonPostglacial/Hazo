@@ -1,15 +1,15 @@
 <template>
-    <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
+    <SplitPanel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <TreeMenu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-store="nameStore"
             :name-fields="nameFields"
             @move-item-up="moveUp" @move-item-down="moveDown"
             @add-item="addTaxonHandler" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
-            <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
+            <RouterLink class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</RouterLink>
         </TreeMenu>
         <HBox class="scroll flex-grow-1">
-            <popup-galery :title="selectedTaxon?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
-            <extra-fields-panel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false"></extra-fields-panel>
+            <PopupGalery :title="selectedTaxon?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></PopupGalery>
+            <ExtraFieldsPanel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false"></ExtraFieldsPanel>
             <VBox class="flex-grow-1">
                 <HBox class="no-print medium-padding thin-border">
                     <button v-if="selectedColumns.includes('menu')" @click="removeColumn('menu')">
@@ -21,9 +21,9 @@
                         </button>
                     </div>
                     <HBox>
-                        <router-link class="button" :to="'/print-taxons/' + selectedTaxonId" title="print">
+                        <RouterLink class="button" :to="'/print-taxons/' + selectedTaxonId" title="print">
                             <font-awesome-icon icon="fa-solid fa-print" />
-                        </router-link>
+                        </RouterLink>
                     </HBox>
                     <div class="button-group">
                         <button title="copy" v-if="(typeof selectedTaxon !== 'undefined')" type="button" @click="copyItem">
@@ -37,11 +37,11 @@
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
                             <div class="absolute white-background thin-border big-max-height scroll over-everything width-l" style="top:32px;">
-                                <tree-menu :items="taxonTree"
+                                <TreeMenu :items="taxonTree"
                                     :name-fields="nameFields"
                                     @select-item="changeSelectedTaxonParent" v-slot="menuProps">
                                     <div>{{ menuProps.item.name }}</div>
-                                </tree-menu>
+                                </TreeMenu>
                             </div>
                         </div>
                         <div v-if="!selectingParent" class="button-group">
@@ -59,7 +59,7 @@
                             <button @click="exportCSV">CSV</button>
                             <button type="button" @click="emptyZip">Folders</button>
                             <button type="button" @click="texExport">Latex{{latexProgressText}}</button>
-                            <router-link class="button" to="/taxons-stats">Stats</router-link>
+                            <RouterLink class="button" to="/taxons-stats">Stats</RouterLink>
                         </VBox>
                     </DropDownButton>
                     <input class="invisible" type="file" name="importKml" id="importKml" @change="importKml">
@@ -75,82 +75,68 @@
                         :options="{ title: selectedTaxon ? selectedTaxon.name : '', position }"
                     />
                 </GoogleMap>
-                <split-panel v-if="selectedTaxon && taxonValue" class="flex-grow-1 horizontal-flexbox scroll">
+                <SplitPanel v-if="selectedTaxon && taxonValue" class="flex-grow-1 horizontal-flexbox scroll">
                     <VBox v-if="selectedColumns.includes('props')" :class="['scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
                         <ColumnHeader class="stick-to-top" label="Properties"
                             @minimize="removeColumn('props')"
                             @maximize="zoomColumn('props')"></ColumnHeader>
-                        <picture-box :editable="editProperties"
+                        <PictureBox
                             @open-photo="openPhoto"
                             @add-photo="addItemPhoto"
                             @set-photo="setItemPhoto"
                             @delete-photo="deleteItemPhoto"
                             :pictures="selectedTaxon.pictures">
-                        </picture-box>
-                        <collapsible-panel label="Properties">
-                            <div class="scroll large-max-width form-grid medium-padding">
+                        </PictureBox>
+                        <CollapsiblePanel label="Properties">
+                            <div class="scroll large-max-width form-grid center-items medium-padding">
                                 <div class="display-contents">
                                     <label>NS</label>
                                     <input class="italic" type="text" lang="lat" spellcheck="false" v-model="taxonValue.name.S" />
                                     <label>Author</label>
                                     <input type="text" v-model="taxonValue.author" />
                                 </div>
-                                <item-property-field v-model="taxonValue.name2" :editable="editProperties">
-                                    Synonymous</item-property-field>
-                                <item-property-field v-model="taxonValue.name.CN" :editable="editProperties">
-                                    中文名</item-property-field>
-                                <item-property-field v-model="taxonValue.name.V" :editable="editProperties">
-                                    NV</item-property-field>
-                                <item-property-field v-model="taxonValue.vernacularName2" :editable="editProperties">
-                                    NV 2</item-property-field>
-
-                                <label>Website</label>
-                                <input type="text" v-model="taxonValue.website" />
+                                <ItemPropertyField v-model="taxonValue.name2">
+                                    Synonymous</ItemPropertyField>
+                                <ItemPropertyField v-model="taxonValue.name.CN">
+                                    中文名</ItemPropertyField>
+                                <ItemPropertyField v-model="taxonValue.name.V">
+                                    NV</ItemPropertyField>
+                                <ItemPropertyField v-model="taxonValue.vernacularName2">
+                                    NV 2</ItemPropertyField>
+                                <ItemPropertyField v-model="taxonValue.website">
+                                    Website</ItemPropertyField>
 
                                 <label>Meaning</label>
-                                <textarea :readonly="!editProperties" v-model="taxonValue.meaning"></textarea>
+                                <textarea v-model="taxonValue.meaning"></textarea>
 
-                                <item-property-field v-model="taxonValue.noHerbier" :editable="editProperties">
-                                    N° Herbier</item-property-field>
-                                <item-property-field v-model="taxonValue.herbariumPicture" :editable="editProperties">
-                                    Herbarium Picture</item-property-field>
-                                <item-property-field v-for="extraField in extraFields" :key="extraField.id"
+                                <ItemPropertyField v-model="taxonValue.noHerbier">
+                                    N° Herbier</ItemPropertyField>
+                                <ItemPropertyField v-model="taxonValue.herbariumPicture">
+                                    Herbarium Picture</ItemPropertyField>
+                                <ItemPropertyField v-for="extraField in extraFields" :key="extraField.id"
                                         :icon="extraField.icon"
                                         :model-value="extraProperty(extraField)"
-                                        @input="setExtraProperty"
-                                        :editable="editProperties">
+                                        @input="setExtraProperty">
                                     {{ extraField.label }}
-                                </item-property-field>
+                                </ItemPropertyField>
                             </div>
-                        </collapsible-panel>
-                        <collapsible-panel v-for="book in books" :key="book.id" :label="book.label">
-                            <div v-if="selectedTaxon && selectedTaxon.bookInfoByIds">
-                                <div v-if="selectedTaxon.bookInfoByIds[book.id]">
-                                    <label class="medium-margin">
-                                        book:&nbsp;
-                                        <input v-if="editProperties" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].fasc" />
-                                        <div class="inline-block medium-padding medium-margin" v-if="!editProperties">
-                                            {{ selectedTaxon.bookInfoByIds[book.id].fasc }}
-                                        </div>
-                                    </label>
-                                    <label class="medium-margin">
-                                        page:&nbsp;
-                                        <input v-if="editProperties" type="text" v-model="selectedTaxon.bookInfoByIds[book.id].page" />
-                                        <div class="inline-block medium-padding medium-margin" v-if="!editProperties">
-                                            {{ selectedTaxon.bookInfoByIds[book.id].page }}
-                                        </div>
-                                    </label>
-                                    <TextEditor v-if="editProperties"
-                                        v-model="selectedTaxon.bookInfoByIds[book.id].detail">
-                                    </TextEditor>
-                                    <div v-if="!editProperties" class="limited-width medium-padding" v-html="selectedTaxon.bookInfoByIds[book.id].detail"></div><br/>
+                        </CollapsiblePanel>
+                        <CollapsiblePanel v-for="book in books" :key="book.id" :label="book.label">
+                            <VBox class="medium-padding" v-if="taxonValue && taxonValue.bookInfoByIds">
+                                <div class="form-grid center-items" v-if="taxonValue.bookInfoByIds[book.id]">
+                                    <ItemPropertyField v-model="taxonValue.bookInfoByIds[book.id].fasc">
+                                    Book</ItemPropertyField>
+                                    <ItemPropertyField v-model="taxonValue.bookInfoByIds[book.id].page">
+                                    Page</ItemPropertyField>
                                 </div>
-                            </div>
-                        </collapsible-panel>
-                        <collapsible-panel label="Additional Text" id="item-detail">
-                            <TextEditor v-if="editProperties" v-model="selectedTaxon.detail"></TextEditor>
-                            <div v-if="!editProperties" class="limited-width" v-html="selectedTaxon.detail"></div>
-                        </collapsible-panel>
+                                <TextEditor
+                                    v-model="taxonValue.bookInfoByIds[book.id].detail">
+                                </TextEditor>
+                            </VBox>
+                        </CollapsiblePanel>
+                        <CollapsiblePanel label="Additional Text" id="item-detail">
+                            <TextEditor v-model="selectedTaxon.detail"></TextEditor>
+                        </CollapsiblePanel>
                     </VBox>
                     <VBox v-if="selectedColumns.includes('desc')" class="scroll flex-grow-1">
                         <ColumnHeader class="stick-to-top" label="Descriptors"
@@ -210,10 +196,10 @@
                             </ul>
                         </div>
                     </VBox>
-                </split-panel>
+                </SplitPanel>
             </VBox>
         </HBox>
-    </split-panel>
+    </SplitPanel>
 </template>
 
 <script lang="ts">
@@ -293,7 +279,6 @@ export default {
             showBigImage: false,
             showMap: false,
             bigImages: [{ id: "", url: "", label: "", hubUrl: "" }] as Picture[],
-            editProperties: true,
             latexProgressText: "",
             selectingParent: false,
             selectedTaxonId,
@@ -479,7 +464,7 @@ export default {
             const [name, vernacularName, nameCN] = e.value;
             this.addTaxon(createTaxon({
                 ...createHierarchicalItem({ id: "", type: "taxon", name: { S: name, V: vernacularName, CN: nameCN}, detail: "", pictures: [], }),
-                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: undefined, detail: "" }])),
+                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: "", detail: "" }])),
                 parentId: e.parentId
             }));
         },

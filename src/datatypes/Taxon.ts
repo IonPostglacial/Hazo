@@ -12,8 +12,8 @@ interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
 	herbariumPicture?: string;
 	website?: string;
 	noHerbier?: string;
-	fasc?: number;
-	page?: number;
+	fasc?: string;
+	page?: string;
 	detail?: string;
 	extra?: Record<string, any>;
 }
@@ -32,8 +32,8 @@ export function createTaxon(init: TaxonInit): Taxon {
 		herbariumPicture: init.herbariumPicture ?? "",
 		website: init.website ?? "",
 		noHerbier: init.noHerbier,
-		fasc: init.fasc,
-		page: init.page,
+		fasc: init.fasc ?? "",
+		page: init.page ?? "",
 		detail: init.detail ?? "",
 		extra: init.extra ?? {},
 		children: [],

@@ -1,5 +1,5 @@
 <template>
-    <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
+    <SplitPanel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <TreeMenu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
             :name-fields="nameFields"
             :name-store="nameStore"
@@ -7,7 +7,7 @@
             @add-item="addCharacterHandler"
             @move-item-up="moveUp" @move-item-down="moveDown"
             @unselected="selectedCharacterId = ''" @delete-item="removeCharacter" v-slot="menuProps">
-            <router-link class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</router-link>
+            <RouterLink class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</RouterLink>
         </TreeMenu>
         <VBox>
             <HBox class="stick-to-top medium-padding thin-border no-print">
@@ -31,23 +31,23 @@
                     <button type="button" @click="pasteCurrentStates">Paste States</button>
                 </div>
             </HBox>
-            <split-panel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
+            <SplitPanel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
                 <VBox class="scroll flex-grow-1">
                     <ColumnHeader class="stick-to-top" label="Character" :hide-actions="true"></ColumnHeader>
-                    <popup-galery v-if="!printMode" :title="selectedCharacter?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></popup-galery>
+                    <PopupGalery v-if="!printMode" :title="selectedCharacter?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></PopupGalery>
                     <VBox class="flex-grow-1">
                         <div v-if="(typeof selectedCharacter !== 'undefined' && printMode)" class="white-background">
-                            <characters-presentation :character="selectedCharacter">
-                            </characters-presentation>
+                            <CharactersPresentation :character="selectedCharacter">
+                            </CharactersPresentation>
                         </div>
-                        <picture-box v-if="!printMode && (typeof selectedCharacter !== 'undefined')" :editable="true"
+                        <PictureBox v-if="!printMode && (typeof selectedCharacter !== 'undefined')" :editable="true"
                             @add-photo="addCharacterPhoto"
                             @set-photo="setCharacterPhoto"
                             @delete-photo="deleteCharacterPhoto"
                             @open-photo="openDescriptionPhoto"
                             :pictures="selectedCharacter.pictures">
-                        </picture-box>
-                        <collapsible-panel v-if="!printMode && (typeof selectedCharacter !== 'undefined')" label="Identification">
+                        </PictureBox>
+                        <CollapsiblePanel v-if="!printMode && (typeof selectedCharacter !== 'undefined')" label="Identification">
                             <form class="large-max-width form-grid medium-padding">
                                 <label>Name FR</label>
                                 <input class="flex-grow-1" type="text" v-model="selectedCharacter.name.S" />
@@ -72,9 +72,9 @@
                                     </div>
                                 </div>
                             </form>
-                        </collapsible-panel>
-                        <characters-tree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
-                        </characters-tree>
+                        </CollapsiblePanel>
+                        <CharacterTree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
+                        </CharacterTree>
                         <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
                             <Flowering v-model="tracks" class="limited-width">
                             </Flowering>
@@ -88,13 +88,13 @@
                             <GeoView :v-if="selectedMap" :geo-map="selectedMap">
                             </GeoView>
                         </VBox>
-                        <collapsible-panel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">
+                        <CollapsiblePanel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">
                             <div class="form-grid medium-padding">
                                 <label for="range-min">From</label><input name="range-min" type="number" v-model="selectedCharacter.min" />
                                 <label for="range-max">To</label><input name="range-max" type="number" v-model="selectedCharacter.max" />
                             </div>
-                        </collapsible-panel>
-                        <collapsible-panel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
+                        </CollapsiblePanel>
+                        <CollapsiblePanel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
                             <HBox>
                                 <section v-if="isDiscreteCharacter" class="medium-margin medium-padding thin-border flex-grow-1">
                                     <label>Inherent State</label>
@@ -130,7 +130,7 @@
                                     </ul>
                                 </section>
                             </HBox>
-                        </collapsible-panel>
+                        </CollapsiblePanel>
                         <label v-if="maybeInherentState">
                             <input type="checkbox"
                                 @input="onlyAllowState(maybeInherentState)"
@@ -180,7 +180,7 @@
                                             <label>Description</label>
                                             <textarea v-model="state.detail" class="input-text" pleceholder="description"></textarea>
                                         </div>
-                                        <picture-box
+                                        <PictureBox
                                             class="scroll"
                                             :editable="true"
                                             @add-photo="addStatePhoto(state, $event)"
@@ -188,7 +188,7 @@
                                             @delete-photo="deleteStatePhoto(state, $event)"
                                             @open-photo="openStatePhoto(state)"
                                             :pictures="state.pictures">
-                                        </picture-box>
+                                        </PictureBox>
                                     </label>
                                 </VBox>
                             </li>
@@ -196,10 +196,11 @@
                     </div>
                     <add-item class="stick-to-bottom" @add-item="addStateHandler" :name-fields="nameFields" :name-store="stateNameStore"></add-item>
                 </VBox>
-            </split-panel>
+            </SplitPanel>
         </VBox>
-    </split-panel>
+    </SplitPanel>
 </template>
+
 <script lang="ts">
 import AddItem from "./toolkit/AddItem.vue";
 import HBox from "./toolkit/HBox.vue";

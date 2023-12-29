@@ -14,7 +14,7 @@ export type Picture = {
 
 export type BookInfo = {
     fasc: string;
-    page: number|undefined;
+    page: string;
     detail: string;
 };
 
@@ -61,8 +61,8 @@ export type Taxon = AnyHierarchicalItem & {
 	herbariumPicture: string;
 	website: string;
 	noHerbier: string|undefined;
-	fasc: number|undefined;
-	page: number|undefined;
+	fasc: string;
+	page: string;
 	detail : string;
 	bookInfoByIds?: Record<string, BookInfo>
 	specimenLocations?: { lat: number, lng: number }[];
