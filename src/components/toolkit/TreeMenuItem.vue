@@ -12,9 +12,10 @@
                 :class="['medium-height', 'medium-line-height', 'flex-grow-1', 'center-items', 'cell', { 'background-color-1': selected }]">
             <HBox class="center-items flex-grow-1">
                 <label class="horizontal-flexbox flex-grow-1 unselectable" v-on:click="select">
-                    <slot v-bind:item="{id: item.id, name: itemName(nameField.propertyName) }">
-                        <div :class="['flex-grow-1', 'nowrap', { 'warning-color': item.warning }]">{{ itemName(nameField.propertyName) }}</div>
+                    <slot v-if="!selected" v-bind:item="{id: item.id, name: itemName(nameField.propertyName) }">
+                        <div :class="['flex-grow-1', 'nowrap']">{{ itemName(nameField.propertyName) }}</div>
                     </slot>
+                    <div v-if="selected" @click="unselect" class="flex-grow-1 nowrap text clickable">{{ itemName(nameField.propertyName) }}</div>
                 </label>
             </HBox>
         </HBox>
@@ -36,6 +37,7 @@
                 :init-open-items="initOpenItems"
                 :field-names="fieldNames" :item="child" :buttons="buttons"
                 @selected="$emit('selected', $event)"
+                @unselected="$emit('unselected')"
                 @add-item="$emit('add-item', $event)"
                 @delete-item="$emit('delete-item', $event)" 
                 @button-clicked="$emit('button-clicked', $event)"
@@ -81,7 +83,7 @@ export default {
     name: "TreeMenuItem",
     props: {
         itemBus: Object as PropType<MenuEventHub>,
-        item: { type: Object as PropType<MenuItem & { warning?: boolean }>, required: true },
+        item: { type: Object as PropType<MenuItem>, required: true },
         buttons: Array as PropType<Array<Button>>,
         fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,
         editable: Boolean,
@@ -106,7 +108,7 @@ export default {
         },
         prettyId(): string {
             for (const prefix of knownPrefixes) {
-                if (this.item?.id.startsWith(prefix)) {
+                if (this.item.id.startsWith(prefix)) {
                     return this.item.id.substring(prefix.length);
                 }
             }
@@ -132,6 +134,9 @@ export default {
         },
         select() {
             this.$emit("selected", this.item?.id);
+        },
+        unselect() {
+            this.$emit("unselected");
         },
         toggleOpen() {
             this.itemBus?.emitToggle(this.item!.id);

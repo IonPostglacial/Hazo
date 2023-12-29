@@ -16,13 +16,13 @@ import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faChevronRight, faCh
         faLanguage, faCaretDown, faCaretUp, faPlus, faMinus, faPrint,
         faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faClose,
         faBold, faItalic, faUnderline,
-        faCopy, faPaste, faDownload, faUpload, faFileLines, faSquareXmark } from "@fortawesome/free-solid-svg-icons";
+        faCopy, faPaste, faDownload, faUpload, faFileLines } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faChevronRight, faChevronUp, faChevronDown,
     faCaretDown, faCaretUp, faLanguage, faPlus, faMinus, faPrint, 
     faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faClose,
     faBold, faItalic, faUnderline,
-    faCopy, faPaste, faDownload, faUpload, faSquareXmark, faFileLines);
+    faCopy, faPaste, faDownload, faUpload, faFileLines);
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),
@@ -45,6 +45,7 @@ const router = VueRouter.createRouter({
 });
 
 const pinia = createPinia();
+pinia.use(({ store }) => { store.router = Vue.markRaw(router) });
 const app = Vue.createApp(App);
 app.use(pinia);
 app.use(router);

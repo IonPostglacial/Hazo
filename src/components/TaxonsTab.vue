@@ -3,8 +3,9 @@
         <TreeMenu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-store="nameStore"
             :name-fields="nameFields"
+            @closed="removeColumn('menu')"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @add-item="addTaxonHandler" @unselected="selectedTaxonId = ''" @delete-item="removeTaxon" v-slot="menuProps">
+            @add-item="addTaxonHandler" @unselected="unselectTaxon" @delete-item="removeTaxon" v-slot="menuProps">
             <RouterLink class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</RouterLink>
         </TreeMenu>
         <HBox class="scroll flex-grow-1">
@@ -12,9 +13,6 @@
             <ExtraFieldsPanel :showFields="showFields" :extraFields="extraFields" @closed="showFields = false"></ExtraFieldsPanel>
             <VBox class="flex-grow-1">
                 <HBox class="no-print medium-padding thin-border">
-                    <button v-if="selectedColumns.includes('menu')" @click="removeColumn('menu')">
-                        <font-awesome-icon icon="fa-solid fa-arrow-left" />
-                    </button>
                     <div class="button-group">
                         <button v-for="col in minimizedColumns" @click="addColumn(col)">
                             {{ columnName(col) }}
@@ -39,7 +37,7 @@
                             <div class="absolute white-background thin-border big-max-height scroll over-everything width-l" style="top:32px;">
                                 <TreeMenu :items="taxonTree"
                                     :name-fields="nameFields"
-                                    @select-item="changeSelectedTaxonParent" v-slot="menuProps">
+                                    @closed="closeSelectParentDropdown" @select-item="changeSelectedTaxonParent" v-slot="menuProps">
                                     <div>{{ menuProps.item.name }}</div>
                                 </TreeMenu>
                             </div>
@@ -231,7 +229,7 @@ import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, GeoMap, Picture, Item } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
-import { familyNameStore } from "@/db-index";
+import { Language, familyNameStore } from "@/db-index";
 import Flowering, { Track } from "./Flowering.vue";
 import Months from "@/datatypes/Months";
 import { mapActions, mapState } from "pinia";
@@ -267,7 +265,7 @@ export default {
         const selectedTaxonId = this.$route.params.id as string ?? "";
         const store = useDatasetStore();
         const taxon = store.taxonWithId(selectedTaxonId);
-        const taxonNameFields = [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }];
+        const taxonNameFields: Array<{ label: string, propertyName: Language }> = [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }];
         const taxonValue = taxon ? createTaxon(taxon) : undefined;
         return {
             taxonValue,
@@ -376,7 +374,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useHazoStore, ["pasteTaxon", "selectTaxon", "copyTaxon"]),
+        ...mapActions(useHazoStore, ["pasteTaxon", "selectTaxon", "copyTaxon", "unselectTaxon"]),
         ...mapActions(useDatasetStore, [
             "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxon", "setTaxonPicture", "removeTaxonPicture",
             "characterWithId", "taxonWithId",

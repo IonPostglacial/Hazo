@@ -4,7 +4,18 @@
             <HBox class="thin-margin center-items">
                 <input class="flex-grow-1" type="search" @input="updateSearchFilter" :value="visibleFilter" placeholder="Filter" />
                 <Spacer></Spacer>
-                <HBox class="button-group">
+                <button @click="$emit('closed')">
+                    <font-awesome-icon icon="fa-solid fa-close" />
+                </button>
+            </HBox>
+            <HBox>
+                <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox button-group">
+                    <li v-for="nameField in nameFields" :key="nameField.propertyName" :class="['button', 'no-list-style', { 'background-color-1': visibleColumns[nameField.propertyName] }]" @click="toggleColumnVisibility(nameField.propertyName)">
+                        {{ nameField.label }}
+                    </li>
+                </ul>
+                <Spacer></Spacer>
+                <HBox class="button-group thin-margin">
                     <button type="button" v-on:click="openAll">
                         <font-awesome-icon icon="fa-solid fa-plus" />
                     </button>
@@ -13,14 +24,6 @@
                     </button>
                 </HBox>
             </HBox>
-            <ul v-if="nameFields && nameFields.length > 1" class="thin-margin horizontal-flexbox button-group">
-                <button v-if="selectedItem" @click="$emit('unselected')" title="unselect">
-                    <font-awesome-icon icon="fa-solid fa-square-xmark" />
-                </button>
-                <li v-for="nameField in nameFields" :key="nameField.propertyName" :class="['button', 'no-list-style', { 'background-color-1': visibleColumns[nameField.propertyName] }]" @click="toggleColumnVisibility(nameField.propertyName)">
-                    {{ nameField.label }}
-                </li>
-            </ul>
         </VBox>
         <ul :class="['menu', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
             <TreeMenuItem v-for="(item, index) in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
@@ -32,6 +35,7 @@
                 :init-open-items="initOpenItems"
                 :path="[index]"
                 @selected="selectItem"
+                @unselected="unselect"
                 @add-item="addItem"
                 @delete-item="deleteItem" 
                 @button-clicked="buttonClicked"
@@ -56,7 +60,7 @@ import Spacer from "./Spacer.vue";
 import { HierarchicalItem } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import debounce from "@/tools/debounce";
 import { iterHierarchy } from "@/datatypes/hierarchy";
-import { WordStore } from "@/db-index";
+import { Language, WordStore } from "@/db-index";
 
 
 export default {
@@ -65,7 +69,7 @@ export default {
         items: { type: Object as PropType<MenuItem>, required: true },
         buttons: Array as PropType<Button[]>,
         editable: Boolean,
-        nameFields: Array as PropType<Array<{ label: string, propertyName: string }>>,
+        nameFields: Array as PropType<Array<{ label: string, propertyName: Language }>>,
         selectedItem: String,
         initOpen: Boolean,
         nameStore: Object as PropType<WordStore>,
@@ -131,6 +135,9 @@ export default {
         },
         selectItem(id: string) {
             this.$emit("select-item", id);
+        },
+        unselect() {
+            this.$emit("unselected");
         },
         openAll() {
             this.itemsBus.emitOpenAll();

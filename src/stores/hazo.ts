@@ -55,6 +55,14 @@ export const useHazoStore = defineStore("hazo", {
         selectCharacter(character: Character) {
             this.selectedCharacter = character.id;
         },
+        unselectTaxon() {
+            this.selectedTaxon = "";
+            this.router.push("/taxons");
+        },
+        unselectCharacter() {
+            this.selectedCharacter = "";
+            this.router.push("/characters");
+        },
         copyTaxon(taxon: Taxon) {
             this.copiedTaxon = cloneHierarchy(taxon);
         },

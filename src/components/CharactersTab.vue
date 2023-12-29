@@ -3,17 +3,15 @@
         <TreeMenu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
             :name-fields="nameFields"
             :name-store="nameStore"
+            @closed="showLeftMenu = false"
             @select-item="selectCharacter" :selected-item="selectedCharacter ? selectedCharacter.id : ''"
             @add-item="addCharacterHandler"
             @move-item-up="moveUp" @move-item-down="moveDown"
-            @unselected="selectedCharacterId = ''" @delete-item="removeCharacter" v-slot="menuProps">
+            @unselected="unselectCharacter" @delete-item="removeCharacter" v-slot="menuProps">
             <RouterLink class="flex-grow-1 nowrap unstyled-anchor" :to="'/characters/' + menuProps.item.id">{{ menuProps.item.name }}</RouterLink>
         </TreeMenu>
         <VBox>
             <HBox class="stick-to-top medium-padding thin-border no-print">
-                <button v-if="showLeftMenu" @click="showLeftMenu = false">
-                    <font-awesome-icon icon="fa-solid fa-arrow-left" />
-                </button>
                 <button v-if="!showLeftMenu" @click="showLeftMenu = true">
                     <font-awesome-icon icon="fa-solid fa-arrow-right" />
                 </button>
@@ -324,7 +322,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useHazoStore, ["addStateToAllowList", "addStateToDenyList", "copyCharacter", "copyStates", "pasteCharacter", "pasteStates", "selectCharacter"]),
+        ...mapActions(useHazoStore, ["addStateToAllowList", "addStateToDenyList", "copyCharacter", "copyStates", "pasteCharacter", "pasteStates", "selectCharacter", "unselectCharacter"]),
         ...mapActions(useDatasetStore, [
             "addCharacter", "removeCharacter", 
             "moveCharacterDown", "moveCharacterUp",
