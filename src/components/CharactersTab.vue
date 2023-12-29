@@ -73,8 +73,8 @@
                                 </div>
                             </form>
                         </CollapsiblePanel>
-                        <CharacterTree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
-                        </CharacterTree>
+                        <CharactersTree v-if="!printMode && selectedCharacter && selectedCharacter.characterType === 'discrete' && !selectedCharacter.preset" class="flex-grow-1" :selected-character="selectedCharacter">
+                        </CharactersTree>
                         <div v-if="!printMode && isFloweringCharacter" class="centered-text medium-margin thin-border medium-padding white-background">
                             <Flowering v-model="tracks" class="limited-width">
                             </Flowering>
