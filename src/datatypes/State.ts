@@ -6,6 +6,7 @@ type StateInit = Omit<HierarchicalItemInit, "type"|"children">;
 export function createState(init: StateInit): State {
     return {
         id: init.id ?? "", 
+        path: init.path,
         type: "state", 
         name: { S: init.name.S, V: init.name.V ?? "", CN: init.name.CN ?? "", EN: init.name.EN ?? "", FR: init.name.FR ?? "" },
         detail: init.detail ?? "",

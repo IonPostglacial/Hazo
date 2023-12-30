@@ -26,14 +26,14 @@
             </HBox>
         </VBox>
         <ul :class="['menu', 'big-padding-right', 'tree-grid', 'tree-cols-' + columnsToDisplay.length, { editable: editable }]">
-            <TreeMenuItem v-for="(item, index) in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
+            <TreeMenuItem v-for="item in itemsToDisplay" :key="item.id" :item-bus="itemsBus"
                 :item="item"
                 :editable="editable" :buttons="buttons"
                 :field-names="columnsToDisplay"
                 :selected-item="selectedItem"
                 :init-open="initOpen"
                 :init-open-items="initOpenItems"
-                :path="[index]"
+                :path="[items.id]"
                 @selected="selectItem"
                 @unselected="unselect"
                 @add-item="addItem"
@@ -45,7 +45,7 @@
             </TreeMenuItem>
         </ul>
         <div class="flex-grow-1">&nbsp;</div>
-        <AddItem v-if="editable" class="stick-to-bottom" :name-fields="nameFields" :name-store="nameStore" @add-item="addItem({ value: $event.detail })"></AddItem>
+        <AddItem v-if="editable" class="stick-to-bottom" :name-fields="nameFields" :name-store="nameStore" @add-item="addItem({ value: $event.detail, path: [items.id] })"></AddItem>
     </VBox> 
 </template>
 
@@ -145,7 +145,7 @@ export default {
         closeAll() {
             this.itemsBus.emitCloseAll();
         },
-        addItem(e: { value: string[], parentId?: string }) {
+        addItem(e: { value: string[], parentId?: string, path: string[] }) {
             this.$emit("add-item", e);
         },
         deleteItem(e: string) {

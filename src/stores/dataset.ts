@@ -9,8 +9,8 @@ import saveSDD from "@/sdd-save";
 export const useDatasetStore = defineStore("dataset", {
     state: (): Dataset => createDataset({ 
         id: "",
-        taxonsHierarchy: createTaxon({ id: "t0", name: { S: "<TOP>" } }),
-        charactersHierarchy: createCharacter({ id: "c0", name: { S: "<TOP>" } }),
+        taxonsHierarchy: createTaxon({ id: "t0", path: [], name: { S: "<TOP>" } }),
+        charactersHierarchy: createCharacter({ id: "c0", path: [], name: { S: "<TOP>" } }),
         books: standardBooks,
         extraFields: new Array<Field>(),
         statesById: new Map(),
@@ -221,8 +221,8 @@ export const useDatasetStore = defineStore("dataset", {
             }
         },
         resetData() {
-            this.taxonsHierarchy = createTaxon({ id: "t0", name: { S: "<TOP>" } });
-            this.charactersHierarchy = createCharacter({ id: "c0", name: { S: "<TOP>" } });
+            this.taxonsHierarchy = createTaxon({ id: "t0", path: [], name: { S: "<TOP>" } });
+            this.charactersHierarchy = createCharacter({ id: "c0", path: [], name: { S: "<TOP>" } });
         },
         encodeToHazoJson(): EncodedDataset {
             return encodeDataset(this);

@@ -79,11 +79,9 @@ export default {
     methods: {
         ...mapActions(useDatasetStore, ["taxonWithId"]),
         getFamilyName(t: Taxon|undefined): string {
-            var family = t;
-            while (typeof family?.parentId !== "undefined") {
-                family = this.taxonWithId(family.parentId);
-            }
-            return family?.name.S ?? "";
+            if (typeof t === "undefined") { return "" }
+            if (t.path.length < 2) { return t.name.S }
+            return this.taxonWithId(t.path[1])?.name.S ?? "";
         },
         selectSpeciesTable() {
             var range, sel, el = this.$refs.speciestable as Node;

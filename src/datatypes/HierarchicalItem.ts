@@ -1,9 +1,9 @@
 import { Hierarchy } from "./hierarchy";
-import { HierarchicalItem, AnyHierarchicalItem, MultilangText, Picture } from "./types";
+import { AnyHierarchicalItem, MultilangText, Picture, AnyItem } from "./types";
 
 export interface HierarchicalItemInit {
-	parentId?: string;
 	id?: string,
+	path: string[],
 	type: "character" | "taxon",
 	name: MultilangText;
 	detail?: string,
@@ -13,8 +13,8 @@ export interface HierarchicalItemInit {
 
 export function createHierarchicalItem(init : HierarchicalItemInit): Hierarchy<AnyHierarchicalItem> & { detail: string } {
 	return {
-		parentId: init.parentId,
 		id: init.id ?? "",
+		path: init.path,
 		type: init.type,
 		detail: init.detail ?? "",
 		children: [],
@@ -24,6 +24,6 @@ export function createHierarchicalItem(init : HierarchicalItemInit): Hierarchy<A
 	};
 }
 
-export function isTopLevel(item: HierarchicalItem): boolean {
-	return typeof item.parentId === "undefined";
+export function isTopLevel(item: AnyItem): boolean {
+	return item.path.length === 0;
 }

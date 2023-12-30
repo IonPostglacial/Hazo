@@ -92,7 +92,7 @@
                                 <label for="range-max">To</label><input name="range-max" type="number" v-model="selectedCharacter.max" />
                             </div>
                         </CollapsiblePanel>
-                        <CollapsiblePanel v-if="!printMode && selectedCharacter && selectedCharacter.parentId" label="Dependencies">
+                        <CollapsiblePanel v-if="!printMode && selectedCharacter && selectedCharacter.path.length > 0" label="Dependencies">
                             <HBox>
                                 <section v-if="isDiscreteCharacter" class="medium-margin medium-padding thin-border flex-grow-1">
                                     <label>Inherent State</label>
@@ -149,6 +149,7 @@
                         <ul class="no-list-style flex-grow-1">
                             <li v-for="state in statesToDisplay" :key="state.id" class="white-background thin-border">
                                 <VBox>
+                                    <div>{{ state.path.join(" > ") }}</div>
                                     <HBox class="thin-border center-items">
                                         <div class="button-group">
                                             <button @click="moveCurrentStateUp(state)">
@@ -223,6 +224,7 @@ import { Language, characterNameStore, stateNameStore } from "@/db-index";
 import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
 import { mapActions, mapState } from "pinia";
+import { getParentId, pathToItem } from "@/datatypes/Dataset";
 
 
 export default {
@@ -301,7 +303,7 @@ export default {
             return this.characterWithId(this.selectedCharacterId);
         },
         parentStates(): State[] {
-            const parentId = this.selectedCharacter?.parentId;
+            const parentId = this.selectedCharacter ? getParentId(this.selectedCharacter) : undefined;
             if (typeof parentId === "undefined")
                 return[];
             const parent = this.characterWithId(parentId);
@@ -340,6 +342,7 @@ export default {
                 character.preset = this.preset;
                 if (character.preset === "flowering") {
                     this.setStates({ states: Months.NAMES.map(name => createState({
+                        path: [...character.path, character.id],
                         name: { S: name, FR: name, EN: name },
                     })), character });
                 }
@@ -482,20 +485,22 @@ export default {
             this.showBigImage = true;
             this.bigImages = state.pictures;
         },
-        addCharacterHandler(e: { value: string[], parentId: string }) {
+        addCharacterHandler(e: { value: string[], path: string[] }) {
             const [name, nameEN, nameCN] = e.value;
             this.addCharacter(createCharacter({
-                name: { S: name, FR: name, EN: nameEN, CN: nameCN }, 
-                parentId: e.parentId,
+                path: e.path,
+                name: { S: name, FR: name, EN: nameEN, CN: nameCN },
             }));
         },
         addStateHandler(e: {detail: string[]}) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
             const [name, nameEN, nameCN, color, description] = e.detail;
+            const parent = this.selectedCharacter;
             this.addState({
                 state: {
                     id: "",
+                    path: pathToItem(parent),
                     type: "state",
                     name: { S: name, FR: name, EN: nameEN, CN: nameCN },
                     color,

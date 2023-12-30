@@ -5,20 +5,27 @@ import clone from "@/tools/clone";
 import { generateId } from "@/tools/generateid";
 
 
+export function getParentId(item: AnyItem): string|undefined {
+    if (item.path.length > 0) {
+        return item.path[item.path.length - 1];
+    }
+    return undefined;
+}
+
+export function pathToItem(item: AnyItem): string[] {
+    return [...item.path, item.id];
+}
+
 function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>): T {
     const it = cloneHierarchy(item);
-    const declaredParent = it.parentId ? itemsByIds.get(it.parentId) : undefined;
+    const declaredParent = it.path.length > 0 ? itemsByIds.get(getParentId(it) ?? "") : undefined;
     if (typeof declaredParent === "undefined") {
-        console.warn("Error importing character", it.id, "parent missing:", it.parentId);
-        it.parentId = undefined;
+        console.warn(`Error importing item '${it.id}': parent missing: '${it.path.join(" > ")}'`);
+        it.path = [];
     }
-    const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
-    const newIdsByOldIds = new Map<string, string>();
+    const parent = declaredParent ?? hierarchy;
 
     forEachHierarchy(it, child => {
-        if (newIdsByOldIds.has(child.parentId ?? "")) {
-            child.parentId = newIdsByOldIds.get(child.parentId ?? "");
-        }
         if (!child.id || itemsByIds.has(child.id)) {
             child.id = "";
             child.id = generateId(prefix, itemsByIds, child);
@@ -32,7 +39,7 @@ function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarch
 function removeItem<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, id: string): T | undefined {
     const it = itemsByIds.get(id);
     if (typeof it === "undefined") return undefined;
-    const parent = it.parentId ? itemsByIds.get(it.parentId) ?? hierarchy : hierarchy;
+    const parent = itemsByIds.get(getParentId(it) ?? "") ?? hierarchy;
     const i = parent.children.findIndex(t => t.id === id);
     parent.children.splice(i, 1);
     itemsByIds.delete(id);
@@ -40,7 +47,7 @@ function removeItem<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsBy
 }
 
 export function moveCharacterUp<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>) {
-    const parent = item.parentId ? itemsByIds.get(item.parentId) ?? hierarchy : hierarchy;
+    const parent = itemsByIds.get(getParentId(item) ?? "") ?? hierarchy;
     const siblings = parent.children;
     const index = siblings.findIndex(it => it.id === item.id);
     if (index > 0) {
@@ -51,7 +58,7 @@ export function moveCharacterUp<T extends HierarchicalItem>(hierarchy: Hierarchy
 }
 
 export function moveCharacterDown<T extends HierarchicalItem>(hierarchy: Hierarchy<T>, itemsByIds: Map<string, Hierarchy<T>>, item: Hierarchy<T>) {
-    const parent = item.parentId ? itemsByIds.get(item.parentId) ?? hierarchy : hierarchy;
+    const parent = itemsByIds.get(getParentId(item) ?? "") ?? hierarchy;
     const siblings = parent.children;
     const index = siblings.findIndex(it => it.id === item.id);
     if (index < siblings.length - 1) {
@@ -85,15 +92,16 @@ export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy
 }
 
 export function taxonParentChain(ds: Dataset, id: string | undefined): Taxon[] {
+    const taxon = taxonFromId(ds, id);
+    if (typeof taxon === "undefined") { return []; }
     const parents: Taxon[] = [];
-    while (typeof id !== undefined) {
-        const taxon = taxonFromId(ds, id);
-        if (typeof taxon !== "undefined") {
-            parents.unshift(taxon);
-            id = taxon.parentId;
-        } else {
-            break;
+    for (const parentId of taxon.path) {
+        const parent = ds.taxonsByIds.get(parentId);
+        if (typeof parent === "undefined") {
+            console.warn("invalid taxon path:", parentId, taxon.path);
+            continue;
         }
+        parents.push(parent);
     }
     return parents;
 }
@@ -118,11 +126,11 @@ export function taxonDescriptions(ds: Dataset, taxon: Taxon): Array<Description>
 }
 
 function addFamilyPreset(ds: Dataset, taxon: Taxon) {
-    if (taxon.parentId) return;
+    if (taxon.path.length > 0) return;
 
     ds.presetStates.family.push({
-        id: "s-auto-" + taxon.id,
-        type: "state",
+        id: generateId("s", ds.statesById, { id: "" }),
+        familyId: taxon.id,
         name: clone(taxon.name),
         detail: taxon.detail,
         pictures: clone(taxon.pictures),
@@ -141,7 +149,7 @@ function isApplicable({ character, taxon }: { character: Character, taxon: Taxon
     return taxonHasAllRequiredStates && taxonHasNoInapplicableState;
 }
 
-function removeStateWithoutCharacter(ds: Dataset, state: State) {
+function removeStateWithoutCharacter(ds: Dataset, state: { id: string }) {
     ds.statesById.delete(state.id);
 }
 
@@ -184,7 +192,7 @@ export function setTaxon(ds: Dataset, id: string, props: Partial<Taxon>) {
 export function removeTaxon(ds: Dataset, id: string) {
     const taxon = removeItem(ds.taxonsHierarchy, ds.taxonsByIds, id);
     if (typeof taxon === "undefined") return;
-    const index = ds.presetStates.family.findIndex(family => family.id === "s-auto-" + taxon.id);
+    const index = ds.presetStates.family.findIndex(family => family.familyId === taxon.id);
 
     if (index >= 0) {
         removeStateWithoutCharacter(ds, ds.presetStates.family[index]);
@@ -195,10 +203,11 @@ export function removeTaxon(ds: Dataset, id: string) {
 export function changeTaxonParent(ds: Dataset, id: string, newParentId: string) {
     const taxon = taxonFromId(ds, id);
     if (typeof taxon === "undefined") { return; }
-    const oldParent = taxonFromId(ds, taxon.parentId) ?? ds.taxonsHierarchy;
+    const oldParent = taxonFromId(ds, getParentId(taxon)) ?? ds.taxonsHierarchy;
     const i = oldParent.children.findIndex(t => t.id === id);
     oldParent.children.splice(i, 1);
     const parent = taxonFromId(ds, newParentId) ?? ds.taxonsHierarchy;
+    taxon.path = pathToItem(parent);
     parent.children.push(taxon);
 }
 
@@ -209,10 +218,11 @@ export function addCharacter(ds: Dataset, character: Character): Character {
         c.states.forEach(s => indexState(ds, s));
     }
     if (autoid && c.characterType === "discrete") {
-        const parentCharacter = characterFromId(ds, c.parentId);
+        const parentCharacter = characterFromId(ds, getParentId(c));
         if (parentCharacter?.characterType === "discrete") {
             const newState: State = {
                 id: "s-auto-" + c.id,
+                path: [...parentCharacter.path, parentCharacter.id],
                 type: "state",
                 name: Object.assign({}, c.name), pictures: [],
                 detail: c.detail,
@@ -235,7 +245,7 @@ export function removeCharacter(ds: Dataset, id: string) {
     if (character.characterType === "discrete") {
         character.states.forEach(s => ds.statesById.delete(s.id));
     }
-    const parent = characterFromId(ds, character.parentId);
+    const parent = characterFromId(ds, getParentId(character));
     if (parent && parent.characterType === "discrete") {
         const inherentStateId = "s-auto-" + id;
         for (const state of parent.states) {
@@ -266,6 +276,7 @@ export function removeTaxonState(ds: Dataset, taxonId: string, state: State) {
 
 export function addState(ds: Dataset, state: State, character: DiscreteCharacter): State {
     state.id = generateId("s", ds.statesById, state);
+    state.path = pathToItem(character);
     ds.statesById.set(state.id, state);
     character.states.push(state);
     return state;

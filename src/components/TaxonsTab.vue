@@ -346,7 +346,7 @@ export default {
             if (typeof this.selectedTaxon !== "undefined") {
                 return this.taxonCharactersTree(this.selectedTaxon, this.charactersHierarchy);
             } else {
-                return createCharacter({ id: "c0", name: { S: '' }, detail: ""});
+                return createCharacter({ id: "c0", path: [], name: { S: '' }, detail: ""});
             }
         },
         itemFloweringDescription(): Description[] {
@@ -458,12 +458,17 @@ export default {
             }
             this.selectingParent = false;
         },
-        addTaxonHandler(e: {value: string[], parentId: string }) {
+        addTaxonHandler(e: {value: string[], path: string[] }) {
             const [name, vernacularName, nameCN] = e.value;
             this.addTaxon(createTaxon({
-                ...createHierarchicalItem({ id: "", type: "taxon", name: { S: name, V: vernacularName, CN: nameCN}, detail: "", pictures: [], }),
+                ...createHierarchicalItem({ 
+                    id: "",
+                    path: e.path,
+                    type: "taxon", 
+                    name: { S: name, V: vernacularName, CN: nameCN}, 
+                    detail: "", pictures: [],
+                }),
                 bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: "", detail: "" }])),
-                parentId: e.parentId
             }));
         },
         setExtraProperty(e: { detail: { property: string, value: string } }) {

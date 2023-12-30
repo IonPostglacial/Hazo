@@ -35,6 +35,7 @@ export type MultilangText = {
 
 export type AnyItem = {
 	id: string;
+	path: string[];
 	name: MultilangText;
 	detail : string;
 	pictures: Picture[];
@@ -47,7 +48,6 @@ export type State = AnyItem & {
 
 export type AnyHierarchicalItem = AnyItem & {
 	type: "character" | "taxon",
-	parentId?: string;
 	hidden: boolean;
 };
 
@@ -136,5 +136,5 @@ export type Dataset = {
     statesById: Map<string, State>,
     taxonsByIds: Map<string, Taxon>,
     charactersByIds: Map<string, Character>,
-    presetStates: Record<"family", State[]>,
+    presetStates: Record<"family", { id: string, familyId: string, name: MultilangText, detail: string, pictures: Picture[] }[]>,
 };

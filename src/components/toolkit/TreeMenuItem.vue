@@ -30,9 +30,9 @@
             <div class="close" @click="deleteItem"></div>
         </HBox>
         <ul v-if="open">
-            <TreeMenuItem v-for="(child, index) in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
+            <TreeMenuItem v-for="child in childrenToDisplay" :item-bus="itemBus" :key="child.id" :editable="editable"       
                 :init-open="initOpen"
-                :path="[...path, index]"
+                :path="[...path, child.id]"
                 :selected-item="selectedItem"
                 :init-open-items="initOpenItems"
                 :field-names="fieldNames" :item="child" :buttons="buttons"
@@ -64,7 +64,7 @@ import VBox from "./VBox.vue";
 
 export type MenuItem = {
     id: string,
-    parentId?: string,
+    path: string[],
     type: string,
     name: Partial<Record<string, string>>,
     children: MenuItem[],
@@ -90,7 +90,7 @@ export default {
         selectedItem: String,
         initOpen: Boolean,
         initOpenItems: Array as PropType<Array<string>>,
-        path: { type: Array as PropType<Array<number>>, required: true },
+        path: { type: Array as PropType<Array<string>>, required: true },
     },
     data() {
         return {
@@ -142,13 +142,13 @@ export default {
             this.itemBus?.emitToggle(this.item!.id);
         },
         addItem({ detail }: { detail: string[] }) {
-            this.$emit("add-item", { value: detail, parentId: this.item?.id });
+            this.$emit("add-item", { value: detail, path: [...this.item.path, this.item.id] });
         },
         deleteItem() {
-            this.$emit("delete-item", { parentId: this.item?.parentId, id: this.item?.id, itemId: this.item?.id });
+            this.$emit("delete-item", { path: this.item.path, id: this.item.id, itemId: this.item.id });
         },
         buttonClicked(buttonId: string) {
-            this.$emit("button-click", { buttonId, parentId: this.item?.parentId, id: this.item?.id, itemId: this.item?.id });
+            this.$emit("button-click", { buttonId, path: this.item.path, id: this.item.id, itemId: this.item.id });
         },
         moveUp() {
             this.$emit("move-item-up", this.item);

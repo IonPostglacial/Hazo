@@ -44,6 +44,7 @@ import makeid from "@/tools/makeid";
 import { DiscreteCharacter, Item, MultilangText } from "@/datatypes/types";
 import { mapActions } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
+import { getParentId, pathToItem } from "@/datatypes/Dataset";
 
 
 function floweringFromStates(color: string, currentItems: 
@@ -178,9 +179,9 @@ export default {
             const ch = this.characterWithId(character.id);
             let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
             if (typeof inherentState === "undefined") {
-                const parentCharacter = this.characterWithId(character.parentId);
+                const parentCharacter = this.characterWithId(getParentId(character));
                 if (typeof parentCharacter !== "undefined" && parentCharacter.characterType === "discrete") {
-                    inherentState = { id: "s" + makeid(8), type: "state", name: clone(character.name), detail: character.detail, pictures: [] };
+                    inherentState = { id: "s" + makeid(8), path: pathToItem(parentCharacter), type: "state", name: clone(character.name), detail: character.detail, pictures: [] };
                     this.addState({ state: inherentState, character: parentCharacter });
                     this.setInherentState({ state: inherentState, character });
                 }

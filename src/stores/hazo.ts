@@ -6,6 +6,7 @@ import { fixParentIds } from "../tools/fixes";
 import { useDatasetStore } from "./dataset";
 import { Dataset } from "../datatypes";
 import { characterNameStore, familyNameStore, stateNameStore } from "@/db-index";
+import { pathToItem } from "@/datatypes/Dataset";
 
 export const useHazoStore = defineStore("hazo", {
     state: () => ({
@@ -33,7 +34,7 @@ export const useHazoStore = defineStore("hazo", {
         }
     },
     actions: {
-        ...mapActions(useDatasetStore, ["addCharacter", "addTaxon", "addState", "characterWithId"]),
+        ...mapActions(useDatasetStore, ["addCharacter", "addTaxon", "addState", "characterWithId", "taxonWithId"]),
         addStateToAllowList(state: State) {
             this.statesAllowList = [...this.statesAllowList, state];
         },
@@ -85,9 +86,11 @@ export const useHazoStore = defineStore("hazo", {
         pasteTaxon(targetId: string) {
             if (this.copiedTaxon !== null) {
                 const taxon = cloneHierarchy(this.copiedTaxon);
-                taxon.parentId = targetId;
-                fixParentIds(taxon);
-                this.addTaxon(taxon);
+                const newParent = this.taxonWithId(targetId);
+                if (newParent) {
+                    taxon.path = pathToItem(newParent);
+                }
+                fixParentIds(this.addTaxon(taxon));
             }
         },
         pasteCharacter(targetId: string) {
@@ -119,9 +122,17 @@ export const useHazoStore = defineStore("hazo", {
                     newParent.states.push(this.copiedCharacter.inherentState);
                 }
             }
-            character.parentId = targetId;
-            fixParentIds(character);
-            this.addCharacter(character);
+            if (newParent) {
+                character.path = [...newParent?.path, targetId];
+            }
+            const ch = this.addCharacter(character);
+            fixParentIds(ch);
+            forEachHierarchy(ch, child => {
+                if (child.characterType !== "discrete") { return; }
+                child.states.forEach(s => {
+                    s.path = pathToItem(child);
+                });
+            });
         },
         pasteStates(characterId: string) {
             for (const s of this.copiedStates) {
