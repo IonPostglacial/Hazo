@@ -141,7 +141,7 @@
                             @minimize="removeColumn('desc')"
                             @maximize="zoomColumn('desc')">
                         </ColumnHeader>
-                        <SquareTreeViewer class="large-max-width" 
+                        <SquareTreeViewer
                             :name-fields="['S', 'EN', 'CN']" 
                             :rootItems="itemDescriptorTree"
                             :selected-items="selectedStateIds"

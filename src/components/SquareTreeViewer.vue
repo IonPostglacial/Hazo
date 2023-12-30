@@ -7,7 +7,7 @@
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>
         </VBox>
-        <HBox v-if="!floweringMode" class="flex-wrap relative">
+        <HBox v-if="!floweringMode" class="flex-wrap relative cented-aligned">
             <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">

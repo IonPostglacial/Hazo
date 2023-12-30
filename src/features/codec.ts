@@ -195,7 +195,7 @@ function decodeTaxon(encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]
 		for (const book of books) {
 			const info:BookInfo = {
 				fasc: (book.id === "fmc") ? "" + encodedTaxon.fasc : "",
-				page: (book.id === "fmc") ? encodedTaxon.page : undefined,
+				page: (book.id === "fmc") ? encodedTaxon.page : "",
 				detail: ""
 			};
 			bookInfoByIds[book.id] = info;

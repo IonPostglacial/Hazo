@@ -44,7 +44,7 @@
                 @move-item-up="$emit('move-item-up', $event)"
                 @move-item-down="$emit('move-item-down', $event)"
                 :parent-id="item.id"
-                v-slot:default="menuItemProps">
+                v-slot:default="menuItemProps: { item: MenuItem }">
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
             <li v-if="editable">

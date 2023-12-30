@@ -70,12 +70,12 @@ function taxonFromSdd(taxon:sdd_Taxon, extraFields: Field[], photosByRef: Record
     const author = names[1];
     const fields = standardFields.concat(extraFields);
     const floreRe = /Flore Madagascar et Comores\s*<br>\s*fasc\s+(\d*)\s*<br>\s*page\s+(null|\d*)/i;
-    let fasc: number|undefined = undefined, page: number|undefined = undefined;
+    let fasc: string|undefined = undefined, page: string|undefined = undefined;
     const match = taxon.detail.match(floreRe);
 
     if (match) {
-        fasc = parseInt(match[1]);
-        page = parseInt(match[2]);
+        fasc = match[1];
+        page = match[2];
     }
     let detail = removeFromDescription(taxon.detail, fields.map(field => field.label)).replace(floreRe, "");
 

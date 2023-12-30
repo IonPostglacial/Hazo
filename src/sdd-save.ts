@@ -1,9 +1,9 @@
-import { standardFields } from "@/datatypes";
-import { Dataset, taxonDescriptions } from "./datatypes/Dataset";
+import { Dataset, standardFields } from "@/datatypes";
+import { taxonDescriptions } from "./datatypes/Dataset";
 import { forEachHierarchy, Hierarchy } from "./datatypes/hierarchy";
-import { BasicInfo, Taxon } from "./datatypes/types";
+import { AnyItem, Taxon } from "./datatypes/types";
 
-type Item = BasicInfo & { detail?: string, author?: string, fasc?: number, page?: number, extra?: any };
+type Item = AnyItem & { detail?: string, author?: string, fasc?: string, page?: string, extra?: any };
 
 function saveSDD(ds: Dataset): Document {
     const xml = document.implementation.createDocument("http://rs.tdwg.org/UBIF/2006/", "Datasets");
@@ -24,7 +24,7 @@ function saveSDD(ds: Dataset): Document {
     const dataset = xml.createElement("Dataset");
     dataset.appendChild(technicalMetadata);
     dataset.setAttribute("xml:lang", "fr");
-    dataset.appendChild(createRepresentation(xml, { id: "", name: { S: "Sample" }, pictures: [] }));
+    dataset.appendChild(createRepresentation(xml, { id: "", name: { S: "Sample" }, detail: "", pictures: [] }));
 
     datasets.appendChild(dataset);
 
@@ -102,7 +102,7 @@ function saveSDD(ds: Dataset): Document {
     taxonHierarchy.setAttribute("id", "th1");
     const nodes = xml.createElement("Nodes");
 
-    taxonHierarchy.appendChild(createRepresentation(xml, { id: "", name: { S: "Default Entity Tree" }, pictures: [] }));
+    taxonHierarchy.appendChild(createRepresentation(xml, { id: "", name: { S: "Default Entity Tree" }, detail: "", pictures: [] }));
     taxonHierarchy.appendChild(Object.assign(xml.createElement("TaxonHierarchyType"), { textContent: "UnspecifiedTaxonomy" }));
     taxonHierarchy.appendChild(nodes);
 
@@ -165,14 +165,14 @@ function saveSDD(ds: Dataset): Document {
     
     const characterTree = xml.createElement("CharacterTree");
     characterTree.setAttribute("id", "ct1");
-    characterTree.appendChild(createRepresentation(xml, { id: "", name: { S: "Ordre et dependance entre caracteres" }, pictures: [] }));
+    characterTree.appendChild(createRepresentation(xml, { id: "", name: { S: "Ordre et dependance entre caracteres" }, detail: "", pictures: [] }));
     characterTree.appendChild(Object.assign(xml.createElement("ShouldContainAllCharacters"), { textContent: "true" }));
     const charTreeNodes = xml.createElement("Nodes");
     characterTree.appendChild(charTreeNodes);
     
     const characterTreeConcepts = xml.createElement("CharacterTree");
     characterTreeConcepts.setAttribute("id", "ct2");
-    characterTreeConcepts.appendChild(createRepresentation(xml, { id: "", name: { S: "Arbre secondaire Xper2 : groupes et variables contenues dans ces groupes" }, pictures: [] }));
+    characterTreeConcepts.appendChild(createRepresentation(xml, { id: "", name: { S: "Arbre secondaire Xper2 : groupes et variables contenues dans ces groupes" }, detail: "", pictures: [] }));
     const charTreeConceptsNodes = xml.createElement("Nodes");
     characterTreeConcepts.appendChild(charTreeConceptsNodes);
 

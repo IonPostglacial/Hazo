@@ -1,4 +1,4 @@
-import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, BasicInfo, Item } from "./types";
+import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, AnyItem, Item } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
@@ -64,13 +64,13 @@ export function moveCharacterDown<T extends HierarchicalItem>(hierarchy: Hierarc
 export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<Item> {
     const dependencyHierarchy = transformHierarchy(charactersHierarchy, {
         filter: character => isApplicable({ character, taxon }),
-        map(character): Hierarchy<BasicInfo> {
+        map(character): Hierarchy<AnyItem> {
             const characterStates = character.characterType === "range" ? [] : character.states.map(s => Object.assign({
                 type: "state",
                 parentId: character.id,
             }, s));
             const clonedChildren = clone(character.children);
-            const characterChildren: Hierarchy<BasicInfo>[] = [...clonedChildren];
+            const characterChildren: Hierarchy<AnyItem>[] = [...clonedChildren];
             for (const state of characterStates) {
                 const inherentCharacter: Character | undefined = clonedChildren.find(characterChild =>
                     characterChild.characterType === "range" ? undefined : characterChild.inherentState?.id === state.id);

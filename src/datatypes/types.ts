@@ -33,19 +33,19 @@ export type MultilangText = {
 	FR?: string;
 } & Partial<Record<string, string>>;
 
-export type BasicInfo = {
+export type AnyItem = {
 	id: string;
 	name: MultilangText;
 	detail : string;
 	pictures: Picture[];
 };
 
-export type State = BasicInfo & {
+export type State = AnyItem & {
 	type: "state";
 	color?: string;
 };
 
-export type AnyHierarchicalItem = BasicInfo & {
+export type AnyHierarchicalItem = AnyItem & {
 	type: "character" | "taxon",
 	parentId?: string;
 	hidden: boolean;
