@@ -34,6 +34,7 @@
                 :init-open="initOpen"
                 :init-open-items="initOpenItems"
                 :path="[items.id]"
+                :name-store="nameStore"
                 @selected="selectItem"
                 @unselected="unselect"
                 @add-item="addItem"
@@ -99,7 +100,7 @@ export default {
         };
     },
     computed: {
-        columnsToDisplay(): { label: string, propertyName: string }[] {
+        columnsToDisplay(): { label: string, propertyName: Language }[] {
             return this.nameFields?.filter(nameField => this.visibleColumns[nameField.propertyName]) ?? [];
         },
         itemsToDisplay(): Iterable<MenuItem> {

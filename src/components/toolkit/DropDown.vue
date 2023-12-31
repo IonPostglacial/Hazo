@@ -16,14 +16,42 @@ const dropUp = ref(false);
 
 watch(() => open, val => {
     if (val) {
-        dropUp.value = outOfWindow();
+        dropUp.value = shouldDropUp();
     } else {
         dropUp.value = false;
     }
 });
 
+const OVERFLOW_MARGIN = 16;
+
+function adjustHeight(dropUp: boolean) {
+    if (!menu.value) { return; }
+    const parent = menu.value.parentElement!;
+    const scroll = parent.closest(".scroll");
+    if (!scroll) { return; }
+    const menuBounds = menu.value.getBoundingClientRect();
+    const scrollBounds = scroll.getBoundingClientRect();
+    if (dropUp) {
+        const parentBounds = parent.getBoundingClientRect();
+        const menuTop = menuBounds.top - menuBounds.height - parentBounds.height;
+        const menuBottom = menuBounds.top - parentBounds.height;
+        if (menuTop < scrollBounds.top) {
+            menu.value.style.maxHeight = `${menuBottom - scrollBounds.top - OVERFLOW_MARGIN}px`;
+        }
+    } else {
+        if (menuBounds.bottom > scrollBounds.bottom) {
+            menu.value.style.maxHeight = `${scrollBounds.bottom - menuBounds.top - OVERFLOW_MARGIN}px`;
+        }
+    }
+}
+
+watch(dropUp, val => {
+    adjustHeight(val);
+});
+
 onMounted(() => {
-    dropUp.value = outOfWindow();
+    dropUp.value = shouldDropUp();
+    adjustHeight(dropUp.value);
     setTimeout(() => {
         document.addEventListener('click', clickout);
     });
@@ -39,12 +67,13 @@ function clickout(e: Event) {
     }
 }
 
-function outOfWindow() {
+function shouldDropUp() {
     if (!menu.value) { return false; }
     const oldDisplay = menu.value.style.display;
     menu.value.style.display = "block";
     const bounding = menu.value.getBoundingClientRect();
+    const dropUp = bounding.top > 0.5 * window.innerHeight;
     menu.value.style.display = oldDisplay;
-    return bounding.bottom > window.innerHeight;
+    return dropUp;
 }
 </script>

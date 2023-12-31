@@ -5,7 +5,7 @@
                 @keydown.up="selectPreviousCompletion"
                 @keydown.down="selectNextCompletion"
                 class="full-width" placeholder="Add an item" />
-            <drop-down v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
+            <DropDown v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
                 <div class="grid-n grid-2-autocomplete stretch-items">
                     <div v-for="(entry, i) in completions" :key="i" class="display-contents blue-hover-line">
                         <VBox v-if="nameFields && nameFields.length > 0"  @click="selectAndEnter(i)" :class="['nowrap', 'cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
@@ -25,7 +25,7 @@
                         </HBox>
                     </div>
                 </div>
-            </drop-down>
+            </DropDown>
         </div>
         <textarea type="text" v-if="multiline" v-model="text" class="flex-grow-1 input-text"
             rows="1" placeholder="Add multiple items">
@@ -47,7 +47,7 @@ import { WordStore, Completion, Language } from "@/db-index";
 import { PropType } from "vue";
 
 export default {
-  components: { DropDown, HBox, VBox },
+  components: { DropDown: DropDown, HBox, VBox },
     props: {
         value: String,
         nameStore: Object as PropType<WordStore>,

@@ -36,6 +36,7 @@
                 :selected-item="selectedItem"
                 :init-open-items="initOpenItems"
                 :field-names="fieldNames" :item="child" :buttons="buttons"
+                :name-store="nameStore"
                 @selected="$emit('selected', $event)"
                 @unselected="$emit('unselected')"
                 @add-item="$emit('add-item', $event)"
@@ -48,7 +49,7 @@
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
             <li v-if="editable">
-                <AddItem class="medium-height full-line" @add-item="addItem"></AddItem>
+                <AddItem class="medium-height full-line" :name-fields="fieldNames" :name-store="nameStore" @add-item="addItem"></AddItem>
             </li>
         </ul>
     </li>
@@ -60,6 +61,7 @@ import { MenuEventHub } from "@/tools/menu-event-hub"; // eslint-disable-line no
 import AddItem from "./AddItem.vue";
 import HBox from "./HBox.vue";
 import VBox from "./VBox.vue";
+import { Language, WordStore } from "@/db-index";
 
 
 export type MenuItem = {
@@ -85,12 +87,13 @@ export default {
         itemBus: Object as PropType<MenuEventHub>,
         item: { type: Object as PropType<MenuItem>, required: true },
         buttons: Array as PropType<Array<Button>>,
-        fieldNames: Array as PropType<{ label: string, propertyName: string }[]>,
+        fieldNames: Array as PropType<{ label: string, propertyName: Language }[]>,
         editable: Boolean,
         selectedItem: String,
         initOpen: Boolean,
         initOpenItems: Array as PropType<Array<string>>,
         path: { type: Array as PropType<Array<string>>, required: true },
+        nameStore: Object as PropType<WordStore>,
     },
     data() {
         return {
