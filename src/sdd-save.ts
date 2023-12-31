@@ -87,6 +87,7 @@ function saveSDD(ds: Dataset): Document {
     dataset.appendChild(taxonNames);
 
     forEachHierarchy(ds.taxonsHierarchy, item => {
+        if (item.id === "t0") { return; }
         const taxonName = xml.createElement("TaxonName");
     
         taxonName.setAttribute("id", item.id);
@@ -139,6 +140,7 @@ function saveSDD(ds: Dataset): Document {
     dataset.appendChild(characters);
 
     forEachHierarchy(ds.charactersHierarchy, descriptor => {
+        if (descriptor.id === "c0") { return; }
         const character = xml.createElement("CategoricalCharacter");
         character.setAttribute("id", descriptor.id);
         character.appendChild(createRepresentation(xml, descriptor));
@@ -176,7 +178,8 @@ function saveSDD(ds: Dataset): Document {
     const charTreeConceptsNodes = xml.createElement("Nodes");
     characterTreeConcepts.appendChild(charTreeConceptsNodes);
 
-    (function addDescriptorHierarchyNodes (descriptorHierarchy, nodesElement, parentRef?: string) {
+    (function addDescriptorHierarchyNodes (descriptorHierarchy, parentRef?: string) {
+        console.log("I'm in !!!");
         let node;
         if (descriptorHierarchy.characterType === "range") {
             const descriptiveConcept = node = xml.createElement("DescriptiveConcept");
@@ -190,10 +193,10 @@ function saveSDD(ds: Dataset): Document {
             const nodeElement = xml.createElement("Node");
             nodeElement.setAttribute("id", descriptorHierarchy.id);
             nodeElement.appendChild(descriptiveConceptElement);
-
+            console.log("Add range");
             charTreeConceptsNodes.appendChild(nodeElement);
             for (const child of descriptorHierarchy.children) {
-                addDescriptorHierarchyNodes(child, charTreeConceptsNodes, descriptorHierarchy.id);
+                addDescriptorHierarchyNodes(child, descriptorHierarchy.id);
             }
         } else if (descriptorHierarchy.characterType === "discrete") {
             const charNode = node = xml.createElement("CharNode");
@@ -213,14 +216,19 @@ function saveSDD(ds: Dataset): Document {
                 charNode.appendChild(dependencyRules);
             }
             charNode.appendChild(character);
-            nodesElement.appendChild(charNode);
+            console.log("Add char");
+            charTreeNodes.appendChild(charNode);
+            for (const child of descriptorHierarchy.children) {
+                addDescriptorHierarchyNodes(child, descriptorHierarchy.id);
+            }
         }
         if (typeof parentRef !== "undefined") {
+            console.log("I'm not on top !!!", node);
             const parent = xml.createElement("Parent");
             parent.setAttribute("ref", parentRef);
             node?.prepend(parent);
         }
-    }(ds.charactersHierarchy, charTreeNodes));
+    }(ds.charactersHierarchy));
 
     characterTrees.appendChild(characterTree);
     if (charTreeConceptsNodes.children.length > 0) {

@@ -60,8 +60,8 @@ function hierarchicalItemFromSdd(id: string, type: "character" | "taxon", repres
 }
 
 function characterFromSdd(ds: Dataset, character: sdd_Character, photosByRef: Record<string, string>, statesById: Map<string, State>): Character {
-    const parent = ds.taxonsByIds.get(character.parentId ?? "t0");
-	let path: string[] = [];
+    const parent = ds.taxonsByIds.get(character.parentId ?? "c0");
+	let path: string[] = ["c0"];
 	if (parent) {
 		path = pathToItem(parent);
 	}
@@ -92,7 +92,7 @@ function taxonFromSdd(ds: Dataset, taxon:sdd_Taxon, extraFields: Field[], photos
         detail = detail.replace(emptyParagraphRe, "");
     }
 	const parent = ds.taxonsByIds.get(taxon.parentId ?? "t0");
-	let path: string[] = [];
+	let path: string[] = ["t0"];
 	if (parent) {
 		path = pathToItem(parent);
 	}
@@ -151,6 +151,7 @@ function extractPhotosByRef(sddContent: sdd_Dataset) {
 }
 
 export function datasetFromSdd(dataset: sdd_Dataset, extraFields: Field[]): Dataset {
+    console.log("sdd dataset", dataset);
 	const photosByRef = extractPhotosByRef(dataset);
 	const statesById = extractStatesById(dataset, photosByRef);
     const statesByTaxons = extractStatesByTaxons(dataset);
