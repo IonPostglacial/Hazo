@@ -151,7 +151,6 @@ function extractPhotosByRef(sddContent: sdd_Dataset) {
 }
 
 export function datasetFromSdd(dataset: sdd_Dataset, extraFields: Field[]): Dataset {
-    console.log("sdd dataset", dataset);
 	const photosByRef = extractPhotosByRef(dataset);
 	const statesById = extractStatesById(dataset, photosByRef);
     const statesByTaxons = extractStatesByTaxons(dataset);
