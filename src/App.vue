@@ -80,7 +80,7 @@
 
 <script lang="ts">
 import { Character, Dataset, Taxon, createCharacter, createState, createTaxon, loadGeoJson, standardMaps } from "@/datatypes";
-import { createDataset } from "@/datatypes/Dataset"; 
+import { createDataset, pathToItem } from "@/datatypes/Dataset"; 
 import { decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import * as FS from "./fs-storage";
 import { loadSDD } from "./sdd-load";
@@ -182,7 +182,7 @@ export default {
     },
     methods: {
         ...mapActions(useHazoStore, ["index", "indexDataset", "setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
-        ...mapActions(useDatasetStore, ["addCharacter", "addState", "addTaxon", "allStates", "encodeToHazoJson", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
+        ...mapActions(useDatasetStore, ["addCharacter", "addState", "addTaxon", "allStates", "encodeToHazoJson", "encodeToSdd", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
         openHub() {
             window.open(Config.datasetRegistry);
         },
@@ -236,16 +236,16 @@ export default {
             }
         },
         async addGeoCharacters() {
-            const geoChar = createCharacter({ name: { S: "Geography" } });
+            const geoChar = createCharacter({ path: ["c0"], name: { S: "Geography" } });
             const parent = this.addCharacter(geoChar);
             for (const map of standardMaps) {
-                const character = createCharacter({ name: { S: map.name }, parentId: parent.id });
+                const character = createCharacter({ name: { S: map.name }, path: pathToItem(parent) });
                 character.preset = "map";
                 const geoJson = await loadGeoJson(map.fileName);
                 const stateNames: string[] = geoJson.features.map((f: any) => f.properties[map.property]);
                 const ch = this.addCharacter(character);
                 stateNames
-                    .map(name => createState({ name: { S: name } }))
+                    .map(name => createState({ name: { S: name }, path: pathToItem(ch) }))
                     .sort()
                     .forEach(state => this.addState({ state, character: ch as DiscreteCharacter }));
             }
@@ -261,13 +261,13 @@ export default {
                 } else {
                     ds = createDataset( {
                         id,
-                        taxonsHierarchy: createTaxon({ id: "t0", name: { S: "<TOP>" } }),
-                        charactersHierarchy: createCharacter({ id: "c0", name: { S: "<TOP>" } }),
+                        taxonsHierarchy: createTaxon({ id: "t0", path: [], name: { S: "<TOP>" } }),
+                        charactersHierarchy: createCharacter({ id: "c0", path: [], name: { S: "<TOP>" } }),
                         books: [], 
                         extraFields: [], 
                         statesById: new Map(),
                     });
-                    const familyChar = createCharacter({ name: { S: "Family" } });
+                    const familyChar = createCharacter({ path: ["c0"], name: { S: "Family" } });
                     familyChar.preset = "family";
                     ds.id = id;
                     this.setDataset(ds);
@@ -358,19 +358,19 @@ export default {
             }
             const [_family, _taxa, ...characterNames] = header;
             const [familyFact, taxaFact, ...characterColumns] = transposeCSV(body).map(factorizeColumn);
-            const familyIdsByLevel = familyFact.levels.map(name => this.addTaxon(createTaxon({ name: { S: name } })).id);
+            const familyIdsByLevel = familyFact.levels.map(name => this.addTaxon(createTaxon({ name: { S: name }, path: ["t0"] })));
             const taxaByLevel: Taxon[] = [];
             for (const [i, taxaName] of taxaFact.levels.entries()) {
                 taxaByLevel.push(this.addTaxon(createTaxon({ 
-                    parentId: familyIdsByLevel[familyFact.values[i]], 
+                    path: pathToItem(familyIdsByLevel[familyFact.values[i]]), 
                     name: { S: taxaName } })));
             }
             for (const [charIndex, charName] of characterNames.entries()) {
                 const charFactor = characterColumns[charIndex];
-                const character = this.addCharacter(createCharacter({ name: { S: charName } }));
+                const character = this.addCharacter(createCharacter({ name: { S: charName }, path: ["c0"] }));
                 if (character.characterType !== "discrete") { throw new Error("character should be discrete"); }
                 const stateByLevel = charFactor.levels.map(name => this.addState({ 
-                    state: createState({ name: { S: name } }), 
+                    state: createState({ name: { S: name }, path: pathToItem(character) }), 
                     character 
                 }));
                 for (const [i, stateValue] of charFactor.values.entries()) {
