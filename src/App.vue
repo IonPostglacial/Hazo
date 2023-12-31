@@ -2,10 +2,10 @@
     <VBox class="lightgrey-background height-full">
         <HBox class="thin-border background-gradient-1 no-print centered-text">
             <div class="button-group">
-                <button v-for="state in statesAllowList" :key="state.id" @click="removeFromAllowList(state)" class="background-color-ok">
+                <button v-for="state in statesAllowList" :key="state.id" @click="removeStateFromAllowList(state)" class="background-color-ok">
                     {{ state.name.S }}
                 </button>
-                <button v-for="state in statesDenyList" :key="state.id" @click="removeFromDenyList(state)" class="background-color-ko">
+                <button v-for="state in statesDenyList" :key="state.id" @click="removeStateFromDenyList(state)" class="background-color-ko">
                     {{ state.name.S }}
                 </button>
             </div>
@@ -88,7 +88,7 @@ import download from "@/tools/download";
 import { Config } from './tools/config';
 import { readTextFileAsync } from './tools/read-file-async';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
-import { DiscreteCharacter, State } from "./datatypes/types";
+import { DiscreteCharacter } from "./datatypes/types";
 import { Name } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import DropDownButton from "@/components/toolkit/DropDownButton.vue";
@@ -185,12 +185,6 @@ export default {
         ...mapActions(useDatasetStore, ["addCharacter", "addState", "addTaxon", "allStates", "encodeToHazoJson", "encodeToSdd", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
         openHub() {
             window.open(Config.datasetRegistry);
-        },
-        removeFromAllowList(state: State) {
-            this.removeStateFromAllowList(state);
-        },
-        removeFromDenyList(state: State) {
-            this.removeStateFromAllowList(state);
         },
         syncPictures() {
             this.urlsToSync = [];

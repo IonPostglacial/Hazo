@@ -149,7 +149,6 @@
                         <ul class="no-list-style flex-grow-1">
                             <li v-for="state in statesToDisplay" :key="state.id" class="white-background thin-border">
                                 <VBox>
-                                    <div>{{ state.path.join(" > ") }}</div>
                                     <HBox class="thin-border center-items">
                                         <div class="button-group">
                                             <button @click="moveCurrentStateUp(state)">
@@ -324,7 +323,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useHazoStore, ["addStateToAllowList", "addStateToDenyList", "copyCharacter", "copyStates", "pasteCharacter", "pasteStates", "selectCharacter", "unselectCharacter"]),
+        ...mapActions(useHazoStore, ["addStateToAllowList", "addStateToDenyList", "copyCharacter", "copyStates", "pasteCharacter", "pasteStates", "removeStateFromAllowList", "removeStateFromDenyList", "selectCharacter", "unselectCharacter"]),
         ...mapActions(useDatasetStore, [
             "addCharacter", "removeCharacter", 
             "moveCharacterDown", "moveCharacterUp",
