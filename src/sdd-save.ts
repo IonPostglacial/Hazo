@@ -179,7 +179,6 @@ function saveSDD(ds: Dataset): Document {
     characterTreeConcepts.appendChild(charTreeConceptsNodes);
 
     (function addDescriptorHierarchyNodes (descriptorHierarchy, parentRef?: string) {
-        console.log("I'm in !!!");
         let node;
         if (descriptorHierarchy.characterType === "range") {
             const descriptiveConcept = node = xml.createElement("DescriptiveConcept");
@@ -193,7 +192,7 @@ function saveSDD(ds: Dataset): Document {
             const nodeElement = xml.createElement("Node");
             nodeElement.setAttribute("id", descriptorHierarchy.id);
             nodeElement.appendChild(descriptiveConceptElement);
-            console.log("Add range");
+
             charTreeConceptsNodes.appendChild(nodeElement);
             for (const child of descriptorHierarchy.children) {
                 addDescriptorHierarchyNodes(child, descriptorHierarchy.id);
@@ -216,14 +215,13 @@ function saveSDD(ds: Dataset): Document {
                 charNode.appendChild(dependencyRules);
             }
             charNode.appendChild(character);
-            console.log("Add char");
+
             charTreeNodes.appendChild(charNode);
             for (const child of descriptorHierarchy.children) {
                 addDescriptorHierarchyNodes(child, descriptorHierarchy.id);
             }
         }
         if (typeof parentRef !== "undefined") {
-            console.log("I'm not on top !!!", node);
             const parent = xml.createElement("Parent");
             parent.setAttribute("ref", parentRef);
             node?.prepend(parent);
