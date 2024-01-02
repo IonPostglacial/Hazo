@@ -1,5 +1,5 @@
 import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter, Measurement } from "@/datatypes";
-import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree } from "@/datatypes/Dataset";
+import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree, pathToItem } from "@/datatypes/Dataset";
 import { defineStore } from "pinia";
 import clone from '@/tools/clone';
 import { EncodedDataset, createTexExporter, encodeDataset } from "@/features";
@@ -66,11 +66,15 @@ export const useDatasetStore = defineStore("dataset", {
         },
         addTaxonPicture(payload: { taxon: Taxon, picture: Picture }) {
             const t = taxonFromId(this.$state, payload.taxon.id);
-            if (t) t.pictures = [...t.pictures, payload.picture];
+            if (t) {
+                payload.picture.path = pathToItem(t);
+                t.pictures = [...t.pictures, payload.picture];
+            }
         },
         setTaxonPicture(payload: { taxon: Taxon, picture: Picture, index: number }) {
             const t = taxonFromId(this.$state, payload.taxon.id);
             if (t) {
+                payload.picture.path = pathToItem(t);
                 t.pictures[payload.index] = payload.picture;
                 t.pictures = [...t.pictures];
             }
@@ -105,11 +109,15 @@ export const useDatasetStore = defineStore("dataset", {
         },
         addCharacterPicture(payload: { character: Character, picture: Picture }) {
             const c = characterFromId(this.$state, payload.character.id);
-            if (c) c.pictures = [...c.pictures, payload.picture];
+            if (c) {
+                payload.picture.path = pathToItem(c);
+                c.pictures = [...c.pictures, payload.picture];
+            }
         },
         setCharacterPicture(payload: { character: Character, picture: Picture, index: number }) {
             const c = characterFromId(this.$state, payload.character.id);
             if (c) {
+                payload.picture.path = pathToItem(c);
                 c.pictures[payload.index] = payload.picture;
                 c.pictures = [...c.pictures];
             }

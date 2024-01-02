@@ -1,4 +1,4 @@
-import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, AnyItem, Item } from "./types";
+import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, AnyItem, Item, AnyDocument } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
@@ -12,7 +12,7 @@ export function getParentId(item: AnyItem): string|undefined {
     return undefined;
 }
 
-export function pathToItem(item: AnyItem): string[] {
+export function pathToItem(item: AnyDocument): string[] {
     return [...item.path, item.id];
 }
 

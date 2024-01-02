@@ -1,4 +1,4 @@
-import { Dataset, HierarchicalItem, Hierarchy, forEachHierarchy } from "@/datatypes";
+import { AnyItem, Dataset, HierarchicalItem, Hierarchy, forEachHierarchy } from "@/datatypes";
 import { pathToItem } from "@/datatypes/Dataset";
 
 
@@ -16,4 +16,10 @@ export function fixStatePath(ds: Dataset) {
 			state.path = [...ch.path, ch.id];
 		}
 	});
+}
+
+export function fixPicturesPaths(item: AnyItem) {
+	for (const pic of item.pictures) {
+		pic.path = pathToItem(item);
+	}
 }

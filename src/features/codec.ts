@@ -1,11 +1,11 @@
 import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, AnyHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates, createRangeCharacter } from "@/datatypes";
 import { taxonFromId, addTaxon, addCharacter, setTaxonState, createDataset, pathToItem, getParentId } from "@/datatypes/Dataset";
 import { createCharacter } from "@/datatypes";
-import { standardBooks, standardUnits } from "@/datatypes/stdcontent";
+import { standardBooks } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
 import { map } from "@/tools/iter";
 import clone from "@/tools/clone";
-import { fixParentIds, fixStatePath } from "@/tools/fixes";
+import { fixParentIds, fixPicturesPaths, fixStatePath } from "@/tools/fixes";
 import makeid from "@/tools/makeid";
 
 type EncodedState = {
@@ -226,6 +226,11 @@ function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, 
 			};
 			bookInfoByIds[book.id] = info;
 		}
+	} else {
+		for (const bookInfo of Object.values(bookInfoByIds)) {
+			bookInfo.id ??= "bi" + makeid(8);
+			bookInfo.path ??= pathToItem(item);
+		}
 	}
 	const parent = ds.taxonsByIds.get(encodedTaxon.parentId ?? "t0");
 	let path: string[] = [];
@@ -333,10 +338,12 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 		}
 		oldStates.forEach(s => unusedStates.delete(s));
 		const decodedCharacter = decodeCharacter(ds, character, statesById);
-		addCharacter(ds, decodedCharacter);
+		const char = addCharacter(ds, decodedCharacter);
+		fixPicturesPaths(char);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
-		addTaxon(ds, decodeTaxon(ds, taxon, books));
+		const tx = addTaxon(ds, decodeTaxon(ds, taxon, books));
+		fixPicturesPaths(tx);
 		taxon.descriptions.forEach(d => {
 			for (const stateId of d.statesIds) {
 				const t = taxonFromId(ds, taxon.id);
@@ -348,5 +355,8 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 		});
 	}
 	fixStatePath(ds);
+	for (const s of ds.statesById.values()) {
+		fixPicturesPaths(s);
+	}
 	return ds;
 }
