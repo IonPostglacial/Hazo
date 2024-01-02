@@ -57,9 +57,15 @@ export type AnyHierarchicalItem = AnyItem & {
 	type: "character" | "taxon",
 };
 
+export type Measurement = {
+	value: number,
+	character: RangeCharacter,
+};
+
 export type Taxon = AnyHierarchicalItem & {
 	type: "taxon";
 	states: State[];
+	measurements: Partial<Record<string, Measurement>>;
 	author: string;
 	vernacularName2: string;
 	name2: string;
@@ -88,9 +94,15 @@ export type AnyCharacter = AnyHierarchicalItem & {
 	children: Character[];
 };
 
+export type Unit = {
+	name: MultilangText,
+	base?: { unit: Unit, factor: number },
+};
+
 export type RangeCharacter = AnyCharacter & {
 	characterType: "range",
-	min: number, max: number,
+	min?: number, max?: number,
+	unit?: Unit,
 };
 
 export type DiscreteCharacter = AnyCharacter & {

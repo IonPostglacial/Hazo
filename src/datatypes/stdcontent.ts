@@ -1,5 +1,5 @@
 import { getMapsDirectory, loadText, storeText } from "@/fs-storage";
-import { Book, Character, Field, GeoMap } from "./types";
+import { Book, Character, Field, GeoMap, Unit } from "./types";
 import { Config } from "@/tools/config";
 
 export const standardBooks: Book[] = [
@@ -16,6 +16,16 @@ export const standardFields: Field[] = [
     {std: true, id: "herbariumPicture", label: "Herbarium Picture", icon: ""},
     {std: true, id: "website", label: "Website", icon: ""},
 ];
+
+const kg: Unit = { name: { S: "kg" } };
+const g: Unit = { name: { S: "g" }, base: { unit: kg, factor: 1000 } };
+const m: Unit = { name: { S: "m" } };
+const mm: Unit = { name: { S: "mm" }, base: { unit: m, factor: 1000 } };
+const cm: Unit = { name: { S: "cm" }, base: { unit: m, factor: 100 } };
+const km: Unit = { name: { S: "km" }, base: { unit: m, factor: 0.001 } };
+
+export const standardUnits = { kg, g, m, mm, cm, km };
+export const standardUnitsList = Object.values(standardUnits);
 
 export const standardMaps: GeoMap[] = [
     { name: "Mada admin 1", fileName: "MDG_adm1.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_1" },

@@ -1,6 +1,6 @@
 import { multilangTextEquals } from "@/tools/multilangtextequal";
 import { createHierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
-import { BookInfo, State, Taxon } from "./types";
+import { BookInfo, Measurement, State, Taxon } from "./types";
 import { pathToItem } from "./Dataset";
 
 interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
@@ -9,6 +9,7 @@ interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
 	author?: string;
 	name2?: string;
 	vernacularName2?: string;
+	measurements?: Partial<Record<string, Measurement>>;
 	meaning?: string;
 	herbariumPicture?: string;
 	website?: string;
@@ -24,6 +25,7 @@ export function createTaxon(init: TaxonInit): Taxon {
 		...createHierarchicalItem({ ...init, type: "taxon" }),
 		type: "taxon",
 		states: [],
+		measurements: init.measurements ?? {},
 		bookInfoByIds: init.bookInfoByIds ?? {},
 		specimenLocations: init.specimenLocations ?? [],
 		author: init.author ?? "",

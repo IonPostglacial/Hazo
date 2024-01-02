@@ -1,7 +1,7 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, AnyHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, AnyHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates, createRangeCharacter } from "@/datatypes";
 import { taxonFromId, addTaxon, addCharacter, setTaxonState, createDataset, pathToItem, getParentId } from "@/datatypes/Dataset";
 import { createCharacter } from "@/datatypes";
-import { standardBooks } from "@/datatypes/stdcontent";
+import { standardBooks, standardUnits } from "@/datatypes/stdcontent";
 import { createTaxon } from "@/datatypes/Taxon";
 import { map } from "@/tools/iter";
 import clone from "@/tools/clone";
@@ -27,7 +27,12 @@ export interface EncodedDataset {
 	extraFields: Field[];
 }
 
-type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { photos: string[]|Picture[] };
+type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { 
+	photos: string[]|Picture[],
+	min?: number,
+	max?: number,
+	unit?: string,
+};
 type EncodedHierarchicalItem = Omit<ReturnType<typeof encodeHierarchicalItem>, "photos"> & { photos: string[]|Picture[] };
 type EncodedDescription = { descriptorId: string, statesIds: string[] };
 
@@ -94,6 +99,10 @@ function encodeTaxon(taxon: Taxon, picIds: Set<string>, allStates: CharactersSta
 		bookInfoByIds: taxon.bookInfoByIds,
 		specimenLocations: taxon.specimenLocations,
 		descriptions,
+		measurements: Object.values(taxon.measurements).flatMap(m => {
+			if (!m) { return []; }
+			return { value: m.value, character: m.character.id };
+		}),
 		author: taxon.author,
 		vernacularName2: taxon.vernacularName2,
 		name2: taxon.name2,
@@ -109,14 +118,22 @@ function encodeTaxon(taxon: Taxon, picIds: Set<string>, allStates: CharactersSta
 }
 
 function encodeCharacter(character: Character, picIds: Set<string>) {
+	let extra: Record<string, any> = {};
+	if (character.characterType === "range") {
+		extra.min = character.min;
+		extra.max = character.max;
+		extra.unit = character.unit?.name.S;
+	}
 	return {
 		states: Array.from(characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
+		characterType: character.characterType,
 		preset: character.characterType === "discrete" ? character.preset : undefined,
 		color: character.color,
 		inherentStateId: character.characterType === "discrete" ? character.inherentState?.id : '',
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		...encodeHierarchicalItem(character, picIds),
+		...extra,
 	};
 }
 
@@ -218,6 +235,13 @@ function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, 
 	return createTaxon({
 		...item,
 		path,
+		measurements: Object.fromEntries(encodedTaxon.measurements?.flatMap(m => {
+			const character = ds.charactersByIds.get(m.character);
+			if (character && character.characterType === "range") {
+				return { value: m.value, character };
+			}
+			return [];
+		}).map(m => [m.character.id, m]) ?? []),
 		specimenLocations: encodedTaxon.specimenLocations,
 		bookInfoByIds,
 		author: encodedTaxon.author,
@@ -248,17 +272,31 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 	if (parent) {
 		path = pathToItem(parent);
 	}
-	return createCharacter({
-		statesById: new Map(ds.statesById),
-		...item,
-		path,
-		preset: character.preset,
-		states: Array.from(charStates.values()),
-		color: character.color,
-		inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
-		inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
-		requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
-	});
+	if (character.characterType === "discrete") {
+		return createCharacter({
+			statesById: new Map(ds.statesById),
+			...item,
+			path,
+			preset: character.preset,
+			states: Array.from(charStates.values()),
+			color: character.color,
+			inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
+			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
+			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
+		});
+	} else {
+		return createRangeCharacter({
+			statesById: new Map(ds.statesById),
+			...item,
+			path,
+			color: character.color,
+			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
+			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
+			min: character.min,
+			max: character.max,
+			unit: character.unit,
+		});
+	}
 }
 
 export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset {

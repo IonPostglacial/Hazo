@@ -158,6 +158,7 @@ ul {
 
 input[type="search"],
 input[type="text"],
+input[type="number"],
 .input-text {
     margin: 2px;
     font-family: inherit;
@@ -172,6 +173,7 @@ input[type="text"],
 
 input[type="search"]:focus,
 input[type="text"]:focus,
+input[type="number"],
 .input-text:focus {
     border: 2px solid #2571d4;
 }
@@ -182,7 +184,8 @@ input[type="search"],
     padding: 2px 14px;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="number"] {
     border-radius: 4px;
 }
 

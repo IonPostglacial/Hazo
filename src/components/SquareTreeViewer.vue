@@ -7,7 +7,7 @@
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>
         </VBox>
-        <HBox v-if="!floweringMode" class="flex-wrap relative cented-aligned">
+        <HBox v-if="!floweringMode && !isRange" class="flex-wrap relative cented-aligned">
             <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">
@@ -27,6 +27,11 @@
         <div v-if="floweringMode">
             <Flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></Flowering>
         </div>
+        <HBox v-if="isRange" class="center-items">
+            <label for="measurement">Mean value</label>
+            <input type="number" name="measurement" :value="characterValue" @change="updateMeasurement" id="measurement">
+            <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
+        </HBox>
     </VBox>
 </template>
 
@@ -41,7 +46,7 @@ import VBox from "./toolkit/VBox.vue";
 import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
-import { DiscreteCharacter, Item, MultilangText } from "@/datatypes/types";
+import { Character, Item, Measurement, MultilangText, Unit } from "@/datatypes/types";
 import { mapActions } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 import { getParentId, pathToItem } from "@/datatypes/Dataset";
@@ -63,6 +68,7 @@ export default {
     name: "SquareTreeViewer",
     components: { Flowering, GeoView, HBox, SquareCard, VBox },
     props: {
+        measurements: { required: true, type: Object as PropType<Partial<Record<string, Measurement>>> },
         selectedItems: Array<string>,
         rootItems: Object as PropType<Hierarchy<Item>>,
         nameFields: Array<string>,
@@ -74,6 +80,7 @@ export default {
             currentItems: currentItems,
             breadCrumbs: new Array<Hierarchy<Item>>,
             menuFilter: "",
+            value: 0,
         };
     },
     watch: {
@@ -99,18 +106,16 @@ export default {
         flowering(): Track[] {
             return this.flowering = floweringFromStates(this.currentCharacter?.color ?? "#84bf3d", this.currentItems.filter(item => this.isSelected(item)));
         },
-        currentCharacter(): DiscreteCharacter|undefined {
+        currentCharacter(): Character|undefined {
             if (this.breadCrumbs.length === 0) {
                 if (this.rootItems?.type === "character") {
                     const ch = this.rootItems;
-                    if (typeof ch === "undefined" || ch.characterType !== "discrete") { return undefined; }
                     return ch;
                 }
                 return undefined;
             } else {
                 const character = this.breadCrumbs[this.breadCrumbs.length - 1];
                 const ch = this.characterWithId(character.id);
-                if (typeof ch === "undefined" || ch.characterType !== "discrete") { return undefined; }
                 return ch;
             }
         },
@@ -125,9 +130,35 @@ export default {
             };
             return this.currentItems.filter(shouldDisplayItem);
         },
+        isRange(): boolean {
+            return this.currentCharacter?.type === "character" && this.currentCharacter.characterType === "range";
+        },
+        characterUnit(): Unit | undefined {
+            if (this.currentCharacter?.type === "character" && this.currentCharacter.characterType === "range") {
+                return this.currentCharacter.unit;
+            }
+            return undefined
+        },
+        characterValue(): number | undefined {
+            if (this.currentCharacter?.type === "character" && this.currentCharacter.characterType === "range") {
+                return this.measurements[this.currentCharacter.id]?.value;
+            }
+            return undefined
+        },
     },
     methods: {
         ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
+        updateMeasurement(e: Event) {
+            if (e.target instanceof HTMLInputElement && this.currentCharacter && this.currentCharacter.characterType === "range") {
+                this.$emit("measurement-updated", { 
+                    character: this.currentCharacter.id, 
+                    measurement: { 
+                        value: parseInt(e.target.value),
+                        character: this.currentCharacter,
+                    }
+                });
+            }
+        },
         monthsFromItem(_item: Hierarchy<Item>): Track[] {
             return [];
         },
@@ -165,7 +196,7 @@ export default {
         },
         openItem(item: Hierarchy<Item>) {
             this.isRoot = false;
-            if (item.children.length > 0) {
+            if (item.children.length > 0 || (item.type === "character" && item.characterType === "range")) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...item.children];
                 this.$emit("item-open", { item });

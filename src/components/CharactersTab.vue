@@ -90,6 +90,15 @@
                             <div class="form-grid medium-padding">
                                 <label for="range-min">From</label><input name="range-min" type="number" v-model="selectedCharacter.min" />
                                 <label for="range-max">To</label><input name="range-max" type="number" v-model="selectedCharacter.max" />
+                                <label for="range-unit">Unit</label>
+                                <select name="range-unit" v-model="selectedCharacter.unit">
+                                    <option v-for="unit in units" :value="unit">
+                                        {{ unit.name.S }}
+                                        <span v-if="unit.base">
+                                            = {{ 1 / unit.base.factor }} {{ unit.base.unit.name.S }}
+                                        </span>
+                                    </option>
+                                </select>
                             </div>
                         </CollapsiblePanel>
                         <CollapsiblePanel v-if="!printMode && selectedCharacter && selectedCharacter.path.length > 0" label="Dependencies">
@@ -215,7 +224,7 @@ import CharactersPresentation from "./CharactersPresentation.vue";
 import ColumnHeader from "./toolkit/ColumnHeader.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Character, State, Picture, standardMaps, GeoMap, createState, characterStates, CharacterPreset } from "@/datatypes";
+import { Character, State, Picture, standardMaps, GeoMap, createState, characterStates, CharacterPreset, standardUnitsList } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
@@ -239,6 +248,7 @@ export default {
         }
         return {
             preset,
+            units: standardUnitsList,
             nameStore: characterNameStore,
             stateNameStore: stateNameStore,
             nameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }] satisfies Array<{ label: string, propertyName: Language }>,

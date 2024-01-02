@@ -1,4 +1,4 @@
-import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter } from "@/datatypes";
+import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter, Measurement } from "@/datatypes";
 import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree } from "@/datatypes/Dataset";
 import { defineStore } from "pinia";
 import clone from '@/tools/clone';
@@ -57,6 +57,12 @@ export const useDatasetStore = defineStore("dataset", {
             this.$patch((ds) => {
                 changeTaxonParent(ds, e.taxon.id, e.newParentId);
             });
+        },
+        updateTaxonMeasurement(payload: { taxon: Taxon, character: string, measurement: Measurement }) {
+            const t = taxonFromId(this.$state, payload.taxon.id);
+            if (t) {
+                t.measurements = { ...t.measurements, [payload.character]: payload.measurement };
+            }
         },
         addTaxonPicture(payload: { taxon: Taxon, picture: Picture }) {
             const t = taxonFromId(this.$state, payload.taxon.id);

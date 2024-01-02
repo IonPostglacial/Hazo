@@ -1,9 +1,10 @@
-import { Character, CharacterPreset, DiscreteCharacter, State } from "./types";
+import { Character, CharacterPreset, DiscreteCharacter, RangeCharacter, State, Unit } from "./types";
 import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
 import Months from "./Months";
 import { createState } from "./State";
 import { generateId } from "@/tools/generateid";
+import { standardUnits } from "./stdcontent";
 
 type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 	statesById?: Map<string, State>,
@@ -14,6 +15,9 @@ type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 	inapplicableStates?: State[],
 	requiredStates?: State[],
 	detail?: string,
+	min?: number,
+	max?: number,
+	unit?: string,
 }
 
 function defaultStates(init: CharacterInit): State[] {
@@ -47,6 +51,26 @@ export function createCharacter(init: CharacterInit): DiscreteCharacter {
 		preset: init.preset,
 		detail: init.detail ?? "",
 		children: [],
+	};
+}
+
+export function createRangeCharacter(init: CharacterInit): RangeCharacter {
+	let states = init.states;
+	if (!states || states.length === 0) {
+		states = defaultStates(init);
+	}
+	return {
+		...createHierarchicalItem({ ...init, type: "character" as const }),
+		type: "character",
+		characterType: "range",
+		color: init.color ?? "#84bf3d",
+		inapplicableStates: init.inapplicableStates ?? [],
+		requiredStates: init.requiredStates ?? [],
+		detail: init.detail ?? "",
+		children: [],
+		min: init.min,
+		max: init.max,
+		unit: (standardUnits as any)[init.unit ?? ""],
 	};
 }
 

@@ -145,7 +145,9 @@
                             :name-fields="['S', 'EN', 'CN']" 
                             :rootItems="itemDescriptorTree"
                             :selected-items="selectedStateIds"
-                            @item-selection-toggled="taxonStateToggle" 
+                            :measurements="selectedTaxon.measurements"
+                            @item-selection-toggled="taxonStateToggle"
+                            @measurement-updated="updateTaxonMeasurement({ taxon: selectedTaxon, ...$event })"
                             @item-open="openCharacter">
                         </SquareTreeViewer>
                     </VBox>
@@ -178,6 +180,11 @@
                                             {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
                                         </li>
                                     </ul>
+                                </li>
+                                <li v-for="measurement in selectedTaxon.measurements">
+                                    {{ measurement?.character.name[selectedSummaryLangProperty] }}: 
+                                    {{ measurement?.value }}
+                                    {{ measurement?.character.unit?.name.S }}
                                 </li>
                                 <li v-if="calendarTracks.length > 0">
                                     Calendar
@@ -381,7 +388,7 @@ export default {
             "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxon", "setTaxonPicture", "removeTaxonPicture",
             "characterWithId", "taxonWithId",
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
-            "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree",
+            "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree", "updateTaxonMeasurement",
         ]),
         columnName(col: string): string {
             return columnNames[col];
