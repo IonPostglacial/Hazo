@@ -33,7 +33,7 @@ export default {
             if (this.images.length > 0) {
                 return this.images[this.selectedImageIndex];
             } else {
-                return { id: "", hubUrl: "", url: "", label: "" };
+                return { type: "picture", id: "", path: [], hubUrl: "", url: "", label: "" };
             }
         },
         selectedImageUrl(): string|undefined {

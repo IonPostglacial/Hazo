@@ -1,7 +1,7 @@
 import { HierarchicalItemInit } from "./HierarchicalItem";
 import { State } from "./types";
 
-type StateInit = Omit<HierarchicalItemInit, "type"|"children">;
+type StateInit = Omit<HierarchicalItemInit, "type"|"children"> & { color?: string };
 
 export function createState(init: StateInit): State {
     return {

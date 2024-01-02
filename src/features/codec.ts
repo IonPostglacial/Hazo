@@ -6,6 +6,7 @@ import { createTaxon } from "@/datatypes/Taxon";
 import { map } from "@/tools/iter";
 import clone from "@/tools/clone";
 import { fixParentIds, fixStatePath } from "@/tools/fixes";
+import makeid from "@/tools/makeid";
 
 type EncodedState = {
 	id: string;
@@ -120,19 +121,20 @@ function encodeCharacter(character: Character, picIds: Set<string>) {
 }
 
 function decodeState(encoded: EncodedState): State {
-	return {
+	const state = createState({
 		id: encoded.id,
 		path: [],
-		type: "state",
 		name: {
 			S: encoded.name,
 			CN: encoded.nameCN,
 			EN: encoded.nameEN,
 		},
-		pictures: picturesFromPhotos(encoded.photos),
+		pictures: [],
 		detail: encoded.description ?? "",
 		color: encoded.color,		
-	}
+	});
+	state.pictures = picturesFromPhotos(state, encoded.photos);
+	return state;
 }
 
 function encodeState(state: State, picIds: Set<string>): EncodedState {
@@ -176,7 +178,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 }
 
 function decodeHierarchicalItem(item: EncodedHierarchicalItem): AnyHierarchicalItem {
-	return createHierarchicalItem({
+	const h = createHierarchicalItem({
 		...item,
 		path: [],
 		name: {
@@ -186,16 +188,21 @@ function decodeHierarchicalItem(item: EncodedHierarchicalItem): AnyHierarchicalI
 			EN: item.nameEN,
 			FR: item.name,
 		},
-		pictures: picturesFromPhotos(item.photos),
+		pictures: [],
 	});
+	h.pictures = picturesFromPhotos(h, item.photos);
+	return h;
 }
 
 function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]): Taxon {
 	const bookInfoByIds = (typeof encodedTaxon.bookInfoByIds !== "undefined") ? encodedTaxon.bookInfoByIds : {};
-
+	const item = decodeHierarchicalItem(encodedTaxon);
 	if (Object.keys(bookInfoByIds).length === 0) {
 		for (const book of books) {
-			const info:BookInfo = {
+			const info: BookInfo = {
+				type: "bookinfo",
+				id: "bi" + makeid(8),
+				path: pathToItem(item),
 				fasc: (book.id === "fmc") ? "" + encodedTaxon.fasc : "",
 				page: (book.id === "fmc") ? encodedTaxon.page : "",
 				detail: ""
@@ -203,7 +210,6 @@ function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, 
 			bookInfoByIds[book.id] = info;
 		}
 	}
-	const item = decodeHierarchicalItem(encodedTaxon);
 	const parent = ds.taxonsByIds.get(encodedTaxon.parentId ?? "t0");
 	let path: string[] = [];
 	if (parent) {

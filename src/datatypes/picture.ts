@@ -1,25 +1,27 @@
 import { Config } from "@/tools/config";
-import { Picture } from "./types";
+import { AnyItem, Item, Picture } from "./types";
+import { pathToItem } from "./Dataset";
 
 
-export function normalizePicture(pic: { id: string, url: string, label: string, hubUrl: string|undefined } ): Picture {
-    while (Array.isArray(pic.url)) {
-        pic.url = pic.url[0];
+export function normalizePicture(pic: { id: string, path: string[], url: string, label: string, hubUrl: string|undefined } ): Picture {
+    const pict = { ...pic, type: "picture" as const };
+    while (Array.isArray(pict.url)) {
+        pict.url = pict.url[0];
     }
-    if (!pic.hubUrl?.startsWith(Config.datasetRegistry)) {
-        pic.hubUrl = undefined;
+    if (!pict.hubUrl?.startsWith(Config.datasetRegistry)) {
+        pict.hubUrl = undefined;
     }
-    if (pic.url?.startsWith(Config.datasetRegistry)) {
-        pic.hubUrl = pic.url;
+    if (pict.url?.startsWith(Config.datasetRegistry)) {
+        pict.hubUrl = pict.url;
     }
-    return pic;
+    return pict;
 }
 
-export function picturesFromPhotos(photos: string[] | Picture[]): Picture[] {
+export function picturesFromPhotos(item: AnyItem, photos: string[] | Picture[]): Picture[] {
     if (photos.length === 0 || typeof photos[0] !== "string") {
         return (photos as Picture[]).map(normalizePicture);
     }
-    return (photos as string[]).map(url => (normalizePicture({ id: url, url: url, label: url, hubUrl: undefined })));
+    return (photos as string[]).map(url => (normalizePicture({ id: url, path: pathToItem(item), url: url, label: url, hubUrl: undefined })));
 }
 
 export async function uploadPicture(photoUrl: string) {

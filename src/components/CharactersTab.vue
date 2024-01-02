@@ -430,6 +430,7 @@ export default {
                 character: this.selectedCharacter,
                 picture: normalizePicture({
                     id: `${this.selectedCharacter!.id}-${numberOfPhotos}`,
+                    path: pathToItem(this.selectedCharacter),
                     url: url,
                     label: label ?? `${this.selectedCharacter!.name} #${numberOfPhotos}`,
                     hubUrl: undefined,
@@ -458,6 +459,7 @@ export default {
                 state: state,
                 picture: normalizePicture({
                     id: `${state.id}-${numberOfPhotos}`,
+                    path: pathToItem(state),
                     url: e.detail.value,
                     label: e.detail.value,
                     hubUrl: undefined,

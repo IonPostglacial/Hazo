@@ -237,6 +237,8 @@ import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
 import debounce from "@/tools/debounce";
 import clone from "@/tools/clone";
+import { pathToItem } from "@/datatypes/Dataset";
+import makeid from "@/tools/makeid";
 
 
 const columns = ["menu", "props", "desc", "summary"];
@@ -468,7 +470,8 @@ export default {
                     name: { S: name, V: vernacularName, CN: nameCN}, 
                     detail: "", pictures: [],
                 }),
-                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => [book.id, { fasc: "", page: "", detail: "" }])),
+                bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => 
+                    [book.id, { type: "bookinfo", id: "bi" + makeid(8), path: [], fasc: "", page: "", detail: "" }])),
             }));
         },
         setExtraProperty(e: { detail: { property: string, value: string } }) {
@@ -498,7 +501,13 @@ export default {
                 return;
             }
             const numberOfPhotos = this.selectedTaxon.pictures.length;
-            this.addTaxonPicture({ taxon: this.selectedTaxon, picture: normalizePicture({ id: `${this.selectedTaxon.id}-${numberOfPhotos}`, url: e.detail.value, label: e.detail.value, hubUrl: undefined }) });
+            this.addTaxonPicture({ taxon: this.selectedTaxon, picture: normalizePicture({ 
+                id: `${this.selectedTaxon.id}-${numberOfPhotos}`,
+                path: pathToItem(this.selectedTaxon),
+                url: e.detail.value, 
+                label: e.detail.value,
+                hubUrl: undefined,
+            }) });
         },
         setItemPhoto(e: {detail: {index: number, src: string, hubUrl: string}}) {
             if (!this.selectedTaxon) { return; }

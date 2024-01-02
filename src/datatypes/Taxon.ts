@@ -1,6 +1,7 @@
 import { multilangTextEquals } from "@/tools/multilangtextequal";
 import { createHierarchicalItem, HierarchicalItemInit } from "./HierarchicalItem";
 import { BookInfo, State, Taxon } from "./types";
+import { pathToItem } from "./Dataset";
 
 interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
 	bookInfoByIds?: Record<string, BookInfo>
@@ -19,7 +20,7 @@ interface TaxonInit extends Omit<HierarchicalItemInit, "type"> {
 }
 
 export function createTaxon(init: TaxonInit): Taxon {
-	return {
+	const t: Taxon = {
 		...createHierarchicalItem({ ...init, type: "taxon" }),
 		type: "taxon",
 		states: [],
@@ -38,6 +39,12 @@ export function createTaxon(init: TaxonInit): Taxon {
 		extra: init.extra ?? {},
 		children: [],
 	};
+	if (t.bookInfoByIds) {
+		for (const bi of Object.values(t.bookInfoByIds)) {
+			bi.path = pathToItem(t);
+		}
+	};
+	return t;
 }
 
 export function taxonPropertiesEquals(taxon: Taxon, other: Taxon): boolean {

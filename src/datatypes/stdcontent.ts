@@ -3,8 +3,8 @@ import { Book, Character, Field, GeoMap } from "./types";
 import { Config } from "@/tools/config";
 
 export const standardBooks: Book[] = [
-    {id: "fmc", label: "Flore de Madagascar et Comores"},
-    {id: "mbf", label: "Manuel de Botanique Forestière"},
+    { type: "book", id: "fmc", path: [], label: "Flore de Madagascar et Comores" },
+    { type: "book", id: "mbf", path: [], label: "Manuel de Botanique Forestière" },
 ];
 
 export const standardFields: Field[] = [

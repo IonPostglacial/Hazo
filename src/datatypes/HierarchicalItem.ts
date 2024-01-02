@@ -8,7 +8,6 @@ export interface HierarchicalItemInit {
 	name: MultilangText;
 	detail?: string,
 	pictures?: Picture[];
-	hidden?: boolean;
 }
 
 export function createHierarchicalItem(init : HierarchicalItemInit): Hierarchy<AnyHierarchicalItem> & { detail: string } {
@@ -20,7 +19,6 @@ export function createHierarchicalItem(init : HierarchicalItemInit): Hierarchy<A
 		children: [],
 		name: { S: init.name.S, V: init.name.V ?? "", CN: init.name.CN ?? "", EN: init.name.EN ?? "", FR: init.name.FR ?? "" },
 		pictures: init.pictures ?? [],
-		hidden: init.hidden ?? false,
 	};
 }
 

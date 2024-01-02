@@ -48,7 +48,7 @@ function saveSDD(ds: Dataset): Document {
         return id;
     }
 
-    function createRepresentation(xml: Document, item: Item, role: string|undefined = undefined) {
+    function createRepresentation(xml: Document, item: Omit<Item, "type">, role: string|undefined = undefined) {
         const representation = xml.createElement("Representation");
         const name = item.name.S +
             (item.author ? ` / ${item.author}` : "") +

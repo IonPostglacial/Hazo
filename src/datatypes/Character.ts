@@ -21,7 +21,7 @@ function defaultStates(init: CharacterInit): State[] {
 	if (init.preset === "flowering" && statesById) {
 		return Months.NAMES.map(name => {
 			const state = createState({
-				id: generateId("s", statesById, { id: "" }), name: { S: name, FR: name, EN: name },
+				id: generateId("s", statesById, { id: "" }), path: [], name: { S: name, FR: name, EN: name },
 			});
 			statesById.set(state.id, state);
 			return state;

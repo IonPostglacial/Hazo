@@ -1,5 +1,5 @@
 import { Character as sdd_Character, Dataset as sdd_Dataset, Representation, State as sdd_State, Taxon as sdd_Taxon } from "../sdd/datatypes";
-import { Character, Dataset, Field, iterHierarchy, State, Taxon } from "@/datatypes";
+import { Character, createState, Dataset, Field, iterHierarchy, State, Taxon } from "@/datatypes";
 import { addCharacter, addTaxon, createDataset, pathToItem, setTaxonState } from "@/datatypes/Dataset";
 import { standardFields } from "@/datatypes/stdcontent";
 import { picturesFromPhotos } from "@/datatypes/picture";
@@ -10,10 +10,9 @@ import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
 import { fixStatePath } from "@/tools/fixes";
 
 function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): State {
-    return {
+    const s = createState({
         id: state.id,
         path: [],
-        type: "state",
         name: {
             S: state.label,
             V: state.label,
@@ -22,8 +21,10 @@ function stateFromSdd(state:sdd_State, photosByRef: Record<string, string>): Sta
             FR: state.label,
         },
         detail: state.detail,
-        pictures: picturesFromPhotos(state.mediaObjectsRefs?.map(m => photosByRef[m.ref])),
-    };
+        pictures: [],
+    });
+    s.pictures = picturesFromPhotos(s, state.mediaObjectsRefs?.map(m => photosByRef[m.ref]));
+    return s;
 }
 
 function escapeRegex(string:String):String {
@@ -54,8 +55,8 @@ function hierarchicalItemFromSdd(id: string, type: "character" | "taxon", repres
     const names = representation.label.split("/");
     const name = names[0], nameCN = names[2];
     const photos = representation.mediaObjectsRefs.map(m => photosByRef[m.ref]);
-    const data = createHierarchicalItem({ id: id, path: [], type, name: { S: name, CN: nameCN }, pictures: picturesFromPhotos(photos) });
-
+    const data = createHierarchicalItem({ id: id, path: [], type, name: { S: name, CN: nameCN }, pictures: [] });
+    data.pictures = picturesFromPhotos(data, photos);
     return data;
 }
 

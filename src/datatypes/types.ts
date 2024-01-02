@@ -1,28 +1,37 @@
 import { Hierarchy } from "./hierarchy";
 
-export type Book = {
-    id: string;
-    label: string;
-};
-
-export type Picture = {
-	id: string;
-	url: string;
-	label: string;
-	hubUrl: string|undefined;
-};
-
-export type BookInfo = {
-    fasc: string;
-    page: string;
-    detail: string;
-};
-
 export type Field = {
     std: boolean;
     id: string;
     label: string;
     icon: string;
+};
+
+export type DocumentType = "book" | "bookinfo" | "character" | "picture" | "state" | "taxon";
+
+export type AnyDocument = {
+	type: DocumentType;
+	id: string;
+	path: string[];
+};
+
+export type Book = AnyDocument & {
+	type: "book";
+    label: string;
+};
+
+export type Picture = AnyDocument & {
+	type: "picture";
+	url: string;
+	label: string;
+	hubUrl: string|undefined;
+};
+
+export type BookInfo = AnyDocument & {
+	type: "bookinfo";
+    fasc: string;
+    page: string;
+    detail: string;
 };
 
 export type MultilangText = {
@@ -33,9 +42,7 @@ export type MultilangText = {
 	FR?: string;
 } & Partial<Record<string, string>>;
 
-export type AnyItem = {
-	id: string;
-	path: string[];
+export type AnyItem = AnyDocument & {
 	name: MultilangText;
 	detail : string;
 	pictures: Picture[];
@@ -48,7 +55,6 @@ export type State = AnyItem & {
 
 export type AnyHierarchicalItem = AnyItem & {
 	type: "character" | "taxon",
-	hidden: boolean;
 };
 
 export type Taxon = AnyHierarchicalItem & {
@@ -70,22 +76,17 @@ export type Taxon = AnyHierarchicalItem & {
 	children: Taxon[];
 };
 
-export type ItemType = "state" | "character" | "taxon";
 export type CharacterPreset = "flowering" | "family" | "map";
 export type CharacterType = "discrete" | "range";
-
 
 export type AnyCharacter = AnyHierarchicalItem & {
 	type: "character";
 	detail: string;
-	color?: string,
+	color?: string;
 	inapplicableStates: State[];
 	requiredStates: State[];
 	children: Character[];
 };
-
-export type HierarchicalItem = Taxon | DiscreteCharacter | RangeCharacter;
-export type Item = State | Character | Taxon;
 
 export type RangeCharacter = AnyCharacter & {
 	characterType: "range",
@@ -100,6 +101,9 @@ export type DiscreteCharacter = AnyCharacter & {
 };
 
 export type Character = DiscreteCharacter | RangeCharacter;
+
+export type HierarchicalItem = Taxon | Character;
+export type Item = Character | State | Taxon;
 
 export type Description = {
     character: Character;
