@@ -218,7 +218,7 @@ function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, 
 		for (const book of books) {
 			const info: BookInfo = {
 				type: "bookinfo",
-				id: "bi" + makeid(8),
+				id: "b-" + makeid(8),
 				path: pathToItem(item),
 				fasc: (book.id === "fmc") ? "" + encodedTaxon.fasc : "",
 				page: (book.id === "fmc") ? encodedTaxon.page : "",
@@ -228,7 +228,7 @@ function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, 
 		}
 	} else {
 		for (const bookInfo of Object.values(bookInfoByIds)) {
-			bookInfo.id ??= "bi" + makeid(8);
+			bookInfo.id ??= "b-" + makeid(8);
 			bookInfo.path ??= pathToItem(item);
 		}
 	}

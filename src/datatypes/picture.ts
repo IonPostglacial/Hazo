@@ -1,10 +1,14 @@
 import { Config } from "@/tools/config";
-import { AnyItem, Item, Picture } from "./types";
+import { AnyItem, Picture } from "./types";
 import { pathToItem } from "./Dataset";
+import makeid from "@/tools/makeid";
 
 
 export function normalizePicture(pic: { id: string, path: string[], url: string, label: string, hubUrl: string|undefined } ): Picture {
     const pict = { ...pic, type: "picture" as const };
+    if (pict.id.startsWith("http")) {
+        pict.id = "m-" + makeid(16);
+    }
     while (Array.isArray(pict.url)) {
         pict.url = pict.url[0];
     }
@@ -21,7 +25,7 @@ export function picturesFromPhotos(item: AnyItem, photos: string[] | Picture[]):
     if (photos.length === 0 || typeof photos[0] !== "string") {
         return (photos as Picture[]).map(normalizePicture);
     }
-    return (photos as string[]).map(url => (normalizePicture({ id: url, path: pathToItem(item), url: url, label: url, hubUrl: undefined })));
+    return (photos as string[]).map(url => (normalizePicture({ id: "m-" + makeid(16), path: pathToItem(item), url: url, label: url, hubUrl: undefined })));
 }
 
 export async function uploadPicture(photoUrl: string) {

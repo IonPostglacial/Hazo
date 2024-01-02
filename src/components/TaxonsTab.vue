@@ -478,7 +478,7 @@ export default {
                     detail: "", pictures: [],
                 }),
                 bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => 
-                    [book.id, { type: "bookinfo", id: "bi" + makeid(8), path: [], fasc: "", page: "", detail: "" }])),
+                    [book.id, { type: "bookinfo", id: "b-" + makeid(8), path: [], fasc: "", page: "", detail: "" }])),
             }));
         },
         setExtraProperty(e: { detail: { property: string, value: string } }) {
@@ -511,7 +511,7 @@ export default {
             this.addTaxonPicture({ taxon: this.selectedTaxon, picture: normalizePicture({ 
                 id: `${this.selectedTaxon.id}-${numberOfPhotos}`,
                 path: pathToItem(this.selectedTaxon),
-                url: e.detail.value, 
+                url: e.detail.value,
                 label: e.detail.value,
                 hubUrl: undefined,
             }) });
