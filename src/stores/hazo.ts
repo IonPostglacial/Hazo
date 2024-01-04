@@ -1,5 +1,5 @@
-import { defineStore, mapActions } from "pinia";
-import { Character, DictionaryEntry, Hierarchy, Taxon, cloneHierarchy, State, forEachHierarchy } from "../datatypes";
+import { defineStore, mapActions, mapState } from "pinia";
+import { Character, DictionaryEntry, Hierarchy, Taxon, cloneHierarchy, State, forEachHierarchy, transformHierarchy, taxonOrAnyChildHasStates, taxonHasStates } from "../datatypes";
 import clone from "../tools/clone";
 import makeid from '../tools/makeid';
 import { fixParentIds } from "../tools/fixes";
@@ -21,6 +21,7 @@ export const useHazoStore = defineStore("hazo", {
         statesDenyList: [] as State[],
     }),
     getters: {
+        ...mapState(useDatasetStore, ["taxonsHierarchy"]),
         indexedDatasets(): string[] {
             const ids = window.localStorage.getItem("indexedDatasets");
             if (ids) {
@@ -31,7 +32,18 @@ export const useHazoStore = defineStore("hazo", {
                 }
             }
             return [];
-        }
+        },
+        taxonsToDisplay(): Taxon {
+            if (this.statesAllowList.length > 0 || this.statesDenyList.length > 0) {
+                return transformHierarchy(this.taxonsHierarchy, {
+                    map: t => t,
+                    filter: t => taxonOrAnyChildHasStates(t, this.statesAllowList) && 
+                        (this.statesDenyList.length == 0 || !taxonHasStates(t, this.statesDenyList)),
+                });
+            } else {
+                return this.taxonsHierarchy;
+            }
+        },
     },
     actions: {
         ...mapActions(useDatasetStore, ["addCharacter", "addTaxon", "addState", "characterWithId", "taxonWithId"]),

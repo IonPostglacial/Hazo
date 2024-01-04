@@ -1,5 +1,5 @@
 import { Config } from "@/tools/config";
-import { AnyItem, Picture } from "./types";
+import { AnyDocument, AnyItem, Picture } from "./types";
 import { pathToItem } from "./Dataset";
 import makeid from "@/tools/makeid";
 
@@ -21,7 +21,7 @@ export function normalizePicture(pic: { id: string, path: string[], url: string,
     return pict;
 }
 
-export function picturesFromPhotos(item: AnyItem, photos: string[] | Picture[]): Picture[] {
+export function picturesFromPhotos(item: AnyDocument, photos: string[] | Picture[]): Picture[] {
     if (photos.length === 0 || typeof photos[0] !== "string") {
         return (photos as Picture[]).map(normalizePicture);
     }

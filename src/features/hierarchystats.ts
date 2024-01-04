@@ -1,4 +1,5 @@
-import { Hierarchy, Taxon } from "@/datatypes";
+import { Taxon } from "@/datatypes";
+import { useDatasetStore } from "@/stores/dataset";
 
 export type Counts = {
     families: Taxon[],
@@ -12,27 +13,24 @@ export type Counts = {
 // taxon ceux qui n'ont pas d'enfants
 // espèce: taxons qui ont un auteur
 
-export function taxonsStats(hierarchy: Hierarchy<Taxon>): Counts {
+export function taxonsStats(taxons: Iterable<Taxon>): Counts {
+    console.log("stats");
+    const store = useDatasetStore();
     const counts: Counts = { families: [], gender: 0, taxa: [], species: [] };
-    function countRec(item: Taxon, level: number) {
-        if (item.children.length > 0) {
-            if (level === 0) {
-                counts.families.push(item);
+    for (const taxon of taxons) {
+        console.log("analyze taxon", taxon);
+        if (store.hasChildren(taxon)) {
+            if (taxon.path.length === 1) {
+                counts.families.push(taxon);
             } else {
                 counts.gender++;
             }
         } else {
-            counts.taxa.push(item)
-            if (item.author) {
-                counts.species.push(item);
+            counts.taxa.push(taxon)
+            if (taxon.author) {
+                counts.species.push(taxon);
             }
         }
-        for (const child of item.children) {
-            countRec(child, level + 1);
-        }
-    }
-    for (const item of hierarchy.children) {
-        countRec(item, 0);
     }
     return counts;
 }

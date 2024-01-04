@@ -1,10 +1,10 @@
 import JSZip from "jszip";
-import { Hierarchy, Taxon } from "@/datatypes";
+import { Taxon } from "@/datatypes";
 import generateFileName from "./generatefilename";
 
 
-async function fillZipEntry(hierarchy: Hierarchy<Taxon>, entries: Iterable<Taxon>, zip: JSZip, path = "") {
-	for (const entry of entries) {
+async function fillZipEntry(taxons: Iterable<Taxon>, zip: JSZip, path = "") {
+	for (const entry of taxons) {
 		const entryName = generateFileName(entry.name.S);
 		const currentPath = path + encodeURI(entryName) + "/";
 		zip.folder(currentPath);
@@ -37,14 +37,13 @@ async function fillZipEntry(hierarchy: Hierarchy<Taxon>, entries: Iterable<Taxon
 				console.warn(`downloading picture for '${paths[i]}' failed.`);
 			}
 		}
-		await fillZipEntry(hierarchy, entry.children, zip, currentPath);
 	}
 }
 
-export async function exportZipFolder(hierarchy: Hierarchy<Taxon>): Promise<Blob> {
+export async function exportZipFolder(taxons: Iterable<Taxon>): Promise<Blob> {
 	const zip = new JSZip();
 
-	await fillZipEntry(hierarchy, hierarchy.children, zip);
+	await fillZipEntry(taxons, zip);
 
 	return zip.generateAsync({type:"blob"});
 }

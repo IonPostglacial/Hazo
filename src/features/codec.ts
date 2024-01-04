@@ -21,13 +21,13 @@ type EncodedState = {
 export interface EncodedDataset {
 	id: string
 	taxons: ReturnType<typeof encodeTaxon>[];
-	characters: ReturnType<typeof encodeCharacter>[];
+	characters: EncodedCharacter[];
 	states: EncodedState[];
 	books: Book[];
 	extraFields: Field[];
 }
 
-type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { 
+export type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { 
 	photos: string[]|Picture[],
 	min?: number,
 	max?: number,
@@ -129,6 +129,7 @@ function encodeCharacter(character: Character, picIds: Set<string>) {
 		characterType: character.characterType,
 		preset: character.characterType === "discrete" ? character.preset : undefined,
 		color: character.color,
+		detail: character.detail,
 		inherentStateId: character.characterType === "discrete" ? character.inherentState?.id : '',
 		inapplicableStatesIds: character.inapplicableStates.filter(s => typeof s !== "undefined").map(s => s.id),
 		requiredStatesIds: character.requiredStates.filter(s => typeof s !== "undefined").map(s => s.id),

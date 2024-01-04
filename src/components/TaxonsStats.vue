@@ -3,7 +3,7 @@
         In our items list, <a href="#taxa">{{stats.taxa.length}} taxa</a> were registered in our database, 
         <a href="#families">{{stats.families.length}} families</a>, {{stats.gender}} genus, 
         <a href="#species">{{stats.species.length}} species</a>. Among those, ** trees, and *** shrubs, and ** herbs; ** dans dry forest, ** live in savanna, ** aquatic plants.
-        In the description list, {{chars.length}} characters were noted, in *** groups, with {{statesCount}} states, the *** description, *** description, and *** description were the three character the most applied in this database. And the fact that integrating the family and vernacular name into description, helping users reach their aiming plant efficiently. 
+        In the description list, {{numberOfCharacters}} characters were noted, in *** groups, with {{statesCount}} states, the *** description, *** description, and *** description were the three character the most applied in this database. And the fact that integrating the family and vernacular name into description, helping users reach their aiming plant efficiently. 
         {{picsCount}} pictures are stored in total. In our platform, **% plants are applied by human, ** plants are used for construction and ** are eatable, that present a great use for local people and for ethnobotanic researchers.<br>
         <h2 id="taxa">Taxa</h2>
         <ol>
@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { taxonsStats } from "@/features";
-import { Character, Taxon, iterHierarchy } from "@/datatypes";
+import { Taxon } from "@/datatypes";
 import { mapActions, mapState } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 import { Counts } from "@/features/hierarchystats";
@@ -47,20 +47,17 @@ export default {
             taxa: [],
             species: [],
         };
-        const chars: Character[] = [];
         return {
             stats,
-            chars,
             statesCount: 0,
             picsCount: 0,
         };
     },
     mounted() {
-        this.stats = taxonsStats(this.taxonsHierarchy);
-        this.chars = Array.from(iterHierarchy(this.charactersHierarchy));
+        this.stats = taxonsStats(this.allTaxons);
         this.statesCount = 0;
         this.picsCount = 0;
-        for (const char of this.chars) {
+        for (const char of this.allCharacters) {
             this.picsCount += char.pictures.length;
             if (char.characterType === "discrete") {
                 this.statesCount += char.states.length;
@@ -69,12 +66,12 @@ export default {
                 }
             }
         }
-        for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
+        for (const taxon of this.allTaxons) {
             this.picsCount += taxon.pictures.length;
         }
     },
     computed: {
-        ...mapState(useDatasetStore, ["charactersHierarchy", "taxonsHierarchy"]),
+        ...mapState(useDatasetStore, ["allCharacters", "allTaxons", "numberOfCharacters"]),
     },
     methods: {
         ...mapActions(useDatasetStore, ["taxonWithId"]),

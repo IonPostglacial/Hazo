@@ -1,4 +1,4 @@
-import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter, Measurement } from "@/datatypes";
+import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter, Measurement, forEachLeaves, iterHierarchy, forEachHierarchy } from "@/datatypes";
 import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree, pathToItem } from "@/datatypes/Dataset";
 import { defineStore } from "pinia";
 import clone from '@/tools/clone';
@@ -15,9 +15,45 @@ export const useDatasetStore = defineStore("dataset", {
         extraFields: new Array<Field>(),
         statesById: new Map(),
     }),
+    getters: {
+        leafTaxons(): Taxon[] {
+            const items: Taxon[] = [];
+            forEachLeaves(this.taxonsHierarchy, t => {
+                items.push(t);
+            });
+            return items;
+        },
+        allTaxons(): Taxon[] {
+            const items: Taxon[] = [];
+            forEachHierarchy(this.taxonsHierarchy, t => {
+                items.push(t);
+            });
+            return items;
+        },
+        allCharacters(): Character[] {
+            const items: Character[] = [];
+            forEachHierarchy(this.charactersHierarchy, t => {
+                items.push(t);
+            });
+            return items;
+        },
+        numberOfCharacters(): number {
+            let count = -1;
+            forEachHierarchy(this.charactersHierarchy, _ => {
+                count++;
+            });
+            return count;
+        }
+    },
     actions: {
         taxonWithId(id: string | undefined): Taxon | undefined {
             return taxonFromId(this.$state, id);
+        },
+        taxonChildren(taxon: Taxon): Generator<Taxon> {
+            return iterHierarchy(taxon);
+        },
+        hasChildren(taxon: Taxon): boolean {
+            return taxon.children.length > 0;
         },
         taxonParentChain(id: string | undefined): Taxon[] {
             return taxonParentChain(this.$state, id);
@@ -93,6 +129,9 @@ export const useDatasetStore = defineStore("dataset", {
         },
         characterWithId(id: string | undefined): Character | undefined {
             return characterFromId(this.$state, id);
+        },
+        characterTree(character: Character): Generator<Character> {
+            return iterHierarchy(character);
         },
         addCharacter(character: Character): Character {
             return addCharacter(this.$state, character);

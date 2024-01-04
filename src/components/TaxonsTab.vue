@@ -1,6 +1,6 @@
 <template>
     <SplitPanel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
-        <TreeMenu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonTree" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
+        <TreeMenu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonsToDisplay" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-store="nameStore"
             :name-fields="nameFields"
             @closed="removeColumn('menu')"
@@ -35,7 +35,7 @@
                         <div v-if="selectingParent">
                             <button type="button" @click="closeSelectParentDropdown" class="background-color-1">select parent</button>
                             <div class="absolute white-background thin-border big-max-height scroll over-everything width-l" style="top:32px;">
-                                <TreeMenu :items="taxonTree"
+                                <TreeMenu :items="taxonsToDisplay"
                                     :name-fields="nameFields"
                                     @closed="closeSelectParentDropdown" @select-item="changeSelectedTaxonParent" v-slot="menuProps">
                                     <div>{{ menuProps.item.name }}</div>
@@ -228,11 +228,10 @@ import ColumnHeader from "./toolkit/ColumnHeader.vue";
 import ItemPropertyField from "./ItemPropertyField.vue";
 import download from "@/tools/download";
 import { exportZipFolder, importKml } from "@/features";
-import { createTaxon, taxonHasState, taxonHasStates } from "@/datatypes/Taxon";
+import { createTaxon, taxonHasState } from "@/datatypes/Taxon";
 import { createHierarchicalItem } from "@/datatypes/HierarchicalItem";
-import { taxonOrAnyChildHasStates } from "@/datatypes/Taxon";
 import { normalizePicture } from "@/datatypes/picture";
-import { forEachHierarchy, transformHierarchy } from "@/datatypes/hierarchy";
+import { forEachHierarchy } from "@/datatypes/hierarchy";
 import { createCharacter } from "@/datatypes/Character";
 import { DiscreteCharacter, Field, GeoMap, Picture, Item } from "@/datatypes/types";
 import { escape } from "@/tools/parse-csv";
@@ -317,8 +316,8 @@ export default {
         },
     },
     computed: {
-        ...mapState(useHazoStore, ["statesAllowList", "statesDenyList"]),
-        ...mapState(useDatasetStore, ["books", "charactersHierarchy", "extraFields", "taxonsHierarchy"]),
+        ...mapState(useHazoStore, ["statesAllowList", "statesDenyList", "taxonsToDisplay"]),
+        ...mapState(useDatasetStore, ["allTaxons", "books", "charactersHierarchy", "extraFields"]),
         selectedStateIds(): string[] {
             return this.selectedTaxon?.states.map(s => s.id) ?? [];
         },
@@ -333,17 +332,6 @@ export default {
         },
         rightPaneSize(): number {
             return this.selectedColumns.includes("menu") ? 75 : 100;
-        },
-        taxonTree(): Taxon {
-            if (this.statesAllowList.length > 0 || this.statesDenyList.length > 0) {
-                return transformHierarchy(this.taxonsHierarchy, {
-                    map: t => t,
-                    filter: t => taxonOrAnyChildHasStates(t, this.statesAllowList) && 
-                        (this.statesDenyList.length == 0 || !taxonHasStates(t, this.statesDenyList)),
-                });
-            } else {
-                return this.taxonsHierarchy;
-            }
         },
         selectedTaxon(): Taxon|undefined {
             return this.taxonWithId(this.selectedTaxonId);
@@ -386,7 +374,7 @@ export default {
         ...mapActions(useHazoStore, ["pasteTaxon", "selectTaxon", "copyTaxon", "unselectTaxon"]),
         ...mapActions(useDatasetStore, [
             "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxon", "setTaxonPicture", "removeTaxonPicture",
-            "characterWithId", "taxonWithId",
+            "characterWithId", "taxonWithId", "taxonChildren",
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
             "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree", "updateTaxonMeasurement",
         ]),
@@ -398,7 +386,7 @@ export default {
         },
         exportCSV() {
             let content = "NV,NS,Family,Biblio\n";
-            const tree = this.taxonTree;
+            const tree = this.taxonsToDisplay;
             const c = this.characterWithId("c277");
             if (!c || c.characterType !== "discrete") return;
             const states = new Set(c.states.map(s=>s.id));
@@ -535,7 +523,9 @@ export default {
             this.showBigImage = true;
         },
         async emptyZip() {
-            const zipTxt = await exportZipFolder(this.selectedTaxon ?? this.taxonsHierarchy!);
+            const zipTxt = this.selectedTaxon ? 
+                await exportZipFolder(this.taxonChildren(this.selectedTaxon)) :
+                await exportZipFolder(this.allTaxons);
             download(zipTxt, "zip", undefined, true);
         },
         texExport() {

@@ -50,7 +50,6 @@
 </template>
 <script lang="ts">
 import { Description, Taxon } from '@/datatypes';
-import { forEachLeaves, iterHierarchy } from '@/datatypes/hierarchy';
 import Months from '@/datatypes/Months';
 import { Character, MultilangText, State } from '@/datatypes/types';
 import Flowering, { Track } from "@/components/Flowering.vue";
@@ -88,19 +87,15 @@ export default {
         },
     },
     computed: {
-        ...mapState(useDatasetStore, ["taxonsHierarchy"]),
+        ...mapState(useDatasetStore, ["leafTaxons"]),
         selectedTaxon(): Taxon|undefined {
             return this.taxonWithId(this.selectedTaxonId);
         },
         itemsToDisplay(): Iterable<Taxon> {
             if (this.selectedTaxon) {
-                return iterHierarchy(this.selectedTaxon);
+                return this.taxonChildren(this.selectedTaxon);
             } else {
-                const items: Taxon[] = [];
-                forEachLeaves(this.taxonsHierarchy, t => {
-                    items.push(t);
-                });
-                return items;
+                return this.leafTaxons;
             }
         },
     },
