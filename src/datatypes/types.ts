@@ -58,7 +58,8 @@ export type AnyHierarchicalItem = AnyItem & {
 };
 
 export type Measurement = {
-	value: number,
+	min: number,
+	max: number,
 	character: RangeCharacter,
 };
 
@@ -101,7 +102,7 @@ export type Unit = {
 
 export type RangeCharacter = AnyCharacter & {
 	characterType: "range",
-	min?: number, max?: number,
+	states?: State[],
 	unit?: Unit,
 };
 

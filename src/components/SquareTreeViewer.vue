@@ -28,8 +28,10 @@
             <Flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></Flowering>
         </div>
         <HBox v-if="isRange" class="center-items">
-            <label for="measurement">Mean value</label>
-            <input type="number" name="measurement" :value="characterValue" @change="updateMeasurement" id="measurement">
+            <label for="measurementMin">Min</label>
+            <input type="number" name="measurementMin" :value="characterMeasurement?.min" @change="updateMeasurement($event, false)" id="measurementMin">
+            <label for="measurementMax">Max</label>
+            <input type="number" name="measurementMax" :value="characterMeasurement?.max" @change="updateMeasurement($event, true)" id="measurementMax">
             <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
         </HBox>
     </VBox>
@@ -139,21 +141,22 @@ export default {
             }
             return undefined
         },
-        characterValue(): number | undefined {
+        characterMeasurement(): Measurement | undefined {
             if (this.currentCharacter?.type === "character" && this.currentCharacter.characterType === "range") {
-                return this.measurements[this.currentCharacter.id]?.value;
+                return this.measurements[this.currentCharacter.id]
             }
             return undefined
         },
     },
     methods: {
         ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
-        updateMeasurement(e: Event) {
+        updateMeasurement(e: Event, isMax: boolean) {
             if (e.target instanceof HTMLInputElement && this.currentCharacter && this.currentCharacter.characterType === "range") {
                 this.$emit("measurement-updated", { 
                     character: this.currentCharacter.id, 
                     measurement: { 
-                        value: parseInt(e.target.value),
+                        [isMax ? "max" : "min"]: parseInt(e.target.value),
+                        [isMax ? "min" : "max"]: (this.characterMeasurement ?? {})[isMax ? "min" : "max"],
                         character: this.currentCharacter,
                     }
                 });

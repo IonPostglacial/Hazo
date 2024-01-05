@@ -15,8 +15,6 @@ type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 	inapplicableStates?: State[],
 	requiredStates?: State[],
 	detail?: string,
-	min?: number,
-	max?: number,
 	unit?: string,
 }
 
@@ -55,21 +53,17 @@ export function createCharacter(init: CharacterInit): DiscreteCharacter {
 }
 
 export function createRangeCharacter(init: CharacterInit): RangeCharacter {
-	let states = init.states;
-	if (!states || states.length === 0) {
-		states = defaultStates(init);
-	}
+	let states: State[] = init.states ?? [];
 	return {
 		...createHierarchicalItem({ ...init, type: "character" as const }),
 		type: "character",
 		characterType: "range",
 		color: init.color ?? "#84bf3d",
+		states,
 		inapplicableStates: init.inapplicableStates ?? [],
 		requiredStates: init.requiredStates ?? [],
 		detail: init.detail ?? "",
 		children: [],
-		min: init.min,
-		max: init.max,
 		unit: (standardUnits as any)[init.unit ?? ""],
 	};
 }

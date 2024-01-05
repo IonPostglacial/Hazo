@@ -101,7 +101,7 @@ function encodeTaxon(taxon: Taxon, picIds: Set<string>, allStates: CharactersSta
 		descriptions,
 		measurements: Object.values(taxon.measurements).flatMap(m => {
 			if (!m) { return []; }
-			return { value: m.value, character: m.character.id };
+			return { min: m.min, max: m.max, character: m.character.id };
 		}),
 		author: taxon.author,
 		vernacularName2: taxon.vernacularName2,
@@ -120,8 +120,6 @@ function encodeTaxon(taxon: Taxon, picIds: Set<string>, allStates: CharactersSta
 function encodeCharacter(character: Character, picIds: Set<string>) {
 	let extra: Record<string, any> = {};
 	if (character.characterType === "range") {
-		extra.min = character.min;
-		extra.max = character.max;
 		extra.unit = character.unit?.name.S;
 	}
 	return {
@@ -244,7 +242,7 @@ function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, 
 		measurements: Object.fromEntries(encodedTaxon.measurements?.flatMap(m => {
 			const character = ds.charactersByIds.get(m.character);
 			if (character && character.characterType === "range") {
-				return { value: m.value, character };
+				return { min: m.min, max: m.max, character };
 			}
 			return [];
 		}).map(m => [m.character.id, m]) ?? []),
@@ -278,7 +276,17 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 	if (parent) {
 		path = pathToItem(parent);
 	}
-	if (character.characterType === "discrete") {
+	if (character.characterType === "range") {
+		return createRangeCharacter({
+			statesById: new Map(ds.statesById),
+			...item,
+			path,
+			color: character.color,
+			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
+			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
+			unit: character.unit,
+		});
+	} else {
 		return createCharacter({
 			statesById: new Map(ds.statesById),
 			...item,
@@ -289,18 +297,6 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 			inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
 			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
 			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
-		});
-	} else {
-		return createRangeCharacter({
-			statesById: new Map(ds.statesById),
-			...item,
-			path,
-			color: character.color,
-			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
-			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
-			min: character.min,
-			max: character.max,
-			unit: character.unit,
 		});
 	}
 }

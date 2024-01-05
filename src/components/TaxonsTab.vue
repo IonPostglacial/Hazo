@@ -183,7 +183,7 @@
                                 </li>
                                 <li v-for="measurement in selectedTaxon.measurements">
                                     {{ measurement?.character.name[selectedSummaryLangProperty] }}: 
-                                    {{ measurement?.value }}
+                                    {{ measurement?.min }} - {{ measurement?.max }}
                                     {{ measurement?.character.unit?.name.S }}
                                 </li>
                                 <li v-if="calendarTracks.length > 0">

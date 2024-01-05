@@ -88,8 +88,6 @@
                         </VBox>
                         <CollapsiblePanel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">
                             <div class="form-grid medium-padding">
-                                <label for="range-min">From</label><input name="range-min" type="number" v-model="selectedCharacter.min" />
-                                <label for="range-max">To</label><input name="range-max" type="number" v-model="selectedCharacter.max" />
                                 <label for="range-unit">Unit</label>
                                 <select name="range-unit" v-model="selectedCharacter.unit">
                                     <option v-for="unit in units" :value="unit">
