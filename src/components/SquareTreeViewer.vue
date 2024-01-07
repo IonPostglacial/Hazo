@@ -27,13 +27,18 @@
         <div v-if="floweringMode">
             <Flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></Flowering>
         </div>
-        <HBox v-if="isRange" class="center-items">
-            <label for="measurementMin">Min</label>
-            <input type="number" name="measurementMin" :value="characterMeasurement?.min" @change="updateMeasurement($event, false)" id="measurementMin">
-            <label for="measurementMax">Max</label>
-            <input type="number" name="measurementMax" :value="characterMeasurement?.max" @change="updateMeasurement($event, true)" id="measurementMax">
-            <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
-        </HBox>
+        <VBox v-if="isRange">
+            <div v-if="isMetric && characterMeasurement">
+                <ScaleComparator :measurement="characterMeasurement" height="400px"></ScaleComparator>
+            </div>
+            <HBox class="center-items">
+                <label for="measurementMin">Min</label>
+                <input type="number" name="measurementMin" :value="characterMeasurement?.min" @change="updateMeasurement($event, false)" id="measurementMin">
+                <label for="measurementMax">Max</label>
+                <input type="number" name="measurementMax" :value="characterMeasurement?.max" @change="updateMeasurement($event, true)" id="measurementMax">
+                <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
+            </HBox>
+        </VBox>
     </VBox>
 </template>
 
@@ -41,6 +46,7 @@
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
 import { Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering, { Track } from "./Flowering.vue";
+import ScaleComparator from "./ScaleComparator.vue";
 import GeoView from "./GeoView.vue";
 import SquareCard from "./toolkit/SquareCard.vue";
 import HBox from "./toolkit/HBox.vue";
@@ -68,7 +74,7 @@ function floweringFromStates(color: string, currentItems:
 
 export default {
     name: "SquareTreeViewer",
-    components: { Flowering, GeoView, HBox, SquareCard, VBox },
+    components: { Flowering, GeoView, HBox, ScaleComparator, SquareCard, VBox },
     props: {
         measurements: { required: true, type: Object as PropType<Partial<Record<string, Measurement>>> },
         selectedItems: Array<string>,
@@ -135,6 +141,11 @@ export default {
         isRange(): boolean {
             return this.currentCharacter?.type === "character" && this.currentCharacter.characterType === "range";
         },
+        isMetric(): boolean {
+            return this.currentCharacter?.type === "character" && 
+                this.currentCharacter.characterType === "range" && 
+                (this.currentCharacter.unit?.name.S === "m" || this.currentCharacter.unit?.name.S === "cm");
+        },
         characterUnit(): Unit | undefined {
             if (this.currentCharacter?.type === "character" && this.currentCharacter.characterType === "range") {
                 return this.currentCharacter.unit;
@@ -152,6 +163,7 @@ export default {
         ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
         updateMeasurement(e: Event, isMax: boolean) {
             if (e.target instanceof HTMLInputElement && this.currentCharacter && this.currentCharacter.characterType === "range") {
+                console.log("update measurement");
                 this.$emit("measurement-updated", { 
                     character: this.currentCharacter.id, 
                     measurement: { 

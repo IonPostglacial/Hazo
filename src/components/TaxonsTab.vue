@@ -181,11 +181,6 @@
                                         </li>
                                     </ul>
                                 </li>
-                                <li v-for="measurement in selectedTaxon.measurements">
-                                    {{ measurement?.character.name[selectedSummaryLangProperty] }}: 
-                                    {{ measurement?.min }} - {{ measurement?.max }}
-                                    {{ measurement?.character.unit?.name.S }}
-                                </li>
                                 <li v-if="calendarTracks.length > 0">
                                     Calendar
                                     <ul>
@@ -197,6 +192,20 @@
                                         :model-value="calendarTracks"
                                         class="limited-width">
                                     </Flowering>
+                                </li>
+                                <li v-for="measurement in selectedTaxon.measurements">
+                                    <VBox>
+                                        <ScaleComparator 
+                                            v-if="measurement && ['m', 'cm'].includes(measurement.character.unit?.name.S ?? '')" 
+                                            height="200px" 
+                                            :measurement="measurement">
+                                        </ScaleComparator>
+                                        <div>
+                                            {{ measurement?.character.name[selectedSummaryLangProperty] }}: 
+                                            {{ measurement?.min }} - {{ measurement?.max }}
+                                            {{ measurement?.character.unit?.name.S }}
+                                        </div>
+                                    </VBox>
                                 </li>
                             </ul>
                         </div>
@@ -214,6 +223,7 @@ import PopupGalery from "./PopupGalery.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
+import ScaleComparator from "./ScaleComparator.vue";
 import GeoView from "./GeoView.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
@@ -260,12 +270,13 @@ const palette = ["#84bf3d", "red", "blue", "orange", "purple"];
 export default {
     name: "TaxonsTab",
     components: {
-        CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
-        GeoView, GoogleMap, Marker,
-        ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
-        ColumnHeader, TextEditor,
-        Flowering
-    },
+    CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
+    GeoView, GoogleMap, Marker,
+    ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
+    ColumnHeader, TextEditor,
+    Flowering,
+    ScaleComparator
+},
     data() {
         const selectedCols = (""+localStorage.selectedTaxonColumns)
             .split(",")
