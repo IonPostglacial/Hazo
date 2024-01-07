@@ -282,7 +282,7 @@ export default {
             this.selectedBase = manualId;
         },
         saveData() {
-            this.index();
+            this.index(true);
             const taxons: Record<string, Taxon> = {};
             const characters: Record<string, Character> = {};
             for (const taxon of iterHierarchy(this.taxonsHierarchy)) {

@@ -6,8 +6,11 @@
                 @keydown.down="selectNextCompletion"
                 class="full-width" placeholder="Add an item" />
             <DropDown v-if="nameStore && openAutoComplete && completions.length > 0" :open="openAutoComplete" @clickout="openAutoComplete = false">
-                <div class="grid-n grid-2-autocomplete stretch-items">
+                <div class="grid-n grid-3-autocomplete stretch-items">
                     <div v-for="(entry, i) in completions" :key="i" class="display-contents blue-hover-line">
+                        <div class="small-img">
+                            <img v-if="'img' in entry && entry.img" :src="entry.img">
+                        </div>
                         <VBox v-if="nameFields && nameFields.length > 0"  @click="selectAndEnter(i)" :class="['nowrap', 'cell', 'clickable', 'medium-padding', { 'background-color-1': i === selectedCompletion }]">
                             <div :key="nameFields[0].propertyName" class="main-name">
                                 {{ entry[nameFields[0].propertyName] }}
@@ -132,8 +135,22 @@ export default {
 </script>
 
 <style scoped>
-    .grid-2-autocomplete {
-        grid-template-columns: 1fr 10ch;
+    .grid-3-autocomplete {
+        grid-template-columns: 10ch 1fr 10ch;
+    }
+
+    .small-img {
+        display: flex;
+        position: relative;
+        max-height: 30px;
+        overflow: hidden;
+    }
+
+    .small-img img {
+        flex-shrink: 0;
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
     }
 
     .origin-name {
@@ -143,9 +160,15 @@ export default {
 
     .main-name {
         font-size: 1.2em;
+        max-width: 40ch;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
     }
 
     .secondary-name {
         font-size: 0.8em;
+        max-width: 20ch;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
     }
 </style>

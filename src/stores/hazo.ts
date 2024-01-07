@@ -1,12 +1,15 @@
 import { defineStore, mapActions, mapState } from "pinia";
-import { Character, DictionaryEntry, Hierarchy, Taxon, cloneHierarchy, State, forEachHierarchy, transformHierarchy, taxonOrAnyChildHasStates, taxonHasStates } from "../datatypes";
+import { Character, DictionaryEntry, Hierarchy, AnyItem, Taxon, cloneHierarchy, State, forEachHierarchy, transformHierarchy, taxonOrAnyChildHasStates, taxonHasStates } from "../datatypes";
 import clone from "../tools/clone";
 import makeid from '../tools/makeid';
 import { fixParentIds } from "../tools/fixes";
 import { useDatasetStore } from "./dataset";
 import { Dataset } from "../datatypes";
-import { characterNameStore, familyNameStore, stateNameStore } from "@/db-index";
+import { IndexInput, characterNameStore, familyNameStore, stateNameStore } from "@/db-index";
 import { pathToItem } from "@/datatypes/Dataset";
+
+const INDEX_VERSION = 1;
+type IndexedDatasets = Record<string, number>;
 
 export const useHazoStore = defineStore("hazo", {
     state: () => ({
@@ -22,16 +25,20 @@ export const useHazoStore = defineStore("hazo", {
     }),
     getters: {
         ...mapState(useDatasetStore, ["taxonsHierarchy"]),
-        indexedDatasets(): string[] {
+        indexedDatasets(): IndexedDatasets {
             const ids = window.localStorage.getItem("indexedDatasets");
             if (ids) {
                 try {
-                    return JSON.parse(ids);
+                    const indexed = JSON.parse(ids);
+                    if (Array.isArray(indexed)) {
+                        return Object.fromEntries(indexed.map(id => [id, 0]));
+                    }
+                    return indexed;
                 } catch (e) {
                     console.error(e);
                 }
             }
-            return [];
+            return {};
         },
         taxonsToDisplay(): Taxon {
             if (this.statesAllowList.length > 0 || this.statesDenyList.length > 0) {
@@ -155,48 +162,41 @@ export const useHazoStore = defineStore("hazo", {
                 }
             }
         },
-        indexDataset(ds: Dataset) {
+        itemIndexableContent(origin: string, item: AnyItem): IndexInput {
+            return { 
+                origin,
+                img: item.pictures.map(p => p.hubUrl ?? p.url)[0],
+                name: { 
+                    S: item.name.S, 
+                    V: item.name.V ?? "", 
+                    EN: item.name.EN ?? "",
+                    FR: item.name.FR ?? "",
+                    CN: item.name.CN ?? "" ,
+                }
+            }
+        },
+        indexDataset(ds: Dataset, force: boolean = false) {
             const indexed = this.indexedDatasets;
-            if (!indexed.includes(ds.id)) {
+            const version = indexed[ds.id] ?? 0;
+            if (force || version < INDEX_VERSION) {
                 for (const family of ds.taxonsHierarchy.children) {
-                    familyNameStore.store({ origin: ds.id, name: { 
-                        S: family.name.S, 
-                        V: family.name.V ?? "", 
-                        EN: family.name.EN ?? "",
-                        FR: family.name.FR ?? "",
-                        CN: family.name.CN ?? "" ,
-                    } });
+                    familyNameStore.store(this.itemIndexableContent(ds.id, family));
                 }
                 forEachHierarchy(ds.charactersHierarchy, ch => {
                     if (ch.id === "c0") { return; }
-                    characterNameStore.store({ origin: ds.id, name: { 
-                        S: ch.name.S,
-                        V: ch.name.V ?? "",
-                        EN: ch.name.EN ?? "",
-                        FR: ch.name.FR ?? "", 
-                        CN: ch.name.CN ?? "",
-                    } });
-                });
-                forEachHierarchy(ds.charactersHierarchy, ch => {
-                    if (ch.id === "c0" || ch.characterType !== "discrete") { return; }
+                    characterNameStore.store(this.itemIndexableContent(ds.id, ch));
+                    if (ch.characterType !== "discrete") { return; }
                     for (const state of ch.states) {
-                        stateNameStore.store({ origin: ds.id, 
-                            name: { 
-                                S: state.name.S,
-                                V: ch.name.V ?? "",
-                                EN: state.name.EN ?? "",
-                                FR: state.name.FR ?? "", 
-                                CN: state.name.CN ?? "" } 
-                            });
+                        stateNameStore.store(this.itemIndexableContent(ds.id, state));
                     }
                 });
-                indexed.push(ds.id);
+                indexed[ds.id] = INDEX_VERSION;
                 window.localStorage.setItem("indexedDatasets", JSON.stringify(indexed));
             }
         },
-        index() {
+        index(force: boolean = false) {
             const dsStore = useDatasetStore();
-            this.indexDataset(dsStore);
+            this.indexDataset(dsStore, force);
         },
     },
 });

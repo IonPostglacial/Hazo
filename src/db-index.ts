@@ -7,8 +7,10 @@ export type Language = "S" | "V" | "CN" | "FR" | "EN";
 const LANGUAGES_V1: Language[] = ["S", "V", "EN", "FR", "CN"];
 export const LANGUAGES: Language[] = LANGUAGES_V1;
 export type Name = Record<Language | string, string>;
-export type IndexInput = { name: Record<Language, string>, origin: string };
-export type IndexEntry = Record<Language, string> & { origin: string, words: string[] };
+export type IndexInput = { name: Record<Language, string>, origin: string, img: string|undefined };
+export type IndexEntryWithoutImage = Record<Language, string> & { origin: string, words: string[] };
+export type IndexEntryWithImg = IndexEntryWithoutImage & { img: string };
+export type IndexEntry = IndexEntryWithoutImage | IndexEntryWithImg;
 export type Completion = IndexEntry;
 
 export function validateIndexEntry(entry: unknown): entry is IndexEntry {
@@ -33,7 +35,7 @@ function processIndexInput(input: IndexInput): IndexEntry {
                 .filter(s => s !== "" && s !== " ")
                 .map(s => s.toLowerCase())
         });
-    return { ...Object.fromEntries(names), words, origin: input.origin };
+    return { ...Object.fromEntries(names), words, origin: input.origin, img: input.img };
 }
 
 function createIndexStore(db: IDBDatabase, storeName: string, _e: IDBVersionChangeEvent) {
