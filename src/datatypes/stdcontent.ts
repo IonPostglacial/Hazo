@@ -27,6 +27,8 @@ const km: Unit = { name: { S: "km" }, base: { unit: m, factor: 0.001 } };
 export const standardUnits = { kg, g, m, mm, cm, km };
 export const standardUnitsList = Object.values(standardUnits);
 
+export const mapModel: GeoMap = { name: "Mada admin 0", fileName: "MDG_adm0.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_0" };
+
 export const standardMaps: GeoMap[] = [
     { name: "Mada admin 1", fileName: "MDG_adm1.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_1" },
     { name: "Mada admin 2", fileName: "MDG_adm2.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_2" },

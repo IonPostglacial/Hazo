@@ -13,6 +13,8 @@
                     @click="openItem(item)">
                 <template v-slot:background>
                     <Flowering v-if="isFlowering(item)" :model-value="monthsFromItem(item)"></Flowering>
+                    <GeoView v-if="isGeographic(item)" :geo-map="mapModel">
+                    </GeoView>
                 </template>
                 <div class="display-contents">
                     <div v-for="field in nameFieldsForItem(item)" :key="field"
@@ -44,7 +46,7 @@
 
 <script lang="ts">
 import { PropType } from "vue"; // eslint-disable-line no-unused-vars
-import { Hierarchy } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Hierarchy, mapModel } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import Flowering, { Track } from "./Flowering.vue";
 import ScaleComparator from "./ScaleComparator.vue";
 import GeoView from "./GeoView.vue";
@@ -71,6 +73,8 @@ function floweringFromStates(color: string, currentItems:
         data: Months.fromStates(currentItems),
     }]
 }
+
+const geographyNames = ["Geography", "Geographie", "Géographie", "地理分布"];
 
 export default {
     name: "SquareTreeViewer",
@@ -105,6 +109,7 @@ export default {
         },
     },
     computed: {
+        mapModel() { return mapModel; },
         floweringMode(): boolean {
             if (this.currentCharacter) {
                 return this.isFlowering(this.currentCharacter);
@@ -207,7 +212,7 @@ export default {
         isGeographic(item: Hierarchy<Item>): boolean {
             return item.type === "character" &&
                 item.characterType === "discrete" &&
-                item.preset === "map"
+                (item.preset === "map" || geographyNames.includes(item.name.S))
         },
         openItem(item: Hierarchy<Item>) {
             this.isRoot = false;
