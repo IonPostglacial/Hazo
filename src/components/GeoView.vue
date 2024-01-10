@@ -3,7 +3,7 @@
         <div v-if="loading" class="absolute medium-square">
             Loading...
         </div>
-        <div ref="geo-viewer" :class="{ blurred: loading }">
+        <div ref="geo-viewer" :class="['geo-viewer', { blurred: loading }]">
         </div>
     </div>
 </template>
@@ -13,10 +13,11 @@ import * as d3 from "d3";
 import * as d3g from "d3-geo";
 import { PropType } from "vue";
 import { GeoMap, loadGeoJson } from "@/datatypes";
+import { getMapsCachedSvgDirectory, loadText, storeText } from "@/fs-storage";
 
 
 export default {
-    name: "CharactersTree",
+    name: "GeoView",
     props: {
         geoMap: Object as PropType<GeoMap>,
         selectedFeatures: Array,
@@ -42,12 +43,11 @@ export default {
     },
     methods: {
         updateFeatureSelection() {
-            const property = this.geoMap?.property ?? "";
             const element = this.$refs["geo-viewer"] as Element;
-            const el = d3.select(element);
+            const paths = element.querySelectorAll("path");
             const features = this.selectedFeatures ?? [];
-            el.selectAll("path").attr("fill", (d:any) => {
-                return features.includes(d.properties[property]) ? "rgb(37, 113, 212)" : "white";
+            paths.forEach(p => {
+                p.setAttribute("fill", features.includes(p.dataset.f) ? "rgb(37, 113, 212)" : "white");
             });
 
         },
@@ -61,8 +61,6 @@ export default {
             const svg = el.append("svg");
             svg.attr("viewBox", "0 0 600 600")
             svg.attr("preserveAspectRatio", "xMinYMin meet")
-            // svg.attr("width", "600px");
-            // svg.attr("height", "600px");
             const path = d3g.geoPath();
             const projection = d3g.geoMercator()
                 .center(this.geoMap?.center ?? [0, 0])
@@ -77,7 +75,7 @@ export default {
                     if (typeof property === "undefined" || typeof this.selectedFeatures === "undefined") { return "white"; }
                     return this.selectedFeatures.includes(d.properties[property]) ? "rgb(37, 113, 212)" : "white";
                 })
-                .attr("data-f", (d:any) => property? d.properties[property] : "")
+                .attr("data-f", (d:any) => property ? d.properties[property] : "")
                 .attr("stroke","black")
                 .attr("d", path as any)
                 .append("svg:title")
@@ -92,8 +90,21 @@ export default {
             this.loading = true;
             setTimeout(async () => {
                 try {
-                    this.geoJson = await loadGeoJson(mapName)
-                    this.updateD3();
+                    console.log(mapName);
+                    const element = this.$refs["geo-viewer"] as Element;
+                    const svgDir = await getMapsCachedSvgDirectory();
+                    const svgText = await loadText(svgDir, mapName);
+                    if (svgText === "") {
+                        this.geoJson = await loadGeoJson(mapName)
+                        this.updateD3();
+                        const svgElement = element.querySelector("svg");
+                        if (svgElement) {
+                            storeText(svgDir, mapName, svgElement.outerHTML);
+                        }
+                    } else {
+                        element.innerHTML = svgText;
+                        this.updateFeatureSelection();
+                    }
                 } catch (e) {
                     console.error(e);
                 } finally {

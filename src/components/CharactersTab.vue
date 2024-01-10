@@ -83,7 +83,7 @@
                                     <option v-for="(map, i) in maps" :key="map.name" :value="i">{{ map.name }}</option>
                                 </select>
                             </HBox>
-                            <GeoView :v-if="selectedMap" :geo-map="selectedMap">
+                            <GeoView v-if="selectedMap" :geo-map="selectedMap">
                             </GeoView>
                         </VBox>
                         <CollapsiblePanel v-if="selectedCharacter && selectedCharacter.characterType === 'range'" label="Range">

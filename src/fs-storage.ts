@@ -12,6 +12,11 @@ export async function getMapsDirectory(): Promise<FileSystemDirectoryHandle> {
     return globalDir.getDirectoryHandle("maps", { create: true });
 }
 
+export async function getMapsCachedSvgDirectory(): Promise<FileSystemDirectoryHandle> {
+    const globalDir: FileSystemDirectoryHandle = await navigator.storage.getDirectory();
+    return globalDir.getDirectoryHandle("mapsSvgs", { create: true });
+}
+
 export function fileNameFromDatasetId(id: string): string {
     return `${id}.hazo.json`;
 }
