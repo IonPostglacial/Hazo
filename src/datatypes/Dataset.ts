@@ -238,6 +238,9 @@ export function addCharacter(ds: Dataset, character: Character): Character {
 
 export function setCharacter(ds: Dataset, id: string, props: Partial<Character>) {
     const character = characterFromId(ds, id);
+    if (character?.characterType === "discrete" && character.inherentState) {
+        character.inherentState.name = character.name;
+    }
     Object.assign(character as any, props);
 }
 

@@ -294,6 +294,10 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 			unit: character.unit,
 		});
 	} else {
+		const inherentState = character.inherentStateId ? states.get(character.inherentStateId) : undefined;
+		if (inherentState) {
+			inherentState.name = item.name;
+		}
 		return createCharacter({
 			statesById: new Map(ds.statesById),
 			...item,
@@ -302,7 +306,7 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 			mapFile: character.mapFile,
 			states: Array.from(charStates.values()),
 			color: character.color,
-			inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),
+			inherentState,
 			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
 			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
 		});
