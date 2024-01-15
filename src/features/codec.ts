@@ -1,4 +1,4 @@
-import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, AnyHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates, createRangeCharacter } from "@/datatypes";
+import { isTopLevel, createHierarchicalItem, picturesFromPhotos, Book, BookInfo, Character, Dataset, Field, Hierarchy, Picture, State, Taxon, AnyHierarchicalItem, iterHierarchy, forEachHierarchy, createState, characterStates, createRangeCharacter, CharacterPreset } from "@/datatypes";
 import { taxonFromId, addTaxon, addCharacter, setTaxonState, createDataset, pathToItem, getParentId } from "@/datatypes/Dataset";
 import { createCharacter } from "@/datatypes";
 import { standardBooks } from "@/datatypes/stdcontent";
@@ -29,6 +29,8 @@ export interface EncodedDataset {
 
 export type EncodedCharacter = Omit<ReturnType<typeof encodeCharacter>, "photos"> & { 
 	photos: string[]|Picture[],
+	preset?: CharacterPreset,
+	mapFile?: string,
 	min?: number,
 	max?: number,
 	unit?: string,
@@ -122,10 +124,15 @@ function encodeCharacter(character: Character, picIds: Set<string>) {
 	if (character.characterType === "range") {
 		extra.unit = character.unit?.name.S;
 	}
+	if ("preset" in character) {
+		extra.preset = character.preset;
+		if (character.preset === "map") {
+			extra.mapFile = character.mapFile;
+		}
+	}
 	return {
 		states: Array.from(characterStates(character)).filter(s => typeof s !== "undefined").map(s => s.id),
 		characterType: character.characterType,
-		preset: character.characterType === "discrete" ? character.preset : undefined,
 		color: character.color,
 		detail: character.detail,
 		inherentStateId: character.characterType === "discrete" ? character.inherentState?.id : '',
@@ -292,6 +299,7 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 			...item,
 			path,
 			preset: character.preset,
+			mapFile: character.mapFile,
 			states: Array.from(charStates.values()),
 			color: character.color,
 			inherentState: typeof character.inherentStateId === "undefined" ? undefined : states.get(character.inherentStateId),

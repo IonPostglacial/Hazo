@@ -106,12 +106,30 @@ export type RangeCharacter = AnyCharacter & {
 	unit?: Unit,
 };
 
-export type DiscreteCharacter = AnyCharacter & {
+export type AnyDiscreteCharacter = AnyCharacter & {
 	characterType: "discrete";
 	states: State[];
 	inherentState?: State;
-	preset: CharacterPreset|undefined;
 };
+
+export type BasicCharacter = AnyDiscreteCharacter & {
+	preset: undefined,
+};
+
+export type FloweringCharacter = AnyDiscreteCharacter & {
+	preset: "flowering",
+};
+
+export type FamilyCharacter = AnyDiscreteCharacter & {
+	preset: "family",
+};
+
+export type GeographicalCharacter = AnyDiscreteCharacter & {
+	preset: "map",
+	mapFile: string,
+};
+
+export type DiscreteCharacter = BasicCharacter | FloweringCharacter | FamilyCharacter | GeographicalCharacter;
 
 export type Character = DiscreteCharacter | RangeCharacter;
 
@@ -138,6 +156,8 @@ export type Dictionary = {
 
 export type GeoMap = { 
 	name: string, 
+	nameEN: string, 
+	nameCN: string, 
 	fileName: string, 
 	center: [number, number], 
 	scale: number, 

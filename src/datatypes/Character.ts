@@ -1,4 +1,4 @@
-import { Character, CharacterPreset, DiscreteCharacter, RangeCharacter, State, Unit } from "./types";
+import { Character, CharacterPreset, DiscreteCharacter, RangeCharacter, State } from "./types";
 import { HierarchicalItemInit } from "./HierarchicalItem";
 import { createHierarchicalItem } from "./HierarchicalItem";
 import Months from "./Months";
@@ -12,6 +12,7 @@ type CharacterInit = Omit<HierarchicalItemInit, "type"> & {
 	inherentState?: State,
 	states?: State[],
 	preset?: CharacterPreset,
+	mapFile?: string,
 	inapplicableStates?: State[],
 	requiredStates?: State[],
 	detail?: string,
@@ -47,6 +48,7 @@ export function createCharacter(init: CharacterInit): DiscreteCharacter {
 		inapplicableStates: init.inapplicableStates ?? [],
 		requiredStates: init.requiredStates ?? [],
 		preset: init.preset,
+		mapFile: init.mapFile ?? "",
 		detail: init.detail ?? "",
 		children: [],
 	};

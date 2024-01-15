@@ -79,7 +79,7 @@
 </template>
 
 <script lang="ts">
-import { Character, Dataset, Taxon, createCharacter, createState, createTaxon, loadGeoJson, standardMaps } from "@/datatypes";
+import { Character, Dataset, Taxon, createCharacter, createState, createTaxon, loadGeoJson, mapModel, standardMaps } from "@/datatypes";
 import { createDataset, pathToItem } from "@/datatypes/Dataset"; 
 import { decodeDataset, highlightTaxonsDetails, uploadPictures } from "@/features";
 import * as FS from "./fs-storage";
@@ -230,11 +230,15 @@ export default {
             }
         },
         async addGeoCharacters() {
-            const geoChar = createCharacter({ path: ["c0"], name: { S: "Geography" } });
+            const geoChar = createCharacter({ 
+                path: ["c0"], 
+                name: { S: "Geographie", EN: "Geography", CN: "地理分布" }, 
+                preset: "map", 
+                mapFile: mapModel.fileName,
+            });
             const parent = this.addCharacter(geoChar);
             for (const map of standardMaps) {
-                const character = createCharacter({ name: { S: map.name }, path: pathToItem(parent) });
-                character.preset = "map";
+                const character = createCharacter({ name: { S: map.name, EN: map.nameEN, CN: map.nameCN }, path: pathToItem(parent), preset: "map", mapFile: map.fileName });
                 const geoJson = await loadGeoJson(map.fileName);
                 const stateNames: string[] = geoJson.features.map((f: any) => f.properties[map.property]);
                 const ch = this.addCharacter(character);
@@ -261,8 +265,7 @@ export default {
                         extraFields: [], 
                         statesById: new Map(),
                     });
-                    const familyChar = createCharacter({ path: ["c0"], name: { S: "Family" } });
-                    familyChar.preset = "family";
+                    const familyChar = createCharacter({ path: ["c0"], name: { S: "Family" }, preset: "family" });
                     ds.id = id;
                     this.setDataset(ds);
                     this.addCharacter(familyChar);
