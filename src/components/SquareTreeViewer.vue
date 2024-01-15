@@ -148,7 +148,9 @@ export default {
         isMetric(): boolean {
             return this.currentCharacter?.type === "character" && 
                 this.currentCharacter.characterType === "range" && 
-                (this.currentCharacter.unit?.name.S === "m" || this.currentCharacter.unit?.name.S === "cm");
+                (this.currentCharacter.unit?.name.S === "m" || 
+                this.currentCharacter.unit?.name.S === "cm" ||
+                this.currentCharacter.unit?.name.S === "mm");
         },
         characterUnit(): Unit | undefined {
             if (this.currentCharacter?.type === "character" && this.currentCharacter.characterType === "range") {

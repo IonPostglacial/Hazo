@@ -14,6 +14,7 @@
             </div>
             <img v-if="measurement.character.unit?.name.S === 'm'" class="scale-image" :style="'height: calc(' + imageHeight  + '%)'" src="/images/human.svg" alt="scaled image of a human">
             <img v-if="measurement.character.unit?.name.S === 'cm'" class="scale-image" :style="'height: calc(' + imageHeight  + '%)'" src="/images/hand.svg" alt="scaled image of a human hand">
+            <img v-if="measurement.character.unit?.name.S === 'mm'" class="scale-image" :style="'height: calc(' + imageHeight  + '%)'" src="/images/nail.svg" alt="scaled image of a finger nail">
         </HBox>
     </VBox>
 </template>
@@ -28,12 +29,15 @@ const props = defineProps({ height: { required: true, type: String }, measuremen
 
 const humanHeight = 1.7;
 const handHeight = 18;
+const nailHeight = 14;
 
 const comparatorHeight = computed(() => {
     if (props.measurement.character.unit?.name.S === "m") {
         return humanHeight;
     } else if (props.measurement.character.unit?.name.S === "cm") {
         return handHeight;
+    } else if (props.measurement.character.unit?.name.S === "mm") {
+        return nailHeight;
     } else {
         return 10;
     }
