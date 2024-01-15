@@ -100,7 +100,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useDatasetStore, ["taxonDescriptions", "taxonWithId"]),
+        ...mapActions(useDatasetStore, ["taxonChildren", "taxonDescriptions", "taxonWithId"]),
         charName(ch: Character): string {
             const n:any = ch.name ?? {};
             return n[this.lang];
