@@ -1,4 +1,4 @@
-import { defineStore, mapActions, mapState } from "pinia";
+import { defineStore } from "pinia";
 import { Character, DictionaryEntry, Hierarchy, AnyItem, Taxon, cloneHierarchy, State, forEachHierarchy, transformHierarchy, taxonOrAnyChildHasStates, taxonHasStates } from "../datatypes";
 import clone from "../tools/clone";
 import makeid from '../tools/makeid';
@@ -7,84 +7,110 @@ import { useDatasetStore } from "./dataset";
 import { Dataset } from "../datatypes";
 import { IndexInput, characterNameStore, familyNameStore, stateNameStore } from "@/db-index";
 import { pathToItem } from "@/datatypes/Dataset";
+import { computed, reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 
 const INDEX_VERSION = 1;
 type IndexedDatasets = Record<string, number>;
 
-export const useHazoStore = defineStore("hazo", {
-    state: () => ({
-        selectedTaxon: undefined as string|undefined,
-        selectedCharacter: undefined as string|undefined,
-        dictionary: { entries: new Array<DictionaryEntry>() },
-        connectedToHub: false,
-        copiedTaxon: null as null | Hierarchy<Taxon>,
-        copiedCharacter: null as null | Hierarchy<Character>,
-        copiedStates: [] as State[],
-        statesAllowList: [] as State[],
-        statesDenyList: [] as State[],
-    }),
-    getters: {
-        ...mapState(useDatasetStore, ["taxonsHierarchy"]),
-        indexedDatasets(): IndexedDatasets {
-            const ids = window.localStorage.getItem("indexedDatasets");
-            if (ids) {
-                try {
-                    const indexed = JSON.parse(ids);
-                    if (Array.isArray(indexed)) {
-                        return Object.fromEntries(indexed.map(id => [id, 0]));
-                    }
-                    return indexed;
-                } catch (e) {
-                    console.error(e);
+function getStoredSummaryLangId(): number {
+    const langId = Number.parseInt(window.localStorage.getItem("selectedSummaryLangId") ?? "");
+    if (Number.isSafeInteger(langId)) {
+        return langId;
+    }
+    return 0;
+}
+
+export const useHazoStore = defineStore("hazo", () => {
+    const selectedTaxon = ref(undefined as string|undefined);
+    const selectedCharacter = ref(undefined as string|undefined);
+    const dictionary = reactive({ entries: new Array<DictionaryEntry>() });
+    const connectedToHub = ref(false);
+    const copiedTaxon = ref(null as null | Hierarchy<Taxon>);
+    const copiedCharacter = ref(null as null | Hierarchy<Character>);
+    const copiedStates = ref([] as State[]);
+    const statesAllowList = ref([] as State[]);
+    const statesDenyList = ref([] as State[]);
+    const selectedSummaryLangId = ref(getStoredSummaryLangId());
+    const charNameFields = ref([{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }]);
+
+    const ds = useDatasetStore();
+    const router = useRouter();
+
+    watch(selectedSummaryLangId, (id) => {
+        window.localStorage.setItem("selectedSummaryLangId", JSON.stringify(id));
+    });
+
+    const indexedDatasets = computed((): IndexedDatasets => {
+        const ids = window.localStorage.getItem("indexedDatasets");
+        if (ids) {
+            try {
+                const indexed = JSON.parse(ids);
+                if (Array.isArray(indexed)) {
+                    return Object.fromEntries(indexed.map(id => [id, 0]));
                 }
+                return indexed;
+            } catch (e) {
+                console.error(e);
             }
-            return {};
-        },
-        taxonsToDisplay(): Taxon {
-            if (this.statesAllowList.length > 0 || this.statesDenyList.length > 0) {
-                return transformHierarchy(this.taxonsHierarchy, {
-                    map: t => t,
-                    filter: t => taxonOrAnyChildHasStates(t, this.statesAllowList) && 
-                        (this.statesDenyList.length == 0 || !taxonHasStates(t, this.statesDenyList)),
-                });
-            } else {
-                return this.taxonsHierarchy;
-            }
-        },
-    },
-    actions: {
-        ...mapActions(useDatasetStore, ["addCharacter", "addTaxon", "addState", "characterWithId", "taxonWithId"]),
+        }
+        return {};
+    });
+
+    const taxonsToDisplay = computed((): Taxon => {
+        if (statesAllowList.value.length > 0 || statesDenyList.value.length > 0) {
+            return transformHierarchy(ds.taxonsHierarchy, {
+                map: t => t,
+                filter: t => taxonOrAnyChildHasStates(t, statesAllowList.value) && 
+                    (statesDenyList.value.length == 0 || !taxonHasStates(t, statesDenyList.value)),
+            });
+        } else {
+            return ds.taxonsHierarchy;
+        }
+    });
+
+    const selectedSummaryLangProperty = computed((): string => {
+        return charNameFields.value[selectedSummaryLangId.value].propertyName;
+    });
+
+    return {  
+        selectedTaxon, selectedCharacter, selectedSummaryLangId, dictionary,
+        statesAllowList, statesDenyList,
+        connectedToHub, copiedTaxon, copiedCharacter, copiedStates, charNameFields,
+
+        indexedDatasets, selectedSummaryLangProperty, taxonsToDisplay, taxonsHierarchy: ds.taxonsHierarchy,
+
         addStateToAllowList(state: State) {
-            this.statesAllowList = [...this.statesAllowList, state];
+            statesAllowList.value = [...statesAllowList.value, state];
         },
         removeStateFromAllowList(state: State) {
-            this.statesAllowList = this.statesAllowList.filter(s => s.id !== state.id);
+            statesAllowList.value = statesAllowList.value.filter(s => s.id !== state.id);
         },
         addStateToDenyList(state: State) {
-            this.statesDenyList = [...this.statesDenyList, state];
+            statesDenyList.value = [...statesDenyList.value, state];
         },
         removeStateFromDenyList(state: State) {
-            this.statesDenyList = this.statesDenyList.filter(s => s.id !== state.id);
+            statesDenyList.value = statesDenyList.value.filter(s => s.id !== state.id);
         },
-        setConnectedToHub(connectedToHub: boolean) {
-            this.connectedToHub = connectedToHub;
+        setConnectedToHub(connected: boolean) {
+            connectedToHub.value = connected;
         },
         selectTaxon(taxon: Taxon) {
-            this.selectedTaxon = taxon.id;
+            selectedTaxon.value = taxon.id;
         },
         selectCharacter(character: Character) {
-            this.selectedCharacter = character.id;
+            selectedCharacter.value = character.id;
         },
         unselectTaxon() {
-            this.selectedTaxon = "";
-            this.router.push("/taxons");
+            selectedTaxon.value = "";
+            router.push("/taxons");
         },
         unselectCharacter() {
-            this.selectedCharacter = "";
-            this.router.push("/characters");
+            selectedCharacter.value = "";
+            router.push("/characters");
         },
         copyTaxon(taxon: Taxon) {
-            this.copiedTaxon = cloneHierarchy(taxon);
+            copiedTaxon.value = cloneHierarchy(taxon);
         },
         copyCharacter(character: Character) {
             const clonedCharacter = cloneHierarchy(character);
@@ -94,27 +120,27 @@ export const useHazoStore = defineStore("hazo", {
                 clonedCharacter.states = clone(clonedCharacter.states);
                 clonedCharacter.inherentState = clone(clonedCharacter.inherentState);
             }
-            this.copiedCharacter = clonedCharacter;
+            copiedCharacter.value = clonedCharacter;
         },
         copyStates(states: State[] | undefined) {
             if (typeof states !== "undefined") {
-                this.copiedStates = clone(states);
-                this.copiedStates.forEach(s => s.id = "s-" + makeid(8));
+                copiedStates.value = clone(states);
+                copiedStates.value.forEach(s => s.id = "s-" + makeid(8));
             }
         },
         pasteTaxon(targetId: string) {
-            if (this.copiedTaxon !== null) {
-                const taxon = cloneHierarchy(this.copiedTaxon);
-                const newParent = this.taxonWithId(targetId);
+            if (copiedTaxon.value !== null) {
+                const taxon = cloneHierarchy(copiedTaxon.value);
+                const newParent = ds.taxonWithId(targetId);
                 if (newParent) {
                     taxon.path = pathToItem(newParent);
                 }
-                fixParentIds(this.addTaxon(taxon));
+                fixParentIds(ds.addTaxon(taxon));
             }
         },
         pasteCharacter(targetId: string) {
-            if (this.copiedCharacter === null) return;
-            const character = cloneHierarchy(this.copiedCharacter);
+            if (copiedCharacter.value === null) return;
+            const character = cloneHierarchy(copiedCharacter.value);
             const oldRequiredStatesIds = character.requiredStates.map(s => s.id);
             const oldInapplicableStatesIds = character.inapplicableStates.map(s => s.id);
             character.requiredStates = [];
@@ -125,7 +151,7 @@ export const useHazoStore = defineStore("hazo", {
                 for (const oldState of oldStates) {
                     const newState = clone(oldState);
                     newState.id = "";
-                    this.addState({ state: newState, character });
+                    ds.addState({ state: newState, character });
                     if (oldRequiredStatesIds.includes(oldState.id)) {
                         character.requiredStates.push(newState);
                     }
@@ -134,17 +160,17 @@ export const useHazoStore = defineStore("hazo", {
                     }
                 }
             }
-            const newParent = this.characterWithId(targetId);
-            if (newParent?.characterType === "discrete" && this.copiedCharacter?.characterType === "discrete") {
-                if (newParent && this.copiedCharacter?.inherentState?.id) {
-                    this.copiedCharacter.inherentState.id = "s-auto-" + this.copiedCharacter.id;
-                    newParent.states.push(this.copiedCharacter.inherentState);
+            const newParent = ds.characterWithId(targetId);
+            if (newParent?.characterType === "discrete" && copiedCharacter?.value.characterType === "discrete") {
+                if (newParent && copiedCharacter?.value.inherentState?.id) {
+                    copiedCharacter.value.inherentState.id = "s-auto-" + copiedCharacter.value.id;
+                    newParent.states.push(copiedCharacter.value.inherentState);
                 }
             }
             if (newParent) {
                 character.path = [...newParent?.path, targetId];
             }
-            const ch = this.addCharacter(character);
+            const ch = ds.addCharacter(character);
             fixParentIds(ch);
             forEachHierarchy(ch, child => {
                 if (child.characterType !== "discrete") { return; }
@@ -154,11 +180,11 @@ export const useHazoStore = defineStore("hazo", {
             });
         },
         pasteStates(characterId: string) {
-            for (const s of this.copiedStates) {
+            for (const s of copiedStates.value) {
                 const stateToAdd = clone(s);
-                const character = this.characterWithId(characterId);
+                const character = ds.characterWithId(characterId);
                 if (typeof character !== "undefined" && character.characterType === "discrete") {
-                    this.addState({ state: stateToAdd, character });
+                    ds.addState({ state: stateToAdd, character });
                 }
             }
         },
@@ -176,7 +202,7 @@ export const useHazoStore = defineStore("hazo", {
             }
         },
         indexDataset(ds: Dataset, force: boolean = false) {
-            const indexed = this.indexedDatasets;
+            const indexed = indexedDatasets.value;
             const version = indexed[ds.id] ?? 0;
             if (force || version < INDEX_VERSION) {
                 for (const family of ds.taxonsHierarchy.children) {
@@ -198,5 +224,5 @@ export const useHazoStore = defineStore("hazo", {
             const dsStore = useDatasetStore();
             this.indexDataset(dsStore, force);
         },
-    },
+    };
 });

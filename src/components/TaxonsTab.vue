@@ -248,7 +248,7 @@ import { escape } from "@/tools/parse-csv";
 import { Language, familyNameStore } from "@/db-index";
 import Flowering, { Track } from "./Flowering.vue";
 import Months from "@/datatypes/Months";
-import { mapActions, mapState } from "pinia";
+import { mapActions, mapState, mapWritableState } from "pinia";
 import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
 import debounce from "@/tools/debounce";
@@ -289,9 +289,7 @@ export default {
         return {
             taxonValue,
             nameFields: taxonNameFields,
-            charNameFields: [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }],
             nameStore: familyNameStore,
-            selectedSummaryLangId: 0,
             showFields: false,
             showBigImage: false,
             showMap: false,
@@ -327,16 +325,14 @@ export default {
         },
     },
     computed: {
-        ...mapState(useHazoStore, ["statesAllowList", "statesDenyList", "taxonsToDisplay"]),
+        ...mapWritableState(useHazoStore, ["selectedSummaryLangId"]),
+        ...mapState(useHazoStore, ["charNameFields", "selectedSummaryLangProperty", "statesAllowList", "statesDenyList", "taxonsToDisplay"]),
         ...mapState(useDatasetStore, ["allTaxons", "books", "charactersHierarchy", "extraFields"]),
         selectedStateIds(): string[] {
             return this.selectedTaxon?.states.map(s => s.id) ?? [];
         },
         minimizedColumns(): string[] {
             return columns.filter(col => !this.selectedColumns.includes(col));
-        },
-        selectedSummaryLangProperty(): string {
-            return this.charNameFields[this.selectedSummaryLangId].propertyName;
         },
         leftMenuSize(): number {
             return this.selectedColumns.includes("menu") ? 25 : 0;
