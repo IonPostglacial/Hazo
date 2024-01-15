@@ -46,7 +46,7 @@
             </TreeMenuItem>
         </ul>
         <div class="flex-grow-1">&nbsp;</div>
-        <AddItem v-if="editable" class="stick-to-bottom" :name-fields="nameFields" :name-store="nameStore" @add-item="addItem({ value: $event.detail, path: [items.id] })"></AddItem>
+        <AddItem v-if="editable" class="stick-to-bottom" :name-fields="nameFields" :name-store="nameStore" @add-item="addItem({ value: $event.detail, metadata: $event.metadata, path: [items.id] })"></AddItem>
     </VBox> 
 </template>
 
@@ -146,7 +146,7 @@ export default {
         closeAll() {
             this.itemsBus.emitCloseAll();
         },
-        addItem(e: { value: string[], parentId?: string, path: string[] }) {
+        addItem(e: { value: string[], metadata?: any, path: string[] }) {
             this.$emit("add-item", e);
         },
         deleteItem(e: string) {

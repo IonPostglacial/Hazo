@@ -90,7 +90,6 @@ export default {
             this.loading = true;
             setTimeout(async () => {
                 try {
-                    console.log(mapName);
                     const element = this.$refs["geo-viewer"] as Element;
                     const svgDir = await getMapsCachedSvgDirectory();
                     const svgText = await loadText(svgDir, mapName);

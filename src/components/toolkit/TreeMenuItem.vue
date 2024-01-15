@@ -144,8 +144,8 @@ export default {
         toggleOpen() {
             this.itemBus?.emitToggle(this.item!.id);
         },
-        addItem({ detail }: { detail: string[] }) {
-            this.$emit("add-item", { value: detail, path: [...this.item.path, this.item.id] });
+        addItem(e: { detail: string[], metadata: any }) {
+            this.$emit("add-item", { value: e.detail, metadata: e.metadata, path: [...this.item.path, this.item.id] });
         },
         deleteItem() {
             this.$emit("delete-item", { path: this.item.path, id: this.item.id, itemId: this.item.id });

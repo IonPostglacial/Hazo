@@ -3,6 +3,7 @@ import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
 import { generateId } from "@/tools/generateid";
+import { fixPicturesPaths } from "@/tools/fixes";
 
 
 export function getParentId(item: AnyItem): string|undefined {
@@ -33,6 +34,7 @@ function addItem<T extends HierarchicalItem>(prefix: string, hierarchy: Hierarch
         itemsByIds.set(child.id, child);
     });
     parent.children.push(it);
+    fixPicturesPaths(it);
     return it;
 }
 

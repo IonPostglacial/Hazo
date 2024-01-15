@@ -466,15 +466,25 @@ export default {
             }
             this.selectingParent = false;
         },
-        addTaxonHandler(e: {value: string[], path: string[] }) {
+        addTaxonHandler(e: {value: string[], metadata: any, path: string[] }) {
             const [name, vernacularName, nameCN] = e.value;
+            const pictures: Picture[] = []
+            if (e.metadata?.img) {
+                pictures.push(normalizePicture({
+                    id: `p-${makeid(16)}`,
+                    path: [],
+                    url: e.metadata.img,
+                    label: `${name} #1`,
+                    hubUrl: undefined,
+                }));
+            }
             this.addTaxon(createTaxon({
                 ...createHierarchicalItem({ 
                     id: "",
                     path: e.path,
                     type: "taxon", 
                     name: { S: name, V: vernacularName, CN: nameCN}, 
-                    detail: "", pictures: [],
+                    detail: "", pictures,
                 }),
                 bookInfoByIds: Object.fromEntries(this.books.map((book: Book) => 
                     [book.id, { type: "bookinfo", id: "b-" + makeid(8), path: [], fasc: "", page: "", detail: "" }])),

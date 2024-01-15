@@ -14,11 +14,9 @@ export type Counts = {
 // espèce: taxons qui ont un auteur
 
 export function taxonsStats(taxons: Iterable<Taxon>): Counts {
-    console.log("stats");
     const store = useDatasetStore();
     const counts: Counts = { families: [], gender: 0, taxa: [], species: [] };
     for (const taxon of taxons) {
-        console.log("analyze taxon", taxon);
         if (store.hasChildren(taxon)) {
             if (taxon.path.length === 1) {
                 counts.families.push(taxon);

@@ -104,17 +104,17 @@ export default {
                 this.addSingleItem();
             }
         },
-        addItem(value: string[]) {
-            this.$emit("add-item", { detail: value })
+        addItem(value: string[], metadata: any) {
+            this.$emit("add-item", { detail: value, metadata })
         },
         addSingleItem() {
             if (!this.nameStore || this.selectedCompletion === -1) {
-                this.addItem(this.text.split("\t"));
+                this.addItem(this.text.split("\t"), undefined);
             } else {
                 const completed = this.completions[this.selectedCompletion];
                 const nameFields = this.nameFields;
                 if (typeof nameFields !== "undefined") {
-                    this.addItem(nameFields.map(f => completed[f.propertyName]));
+                    this.addItem(nameFields.map(f => completed[f.propertyName]), completed);
                 }
             }
             this.text = "";
@@ -124,7 +124,7 @@ export default {
             for (const line of linesToAdd) {
                 const columnsToAdd = line.split("\t").map(c => c.trim());
                 if (columnsToAdd.length > 0) {
-                    this.addItem(columnsToAdd);
+                    this.addItem(columnsToAdd, undefined);
                 }
             }
             this.text = "";

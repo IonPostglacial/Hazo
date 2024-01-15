@@ -231,6 +231,7 @@ import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
 import { mapActions, mapState } from "pinia";
 import { getParentId, pathToItem } from "@/datatypes/Dataset";
+import makeid from "@/tools/makeid";
 
 
 export default {
@@ -494,17 +495,38 @@ export default {
             this.showBigImage = true;
             this.bigImages = state.pictures;
         },
-        addCharacterHandler(e: { value: string[], path: string[] }) {
+        addCharacterHandler(e: { value: string[], path: string[], metadata: any }) {
             const [name, nameEN, nameCN] = e.value;
+            const pictures: Picture[] = []
+            if (e.metadata?.img) {
+                pictures.push(normalizePicture({
+                    id: `p-${makeid(16)}`,
+                    path: [],
+                    url: e.metadata.img,
+                    label: `${name} #1`,
+                    hubUrl: undefined,
+                }));
+            }
             this.addCharacter(createCharacter({
                 path: e.path,
                 name: { S: name, FR: name, EN: nameEN, CN: nameCN },
+                pictures,
             }));
         },
-        addStateHandler(e: {detail: string[]}) {
+        addStateHandler(e: {detail: string[], metadata: any}) {
             if (this.selectedCharacter?.characterType !== "discrete") return;
             if (typeof this.selectedCharacter === "undefined") throw "addState failed: description is undefined.";
             const [name, nameEN, nameCN, color, description] = e.detail;
+            const pictures: Picture[] = []
+            if (e.metadata?.img) {
+                pictures.push(normalizePicture({
+                    id: `p-${makeid(16)}`,
+                    path: pathToItem(this.selectedCharacter),
+                    url: e.metadata.img,
+                    label: `${name} #1`,
+                    hubUrl: undefined,
+                }));
+            }
             const parent = this.selectedCharacter;
             this.addState({
                 state: {
@@ -514,7 +536,7 @@ export default {
                     name: { S: name, FR: name, EN: nameEN, CN: nameCN },
                     color,
                     detail: description,
-                    pictures: []
+                    pictures,
                 },
                 character: this.selectedCharacter,
             });

@@ -167,7 +167,6 @@ export default {
         ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
         updateMeasurement(e: Event, isMax: boolean) {
             if (e.target instanceof HTMLInputElement && this.currentCharacter && this.currentCharacter.characterType === "range") {
-                console.log("update measurement");
                 this.$emit("measurement-updated", { 
                     character: this.currentCharacter.id, 
                     measurement: { 
