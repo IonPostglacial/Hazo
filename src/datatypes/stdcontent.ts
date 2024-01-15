@@ -23,8 +23,9 @@ const m: Unit = { name: { S: "m" } };
 const mm: Unit = { name: { S: "mm" }, base: { unit: m, factor: 1000 } };
 const cm: Unit = { name: { S: "cm" }, base: { unit: m, factor: 100 } };
 const km: Unit = { name: { S: "km" }, base: { unit: m, factor: 0.001 } };
+const nbr: Unit = { name: { S: "nbr" } };
 
-export const standardUnits = { kg, g, m, mm, cm, km };
+export const standardUnits = { kg, g, m, mm, cm, km, nbr };
 export const standardUnitsList = Object.values(standardUnits);
 
 export const mapModel: GeoMap = { name: "Madagascar", nameEN: "Madagascar", nameCN: "马达加斯加", fileName: "MDG_adm0.json", center: [46.518367, -18.546564], scale: 2000, property: "NAME_0" };
