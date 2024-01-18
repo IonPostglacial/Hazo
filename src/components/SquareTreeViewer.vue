@@ -12,8 +12,8 @@
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">
                 <template v-slot:background>
-                    <Flowering v-if="isFlowering(item)" :model-value="monthsFromItem(item)"></Flowering>
-                    <GeoView v-if="isGeographic(item)" :geo-map="mapModel(item)">
+                    <Flowering v-if="item.pictures.length === 0 && isFlowering(item)" :model-value="monthsFromItem(item)"></Flowering>
+                    <GeoView v-if="item.pictures.length === 0 && isGeographic(item)" :geo-map="mapModel(item)">
                     </GeoView>
                 </template>
                 <div class="display-contents">
