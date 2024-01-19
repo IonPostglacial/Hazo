@@ -177,7 +177,7 @@
                                     </GeoView>
                                     <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                         <li v-for="state in desc.states" :key="state.id">
-                                            {{ state.name[selectedSummaryLangProperty] }}<a class="button" href="#1" @click="pushStateToChildren(state)">Push to children</a>
+                                            {{ state.name[selectedSummaryLangProperty] }}<button @click="pushStateToChildren(state)">Push to children</button>
                                         </li>
                                     </ul>
                                 </li>
@@ -194,18 +194,10 @@
                                     </Flowering>
                                 </li>
                                 <li v-for="measurement in selectedTaxon.measurements">
-                                    <VBox>
-                                        <ScaleComparator 
-                                            v-if="measurement && ['m', 'cm'].includes(measurement.character.unit?.name.S ?? '')" 
-                                            height="200px" 
-                                            :measurement="measurement">
-                                        </ScaleComparator>
-                                        <div>
-                                            {{ measurement?.character.name[selectedSummaryLangProperty] }}: 
-                                            {{ measurement?.min }} - {{ measurement?.max }}
-                                            {{ measurement?.character.unit?.name.S }}
-                                        </div>
-                                    </VBox>
+                                    <MeasurementBox v-if="measurement" 
+                                        :measurement="measurement"
+                                        :lang-property="selectedSummaryLangProperty">
+                                    </MeasurementBox>
                                 </li>
                             </ul>
                         </div>
@@ -222,6 +214,7 @@ import TreeMenu from "./toolkit/TreeMenu.vue";
 import PopupGalery from "./PopupGalery.vue";
 import TaxonPresentation from "./TaxonPresentation.vue";
 import ExtraFieldsPanel from "./ExtraFieldsPanel.vue";
+import MeasurementBox from "@/components/MeasurementBox.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
 import ScaleComparator from "./ScaleComparator.vue";
 import GeoView from "./GeoView.vue";
@@ -255,6 +248,7 @@ import debounce from "@/tools/debounce";
 import clone from "@/tools/clone";
 import { pathToItem } from "@/datatypes/Dataset";
 import makeid from "@/tools/makeid";
+import { fromNormalizedValue } from "@/features/unit";
 
 
 const columns = ["menu", "props", "desc", "summary"];
@@ -272,7 +266,7 @@ export default {
     components: {
     CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
     GeoView, GoogleMap, Marker,
-    ExtraFieldsPanel, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
+    ExtraFieldsPanel, MeasurementBox, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
     ColumnHeader, TextEditor,
     Flowering,
     ScaleComparator
@@ -385,6 +379,7 @@ export default {
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
             "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree", "updateTaxonMeasurement",
         ]),
+        fromNormalizedValue: fromNormalizedValue,
         columnName(col: string): string {
             return columnNames[col];
         },

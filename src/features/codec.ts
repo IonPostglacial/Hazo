@@ -7,6 +7,9 @@ import { map } from "@/tools/iter";
 import clone from "@/tools/clone";
 import { fixParentIds, fixPicturesPaths, fixStatePath } from "@/tools/fixes";
 import makeid from "@/tools/makeid";
+import { toNormalizedValue } from "./unit";
+
+const CURRENT_VERSION = 1;
 
 type EncodedState = {
 	id: string;
@@ -19,6 +22,7 @@ type EncodedState = {
 };
 
 export interface EncodedDataset {
+	version?: number,
 	id: string
 	taxons: ReturnType<typeof encodeTaxon>[];
 	characters: EncodedCharacter[];
@@ -191,6 +195,7 @@ export function encodeDataset(dataset: Dataset): EncodedDataset {
 	fixParentIds(dataset.taxonsHierarchy);
 	fixParentIds(dataset.charactersHierarchy);
 	return {
+		version: CURRENT_VERSION,
 		id: dataset.id,
 		taxons: Array.from(iterHierarchy(dataset.taxonsHierarchy)).filter(t => t.id !== "t0").map(taxon => encodeTaxon(taxon, picIds, allStates)),
 		characters,
@@ -217,7 +222,7 @@ function decodeHierarchicalItem(item: EncodedHierarchicalItem): AnyHierarchicalI
 	return h;
 }
 
-function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]): Taxon {
+function decodeTaxon(ds: Dataset, version: number, encodedTaxon: ReturnType<typeof encodeTaxon>, books: Book[]): Taxon {
 	const bookInfoByIds = (typeof encodedTaxon.bookInfoByIds !== "undefined") ? encodedTaxon.bookInfoByIds : {};
 	const item = decodeHierarchicalItem(encodedTaxon);
 	if (Object.keys(bookInfoByIds).length === 0) {
@@ -249,6 +254,9 @@ function decodeTaxon(ds: Dataset, encodedTaxon: ReturnType<typeof encodeTaxon>, 
 		measurements: Object.fromEntries(encodedTaxon.measurements?.flatMap(m => {
 			const character = ds.charactersByIds.get(m.character);
 			if (character && character.characterType === "range") {
+				if (version < 1) {
+					return { min: toNormalizedValue(m.min, character.unit), max: toNormalizedValue(m.max, character.unit), character };
+				}
 				return { min: m.min, max: m.max, character };
 			}
 			return [];
@@ -316,6 +324,7 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset {
 	const statesById = new Map<string, State>();
 	const books = standardBooks.slice();
+	const version = dataset?.version ?? 0;
 	const ds = createDataset({
 		id: dataset?.id ?? "0",
 		taxonsHierarchy: createTaxon({ id: "t0", path: [], name: { S: "<TOP>" } }),
@@ -351,7 +360,7 @@ export function decodeDataset(dataset: AlreadyEncodedDataset|undefined): Dataset
 		fixPicturesPaths(char);
 	}
 	for (const taxon of dataset?.taxons ?? []) {
-		const tx = addTaxon(ds, decodeTaxon(ds, taxon, books));
+		const tx = addTaxon(ds, decodeTaxon(ds, version, taxon, books));
 		fixPicturesPaths(tx);
 		taxon.descriptions.forEach(d => {
 			for (const stateId of d.statesIds) {

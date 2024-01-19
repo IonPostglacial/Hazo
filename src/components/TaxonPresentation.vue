@@ -17,28 +17,32 @@
                 </h2>
                 <HBox>
                     <div class="flex-grow-1">
-                        <div>
+                        <div class="form-grid center-items medium-padding">
                             <div>Synonymous <span>{{ taxon.name2 }}</span></div>
                             <div>中文名 <span>{{ taxon.name.CN }}</span></div>
                             <div>NV <span>{{ taxon.name.V }}</span></div>
                             <div>NV 2 <span>{{ taxon.vernacularName2 }}</span></div>
                             <div style="max-width: 50ch" class="text-ellipsed">Website <a target="_blank" :href="taxon.website">{{ taxon.website }}</a></div>
                         </div>
-                        <HBox v-for="description in descriptions(taxon)" :key="description.character.id" class="limited-width">
-                            <HBox class="small-height">
-                                <HBox v-for="state in description.states" :key="'img-' + state.id">
-                                    <img v-for="photo in state.pictures" class="small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
+                        <VBox v-for="description in descriptions(taxon)" :key="description.character.id" class="limited-width">
+                            <div v-if="!isFlowering(description)">
+                                <h3>{{ charName(description.character) }}</h3>
+                                <HBox class="gap-1">
+                                    <VBox v-for="state in description.states" :key="state.id" class="medium-padding thin-border">
+                                        <img v-for="photo in state.pictures" class="fit-contain small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
+                                        <span class="spaced">{{ stateName(state) }}</span>
+                                    </VBox>
                                 </HBox>
-                            </HBox>
+                            </div>
                             <flowering v-if="isFlowering(description)" :model-value="tracksFromStates(description.states)">
                             </flowering>
-                            <HBox v-if="!isFlowering(description)">
-                                <div>{{ charName(description.character) }}<span class="spaced">:</span></div>
-                                <div v-for="(state, index) in description.states" :key="state.id">
-                                    <span v-if="index > 0" class="spaced">/</span> {{ stateName(state) }}
-                                </div>
-                            </HBox>
-                        </HBox>
+                        </VBox>
+                        <VBox>
+                            <section v-for="measurement in taxon.measurements">
+                                <MeasurementBox v-if="measurement" :measurement="measurement" lang-property="S">
+                                </MeasurementBox>
+                            </section>
+                        </VBox>
                     </div>
                     <PictureGalery :images="taxon.pictures" class="medium-max-width medium-max-height fit-contain">
                     </PictureGalery>
@@ -54,10 +58,13 @@ import Months from '@/datatypes/Months';
 import { Character, MultilangText, State } from '@/datatypes/types';
 import Flowering, { Track } from "@/components/Flowering.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
+import MeasurementBox from "@/components/MeasurementBox.vue";
 import HBox from './toolkit/HBox.vue';
 import Spacer from './toolkit/Spacer.vue';
 import { mapActions, mapState } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
+import VBox from './toolkit/VBox.vue';
+import ScaleComparator from './ScaleComparator.vue';
 
 function floweringFromStates(currentItems: 
     {
@@ -73,7 +80,7 @@ function floweringFromStates(currentItems:
 
 export default {
     name: "TaxonPresentation",
-    components: { Flowering, HBox, PictureGalery, Spacer },
+    components: { Flowering, HBox, MeasurementBox, PictureGalery, Spacer, VBox, ScaleComparator },
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,

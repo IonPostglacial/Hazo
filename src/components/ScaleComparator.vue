@@ -4,11 +4,11 @@
         <HBox class="relative align-items-end" :style="'height: ' + height">
             <div class="scale-ruler relative" :style="'height: calc(' + maxPos  + '%)'">
                 <HBox class="scale-indicator absolute center-items full-width" :style="'bottom: calc(' + maxPos  + '% - 1ch)'">
-                    <div class="flex-grow-1">{{ measurement.max }}</div>
+                    <div class="flex-grow-1">{{ fromNormalizedValue(measurement.max, measurement.character.unit).toFixed(2) }}</div>
                     <font-awesome-icon icon="fa-solid fa-arrow-right" />
                 </HBox>
                 <HBox class="scale-indicator absolute center-items full-width" :style="'bottom: calc(' + minPos  + '% - 1ch)'">
-                    <div class="flex-grow-1">{{ measurement.min }}</div>
+                    <div class="flex-grow-1">{{ fromNormalizedValue(measurement.min, measurement.character.unit).toFixed(2) }}</div>
                     <font-awesome-icon icon="fa-solid fa-arrow-right" />
                 </HBox>
             </div>
@@ -24,12 +24,13 @@ import { Measurement } from '@/datatypes';
 import { PropType, computed } from "vue";
 import HBox from './toolkit/HBox.vue';
 import VBox from './toolkit/VBox.vue';
+import { fromNormalizedValue } from '@/features/unit';
 
 const props = defineProps({ height: { required: true, type: String }, measurement: { required: true, type: Object as PropType<Measurement> } });
 
 const humanHeight = 1.7;
-const handHeight = 18;
-const nailHeight = 14;
+const handHeight = 0.18;
+const nailHeight = 0.014;
 
 const comparatorHeight = computed(() => {
     if (props.measurement.character.unit?.name.S === "m") {

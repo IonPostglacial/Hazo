@@ -35,9 +35,9 @@
             </div>
             <HBox class="center-items">
                 <label for="measurementMin">Min</label>
-                <input type="number" name="measurementMin" :value="characterMeasurement?.min" @change="updateMeasurement($event, false)" id="measurementMin">
+                <input type="number" name="measurementMin" :value="minMeasurement" @change="updateMeasurement($event, false)" id="measurementMin">
                 <label for="measurementMax">Max</label>
-                <input type="number" name="measurementMax" :value="characterMeasurement?.max" @change="updateMeasurement($event, true)" id="measurementMax">
+                <input type="number" name="measurementMax" :value="maxMeasurement" @change="updateMeasurement($event, true)" id="measurementMax">
                 <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
             </HBox>
         </VBox>
@@ -60,6 +60,7 @@ import { Character, Item, Measurement, MultilangText, Unit } from "@/datatypes/t
 import { mapActions } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 import { getParentId, pathToItem } from "@/datatypes/Dataset";
+import { fromNormalizedValue, toNormalizedValue } from "@/features/unit";
 
 
 function floweringFromStates(color: string, currentItems: 
@@ -164,6 +165,20 @@ export default {
             }
             return undefined
         },
+        minMeasurement(): number|undefined {
+            const measurement = this.characterMeasurement;
+            if (measurement) {
+                return fromNormalizedValue(measurement.min, this.characterUnit);
+            }
+            return undefined;
+        },
+        maxMeasurement(): number|undefined {
+            const measurement = this.characterMeasurement;
+            if (measurement) {
+                return fromNormalizedValue(measurement.max, this.characterUnit);
+            }
+            return undefined;
+        },
     },
     methods: {
         ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
@@ -172,7 +187,7 @@ export default {
                 this.$emit("measurement-updated", { 
                     character: this.currentCharacter.id, 
                     measurement: { 
-                        [isMax ? "max" : "min"]: parseInt(e.target.value),
+                        [isMax ? "max" : "min"]: toNormalizedValue(parseInt(e.target.value), this.characterUnit),
                         [isMax ? "min" : "max"]: (this.characterMeasurement ?? {})[isMax ? "min" : "max"],
                         character: this.currentCharacter,
                     }
