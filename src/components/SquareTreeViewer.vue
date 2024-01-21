@@ -7,7 +7,7 @@
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>
         </VBox>
-        <HBox v-if="!floweringMode && !isRange" class="flex-wrap relative cented-aligned">
+        <div v-if="!floweringMode && !isRange" class="square-grid relative">
             <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">
@@ -25,7 +25,7 @@
                 </div>
                 <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </SquareCard>
-        </HBox>
+        </div>
         <div v-if="floweringMode">
             <Flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></Flowering>
         </div>
@@ -284,3 +284,14 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.square-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, auto));
+}
+
+.square-grid > * {
+    aspect-ratio: 1;
+}
+</style>

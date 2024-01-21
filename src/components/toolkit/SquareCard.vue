@@ -1,5 +1,5 @@
 <template>
-    <div class="medium-square relative vertical-flexbox white-background button">
+    <div class="relative vertical-flexbox white-background button">
         <div class="absolute square-card-inner vertical-flexbox">
             <slot name="background">
                 <div class="full-background flex-grow-1" :style="image ? 'background-image: url(' + image + ')' : ''">
