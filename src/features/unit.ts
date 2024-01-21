@@ -7,8 +7,8 @@ export function toNormalizedValue(value: number, unit: Unit|undefined): number {
     return value;
 }
 
-export function fromNormalizedValue(value: number, unit: Unit|undefined): number {
-    if (unit?.base) {
+export function fromNormalizedValue(value: number|undefined, unit: Unit|undefined): number|undefined {
+    if (unit?.base && value) {
         return value * unit.base.factor;
     }
     return value;

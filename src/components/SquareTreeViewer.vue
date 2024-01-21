@@ -33,13 +33,18 @@
             <div v-if="isMetric && characterMeasurement">
                 <ScaleComparator :measurement="characterMeasurement" height="400px"></ScaleComparator>
             </div>
-            <HBox class="center-items">
+            <div class="form-grid center-items">
                 <label for="measurementMin">Min</label>
-                <input type="number" name="measurementMin" :value="minMeasurement" @change="updateMeasurement($event, false)" id="measurementMin">
+                <HBox class="center-items">
+                    <input type="number" name="measurementMin" :value="minMeasurement" @change="updateMeasurement($event, false)" id="measurementMin">
+                    <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
+                </HBox>
                 <label for="measurementMax">Max</label>
-                <input type="number" name="measurementMax" :value="maxMeasurement" @change="updateMeasurement($event, true)" id="measurementMax">
-                <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
-            </HBox>
+                <HBox class="center-items">
+                    <input type="number" name="measurementMax" :value="maxMeasurement" @change="updateMeasurement($event, true)" id="measurementMax">
+                    <span v-if="characterUnit">{{ characterUnit.name.S }}</span>
+                </HBox>
+            </div>
         </VBox>
     </VBox>
 </template>

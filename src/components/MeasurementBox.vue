@@ -7,7 +7,7 @@
         </ScaleComparator>
         <div v-if="measurement">
             {{ measurement.character.name[langProperty] }}: 
-            {{ minValue.toFixed(2) }} - {{ maxValue.toFixed(2) }}
+            {{ minValue?.toFixed(2) }} - {{ maxValue?.toFixed(2) }}
             {{ measurement.character.unit?.name.S }}
         </div>
     </VBox>

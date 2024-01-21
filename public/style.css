@@ -631,6 +631,10 @@ div.invisible {
     align-items: center;    
 }
 
+.end-justified {
+    justify-content: end;
+}
+
 .text-underlined {
     text-decoration: underline;
 }
