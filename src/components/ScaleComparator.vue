@@ -28,10 +28,11 @@ import { Config } from '@/tools/config';
 const props = defineProps({ height: { required: true, type: String }, measurement: { required: true, type: Object as PropType<Measurement> } });
 
 const comparisons = [
-    { img: Config.siteUrl + "images/nail.svg", alt: "scaled image of a finger nail", height: 0.014, max: 0.07 },
-    { img: Config.siteUrl + "images/hand.svg", alt: "scaled image of a human hand", height: 0.16, max: 0.50 },
-    { img: Config.siteUrl + "images/human.svg", alt: "scaled image of a human", height: 1.6, max: 10 },
-    { img: Config.siteUrl + "images/elephant.svg", alt: "scaled image of an elephant", height: 2.30, max: 50 },
+    { img: Config.siteUrl + "images/Finger.svg", alt: "scaled image of a finger nail", height: 0.014, max: 0.07 },
+    { img: Config.siteUrl + "images/Hand.svg", alt: "scaled image of a human hand", height: 0.16, max: 0.50 },
+    { img: Config.siteUrl + "images/Human.svg", alt: "scaled image of a human", height: 1.6, max: 5 },
+    { img: Config.siteUrl + "images/giraffe.svg", alt: "scaled image of a giraffe", height: 5.50, max: 50 },
+    { img: Config.siteUrl + "images/Whale.svg", alt: "scaled image of a blue whale", height: 25, max: 150 },
     { img: Config.siteUrl + "images/eiffel-tower.svg", alt: "scaled image of the Eiffel Tower", height: 330, max: 1000 },
 ];
 
