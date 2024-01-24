@@ -49,6 +49,10 @@
                 <slot v-bind:item="menuItemProps.item"></slot>
             </TreeMenuItem>
             <li v-if="editable">
+                <HBox class="medium-height center-items">
+                    <div class="indent">&nbsp;</div>
+                    <font-awesome-icon icon="fa-solid fa-chevron-right" />
+                </HBox>
                 <AddItem class="medium-height full-line" :name-fields="fieldNames" :name-store="nameStore" @add-item="addItem"></AddItem>
             </li>
         </ul>
