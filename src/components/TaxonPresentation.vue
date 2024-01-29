@@ -1,6 +1,6 @@
 <template>
     <div class="scroll flex-grow-1">
-        <HBox class="no-print">
+        <HBox class="no-print stick-to-top glass-background thin-border">
             <router-link class="button" :to="'/taxons/' + selectedTaxonId">Back to Taxon</router-link>
             <select v-model="lang">
                 <option value="S">Scientific</option>
