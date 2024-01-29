@@ -188,14 +188,17 @@ export default {
         },
         syncPictures() {
             this.urlsToSync = [];
+            function invalidUrl(url: string|undefined): boolean {
+                return typeof url === "undefined" || url.endsWith("/embed");
+            }
             for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
-                this.urlsToSync.push(...taxon.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
+                this.urlsToSync.push(...taxon.pictures.filter(pic => invalidUrl(pic.hubUrl)).map(pic => pic.url));
             }
             for (const character of iterHierarchy(this.charactersHierarchy)) {
-                this.urlsToSync.push(...character.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
+                this.urlsToSync.push(...character.pictures.filter(pic => invalidUrl(pic.hubUrl)).map(pic => pic.url));
             }
             for (const state of this.allStates()) {
-                this.urlsToSync.push(...state.pictures.filter(pic => typeof pic.hubUrl === "undefined").map(pic => pic.url));
+                this.urlsToSync.push(...state.pictures.filter(pic => invalidUrl(pic.hubUrl)).map(pic => pic.url));
             }
             uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {
                 const successes = [];
@@ -471,4 +474,3 @@ export default {
     }
 };
 </script>
-./stores/store

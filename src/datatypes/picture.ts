@@ -1,5 +1,5 @@
 import { Config } from "@/tools/config";
-import { AnyDocument, AnyItem, Picture } from "./types";
+import { AnyDocument, Picture } from "./types";
 import { pathToItem } from "./Dataset";
 import makeid from "@/tools/makeid";
 
