@@ -242,6 +242,7 @@ export default {
         },
         openItem(item: Hierarchy<Item>) {
             this.isRoot = false;
+            this.menuFilter = "";
             if (item.children.length > 0 || (item.type === "character" && item.characterType === "range")) {
                 this.breadCrumbs.push(item);
                 this.currentItems = [...item.children];
@@ -273,10 +274,12 @@ export default {
         },
         backToTop() {
             this.isRoot = true;
+            this.menuFilter = "";
             this.currentItems = [...this.rootItems!.children];
             this.breadCrumbs = [];
         },
         goToBreadCrumb(breadCrumb: Hierarchy<Item>) {
+            this.menuFilter = "";
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
             this.currentItems = [...breadCrumb.children];
