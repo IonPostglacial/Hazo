@@ -217,14 +217,14 @@ export const useDatasetStore = defineStore("dataset", {
                 this.removeState({ state, character: payload.character });
             })
         },
-        addStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, picture: Picture }) {
+        addStatePicture(payload: { character: Character|undefined, state: State, picture: Picture }) {
             const c = characterFromId(this.$state, payload.character?.id);
             if (c?.characterType === "discrete") {
                 const s = c.states.find(s => s.id === payload.state.id);
                 if (s) s.pictures = [...s.pictures, payload.picture];
             }
         },
-        setStatePicture(payload: { character: DiscreteCharacter|undefined, state: State, picture: Picture, index: number }) {
+        setStatePicture(payload: { character: Character|undefined, state: State, picture: Picture, index: number }) {
             const c = characterFromId(this.$state, payload.character?.id);
             if (c?.characterType === "discrete") {
                 const s = c?.states.find(s => s.id === payload.state.id);

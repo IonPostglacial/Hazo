@@ -28,7 +28,7 @@ export function picturesFromPhotos(item: AnyDocument, photos: string[] | Picture
     return (photos as string[]).map(url => (normalizePicture({ id: "m-" + makeid(16), path: pathToItem(item), url: url, label: url, hubUrl: undefined })));
 }
 
-export async function uploadPicture(photoUrl: string) {
+export async function uploadPicture(photoUrl: string): Promise<string | undefined> {
     if (photoUrl.startsWith(Config.datasetRegistry)) {
         return photoUrl;
     } else {

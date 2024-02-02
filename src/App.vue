@@ -11,7 +11,7 @@
             </div>
             <Spacer></Spacer>
             <div class="button-group">
-                <router-link class="button" :to="'/taxons/' + selectedTaxon">Taxons</router-link>
+                <router-link class="button" :to="'/items/' + selectedTaxon">Taxons</router-link>
                 <router-link class="button" :to="'/characters/' + selectedCharacter">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
             </div>
@@ -88,7 +88,7 @@ import download from "@/tools/download";
 import { Config } from './tools/config';
 import { readTextFileAsync } from './tools/read-file-async';
 import { forEachHierarchy, iterHierarchy } from "./datatypes/hierarchy";
-import { DiscreteCharacter } from "./datatypes/types";
+import { DiscreteCharacter, Item } from "./datatypes/types";
 import { Name } from "@/db-index";
 import { migrateIndexedDbStorageToFileStorage } from "./migrate-idb-to-fs";
 import DropDownButton from "@/components/toolkit/DropDownButton.vue";
@@ -100,6 +100,7 @@ import parseCSV, { escape, factorizeColumn, transposeCSV } from "./tools/parse-c
 import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "./stores/dataset";
 import { mapActions, mapState } from "pinia";
+import makeid from "./tools/makeid";
 
 export default {
     name: "App",
@@ -182,29 +183,60 @@ export default {
     },
     methods: {
         ...mapActions(useHazoStore, ["index", "indexDataset", "setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
-        ...mapActions(useDatasetStore, ["addCharacter", "addState", "addTaxon", "allStates", "encodeToHazoJson", "encodeToSdd", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
+        ...mapActions(useDatasetStore, ["addCharacter", "setCharacterPicture", "addState", "setStatePicture", "addTaxon", "setTaxonPicture", "allStates", "characterWithId", "encodeToHazoJson", "encodeToSdd", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
         openHub() {
             window.open(Config.datasetRegistry);
         },
         syncPictures() {
             this.urlsToSync = [];
-            function invalidUrl(url: string|undefined): boolean {
+            const invalidUrl = (url: string|undefined): boolean => {
                 return typeof url === "undefined" || url.endsWith("/embed");
             }
-            for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
-                this.urlsToSync.push(...taxon.pictures.filter(pic => invalidUrl(pic.hubUrl)).map(pic => pic.url));
+            const itemsByUrl = new Map<string, Item[]>();
+            const preparePictures = (item: Item) => {
+                const urlsToSync: string[] = [];
+                item.pictures.filter(pic => invalidUrl(pic.hubUrl)).forEach(pic => {
+                    let items = itemsByUrl.get(pic.url);
+                    if (typeof items === "undefined") {
+                        items = [];
+                    }
+                    items.push(item);
+                    itemsByUrl.set(pic.url, items);
+                    urlsToSync.push(pic.url);
+                });
+                this.urlsToSync.push(...urlsToSync);
             }
-            for (const character of iterHierarchy(this.charactersHierarchy)) {
-                this.urlsToSync.push(...character.pictures.filter(pic => invalidUrl(pic.hubUrl)).map(pic => pic.url));
-            }
+            forEachHierarchy(this.taxonsHierarchy, preparePictures);
+            forEachHierarchy(this.charactersHierarchy, preparePictures);
             for (const state of this.allStates()) {
-                this.urlsToSync.push(...state.pictures.filter(pic => invalidUrl(pic.hubUrl)).map(pic => pic.url));
+                preparePictures(state);
             }
             uploadPictures(this.urlsToSync, (progress) => this.syncProgress = progress).then(results => {
-                const successes = [];
                 for (const result of results) {
                     if (result.status === "fulfilled") {
-                        successes.push(result.value);
+                        itemsByUrl.get(result.value.src)?.forEach(item => {
+                            const picture = {
+                                type: "picture" as const,
+                                id: "m-" + makeid(16),
+                                path: pathToItem(item),
+                                url: result.value.src,
+                                label: result.value.src,
+                                hubUrl: result.value.response,
+                            };
+                            const index = item.pictures.findIndex(pic => pic.url === result.value.src);
+                            switch (item.type) {
+                                case "taxon":
+                                    this.setTaxonPicture({ taxon: item, index, picture });
+                                    break;
+                                case "character":
+                                    this.setCharacterPicture({ character: item, index, picture });
+                                    break;
+                                case "state":
+                                    const character = this.characterWithId(item.path.at(-1));
+                                    this.setStatePicture({ character, state: item, index, picture });
+                                    break;
+                            }
+                        });
                     }
                 }
                 this.urlsToSync = [];
@@ -289,10 +321,10 @@ export default {
         },
         saveData() {
             this.index(true);
-            const taxons: Record<string, Taxon> = {};
+            const items: Record<string, Taxon> = {};
             const characters: Record<string, Character> = {};
             for (const taxon of iterHierarchy(this.taxonsHierarchy)) {
-                taxons[taxon.id] = taxon;
+                items[taxon.id] = taxon;
             }
             for (const character of iterHierarchy(this.charactersHierarchy)) {
                 characters[character.id] = character;
