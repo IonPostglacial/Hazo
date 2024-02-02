@@ -137,7 +137,7 @@ export type HierarchicalItem = Taxon | Character;
 export type Item = Character | State | Taxon;
 
 export type Description = {
-    character: Character;
+    character: DiscreteCharacter;
     states: State[];
 };
 

@@ -1,4 +1,4 @@
-import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, AnyItem, Item, AnyDocument } from "./types";
+import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, AnyItem, Item, AnyDocument, Measurement } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
 import clone from "@/tools/clone";
@@ -119,29 +119,34 @@ export function taxonDescriptions(ds: Dataset, taxon: Taxon): Array<Description>
                     states.push(state);
                 }
             }
-        }
-        if (states.length > 0) {
-            descriptions.push({ character, states })
+            if (states.length > 0) {
+                descriptions.push({ character, states })
+            }
         }
     });
     return descriptions;
 }
 
-export function taxonDescriptorSections(ds: Dataset, taxon: Taxon): Array<Array<Description>> {
-    const sections = new Array<Array<Description>>();
+export function taxonDescriptorSections(ds: Dataset, taxon: Taxon): Array<Array<Description|Measurement>> {
+    const sections = new Array<Array<Description|Measurement>>();
     for (const ch of ds.charactersHierarchy.children) {
-        const descriptions = new Array<Description>();
+        const descriptions = new Array<Description|Measurement>();
         forEachHierarchy(ch, character => {
-            const states = [];
             if (character.characterType === "discrete") {
+                const states = [];
                 for (const state of character.states) {
                     if (taxon.states.some(s => s.id === state.id)) {
                         states.push(state);
                     }
                 }
-            }
-            if (states.length > 0) {
-                descriptions.push({ character, states })
+                if (states.length > 0) {
+                    descriptions.push({ character, states })
+                }
+            } else if (character.characterType === "range") {
+                const measurement = taxon.measurements[character.id];
+                if (typeof measurement !== "undefined") {
+                    descriptions.push(measurement);
+                }
             }
         });
         if (descriptions.length > 0) {

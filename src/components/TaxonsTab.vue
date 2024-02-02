@@ -171,39 +171,37 @@
                                 <ul class="big-margin-left">
                                     <li v-for="desc in section" :key="desc.character.id">
                                         {{ desc.character.name[selectedSummaryLangProperty] }}
-                                        <GeoView 
-                                            v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
-                                            :geo-map="getGeoMap(desc.character)"
-                                            :selected-features="desc.states.map(s => s.name.S)">
-                                        </GeoView>
-                                        <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
-                                            <li v-for="state in desc.states" :key="state.id">
-                                                {{ state.name[selectedSummaryLangProperty] }}<button @click="pushStateToChildren(state)">Push to children</button>
-                                            </li>
-                                        </ul>
+                                        <div v-if="'states' in desc" class="display-contents">
+                                            <GeoView
+                                                v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
+                                                :geo-map="getGeoMap(desc.character)"
+                                                :selected-features="desc.states.map(s => s.name.S)">
+                                            </GeoView>
+                                            <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
+                                                <li v-for="state in desc.states" :key="state.id">
+                                                    {{ state.name[selectedSummaryLangProperty] }}<button @click="pushStateToChildren(state)">Push to children</button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <MeasurementBox v-if="desc.character.characterType === 'range' && 'min' in desc" 
+                                            :measurement="desc"
+                                            :lang-property="selectedSummaryLangProperty">
+                                        </MeasurementBox>
                                     </li>
                                 </ul>
                             </VBox>
-                            <ul class="rounded white-background medium-padding medium-margin thin-border">
-                                <li v-if="calendarTracks.length > 0">
-                                    Calendar
-                                    <ul>
-                                        <li v-for="track in calendarTracks">
-                                            <span :style="'color:' + track.color">{{ track.name }}</span>
-                                        </li>
-                                    </ul>
-                                    <Flowering
-                                        :model-value="calendarTracks"
-                                        class="limited-width">
-                                    </Flowering>
-                                </li>
-                                <li v-for="measurement in selectedTaxon.measurements">
-                                    <MeasurementBox v-if="measurement" 
-                                        :measurement="measurement"
-                                        :lang-property="selectedSummaryLangProperty">
-                                    </MeasurementBox>
-                                </li>
-                            </ul>
+                            <VBox v-if="calendarTracks.length > 0" class="rounded white-background medium-padding medium-margin thin-border">
+                                <h2>Calendar</h2>
+                                <ul>
+                                    <li v-for="track in calendarTracks">
+                                        <span :style="'color:' + track.color">{{ track.name }}</span>
+                                    </li>
+                                </ul>
+                                <Flowering
+                                    :model-value="calendarTracks"
+                                    class="limited-width">
+                                </Flowering>
+                            </VBox>
                         </div>
                     </VBox>
                 </SplitPanel>
