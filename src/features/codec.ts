@@ -312,7 +312,7 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 				mapFile = "MDG_adm1.json";
 			} else if (item.name.S === "Région") {
 				mapFile = "MDG_adm2.json";
-			} else if (item.name.S === "District") {
+			} else if (item.name.S === "DIstrict") {
 				mapFile = "MDG_adm3.json";
 			} else if (item.name.S === "Commune") {
 				mapFile = "MDG_adm4.json";
