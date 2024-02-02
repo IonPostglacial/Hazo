@@ -24,27 +24,29 @@
                             <div>NV 2 <span>{{ taxon.vernacularName2 }}</span></div>
                             <div style="max-width: 50ch" class="text-ellipsed">Website <a target="_blank" :href="taxon.website">{{ taxon.website }}</a></div>
                         </div>
-                        <VBox v-for="description in descriptions(taxon)" :key="description.character.id" class="limited-width">
-                            <div v-if="!isFlowering(description)">
-                                <h3>{{ charName(description.character) }}</h3>
-                                <HBox class="gap-1">
-                                    <VBox v-for="state in description.states" :key="state.id" class="medium-padding thin-border">
-                                        <img v-for="photo in state.pictures" class="fit-contain small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
-                                        <span class="spaced">{{ stateName(state) }}</span>
-                                    </VBox>
-                                </HBox>
-                            </div>
-                            <flowering v-if="isFlowering(description)" :model-value="tracksFromStates(description.states)">
-                            </flowering>
-                        </VBox>
-                        <VBox>
-                            <section v-for="measurement in taxon.measurements">
-                                <MeasurementBox v-if="measurement" :measurement="measurement" lang-property="S">
+                        <VBox v-for="section in taxonDescriptionSections(taxon)" class="thin-border white-background medium-padding spaced-vertical">
+                            <VBox v-for="description in section" :key="description.character.id" class="limited-width">
+                                <div v-if="'states' in description" class="display-contents">
+                                    <div v-if="!isFlowering(description)">
+                                        <h3>{{ charName(description.character) }}</h3>
+                                        <HBox class="gap-1">
+                                            <VBox v-for="state in description.states" :key="state.id" class="medium-padding thin-border" :style="state.color ? ('background-color:' + state.color) : ''">
+                                                <img v-for="photo in state.pictures" class="fit-contain small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
+                                                <span class="spaced">
+                                                    {{ stateName(state) }}
+                                                </span>
+                                            </VBox>
+                                        </HBox>
+                                    </div>
+                                    <flowering v-if="isFlowering(description)" :model-value="tracksFromStates(description.states)">
+                                    </flowering>
+                                </div>
+                                <MeasurementBox v-if="'min' in description" :measurement="description" lang-property="S">
                                 </MeasurementBox>
-                            </section>
+                            </VBox>
                         </VBox>
                     </div>
-                    <PictureGalery :images="taxon.pictures" class="medium-max-width medium-max-height fit-contain">
+                    <PictureGalery v-if="taxon.pictures.length > 0" :images="taxon.pictures" class="medium-max-width medium-max-height fit-contain">
                     </PictureGalery>
                 </HBox>
                 <hr class="no-print">
@@ -107,7 +109,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useDatasetStore, ["taxonChildren", "taxonDescriptions", "taxonWithId"]),
+        ...mapActions(useDatasetStore, ["taxonChildren", "taxonDescriptionSections", "taxonWithId"]),
         charName(ch: Character): string {
             const n:any = ch.name ?? {};
             return n[this.lang];
@@ -129,9 +131,6 @@ export default {
         isFlowering(description: Description): boolean {
             const ch = description.character;
             return ch.characterType === "discrete" && ch.preset === "flowering";
-        },
-        descriptions(taxon: Taxon): Description[] {
-            return this.taxonDescriptions(taxon);
         },
         tracksFromStates(states: { id: string, name: MultilangText }[]): Track[] {
             return floweringFromStates(states);

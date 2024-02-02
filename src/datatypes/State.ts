@@ -10,7 +10,8 @@ export function createState(init: StateInit): State {
         type: "state", 
         name: { S: init.name.S, V: init.name.V ?? "", CN: init.name.CN ?? "", EN: init.name.EN ?? "", FR: init.name.FR ?? "" },
         detail: init.detail ?? "",
-        pictures: init.pictures ?? [], 
+        pictures: init.pictures ?? [],
+        color: init.color,
     };
 }
 

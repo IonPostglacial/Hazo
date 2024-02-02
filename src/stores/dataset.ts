@@ -1,5 +1,5 @@
 import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter, Measurement, forEachLeaves, iterHierarchy, forEachHierarchy } from "@/datatypes";
-import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree, pathToItem } from "@/datatypes/Dataset";
+import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree, pathToItem, taxonDescriptorSections } from "@/datatypes/Dataset";
 import { defineStore } from "pinia";
 import clone from '@/tools/clone';
 import { EncodedDataset, createTexExporter, encodeDataset } from "@/features";
@@ -126,6 +126,10 @@ export const useDatasetStore = defineStore("dataset", {
         taxonDescriptions(taxon: Taxon|undefined): Array<Description> {
             if (typeof taxon === "undefined") { return []; }
             return taxonDescriptions(this.$state, taxon);
+        },
+        taxonDescriptionSections(taxon: Taxon|undefined): Array<Array<Description|Measurement>> {
+            if (typeof taxon === "undefined") { return []; }
+            return taxonDescriptorSections(this.$state, taxon);
         },
         characterWithId(id: string | undefined): Character | undefined {
             return characterFromId(this.$state, id);

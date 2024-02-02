@@ -159,47 +159,49 @@
                         <section v-if="selectedTaxon.website.length > 0" class="white-background medium-padding medium-margin thin-border">
                             <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
                         </section>
-                        <div class="thin-border medium-margin white-background flex-grow-1">
-                            <HBox>
+                        <div class="thin-border medium-padding medium-margin flex-grow-1">
+                            <HBox class="rounded white-background medium-padding medium-margin thin-border">
                                 <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                                 <Spacer></Spacer>
                                 <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
                                     <option v-for="(language, index) in charNameFields" :key="language.label" :value="index">{{ language.label }}</option>
                                 </select>
                             </HBox>
-                            <ul class="big-margin-left">
-                                <li v-for="desc in taxonDescriptions(selectedTaxon)" :key="desc.character.id">
-                                    {{ desc.character.name[selectedSummaryLangProperty] }}
-                                    <GeoView 
-                                        v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
-                                        :geo-map="getGeoMap(desc.character)"
-                                        :selected-features="desc.states.map(s => s.name.S)">
-                                    </GeoView>
-                                    <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
-                                        <li v-for="state in desc.states" :key="state.id">
-                                            {{ state.name[selectedSummaryLangProperty] }}<button @click="pushStateToChildren(state)">Push to children</button>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li v-if="calendarTracks.length > 0">
-                                    Calendar
-                                    <ul>
-                                        <li v-for="track in calendarTracks">
-                                            <span :style="'color:' + track.color">{{ track.name }}</span>
-                                        </li>
-                                    </ul>
-                                    <Flowering
-                                        :model-value="calendarTracks"
-                                        class="limited-width">
-                                    </Flowering>
-                                </li>
-                                <li v-for="measurement in selectedTaxon.measurements">
-                                    <MeasurementBox v-if="measurement" 
-                                        :measurement="measurement"
-                                        :lang-property="selectedSummaryLangProperty">
-                                    </MeasurementBox>
-                                </li>
-                            </ul>
+                            <VBox v-for="section in taxonDescriptionSections(selectedTaxon)" class="thin-border rounded white-background medium-padding spaced-vertical">
+                                <ul class="big-margin-left">
+                                    <li v-for="desc in section" :key="desc.character.id">
+                                        {{ desc.character.name[selectedSummaryLangProperty] }}
+                                        <div v-if="'states' in desc" class="display-contents">
+                                            <GeoView
+                                                v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
+                                                :geo-map="getGeoMap(desc.character)"
+                                                :selected-features="desc.states.map(s => s.name.S)">
+                                            </GeoView>
+                                            <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
+                                                <li v-for="state in desc.states" :key="state.id">
+                                                    {{ state.name[selectedSummaryLangProperty] }}<button @click="pushStateToChildren(state)">Push to children</button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <MeasurementBox v-if="desc.character.characterType === 'range' && 'min' in desc" 
+                                            :measurement="desc"
+                                            :lang-property="selectedSummaryLangProperty">
+                                        </MeasurementBox>
+                                    </li>
+                                </ul>
+                            </VBox>
+                            <VBox v-if="calendarTracks.length > 0" class="rounded white-background medium-padding medium-margin thin-border">
+                                <h2>Calendar</h2>
+                                <ul>
+                                    <li v-for="track in calendarTracks">
+                                        <span :style="'color:' + track.color">{{ track.name }}</span>
+                                    </li>
+                                </ul>
+                                <Flowering
+                                    :model-value="calendarTracks"
+                                    class="limited-width">
+                                </Flowering>
+                            </VBox>
                         </div>
                     </VBox>
                 </SplitPanel>
@@ -377,7 +379,7 @@ export default {
             "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxon", "setTaxonPicture", "removeTaxonPicture",
             "characterWithId", "taxonWithId", "taxonChildren",
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
-            "createTexExporter", "taxonDescriptions", "taxonParentChain", "taxonCharactersTree", "updateTaxonMeasurement",
+            "createTexExporter", "taxonDescriptions", "taxonDescriptionSections", "taxonParentChain", "taxonCharactersTree", "updateTaxonMeasurement",
         ]),
         fromNormalizedValue: fromNormalizedValue,
         columnName(col: string): string {
