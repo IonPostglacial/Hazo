@@ -127,6 +127,30 @@ export function taxonDescriptions(ds: Dataset, taxon: Taxon): Array<Description>
     return descriptions;
 }
 
+export function taxonDescriptorSections(ds: Dataset, taxon: Taxon): Array<Array<Description>> {
+    const sections = new Array<Array<Description>>();
+    for (const ch of ds.charactersHierarchy.children) {
+        const descriptions = new Array<Description>();
+        forEachHierarchy(ch, character => {
+            const states = [];
+            if (character.characterType === "discrete") {
+                for (const state of character.states) {
+                    if (taxon.states.some(s => s.id === state.id)) {
+                        states.push(state);
+                    }
+                }
+            }
+            if (states.length > 0) {
+                descriptions.push({ character, states })
+            }
+        });
+        if (descriptions.length > 0) {
+            sections.push(descriptions);
+        }
+    }
+    return sections;
+}
+
 function addFamilyPreset(ds: Dataset, taxon: Taxon) {
     if (taxon.path.length > 0) return;
 
