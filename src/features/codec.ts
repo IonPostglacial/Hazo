@@ -306,12 +306,24 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 		if (inherentState) {
 			inherentState.name = item.name;
 		}
+		let mapFile = character.mapFile;
+		if (character.preset === "map" && typeof mapFile === "undefined" || mapFile === "") {
+			if (item.name.S === "Province") {
+				mapFile = "MDG_adm1.json";
+			} else if (item.name.S === "Région") {
+				mapFile = "MDG_adm2.json";
+			} else if (item.name.S === "District") {
+				mapFile = "MDG_adm3.json";
+			} else if (item.name.S === "Commune") {
+				mapFile = "MDG_adm4.json";
+			}
+		}
 		return createCharacter({
 			statesById: new Map(ds.statesById),
 			...item,
 			path,
 			preset: character.preset,
-			mapFile: character.mapFile,
+			mapFile,
 			states: Array.from(charStates.values()),
 			color: character.color,
 			inherentState,
