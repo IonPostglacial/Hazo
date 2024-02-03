@@ -163,14 +163,13 @@
                             <HBox class="rounded white-background medium-padding medium-margin thin-border">
                                 <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                                 <Spacer></Spacer>
-                                <select name="lang" id="lang-selector" v-model="selectedSummaryLangId">
-                                    <option v-for="(language, index) in charNameFields" :key="language.label" :value="index">{{ language.label }}</option>
-                                </select>
+                                <MultiSelector :choices="charNameFields.map(field => field.label)" v-model="selectedSummaryLangIds">
+                                </MultiSelector>
                             </HBox>
                             <VBox v-for="section in taxonDescriptionSections(selectedTaxon)" class="thin-border rounded white-background medium-padding spaced-vertical">
                                 <ul class="big-margin-left">
                                     <li v-for="desc in section" :key="desc.character.id">
-                                        {{ desc.character.name[selectedSummaryLangProperty] }}
+                                        {{ selectedSummaryLangProperties.map((prop: string) => desc.character.name[prop]).join(" / ") }}
                                         <div v-if="'states' in desc" class="display-contents">
                                             <GeoView
                                                 v-if="desc.character.characterType === 'discrete' && desc.character.preset === 'map'"
@@ -179,13 +178,13 @@
                                             </GeoView>
                                             <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                                 <li v-for="state in desc.states" :key="state.id">
-                                                    {{ state.name[selectedSummaryLangProperty] }}<button @click="pushStateToChildren(state)">Push to children</button>
+                                                    {{ selectedSummaryLangProperties.map((prop: string) => state.name[prop]).join(" / ") }}<button @click="pushStateToChildren(state)">Push to children</button>
                                                 </li>
                                             </ul>
                                         </div>
                                         <MeasurementBox v-if="desc.character.characterType === 'range' && 'min' in desc" 
                                             :measurement="desc"
-                                            :lang-property="selectedSummaryLangProperty">
+                                            :lang-properties="selectedSummaryLangProperties">
                                         </MeasurementBox>
                                     </li>
                                 </ul>
@@ -226,6 +225,7 @@ import { Book, Character, Description, Hierarchy, State, Taxon, taxonPropertiesE
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDownButton from "./toolkit/DropDownButton.vue";
+import MultiSelector from "./toolkit/MultiSelector.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Spacer from "./toolkit/Spacer.vue";
@@ -268,7 +268,7 @@ export default {
     components: {
     CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
     GeoView, GoogleMap, Marker,
-    ExtraFieldsPanel, MeasurementBox, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
+    ExtraFieldsPanel, MeasurementBox, MultiSelector, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
     ColumnHeader, TextEditor,
     Flowering,
     ScaleComparator
@@ -321,8 +321,8 @@ export default {
         },
     },
     computed: {
-        ...mapWritableState(useHazoStore, ["selectedSummaryLangId"]),
-        ...mapState(useHazoStore, ["charNameFields", "selectedSummaryLangProperty", "statesAllowList", "statesDenyList", "taxonsToDisplay"]),
+        ...mapWritableState(useHazoStore, ["selectedSummaryLangIds"]),
+        ...mapState(useHazoStore, ["charNameFields", "selectedSummaryLangProperties", "statesAllowList", "statesDenyList", "taxonsToDisplay"]),
         ...mapState(useDatasetStore, ["allTaxons", "books", "charactersHierarchy", "extraFields"]),
         selectedStateIds(): string[] {
             return this.selectedTaxon?.states.map(s => s.id) ?? [];

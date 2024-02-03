@@ -13,12 +13,16 @@ import { useRouter } from "vue-router";
 const INDEX_VERSION = 1;
 type IndexedDatasets = Record<string, number>;
 
-function getStoredSummaryLangId(): number {
-    const langId = Number.parseInt(window.localStorage.getItem("selectedSummaryLangId") ?? "");
-    if (Number.isSafeInteger(langId)) {
-        return langId;
+function getStoredSummaryLangIds(): number[] {
+    const stored = window.localStorage.getItem("selectedSummaryLangIds");
+    if (stored === null) {
+        return [0];
     }
-    return 0;
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) {
+        return [0];
+    }
+    return parsed.filter(n => Number.isSafeInteger(n));
 }
 
 export const useHazoStore = defineStore("hazo", () => {
@@ -31,14 +35,14 @@ export const useHazoStore = defineStore("hazo", () => {
     const copiedStates = ref([] as State[]);
     const statesAllowList = ref([] as State[]);
     const statesDenyList = ref([] as State[]);
-    const selectedSummaryLangId = ref(getStoredSummaryLangId());
+    const selectedSummaryLangIds = ref(getStoredSummaryLangIds());
     const charNameFields = ref([{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }]);
 
     const ds = useDatasetStore();
     const router = useRouter();
 
-    watch(selectedSummaryLangId, (id) => {
-        window.localStorage.setItem("selectedSummaryLangId", JSON.stringify(id));
+    watch(selectedSummaryLangIds, (ids) => {
+        window.localStorage.setItem("selectedSummaryLangIds", JSON.stringify(ids));
     });
 
     const indexedDatasets = computed((): IndexedDatasets => {
@@ -69,16 +73,16 @@ export const useHazoStore = defineStore("hazo", () => {
         }
     });
 
-    const selectedSummaryLangProperty = computed((): string => {
-        return charNameFields.value[selectedSummaryLangId.value].propertyName;
+    const selectedSummaryLangProperties = computed((): string[] => {
+        return selectedSummaryLangIds.value.map(id => charNameFields.value[id].propertyName);
     });
 
     return {  
-        selectedTaxon, selectedCharacter, selectedSummaryLangId, dictionary,
+        selectedTaxon, selectedCharacter, selectedSummaryLangIds, dictionary,
         statesAllowList, statesDenyList,
         connectedToHub, copiedTaxon, copiedCharacter, copiedStates, charNameFields,
 
-        indexedDatasets, selectedSummaryLangProperty, taxonsToDisplay, taxonsHierarchy: ds.taxonsHierarchy,
+        indexedDatasets, selectedSummaryLangProperties, taxonsToDisplay, taxonsHierarchy: ds.taxonsHierarchy,
 
         addStateToAllowList(state: State) {
             statesAllowList.value = [...statesAllowList.value, state];

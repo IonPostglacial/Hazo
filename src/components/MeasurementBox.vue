@@ -6,7 +6,7 @@
             :measurement="measurement">
         </ScaleComparator>
         <div v-if="measurement">
-            {{ measurement.character.name[langProperty] }}: 
+            {{ langProperties.map(prop => measurement.character.name[prop]).join(" / ") }}: 
             {{ minValue?.toFixed(2) }} - {{ maxValue?.toFixed(2) }}
             {{ measurement.character.unit?.name.S }}
         </div>
@@ -22,7 +22,7 @@ import ScaleComparator from './ScaleComparator.vue';
 
 const props = defineProps({
     measurement: { required: true, type: Object as PropType<Measurement> },
-    langProperty: { required: true, type: String },
+    langProperties: { required: true, type: Array as PropType<string[]> },
 });
 
 const minValue = computed(() => fromNormalizedValue(props.measurement.min, props.measurement.character.unit))

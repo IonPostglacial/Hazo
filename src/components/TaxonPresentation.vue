@@ -41,7 +41,7 @@
                                     <flowering v-if="isFlowering(description)" :model-value="tracksFromStates(description.states)">
                                     </flowering>
                                 </div>
-                                <MeasurementBox v-if="'min' in description" :measurement="description" lang-property="S">
+                                <MeasurementBox v-if="'min' in description" :measurement="description" :lang-properties="['S']">
                                 </MeasurementBox>
                             </VBox>
                         </VBox>

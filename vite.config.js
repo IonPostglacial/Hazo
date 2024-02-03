@@ -12,6 +12,9 @@ export default defineConfig({
             MODE: 3
           }
         }
+      },
+      script: {
+        defineModel: true
       }
     }) ],
   server: {
