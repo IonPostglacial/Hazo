@@ -1,10 +1,10 @@
 <template>
-    <SplitPanel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
+    <SplitPanel panel-id="taxon-menu-panel" class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <TreeMenu v-if="selectedColumns.includes('menu')" class="scroll white-background no-print" :editable="true" :items="taxonsToDisplay" :selected-item="selectedTaxon ? selectedTaxon.id : ''" 
             :name-store="nameStore"
             :name-fields="nameFields"
             @closed="removeColumn('menu')"
-            @move-item-up="moveUp" @move-item-down="moveDown"
+            @move-item-up="moveTaxonUp" @move-item-down="moveTaxonDown"
             @add-item="addTaxonHandler" @unselected="unselectTaxon" @delete-item="removeTaxon" v-slot="menuProps">
             <RouterLink class="flex-grow-1 nowrap unstyled-anchor" :to="'/taxons/' + menuProps.item.id">{{ menuProps.item.name }}</RouterLink>
         </TreeMenu>
@@ -73,7 +73,7 @@
                         :options="{ title: selectedTaxon ? selectedTaxon.name : '', position }"
                     />
                 </GoogleMap>
-                <SplitPanel v-if="selectedTaxon && taxonValue" class="flex-grow-1 horizontal-flexbox scroll">
+                <SplitPanel v-if="selectedTaxon && taxonValue" class="flex-grow-1 horizontal-flexbox scroll" panel-id="taxon-content-panel">
                     <VBox v-if="selectedColumns.includes('props')" :class="['scroll', { 'flex-grow-1': selectedColumns.length == 2 }]">
                         <ColumnHeader class="stick-to-top" label="Properties"
                             @minimize="removeColumn('props')"
@@ -440,12 +440,6 @@ export default {
         },
         pasteItem() {
             this.pasteTaxon(this.selectedTaxonId);
-        },
-        moveUp(item: Taxon) {
-            this.moveTaxonUp(item);
-        },
-        moveDown(item: Taxon) {
-            this.moveTaxonDown(item);
         },
         openSelectParentDropdown() {
             this.selectingParent = true;

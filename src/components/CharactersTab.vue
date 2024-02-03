@@ -1,5 +1,5 @@
 <template>
-    <SplitPanel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
+    <SplitPanel panel-id="char-menu-panel" class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
         <TreeMenu v-if="showLeftMenu" class="scroll white-background no-print" editable :items="charactersHierarchy" name="description"
             :name-fields="nameFields"
             :name-store="nameStore"
@@ -29,7 +29,7 @@
                     <button type="button" @click="pasteCurrentStates">Paste States</button>
                 </div>
             </HBox>
-            <SplitPanel class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
+            <SplitPanel panel-id="char-content-panel" class="horizontal-flexbox start-align flex-grow-1 no-vertical-overflow">
                 <VBox class="scroll flex-grow-1">
                     <ColumnHeader class="stick-to-top" label="Character" :hide-actions="true"></ColumnHeader>
                     <PopupGalery v-if="!printMode" :title="selectedCharacter?.name.S" :images="bigImages" :open="showBigImage" @closed="showBigImage = false"></PopupGalery>
