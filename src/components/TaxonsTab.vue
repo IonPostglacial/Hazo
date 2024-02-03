@@ -160,7 +160,7 @@
                             <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
                         </section>
                         <div class="thin-border medium-padding medium-margin flex-grow-1">
-                            <HBox class="rounded white-background medium-padding medium-margin thin-border">
+                            <HBox class="white-background medium-margin medium-padding thin-border center-items">
                                 <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
                                 <Spacer></Spacer>
                                 <MultiSelector :choices="charNameFields.map(field => field.label)" v-model="selectedSummaryLangIds">
@@ -311,7 +311,7 @@ export default {
         selectedColumns() {
             localStorage.selectedTaxonColumns = this.selectedColumns.join(",");
         },
-        "taxonValue": {
+        taxonValue: {
             handler: debounce(500, function (this: any) {
                 if (this.selectedTaxon && !taxonPropertiesEquals(this.selectedTaxon, this.taxonValue)) {
                     this.setTaxon({ taxon: this.selectedTaxon, props: clone(this.taxonValue) });
@@ -321,8 +321,8 @@ export default {
         },
     },
     computed: {
-        ...mapWritableState(useHazoStore, ["selectedSummaryLangIds"]),
-        ...mapState(useHazoStore, ["charNameFields", "selectedSummaryLangProperties", "statesAllowList", "statesDenyList", "taxonsToDisplay"]),
+        ...mapWritableState(useHazoStore, ["selectedSummaryLangIds", "selectedDescriptorId"]),
+        ...mapState(useHazoStore, ["charNameFields", "selectedDescriptor", "selectedSummaryLangProperties", "statesAllowList", "statesDenyList", "taxonsToDisplay"]),
         ...mapState(useDatasetStore, ["allTaxons", "books", "charactersHierarchy", "extraFields"]),
         selectedStateIds(): string[] {
             return this.selectedTaxon?.states.map(s => s.id) ?? [];
@@ -344,7 +344,7 @@ export default {
         },
         itemDescriptorTree(): Hierarchy<Item> {
             if (typeof this.selectedTaxon !== "undefined") {
-                return this.taxonCharactersTree(this.selectedTaxon, this.charactersHierarchy);
+                return this.taxonCharactersTree(this.selectedTaxon, this.selectedDescriptor);
             } else {
                 return createCharacter({ id: "c0", path: [], name: { S: '' }, detail: ""});
             }
@@ -491,6 +491,7 @@ export default {
             }
         },
         openCharacter(e: { item: DiscreteCharacter }) {
+            this.selectedDescriptorId = e.item.id;
             if (e.item.inherentState && this.selectedTaxon && ! taxonHasState(this.selectedTaxon, e.item.inherentState)) {
                 this.taxonStateToggle({ item: e.item.inherentState });
             }

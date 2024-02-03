@@ -62,10 +62,11 @@ import Months from "@/datatypes/Months";
 import clone from "@/tools/clone";
 import makeid from "@/tools/makeid";
 import { Character, Item, Measurement, MultilangText, Unit } from "@/datatypes/types";
-import { mapActions } from "pinia";
+import { mapActions, mapWritableState } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 import { getParentId, pathToItem } from "@/datatypes/Dataset";
 import { fromNormalizedValue, toNormalizedValue } from "@/features/unit";
+import { useHazoStore } from "@/stores/hazo";
 
 
 function floweringFromStates(color: string, currentItems: 
@@ -93,10 +94,11 @@ export default {
     },
     data() {
         const currentItems = [...this.rootItems!.children];
+        const breadCrumbs: Hierarchy<Item>[] = [...this.characterParentChain(this.rootItems), this.rootItems];
         return {
             isRoot: true,
-            currentItems: currentItems,
-            breadCrumbs: new Array<Hierarchy<Item>>,
+            currentItems,
+            breadCrumbs,
             menuFilter: "",
             value: 0,
         };
@@ -115,6 +117,7 @@ export default {
         },
     },
     computed: {
+        ...mapWritableState(useHazoStore, ["selectedDescriptorId"]),
         floweringMode(): boolean {
             if (this.currentCharacter) {
                 return this.isFlowering(this.currentCharacter);
@@ -186,7 +189,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions(useDatasetStore, ["addState", "characterWithId"]),
+        ...mapActions(useDatasetStore, ["addState", "characterParentChain", "characterWithId"]),
         updateMeasurement(e: Event, isMax: boolean) {
             if (e.target instanceof HTMLInputElement && this.currentCharacter && this.currentCharacter.characterType === "range") {
                 this.$emit("measurement-updated", { 
@@ -277,12 +280,14 @@ export default {
             this.menuFilter = "";
             this.currentItems = [...this.rootItems!.children];
             this.breadCrumbs = [];
+            this.selectedDescriptorId = "c0";
         },
         goToBreadCrumb(breadCrumb: Hierarchy<Item>) {
             this.menuFilter = "";
             const index = this.breadCrumbs.findIndex(b => b.id === breadCrumb.id);
             this.breadCrumbs = this.breadCrumbs.slice(0, index + 1);
             this.currentItems = [...breadCrumb.children];
+            this.selectedDescriptorId = "c0";
         }
     },
 };

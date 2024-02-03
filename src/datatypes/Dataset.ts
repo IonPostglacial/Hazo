@@ -93,19 +93,28 @@ export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy
     return dependencyHierarchy;
 }
 
-export function taxonParentChain(ds: Dataset, id: string | undefined): Taxon[] {
-    const taxon = taxonFromId(ds, id);
-    if (typeof taxon === "undefined") { return []; }
-    const parents: Taxon[] = [];
-    for (const parentId of taxon.path) {
-        const parent = ds.taxonsByIds.get(parentId);
+export function itemParentChain<T extends Item>(itemsByIds: Map<string, T>, item: T|undefined): T[] {
+    if (typeof item === "undefined") { return []; }
+    const parents: T[] = [];
+    for (const parentId of item.path) {
+        const parent = itemsByIds.get(parentId);
         if (typeof parent === "undefined") {
-            console.warn("invalid taxon path:", parentId, taxon.path);
+            console.warn("invalid taxon path:", parentId, item.path);
             continue;
         }
         parents.push(parent);
     }
     return parents;
+}
+
+export function characterParentChain(ds: Dataset, id: string | undefined): Character[] {
+    const character = characterFromId(ds, id);
+    return itemParentChain(ds.charactersByIds, character);
+}
+
+export function taxonParentChain(ds: Dataset, id: string | undefined): Taxon[] {
+    const taxon = taxonFromId(ds, id);
+    return itemParentChain(ds.taxonsByIds, taxon);
 }
 
 export function taxonDescriptions(ds: Dataset, taxon: Taxon): Array<Description> {

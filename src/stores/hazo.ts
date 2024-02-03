@@ -36,6 +36,7 @@ export const useHazoStore = defineStore("hazo", () => {
     const statesAllowList = ref([] as State[]);
     const statesDenyList = ref([] as State[]);
     const selectedSummaryLangIds = ref(getStoredSummaryLangIds());
+    const selectedDescriptorId = ref(window.localStorage.getItem("selectedDescriptorId") ?? "c0");
     const charNameFields = ref([{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }]);
 
     const ds = useDatasetStore();
@@ -43,6 +44,13 @@ export const useHazoStore = defineStore("hazo", () => {
 
     watch(selectedSummaryLangIds, (ids) => {
         window.localStorage.setItem("selectedSummaryLangIds", JSON.stringify(ids));
+    });
+    watch(selectedDescriptorId, (desc) => {
+        window.localStorage.setItem("selectedDescriptorId", desc);
+    });
+
+    const selectedDescriptor = computed((): Character|undefined => {
+        return ds.characterWithId(selectedDescriptorId.value);
     });
 
     const indexedDatasets = computed((): IndexedDatasets => {
@@ -78,7 +86,7 @@ export const useHazoStore = defineStore("hazo", () => {
     });
 
     return {  
-        selectedTaxon, selectedCharacter, selectedSummaryLangIds, dictionary,
+        selectedTaxon, selectedCharacter, selectedSummaryLangIds, selectedDescriptor, selectedDescriptorId, dictionary,
         statesAllowList, statesDenyList,
         connectedToHub, copiedTaxon, copiedCharacter, copiedStates, charNameFields,
 
