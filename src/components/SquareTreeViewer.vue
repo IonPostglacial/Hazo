@@ -143,9 +143,9 @@ export default {
         },
         itemsToDisplay(): Iterable<Hierarchy<Item>> {
             if (!this.currentItems) return [];
-            const shouldDisplayItem = (item: Item) => {
+            const shouldDisplayItem = (item: Hierarchy<Item>) => {
                 if (this.menuFilter !== "") {
-                    return item.name.S.toUpperCase().startsWith(this.menuFilter?.toUpperCase());
+                    return this.anyChildNameStartsWith(item);
                 } else {
                     return true;
                 }
@@ -202,6 +202,10 @@ export default {
                     }
                 });
             }
+        },
+        anyChildNameStartsWith(item: Hierarchy<Item>): boolean {
+            return item.name.S.toUpperCase().startsWith(this.menuFilter?.toUpperCase()) || 
+                item.children.some((child: Hierarchy<Item>) => this.anyChildNameStartsWith(child));
         },
         monthsFromItem(_item: Hierarchy<Item>): Track[] {
             return [];
