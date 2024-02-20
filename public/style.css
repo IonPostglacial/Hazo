@@ -449,6 +449,15 @@ div.invisible {
     padding-bottom: 200px;
 }
 
+.square-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, auto));
+}
+
+.square-grid > * {
+    aspect-ratio: 1;
+}
+
 .width-m {
     width: 200px;
 }

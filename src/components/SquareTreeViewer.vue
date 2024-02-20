@@ -7,7 +7,7 @@
                 <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
             </div>
         </VBox>
-        <div v-if="!floweringMode && !isRange" class="square-grid relative">
+        <SquareGrid v-if="!floweringMode && !isRange" class="square-grid relative">
             <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
                     @click="openItem(item)">
@@ -25,7 +25,7 @@
                 </div>
                 <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
             </SquareCard>
-        </div>
+        </SquareGrid>
         <div v-if="floweringMode">
             <Flowering v-model="flowering" @month-selected="monthToggled" @month-unselected="monthToggled" class="limited-width"></Flowering>
         </div>
@@ -56,6 +56,7 @@ import Flowering, { Track } from "./Flowering.vue";
 import ScaleComparator from "./ScaleComparator.vue";
 import GeoView from "./GeoView.vue";
 import SquareCard from "./toolkit/SquareCard.vue";
+import SquareGrid from "./toolkit/SquareGrid.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Months from "@/datatypes/Months";
@@ -85,7 +86,7 @@ const geographyNames = ["Geography", "Geographie", "Géographie", "地理分布"
 
 export default {
     name: "SquareTreeViewer",
-    components: { Flowering, GeoView, HBox, ScaleComparator, SquareCard, VBox },
+    components: { Flowering, GeoView, HBox, ScaleComparator, SquareCard, SquareGrid, VBox },
     props: {
         measurements: { required: true, type: Object as PropType<Partial<Record<string, Measurement>>> },
         selectedItems: Array<string>,
@@ -292,14 +293,3 @@ export default {
     },
 };
 </script>
-
-<style scoped>
-.square-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, auto));
-}
-
-.square-grid > * {
-    aspect-ratio: 1;
-}
-</style>
