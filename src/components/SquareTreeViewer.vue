@@ -2,10 +2,16 @@
     <VBox>
         <VBox class="stick-to-top glass-background thin-border">
             <input class="flex-grow-1" type="search" v-model="menuFilter" placeholder="Filter" />
-            <div v-if="breadCrumbs.length > 0" class="flex-wrap button-group">
-                <button type="button" @click="backToTop">Top</button>
-                <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
-            </div>
+            <HBox v-if="breadCrumbs.length > 0">
+                <div class="flex-wrap button-group">
+                    <button type="button" @click="backToTop">Top</button>
+                    <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
+                </div>
+                <Spacer></Spacer>
+                <router-link class="button" :to="'/characters/' + breadCrumbs[breadCrumbs.length - 1].id">
+                    <font-awesome-icon icon="fa-solid fa-edit" />
+                </router-link>
+            </HBox>
         </VBox>
         <SquareGrid v-if="!floweringMode && !isRange" class="square-grid relative">
             <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
@@ -23,7 +29,12 @@
                         {{ item.name[field] }}
                     </div>
                 </div>
-                <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">no more precision</button>
+                <HBox>
+                    <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">nothing more</button>
+                    <router-link v-if="item.type === 'character'" class="button" :to="'/characters/' + item.id">
+                        <font-awesome-icon icon="fa-solid fa-edit" />
+                    </router-link>
+                </HBox>
             </SquareCard>
         </SquareGrid>
         <div v-if="floweringMode">
@@ -57,6 +68,7 @@ import ScaleComparator from "./ScaleComparator.vue";
 import GeoView from "./GeoView.vue";
 import SquareCard from "./toolkit/SquareCard.vue";
 import SquareGrid from "./toolkit/SquareGrid.vue";
+import Spacer from "./toolkit/Spacer.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Months from "@/datatypes/Months";
@@ -86,7 +98,7 @@ const geographyNames = ["Geography", "Geographie", "Géographie", "地理分布"
 
 export default {
     name: "SquareTreeViewer",
-    components: { Flowering, GeoView, HBox, ScaleComparator, SquareCard, SquareGrid, VBox },
+    components: { Flowering, GeoView, HBox, ScaleComparator, Spacer, SquareCard, SquareGrid, VBox },
     props: {
         measurements: { required: true, type: Object as PropType<Partial<Record<string, Measurement>>> },
         selectedItems: Array<string>,

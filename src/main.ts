@@ -13,13 +13,13 @@ import debounce from "./tools/debounce";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faChevronRight, faChevronUp, faChevronDown,
-        faLanguage, faCaretDown, faCaretUp, faPlus, faMinus, faPrint,
+        faLanguage, faCaretDown, faCaretUp, faPlus, faMinus, faPrint, faEdit,
         faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faClose,
         faBold, faItalic, faUnderline,
         faCopy, faPaste, faDownload, faUpload, faFileLines } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faChevronRight, faChevronUp, faChevronDown,
-    faCaretDown, faCaretUp, faLanguage, faPlus, faMinus, faPrint, 
+    faCaretDown, faCaretUp, faLanguage, faPlus, faMinus, faPrint, faEdit,
     faMagnifyingGlass, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faClose,
     faBold, faItalic, faUnderline,
     faCopy, faPaste, faDownload, faUpload, faFileLines);

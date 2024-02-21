@@ -46,5 +46,5 @@ export function transformHierarchy<T, U>(hierarchy: Hierarchy<T>, transform: { f
             children.push(transform.map(transformHierarchy(child, transform)));
         }
     }
-    return { ...hierarchy, children };
+    return { ...transform.map(hierarchy), children };
 }

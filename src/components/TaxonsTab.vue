@@ -168,7 +168,7 @@
                             </HBox>
                             <VBox v-for="section in taxonDescriptionSections(selectedTaxon)" class="thin-border rounded white-background medium-padding spaced-vertical">
                                 <ul class="big-margin-left">
-                                    <li v-for="desc in section" :key="desc.character.id">
+                                    <li v-for="desc in section.filter(sec => sec.character.characterType === 'discrete' && !['flowering'].includes(sec.character.preset ?? ''))" :key="desc.character.id">
                                         {{ selectedSummaryLangProperties.map((prop: string) => desc.character.name[prop]).join(" / ") }}
                                         <div v-if="'states' in desc" class="display-contents">
                                             <GeoView

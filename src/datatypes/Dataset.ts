@@ -71,25 +71,30 @@ export function moveCharacterDown<T extends HierarchicalItem>(hierarchy: Hierarc
 }
 
 export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<Item> {
+    const mergeStateChildren = (character: Hierarchy<Character>): Hierarchy<AnyItem>[] => {
+        const clonedChildren = clone(character.children);
+        const characterChildren: Hierarchy<AnyItem>[] = [...clonedChildren];
+        const characterStates = character.characterType === "range" ? [] : character.states.map(s => Object.assign({
+            type: "state",
+            parentId: character.id,
+        }, s));
+        for (const state of characterStates) {
+            const inherentCharacter: Character | undefined = clonedChildren.find(characterChild =>
+                characterChild.characterType === "range" ? undefined : characterChild.inherentState?.id === state.id);
+            if (typeof inherentCharacter === "undefined") {
+                characterChildren.push({ ...state, children: [] });
+            }
+        }
+        return characterChildren; 
+    };
     const dependencyHierarchy = transformHierarchy(charactersHierarchy, {
         filter: character => isApplicable({ character, taxon }),
         map(character): Hierarchy<AnyItem> {
-            const characterStates = character.characterType === "range" ? [] : character.states.map(s => Object.assign({
-                type: "state",
-                parentId: character.id,
-            }, s));
-            const clonedChildren = clone(character.children);
-            const characterChildren: Hierarchy<AnyItem>[] = [...clonedChildren];
-            for (const state of characterStates) {
-                const inherentCharacter: Character | undefined = clonedChildren.find(characterChild =>
-                    characterChild.characterType === "range" ? undefined : characterChild.inherentState?.id === state.id);
-                if (typeof inherentCharacter === "undefined") {
-                    characterChildren.push({ ...state, children: [] });
-                }
-            }
+            const characterChildren = mergeStateChildren(character);
             return { ...character, children: characterChildren };
         },
     });
+    dependencyHierarchy.children = mergeStateChildren(dependencyHierarchy);
     return dependencyHierarchy;
 }
 
