@@ -266,13 +266,13 @@ const palette = ["#84bf3d", "red", "blue", "orange", "purple"];
 export default {
     name: "TaxonsTab",
     components: {
-    CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
-    GeoView, GoogleMap, Marker,
-    ExtraFieldsPanel, MeasurementBox, MultiSelector, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
-    ColumnHeader, TextEditor,
-    Flowering,
-    ScaleComparator
-},
+        CollapsiblePanel, DropDownButton, HBox, ItemPropertyField, PictureBox, Spacer, SquareTreeViewer, VBox,
+        GeoView, GoogleMap, Marker,
+        ExtraFieldsPanel, MeasurementBox, MultiSelector, PopupGalery, SplitPanel, TreeMenu, TaxonPresentation,
+        ColumnHeader, TextEditor,
+        Flowering,
+        ScaleComparator
+    },
     data() {
         const selectedCols = (""+localStorage.selectedTaxonColumns)
             .split(",")
