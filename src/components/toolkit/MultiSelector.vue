@@ -1,5 +1,5 @@
 <template>
-    <ul class="thin-margin horizontal-flexbox button-group">
+    <ul class="horizontal-flexbox button-group">
         <li v-for="choice, index in choices" :key="index" :class="['button', 'no-list-style', { 'background-color-1': modelValue.includes(index) }]" @click="toggleSelected(index)">
             {{ choice }}
         </li>

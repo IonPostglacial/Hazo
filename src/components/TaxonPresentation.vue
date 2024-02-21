@@ -2,10 +2,8 @@
     <div class="scroll flex-grow-1">
         <HBox class="no-print stick-to-top glass-background thin-border">
             <router-link class="button" :to="'/taxons/' + selectedTaxonId">Back to Taxon</router-link>
-            <select v-model="lang">
-                <option value="S">Scientific</option>
-                <option value="CN">Chinese</option>
-            </select>
+            <MultiSelector :choices="langNames" v-model="langIds">
+            </MultiSelector>
              <button type="button" class="background-color-1" @click="print">Print</button>
         </HBox>
         <article style="max-width: 100ch" class="centered white-background medium-padding">
@@ -59,6 +57,7 @@ import { Description, Taxon } from '@/datatypes';
 import Months from '@/datatypes/Months';
 import { Character, MultilangText, State } from '@/datatypes/types';
 import Flowering, { Track } from "@/components/Flowering.vue";
+import MultiSelector from "./toolkit/MultiSelector.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
 import MeasurementBox from "@/components/MeasurementBox.vue";
 import HBox from './toolkit/HBox.vue';
@@ -82,11 +81,12 @@ function floweringFromStates(currentItems:
 
 export default {
     name: "TaxonPresentation",
-    components: { Flowering, HBox, MeasurementBox, PictureGalery, Spacer, VBox, ScaleComparator },
+    components: { Flowering, HBox, MeasurementBox, MultiSelector, PictureGalery, Spacer, VBox, ScaleComparator },
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,
-            lang: "S",
+            langNames: ["S", "CN", "EN", "FR"],
+            langIds: [0],
             selectedTaxonId: (this.$route.params.id as string|undefined) ?? "",
         }
     },
@@ -107,16 +107,19 @@ export default {
                 return this.leafTaxons;
             }
         },
+        langs(): string[] {
+            return this.langIds.map(id => this.langNames[id]);
+        }
     },
     methods: {
         ...mapActions(useDatasetStore, ["taxonChildren", "taxonDescriptionSections", "taxonWithId"]),
         charName(ch: Character): string {
             const n:any = ch.name ?? {};
-            return n[this.lang];
+            return this.langs.map(lang => n[lang]).join(" / ");
         },
         stateName(s: State): string {
             const n:any = s.name ?? {};
-            return n[this.lang];
+            return this.langs.map(lang => n[lang]).join(" / ");
         },
         pictureUrl(item: { url: string, hubUrl: string|undefined }): string {
             if (item.hubUrl) {
