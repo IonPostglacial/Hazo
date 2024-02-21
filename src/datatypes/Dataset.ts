@@ -72,12 +72,15 @@ export function moveCharacterDown<T extends HierarchicalItem>(hierarchy: Hierarc
 
 export function taxonCharactersTree(taxon: Taxon, charactersHierarchy: Hierarchy<Character>): Hierarchy<Item> {
     const mergeStateChildren = (character: Hierarchy<Character>): Hierarchy<AnyItem>[] => {
+        if (typeof character === "undefined") {
+            return [];
+        }
         const clonedChildren = clone(character.children);
         const characterChildren: Hierarchy<AnyItem>[] = [...clonedChildren];
-        const characterStates = character.characterType === "range" ? [] : character.states.map(s => Object.assign({
+        const characterStates = character.characterType === "range" ? [] : character.states?.map(s => Object.assign({
             type: "state",
             parentId: character.id,
-        }, s));
+        }, s)) ?? [];
         for (const state of characterStates) {
             const inherentCharacter: Character | undefined = clonedChildren.find(characterChild =>
                 characterChild.characterType === "range" ? undefined : characterChild.inherentState?.id === state.id);
