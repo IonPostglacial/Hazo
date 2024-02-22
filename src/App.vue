@@ -14,6 +14,7 @@
                 <router-link class="button" :to="'/taxons/' + selectedTaxon">Taxons</router-link>
                 <router-link class="button" :to="'/characters/' + selectedCharacter">Characters</router-link>
                 <router-link class="button" to="/characters-tree">Characters Tree</router-link>
+                <router-link class="button" to="/comparison">Comparison</router-link>
             </div>
             <Spacer></Spacer>
             <div class="button-group">

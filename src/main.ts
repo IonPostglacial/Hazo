@@ -7,6 +7,7 @@ import TaxonPresentation from "./components/TaxonPresentation.vue";
 import TaxonsTab from "./components/TaxonsTab.vue";
 import TaxonsStats from "./components/TaxonsStats.vue";
 import CharactersTab from "./components/CharactersTab.vue";
+import ComparisonTab from "./components/ComparisonTab.vue";
 import CharactersTree from "./components/CharactersTree.vue";
 import debounce from "./tools/debounce";
 // @ts-ignore
@@ -41,6 +42,7 @@ const router = VueRouter.createRouter({
                 };
             },
         },
+        { path: "/comparison", component: ComparisonTab },
     ],
 });
 
