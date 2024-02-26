@@ -85,7 +85,7 @@ export default {
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,
-            langNames: ["S", "CN", "EN", "FR"],
+            langNames: ["FR", "CN", "EN"],
             langIds: [0],
             selectedTaxonId: (this.$route.params.id as string|undefined) ?? "",
         }
@@ -114,12 +114,18 @@ export default {
     methods: {
         ...mapActions(useDatasetStore, ["taxonChildren", "taxonDescriptionSections", "taxonWithId"]),
         charName(ch: Character): string {
-            const n:any = ch.name ?? {};
-            return this.langs.map(lang => n[lang]).join(" / ");
+            return this.langs.map(lang => this.getName(ch, lang)).join(" / ");
         },
         stateName(s: State): string {
-            const n:any = s.name ?? {};
-            return this.langs.map(lang => n[lang]).join(" / ");
+            return this.langs.map(lang => this.getName(s, lang)).join(" / ");
+        },
+        getName(item: { name: MultilangText }, lang: string): string {
+            const n:any = item.name ?? {};
+            const name = n[lang];
+            if (typeof name === "undefined" || name === "") {
+                return n["S"] ?? "";
+            }
+            return name;
         },
         pictureUrl(item: { url: string, hubUrl: string|undefined }): string {
             if (item.hubUrl) {
