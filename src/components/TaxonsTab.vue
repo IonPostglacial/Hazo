@@ -178,7 +178,8 @@
                                             </GeoView>
                                             <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                                 <li v-for="state in desc.states" :key="state.id">
-                                                    {{ selectedSummaryLangProperties.map((prop: string) => state.name[prop]).join(" / ") }}<button @click="pushStateToChildren(state)">Push to children</button>
+                                                    {{ selectedSummaryLangProperties.map((prop: string) => state.name[prop]).join(" / ") }}
+                                                    <button v-if="hasChildren" @click="pushStateToChildren(state)">Push to children</button>
                                                 </li>
                                             </ul>
                                         </div>
@@ -221,7 +222,7 @@ import ScaleComparator from "./ScaleComparator.vue";
 import GeoView from "./GeoView.vue";
 import PictureBox from "./PictureBox.vue";
 import { GoogleMap, Marker } from "vue3-google-map";
-import { Book, Character, Description, Hierarchy, State, Taxon, taxonPropertiesEquals, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
+import { Book, Character, Hierarchy, State, Taxon, taxonPropertiesEquals, getCharacterMap } from "@/datatypes"; // eslint-disable-line no-unused-vars
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
 import TextEditor from "./toolkit/TextEditor.vue";
 import DropDownButton from "./toolkit/DropDownButton.vue";
@@ -242,7 +243,6 @@ import { DiscreteCharacter, Field, GeoMap, Picture, Item } from "@/datatypes/typ
 import { escape } from "@/tools/parse-csv";
 import { Language, familyNameStore } from "@/db-index";
 import Flowering, { Track } from "./Flowering.vue";
-import Months from "@/datatypes/Months";
 import { mapActions, mapState, mapWritableState } from "pinia";
 import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "@/stores/dataset";
@@ -260,8 +260,6 @@ const columnNames: Record<string, string> = {
     desc: "Descriptions", 
     summary: "Summary"
 };
-
-const palette = ["#84bf3d", "red", "blue", "orange", "purple"];
 
 export default {
     name: "TaxonsTab",
@@ -349,35 +347,21 @@ export default {
                 return createCharacter({ id: "c0", path: [], name: { S: '' }, detail: ""});
             }
         },
-        itemFloweringDescription(): Description[] {
-            return this.taxonDescriptions(this.selectedTaxon)
-                .filter(
-                    desc => desc.character.characterType === "discrete" && 
-                    desc.character.preset === "flowering"
-                );
-        },
         calendarTracks(): Track[] {
-            const tracks: Track[] = [];
-            let color = 0;
-            for (const desc of this.itemFloweringDescription) {
-                if (desc.character.characterType !== "discrete" || desc.character.preset !== "flowering") {
-                    continue;
-                }
-                tracks.push({
-                    name: desc.character.name.S,
-                    color: desc.character.color ?? palette[color++],
-                    data: Months.fromStates(desc.states),
-                });
-                if (color >= palette.length) { color = 0; }
+            if (typeof this.selectedTaxon === "undefined") {
+                return [];
             }
-            return tracks;
+            return this.taxonCalendarTracks(this.selectedTaxon);
         },
+        hasChildren(): boolean {
+            return (this.selectedTaxon?.children.length ?? 0) > 0;
+        }
     },
     methods: {
         ...mapActions(useHazoStore, ["pasteTaxon", "selectTaxon", "copyTaxon", "unselectTaxon"]),
         ...mapActions(useDatasetStore, [
             "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxon", "setTaxonPicture", "removeTaxonPicture",
-            "characterWithId", "taxonWithId", "taxonChildren",
+            "characterWithId", "taxonWithId", "taxonChildren", "taxonCalendarTracks",
             "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
             "createTexExporter", "taxonDescriptions", "taxonDescriptionSections", "taxonParentChain", "taxonCharactersTree", "updateTaxonMeasurement",
         ]),

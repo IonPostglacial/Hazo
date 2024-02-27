@@ -5,11 +5,13 @@
             height="200px" 
             :measurement="measurement">
         </ScaleComparator>
-        <div v-if="measurement">
-            {{ langProperties.map(prop => measurement.character.name[prop]).join(" / ") }}: 
-            {{ minValue?.toFixed(2) }} - {{ maxValue?.toFixed(2) }}
-            {{ measurement.character.unit?.name.S }}
-        </div>
+        <VBox v-if="measurement">
+            <h3>{{ langProperties.map(prop => measurement.character.name[prop]).join(" / ") }}</h3>
+            <HBox>
+                {{ minValue?.toFixed(2) }} - {{ maxValue?.toFixed(2) }}
+                {{ measurement.character.unit?.name.S }}
+            </HBox>
+        </VBox>
     </VBox>
 </template>
 
@@ -18,6 +20,7 @@ import { fromNormalizedValue } from '@/features/unit';
 import { Measurement } from '@/datatypes';
 import { PropType, computed } from "vue";
 import VBox from './toolkit/VBox.vue';
+import HBox from './toolkit/HBox.vue';
 import ScaleComparator from './ScaleComparator.vue';
 
 const props = defineProps({

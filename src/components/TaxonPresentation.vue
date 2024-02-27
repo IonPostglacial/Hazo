@@ -25,23 +25,33 @@
                         <VBox v-for="section in taxonDescriptionSections(taxon)" class="thin-border white-background medium-padding spaced-vertical">
                             <VBox v-for="description in section" :key="description.character.id" class="limited-width">
                                 <div v-if="'states' in description" class="display-contents">
-                                    <div v-if="!isFlowering(description)">
-                                        <h3>{{ charName(description.character) }}</h3>
-                                        <HBox class="gap-1">
-                                            <VBox v-for="state in description.states" :key="state.id" class="medium-padding thin-border" :style="state.color ? ('background-color:' + state.color) : ''">
-                                                <img v-for="photo in state.pictures" class="fit-contain small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
-                                                <span class="spaced">
-                                                    {{ stateName(state) }}
-                                                </span>
+                                    <h3>{{ charName(description.character) }}</h3>
+                                    <HBox class="gap-1">
+                                        <HBox v-for="state in description.states" :key="state.id" class="medium-padding thin-border gap-1" :style="state.color ? ('background-color:' + state.color) : ''">
+                                            <img v-for="photo in state.pictures" class="fit-contain small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
+                                            <VBox>
+                                                <div v-for="name in stateNames(state)" class="nowrap">
+                                                    {{ name }}
+                                                </div>
                                             </VBox>
                                         </HBox>
-                                    </div>
-                                    <flowering v-if="isFlowering(description)" :model-value="tracksFromStates(description.states)">
-                                    </flowering>
+                                    </HBox>
                                 </div>
                                 <MeasurementBox v-if="'min' in description" :measurement="description" :lang-properties="['S']">
                                 </MeasurementBox>
                             </VBox>
+                        </VBox>
+                        <VBox v-if="calendarTracks.length > 0" class="rounded white-background medium-padding medium-margin thin-border">
+                            <h2>Calendar</h2>
+                            <ul>
+                                <li v-for="track in calendarTracks">
+                                    <span :style="'color:' + track.color">{{ track.name }}</span>
+                                </li>
+                            </ul>
+                            <Flowering
+                                :model-value="calendarTracks"
+                                class="limited-width">
+                            </Flowering>
                         </VBox>
                     </div>
                     <PictureGalery v-if="taxon.pictures.length > 0" :images="taxon.pictures" class="medium-max-width medium-max-height fit-contain">
@@ -100,6 +110,12 @@ export default {
         selectedTaxon(): Taxon|undefined {
             return this.taxonWithId(this.selectedTaxonId);
         },
+        calendarTracks(): Track[] {
+            if (typeof this.selectedTaxon === "undefined") {
+                return [];
+            }
+            return this.taxonCalendarTracks(this.selectedTaxon);
+        },
         itemsToDisplay(): Iterable<Taxon> {
             if (this.selectedTaxon) {
                 return this.taxonChildren(this.selectedTaxon);
@@ -112,12 +128,12 @@ export default {
         }
     },
     methods: {
-        ...mapActions(useDatasetStore, ["taxonChildren", "taxonDescriptionSections", "taxonWithId"]),
+        ...mapActions(useDatasetStore, ["taxonChildren", "taxonDescriptionSections", "taxonWithId", "taxonCalendarTracks"]),
         charName(ch: Character): string {
             return this.langs.map(lang => this.getName(ch, lang)).join(" / ");
         },
-        stateName(s: State): string {
-            return this.langs.map(lang => this.getName(s, lang)).join(" / ");
+        stateNames(s: State): string[] {
+            return this.langs.map(lang => this.getName(s, lang));
         },
         getName(item: { name: MultilangText }, lang: string): string {
             const n:any = item.name ?? {};

@@ -4,7 +4,10 @@ import { defineStore } from "pinia";
 import clone from '@/tools/clone';
 import { EncodedDataset, createTexExporter, encodeDataset } from "@/features";
 import saveSDD from "@/sdd-save";
+import { Track } from "@/components/Flowering.vue";
+import Months from "@/datatypes/Months";
 
+const palette = ["#84bf3d", "red", "blue", "orange", "purple"];
 
 export const useDatasetStore = defineStore("dataset", {
     state: (): Dataset => createDataset({ 
@@ -130,6 +133,29 @@ export const useDatasetStore = defineStore("dataset", {
         taxonDescriptionSections(taxon: Taxon|undefined): Array<Array<Description|Measurement>> {
             if (typeof taxon === "undefined") { return []; }
             return taxonDescriptorSections(this.$state, taxon);
+        },
+        itemFloweringDescription(taxon: Taxon): Description[] {
+            return this.taxonDescriptions(taxon)
+                .filter(
+                    desc => desc.character.characterType === "discrete" && 
+                    desc.character.preset === "flowering"
+                );
+        },
+        taxonCalendarTracks(taxon: Taxon): Track[] {
+            const tracks: Track[] = [];
+            let color = 0;
+            for (const desc of this.itemFloweringDescription(taxon)) {
+                if (desc.character.characterType !== "discrete" || desc.character.preset !== "flowering") {
+                    continue;
+                }
+                tracks.push({
+                    name: desc.character.name.S,
+                    color: desc.character.color ?? palette[color++],
+                    data: Months.fromStates(desc.states),
+                });
+                if (color >= palette.length) { color = 0; }
+            }
+            return tracks;
         },
         characterWithId(id: string | undefined): Character | undefined {
             return characterFromId(this.$state, id);
