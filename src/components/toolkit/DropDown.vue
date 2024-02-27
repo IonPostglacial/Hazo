@@ -61,8 +61,11 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', clickout);
 });
 
-function clickout(e: Event) {
-    if (!menu.value?.contains(e.target as any)) {
+function clickout(e: MouseEvent) {
+    if (!menu.value) { return; }
+    const bounds = menu.value.getBoundingClientRect();
+    const clickOut = e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom;
+    if (clickOut) {
         emit("clickout");
     }
 }

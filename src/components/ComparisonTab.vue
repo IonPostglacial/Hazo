@@ -21,11 +21,23 @@
                 <tr>
                     <td>Name</td>
                     <td v-for="char in selectedCharacters">
-                        {{ char.name.S }}
+                        <HBox class="center-items gap-1">
+                            <div>{{ char.name.S }}</div>
+                            <button @click="removeCharacter(char)">
+                                <font-awesome-icon icon="fa-solid fa-close" />
+                            </button>
+                        </HBox>
                     </td>
                 </tr>
                 <tr v-for="taxon in selectedTaxa">
-                    <td>{{ taxon.name.S }}</td>
+                    <td>
+                        <HBox class="center-items gap-1">
+                            <button  @click="removeTaxon(taxon)">
+                                <font-awesome-icon icon="fa-solid fa-close" />
+                            </button>
+                            <div>{{ taxon.name.S }}</div>
+                        </HBox>
+                    </td>
                     <td v-for="char in selectedCharacters">
                         {{ 
                             taxon.states
@@ -50,8 +62,8 @@
     import { ref } from "vue";
     import { Character, Taxon } from "@/datatypes";
     import Spacer from "./toolkit/Spacer.vue";
-import download from "@/tools/download";
-import { escape } from "@/tools/parse-csv";
+    import download from "@/tools/download";
+    import { escape } from "@/tools/parse-csv";
 
     const taxonNameFields: { label: string, propertyName: Language }[] = [{ label: 'NS', propertyName: 'S' }, { label: 'NV', propertyName: 'V'}, { label: '中文名', propertyName: 'CN' }];
     const characterNameFields: { label: string, propertyName: Language }[] = [{ label: 'FR', propertyName: 'S'}, { label: 'EN', propertyName: 'EN' }, { label: '中文名', propertyName: 'CN' }];
@@ -66,11 +78,19 @@ import { escape } from "@/tools/parse-csv";
         }
     }
 
+    function removeCharacter(char: Character) {
+        selectedCharacters.value = selectedCharacters.value.filter(ch => ch.id !== char.id);
+    }
+
     function addTaxon(id: string) {
         const selectedTaxon = ds.taxonWithId(id);
         if (selectedTaxon) {
             selectedTaxa.value.push(selectedTaxon);
         }
+    }
+
+    function removeTaxon(taxon: Taxon) {
+        selectedTaxa.value = selectedTaxa.value.filter(t => t.id !== taxon.id);
     }
 
     function exportComparison() {
