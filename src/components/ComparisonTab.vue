@@ -1,5 +1,5 @@
 <template>
-    <div class="flex-grow-1">
+    <div class="flex-grow-1 scroll">
         <VBox>
             <HBox>
                 <DropDownButton label="Characters">
@@ -18,35 +18,64 @@
                 <button type="button" @click="exportComparison">Export</button>
             </HBox>
             <table class="white-background medium-padding thin-border rounded">
-                <tr>
-                    <td>Name</td>
-                    <td v-for="char in selectedCharacters">
-                        <HBox class="center-items gap-1">
-                            <div>{{ char.name.S }}</div>
-                            <button @click="removeCharacter(char)">
-                                <font-awesome-icon icon="fa-solid fa-close" />
-                            </button>
-                        </HBox>
-                    </td>
-                </tr>
-                <tr v-for="taxon in selectedTaxa">
-                    <td>
-                        <HBox class="center-items gap-1">
-                            <button  @click="removeTaxon(taxon)">
-                                <font-awesome-icon icon="fa-solid fa-close" />
-                            </button>
-                            <div>{{ taxon.name.S }}</div>
-                        </HBox>
-                    </td>
-                    <td v-for="char in selectedCharacters">
-                        {{ 
-                            taxon.states
-                                .filter(state => char.states?.some(s => s.id === state.id))
-                                .map(s => s.name.S)
-                                .join(", ")
-                        }}
-                    </td>
-                </tr>
+                <thead class="thin-border">
+                    <tr>
+                        <th>Name</th>
+                        <template v-for="char in selectedCharacters">
+                            <th v-if="char.characterType === 'range'">
+                                <HBox class="center-items gap-1">
+                                    <button @click="removeCharacter(char)">
+                                        <font-awesome-icon icon="fa-solid fa-close" />
+                                    </button>
+                                    <div>{{ char.name.S }} Min</div>
+                                </HBox>
+                            </th>
+                            <th v-if="char.characterType === 'range'">
+                                <div>{{ char.name.S }} Max</div>
+                            </th>
+                            <th v-if="char.characterType === 'discrete'">
+                                <HBox class="center-items gap-1">
+                                    <button @click="removeCharacter(char)">
+                                        <font-awesome-icon icon="fa-solid fa-close" />
+                                    </button>
+                                    <div>{{ char.name.S }}</div>
+                                </HBox>
+                            </th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="taxon in selectedTaxa">
+                        <td>
+                            <HBox class="center-items gap-1">
+                                <button  @click="removeTaxon(taxon)">
+                                    <font-awesome-icon icon="fa-solid fa-close" />
+                                </button>
+                                <div>{{ taxon.name.S }}</div>
+                            </HBox>
+                        </td>
+                        <template v-for="char in selectedCharacters">
+                            <td v-if="char.characterType === 'discrete'">
+                            {{ 
+                                taxon.states
+                                    .filter(state => char.states?.some(s => s.id === state.id))
+                                    .map(s => s.name.S)
+                                    .join(", ")
+                            }}
+                            </td>
+                            <template v-if="char.characterType === 'range'">
+                                <td class="right-text">
+                                    {{ taxon.measurements[char.id]?.min ?? "NA" }}
+                                    {{ char.unit?.name.S }}
+                                </td>
+                                <td class="right-text">
+                                    {{ taxon.measurements[char.id]?.max ?? "NA" }}
+                                    {{ char.unit?.name.S }}
+                                </td>
+                            </template>
+                        </template>
+                    </tr>
+                </tbody>
             </table>
         </VBox>
     </div>

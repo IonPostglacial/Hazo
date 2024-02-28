@@ -15,6 +15,22 @@ th {
     text-align: left;
 }
 
+table {
+    border-collapse: collapse;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+}
+
+td,
+th {
+    border: 1px solid #0000001c;
+    padding: 2px 1ch;
+    background-color: white;
+}
+
 button,
 select,
 .selector-label,
@@ -538,6 +554,10 @@ div.invisible {
 
 .centered-text {
     text-align: center;
+}
+
+.right-text {
+    text-align: right;
 }
 
 .absolute {
