@@ -1,6 +1,6 @@
 <template>
     <div class="medium-margin thin-border white-background flex-grow-1 centered-text">
-        <HBox class="cented-aligned dark-background">
+        <HBox class="cented-aligned">
             <button v-if="selectedImageIndex > 0" class="no-print background-color-1 font-size-28" @click="previousImage">
                 <font-awesome-icon icon="fa-solid fa-arrow-left" />
             </button>

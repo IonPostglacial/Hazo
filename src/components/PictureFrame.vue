@@ -1,7 +1,7 @@
 <template>
     <VBox class="relative">
         <div v-if="editable" @click="deletePhoto" class="close white absolute-top-right"></div>
-        <button type="button" @click="openPhoto" class="small-margin thin-border fill dark-background">
+        <button type="button" @click="openPhoto" class="small-margin thin-border fill">
             <img :src="url" :alt="picture.label">
         </button>
         <button class="background-color-1" v-if="isRemoteUrl && connectedToHub" @click="uploadPhoto">Retrieve Photo</button>
