@@ -41,15 +41,15 @@
                                 </MeasurementBox>
                             </VBox>
                         </VBox>
-                        <VBox v-if="calendarTracks.length > 0" class="rounded white-background medium-padding medium-margin thin-border">
+                        <VBox v-if="calendarTracks(taxon).length > 0" class="rounded white-background medium-padding medium-margin thin-border">
                             <h2>Calendar</h2>
                             <ul>
-                                <li v-for="track in calendarTracks">
+                                <li v-for="track in calendarTracks(taxon)">
                                     <span :style="'color:' + track.color">{{ track.name }}</span>
                                 </li>
                             </ul>
                             <Flowering
-                                :model-value="calendarTracks"
+                                :model-value="calendarTracks(taxon)"
                                 class="limited-width">
                             </Flowering>
                         </VBox>
@@ -110,12 +110,6 @@ export default {
         selectedTaxon(): Taxon|undefined {
             return this.taxonWithId(this.selectedTaxonId);
         },
-        calendarTracks(): Track[] {
-            if (typeof this.selectedTaxon === "undefined") {
-                return [];
-            }
-            return this.taxonCalendarTracks(this.selectedTaxon);
-        },
         itemsToDisplay(): Iterable<Taxon> {
             if (this.selectedTaxon) {
                 return this.taxonChildren(this.selectedTaxon);
@@ -159,6 +153,12 @@ export default {
         },
         tracksFromStates(states: { id: string, name: MultilangText }[]): Track[] {
             return floweringFromStates(states);
+        },
+        calendarTracks(taxon: Taxon|undefined): Track[] {
+            if (typeof taxon === "undefined") {
+                return [];
+            }
+            return this.taxonCalendarTracks(taxon);
         },
     }
 }
