@@ -179,6 +179,9 @@
                                             <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                                 <li v-for="state in desc.states" :key="state.id">
                                                     {{ selectedSummaryLangProperties.map((prop: string) => state.name[prop]).join(" / ") }}
+                                                    <button @click="removeState(state)">
+                                                        <font-awesome-icon icon="fa-solid fa-close" />
+                                                    </button>
                                                     <button v-if="hasChildren" @click="pushStateToChildren(state)">Push to children</button>
                                                 </li>
                                             </ul>
@@ -473,6 +476,10 @@ export default {
                 const selected = !taxonHasState(this.selectedTaxon, stateToAdd);
                 this.setTaxonState({ taxon: this.selectedTaxon, state: stateToAdd, has: selected });
             }
+        },
+        removeState(state: State) {
+            if (!this.selectedTaxon) { return; }
+            this.setTaxonState({ taxon: this.selectedTaxon, state, has: false });
         },
         openCharacter(e: { item: DiscreteCharacter }) {
             this.selectedDescriptorId = e.item.id;
