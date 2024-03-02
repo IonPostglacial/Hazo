@@ -2,6 +2,8 @@ import { getMapsDirectory, loadText, storeText } from "@/fs-storage";
 import { Book, Character, Field, GeoMap, Unit } from "./types";
 import { Config } from "@/tools/config";
 
+export const standardPalette = ["#ff188b", "#ff1e43", "#ff7e42", "#fbf700", "#009f51", "#35276e", "#62367b", "#964087"];
+
 export const standardBooks: Book[] = [
     { type: "book", id: "fmc", path: [], label: "Flore de Madagascar et Comores" },
     { type: "book", id: "mbf", path: [], label: "Manuel de Botanique Forestière" },

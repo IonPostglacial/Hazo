@@ -54,7 +54,7 @@
                                 <label>Name CN</label>
                                 <input class="flex-grow-1" type="text" v-model="selectedCharacter.name.CN" />
                                 <label>Color</label>
-                                <input class="flex-grow-1" type="color" v-model="selectedCharacter.color" />
+                                <ColorSelector v-model="selectedCharacter.color" :palette="standardPalette"></ColorSelector>
                                 <label class="item-property">Detail</label>
                                 <textarea class="input-text" v-model="selectedCharacter.detail"></textarea>
                                 <label class="item-property">Type</label>
@@ -181,7 +181,7 @@
                                             <label>Name FR</label><input type="text" class="flex-grow-1" v-model="state.name.S" />
                                             <label>Name EN</label><input type="text" class="flex-grow-1" v-model="state.name.EN" />
                                             <label>Name CN</label><input type="text" class="flex-grow-1" v-model="state.name.CN" />
-                                            <label>Color</label><input type="color" v-model="state.color">
+                                            <ColorSelector v-model="state.color" :palette="standardPalette"></ColorSelector>
                                             <label>Description</label>
                                             <textarea v-model="state.detail" class="input-text" pleceholder="description"></textarea>
                                         </div>
@@ -217,12 +217,13 @@ import GeoView from "./GeoView.vue";
 import Spacer from "./toolkit/Spacer.vue";
 import SplitPanel from "./toolkit/SplitPanel.vue";
 import CollapsiblePanel from "./toolkit/CollapsiblePanel.vue";
+import ColorSelector from "./toolkit/ColorSelector.vue";
 import PopupGalery from "./PopupGalery.vue";
 import CharactersPresentation from "./CharactersPresentation.vue";
 import ColumnHeader from "./toolkit/ColumnHeader.vue";
 import Flowering from "./Flowering.vue";
 import PictureBox from "./PictureBox.vue";
-import { Character, State, Picture, standardMaps, GeoMap, createState, characterStates, CharacterPreset, standardUnitsList } from "@/datatypes";
+import { Character, State, Picture, standardMaps, GeoMap, createState, characterStates, CharacterPreset, standardUnitsList, standardPalette } from "@/datatypes";
 import Months from "@/datatypes/Months";
 import { createCharacter } from "@/datatypes/Character";
 import { normalizePicture } from "@/datatypes/picture";
@@ -236,7 +237,7 @@ import makeid from "@/tools/makeid";
 
 export default {
     name: "CharactersTab",
-    components: { AddItem, CollapsiblePanel, ColumnHeader, Flowering, GeoView, HBox, PictureBox, PopupGalery, Spacer, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel, UploadButton, VBox },
+    components: { AddItem, CollapsiblePanel, ColorSelector, ColumnHeader, Flowering, GeoView, HBox, PictureBox, PopupGalery, Spacer, TreeMenu, CharactersTree, CharactersPresentation, SplitPanel, UploadButton, VBox },
     data() {
         const selectedCharacterId = (this.$route.params.id as string) ?? "";
         const dsStore = useDatasetStore();
@@ -246,6 +247,7 @@ export default {
             preset = selectedCharacter.preset;
         }
         return {
+            standardPalette,
             preset,
             units: standardUnitsList,
             nameStore: characterNameStore,

@@ -1,7 +1,9 @@
 <template>
     <div class="relative inline-block">
         <button @click="open = !open">
-            {{label}}
+            <slot name="label">
+                {{label}}
+            </slot>
             <font-awesome-icon v-if="(!defaultUp && !open) || (defaultUp && open)" icon="fa-solid fa-caret-down" />
             <font-awesome-icon v-if="(defaultUp && !open) || (!defaultUp && open)" icon="fa-solid fa-caret-up" />
         </button>
