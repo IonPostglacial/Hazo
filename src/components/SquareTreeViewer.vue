@@ -30,7 +30,6 @@
                     </div>
                 </div>
                 <HBox>
-                    <button v-if="hasChildren(item)" @click.stop="selectWithoutOpening(item)" class="thin-border medium-padding text-ellipsed white-background">nothing more</button>
                     <router-link v-if="item.type === 'character'" class="button" :to="'/characters/' + item.id">
                         <font-awesome-icon icon="fa-solid fa-edit" />
                     </router-link>

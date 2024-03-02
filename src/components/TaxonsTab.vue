@@ -483,9 +483,6 @@ export default {
         },
         openCharacter(e: { item: DiscreteCharacter }) {
             this.selectedDescriptorId = e.item.id;
-            if (e.item.inherentState && this.selectedTaxon && ! taxonHasState(this.selectedTaxon, e.item.inherentState)) {
-                this.taxonStateToggle({ item: e.item.inherentState });
-            }
         },
         extraProperty(extraField: Field): any {
             return this.selectedTaxon!.extra[extraField.id];
