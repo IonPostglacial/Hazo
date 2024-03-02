@@ -26,7 +26,7 @@
                             <VBox v-for="description in section" :key="description.character.id" class="limited-width">
                                 <div v-if="'states' in description" class="display-contents">
                                     <h3>{{ charName(description.character) }}</h3>
-                                    <HBox class="gap-1">
+                                    <HBox v-if="description.character.preset !== 'map'" class="gap-1">
                                         <HBox v-for="state in description.states" :key="state.id" class="medium-padding thin-border gap-1" :style="state.color ? ('background-color:' + state.color) : ''">
                                             <img v-for="photo in state.pictures" class="fit-contain small-height medium-max-width thin-border" :key="photo.id" :src="pictureUrl(photo)">
                                             <VBox>
@@ -36,6 +36,10 @@
                                             </VBox>
                                         </HBox>
                                     </HBox>
+                                    <GeoView v-if="description.character.preset === 'map'"
+                                        :geo-map="getCharacterMap(description.character)"
+                                        :selected-features="description.states.map(s => s.name.S)">
+                                    </GeoView>
                                 </div>
                                 <MeasurementBox v-if="'min' in description" :measurement="description" :lang-properties="['S']">
                                 </MeasurementBox>
@@ -63,13 +67,14 @@
     </div>
 </template>
 <script lang="ts">
-import { Description, Taxon } from '@/datatypes';
+import { Description, Taxon, getCharacterMap } from '@/datatypes';
 import Months from '@/datatypes/Months';
 import { Character, MultilangText, State } from '@/datatypes/types';
 import Flowering, { Track } from "@/components/Flowering.vue";
 import MultiSelector from "./toolkit/MultiSelector.vue";
 import PictureGalery from "@/components/PictureGalery.vue";
 import MeasurementBox from "@/components/MeasurementBox.vue";
+import GeoView from "@/components/GeoView.vue";
 import HBox from './toolkit/HBox.vue';
 import Spacer from './toolkit/Spacer.vue';
 import { mapActions, mapState } from "pinia";
@@ -91,7 +96,7 @@ function floweringFromStates(currentItems:
 
 export default {
     name: "TaxonPresentation",
-    components: { Flowering, HBox, MeasurementBox, MultiSelector, PictureGalery, Spacer, VBox, ScaleComparator },
+    components: { Flowering, GeoView, HBox, MeasurementBox, MultiSelector, PictureGalery, Spacer, VBox, ScaleComparator },
     data() {
         return {
             isParentSelected: {} as Record<string, boolean>,
@@ -126,6 +131,7 @@ export default {
         charName(ch: Character): string {
             return this.langs.map(lang => this.getName(ch, lang)).join(" / ");
         },
+        getCharacterMap,
         stateNames(s: State): string[] {
             return this.langs.map(lang => this.getName(s, lang));
         },
