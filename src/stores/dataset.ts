@@ -6,6 +6,7 @@ import { EncodedDataset, createTexExporter, encodeDataset } from "@/features";
 import saveSDD from "@/sdd-save";
 import { Track } from "@/components/Flowering.vue";
 import Months from "@/datatypes/Months";
+import { datasetToCsvZip } from "@/features/relationalexport";
 
 const palette = ["#84bf3d", "red", "blue", "orange", "purple"];
 
@@ -315,6 +316,9 @@ export const useDatasetStore = defineStore("dataset", {
         },
         encodeToSdd(): Document {
             return saveSDD(this);
+        },
+        encodeToCsvZip(): Promise<Blob> {
+            return datasetToCsvZip(this.encodeToHazoJson());
         },
     },
 });

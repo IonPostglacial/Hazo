@@ -50,6 +50,7 @@
                     <VBox>
                         <button type="button" @click="jsonExport">Export</button>
                         <button type="button" @click="exportSDD">Export SDD</button>
+                        <button type="button" @click="exportRelations">Export Relations</button>
                     </VBox>
                 </DropDownButton>
             </div>
@@ -102,6 +103,7 @@ import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "./stores/dataset";
 import { mapActions, mapState } from "pinia";
 import makeid from "./tools/makeid";
+import { datasetToCsvZip } from "./features/relationalexport";
 
 export default {
     name: "App",
@@ -184,7 +186,7 @@ export default {
     },
     methods: {
         ...mapActions(useHazoStore, ["index", "indexDataset", "setConnectedToHub", "removeStateFromAllowList", "removeStateFromAllowList"]),
-        ...mapActions(useDatasetStore, ["addCharacter", "setCharacterPicture", "addState", "setStatePicture", "addTaxon", "setTaxonPicture", "allStates", "characterWithId", "encodeToHazoJson", "encodeToSdd", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
+        ...mapActions(useDatasetStore, ["addCharacter", "setCharacterPicture", "addState", "setStatePicture", "addTaxon", "setTaxonPicture", "allStates", "characterWithId", "encodeToHazoJson", "encodeToSdd", "encodeToCsvZip", "resetData", "setCharacter", "setDataset", "setTaxon", "setTaxonState"]),
         openHub() {
             window.open(Config.datasetRegistry);
         },
@@ -503,6 +505,10 @@ export default {
         exportSDD() {
             const xml = this.encodeToSdd();
             download(`<?xml version="1.0" encoding="UTF-8"?>` + xml.documentElement.outerHTML, "sdd.xml");
+        },
+        async exportRelations() {
+            const zip = await this.encodeToCsvZip();
+            download(zip, "zip", "relations", true);
         }
     }
 };

@@ -13,6 +13,7 @@ const CURRENT_VERSION = 1;
 
 type EncodedState = {
 	id: string;
+	path: string[];
 	name: string;
 	nameEN: string;
 	nameCN: string;
@@ -72,6 +73,7 @@ function encodeHierarchicalItem(item: Hierarchy<AnyHierarchicalItem>, picIds: Se
 	}
 	return {
 		id: item.id,
+		path: item.path,
 		type: item.type,
 		parentId: getParentId(item),
 		topLevel: isTopLevel(item),
@@ -95,7 +97,9 @@ function encodeTaxon(taxon: Taxon, picIds: Set<string>, allStates: CharactersSta
 			states = [];
 			statesByChar.set(ch.id, states);
 		}
-		states.push(state.id);
+		if (!states.includes(state.id)) {
+			states.push(state.id);
+		}
 	}
 	for (const [descriptorId, statesIds] of statesByChar.entries()) {
 		descriptions.push({ descriptorId, statesIds });
@@ -167,6 +171,7 @@ function decodeState(encoded: EncodedState): State {
 function encodeState(state: State, picIds: Set<string>): EncodedState {
 	return {
 		id: state.id,
+		path: state.path,
 		name: state.name.S,
 		nameEN: state.name.EN ?? "",
 		nameCN: state.name.CN ?? "",
