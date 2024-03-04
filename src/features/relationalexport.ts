@@ -10,7 +10,7 @@ const CategoricalCharacterColumns = ["document_ref", "color"];
 const UnitColumns = ["ref", "base_unit_ref", "to_base_unit_factor"];
 const MeasurementCharacterColumns = ["document_ref", "color", "unit_ref"];
 const StateColumns = ["document_ref", "color"];
-const DocumentAttachmentColumns = ["ref", "document_ref", "source", "path"];
+const DocumentAttachmentColumns = ["document_ref", "index", "source", "path"];
 const BookColumns = ["document_ref", "isbn"];
 const DescriptorVisibilityRequirementColumns = ["descriptor_ref", "required_descriptor_ref"];
 const DescriptorVisibilityInapplicableColumns = ["descriptor_ref", "required_descriptor_ref"];
@@ -57,9 +57,9 @@ export function datasetToCsvZip(dataset: EncodedDataset): Promise<Blob> {
         if (character.nameEN) {
             csvFiles.document_translation.push([character.id, "EN", character.nameEN, ""]);
         }
-        for (const pic of picturesFromPhotos(character, character.photos)) {
+        for (const [index, pic] of picturesFromPhotos(character, character.photos).entries()) {
             order++;
-            csvFiles.document_attachment.push([pic.id, character.id, pic.url, pic.hubUrl ?? ""]);
+            csvFiles.document_attachment.push([character.id, `${index}`, pic.url, pic.hubUrl ?? ""]);
         }
         if (character.characterType === "discrete") {
             csvFiles.categorical_character.push([character.id, character.color ?? ""]);

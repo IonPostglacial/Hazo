@@ -1,6 +1,8 @@
 export function escape(value: string|number|undefined): string {
     if (typeof value === "string") {
-        if (value.includes(",")) {
+        if (value.includes('"')) {
+            return `"${value.replaceAll('"', '""')}"`;
+        } else if (value.includes(",") || value.includes("\n")) {
             return `"${value}"`;
         } else {
             return value;
