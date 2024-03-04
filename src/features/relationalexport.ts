@@ -10,7 +10,7 @@ const CategoricalCharacterColumns = ["document_ref", "color"];
 const UnitColumns = ["ref", "base_unit_ref", "to_base_unit_factor"];
 const MeasurementCharacterColumns = ["document_ref", "color", "unit_ref"];
 const StateColumns = ["document_ref", "color"];
-const MediaColumns = ["document_ref", "source", "path"];
+const DocumentAttachmentColumns = ["ref", "document_ref", "source", "path"];
 const BookColumns = ["document_ref", "isbn"];
 const DescriptorVisibilityRequirementColumns = ["descriptor_ref", "required_descriptor_ref"];
 const DescriptorVisibilityInapplicableColumns = ["descriptor_ref", "required_descriptor_ref"];
@@ -29,15 +29,15 @@ export function datasetToCsvZip(dataset: EncodedDataset): Promise<Blob> {
         unit: [UnitColumns],
         measurement_character: [MeasurementCharacterColumns],
         state: [StateColumns],
-        media: [MediaColumns],
+        document_attachment: [DocumentAttachmentColumns],
         book: [BookColumns],
         descriptor_visibility_requirement: [DescriptorVisibilityRequirementColumns],
         descriptor_visibility_inapplicable: [DescriptorVisibilityInapplicableColumns],
         taxon: [TaxonColumns],
         taxon_measurement: [TaxonMeasurementColumns],
         taxon_description: [TaxonDescriptionColumns],
-        book_info: [BookInfoColumns],
-        specimen_location: [SpecimenLocationColumns],
+        taxon_book_info: [BookInfoColumns],
+        taxon_specimen_location: [SpecimenLocationColumns],
     };
     let order = 0;
     for (const [ref, unit] of Object.entries(standardUnits)) {
@@ -59,8 +59,7 @@ export function datasetToCsvZip(dataset: EncodedDataset): Promise<Blob> {
         }
         for (const pic of picturesFromPhotos(character, character.photos)) {
             order++;
-            csvFiles.document.push([pic.id, pic.path.join("."), `${order}`, pic.label, ""]);
-            csvFiles.media.push([pic.id, pic.url, pic.hubUrl ?? ""]);
+            csvFiles.document_attachment.push([pic.id, character.id, pic.url, pic.hubUrl ?? ""]);
         }
         if (character.characterType === "discrete") {
             csvFiles.categorical_character.push([character.id, character.color ?? ""]);
@@ -87,8 +86,7 @@ export function datasetToCsvZip(dataset: EncodedDataset): Promise<Blob> {
         csvFiles.state.push([state.id, state.color ?? ""]);
         for (const pic of state.photos) {
             order++;
-            csvFiles.document.push([pic.id, pic.path.join("."), `${order}`, pic.label, ""]);
-            csvFiles.media.push([pic.id, pic.url, pic.hubUrl ?? ""]);
+            csvFiles.document_attachment.push([pic.id, state.id, pic.url, pic.hubUrl ?? ""]);
         }
     }
     for (const taxon of dataset.taxons) {
@@ -112,11 +110,10 @@ export function datasetToCsvZip(dataset: EncodedDataset): Promise<Blob> {
         csvFiles.taxon.push([taxon.id, taxon.author, taxon.website, taxon.meaning, taxon.noHerbier ?? "", taxon.herbariumPicture, taxon.fasc, taxon.page]);
         for (const pic of taxon.photos) {
             order++;
-            csvFiles.document.push([pic.id, pic.path.join("."), `${order}`, pic.label, ""]);
-            csvFiles.media.push([pic.id, pic.url, pic.hubUrl ?? ""]);
+            csvFiles.document_attachment.push([pic.id, taxon.id, pic.url, pic.hubUrl ?? ""]);
         }
         for (const [bookRef, bookInfo] of Object.entries(taxon.bookInfoByIds ?? {})) {
-            csvFiles.book_info.push([taxon.id, bookRef, bookInfo.fasc, bookInfo.page, bookInfo.detail]);
+            csvFiles.taxon_book_info.push([taxon.id, bookRef, bookInfo.fasc, bookInfo.page, bookInfo.detail]);
         }
         for (const mesurement of taxon.measurements) {
             csvFiles.taxon_measurement.push([taxon.id, mesurement.character, `${mesurement.min ?? ""}`, `${mesurement.max ?? ""}`]);
@@ -127,7 +124,7 @@ export function datasetToCsvZip(dataset: EncodedDataset): Promise<Blob> {
             }
         }
         for (const [index, location] of taxon.specimenLocations?.entries() ?? []) {
-            csvFiles.specimen_location.push([taxon.id, `${index}`, `${location.lat ?? ""}`, `${location.lng ?? ""}`]);
+            csvFiles.taxon_specimen_location.push([taxon.id, `${index}`, `${location.lat ?? ""}`, `${location.lng ?? ""}`]);
         }
     }
     const zip = new JSZip();
