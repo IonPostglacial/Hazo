@@ -657,6 +657,10 @@ div.invisible {
     align-content: stretch;
 }
 
+.inline-flexbox {
+    display: inline-flex;
+}
+
 .font-size-28 {
     font-size: 28px;
 }

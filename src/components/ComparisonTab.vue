@@ -55,15 +55,49 @@
             </table>
             <div v-for="measurements in measurementComparisons" class="white-background rounded relative medium-padding medium-margin">
                 <h2>{{ measurements.char.name.S }}</h2>
-                <VBox v-for="m in measurements.measurements" class="medium-margin">
-                    <div>{{ m.label }}: {{ m.min }} - {{ m.max }} m</div>
-                    <div :style="'border-bottom: solid 1px black;width:' + (100*m.min/measurements.max) + '%'"></div>
-                    <div :style="'border-bottom: solid 1px black;width:' + (100*m.max/measurements.max) + '%'"></div>
-                </VBox>
+                <div class="measurement-comparison-grid medium-margin">
+                    <template v-for="m in measurements.measurements">
+                        <div class="medium-padding">{{ m.label }}</div>
+                        <div class="measurement-comparison-container">
+                            <div class="inline-flexbox measurement-comparison-line measurement-min medium-padding right-text" :style="'width:' + (100*m.min/measurements.max) + '%'">
+                                <Spacer></Spacer><div>{{ m.min }}m</div>
+                            </div>
+                            <div class="inline-flexbox measurement-comparison-line measurement-max medium-padding right-text" :style="'width:' + (100*(m.max-m.min)/measurements.max) + '%'">
+                                <Spacer></Spacer><div>{{ m.max }}m</div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
         </VBox>
     </div>
 </template>
+
+<style scoped>
+    .measurement-comparison-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1ch;
+    }
+
+    .measurement-comparison-container {
+        border: 1px solid black;
+        background-color: #e3dfdf;
+    }
+
+    .measurement-comparison-line {
+        border-right: 1px solid black;
+        color: white;
+    }
+
+    .measurement-min {
+        background-color: #2571d4;
+    }
+
+    .measurement-max {
+        background-color: #bd2237;
+    }
+</style>
 
 <script lang="ts" setup>
     import { Language } from "@/db-index";
