@@ -53,6 +53,14 @@
                     </tr>
                 </tbody>
             </table>
+            <div v-for="measurements in measurementComparisons" class="white-background rounded relative medium-padding medium-margin">
+                <h2>{{ measurements.char.name.S }}</h2>
+                <VBox v-for="m in measurements.measurements" class="medium-margin">
+                    <div>{{ m.label }}: {{ m.min }} - {{ m.max }} {{ measurements.char.unit?.name.S }}</div>
+                    <div :style="'border-bottom: solid 1px black;width:' + (100*m.min/measurements.max) + '%'"></div>
+                    <div :style="'border-bottom: solid 1px black;width:' + (100*m.max/measurements.max) + '%'"></div>
+                </VBox>
+            </div>
         </VBox>
     </div>
 </template>
@@ -124,6 +132,27 @@
             table.data.push({ taxon, cells });
         }
         return table;
+    });
+
+    type MeasurementComparison = { char: RangeCharacter, max: number, measurements: { label: string, min: number, max: number }[] };
+
+    const measurementComparisons: ComputedRef<MeasurementComparison[]> = computed(() => {
+        const comp: MeasurementComparison[] = [];
+        for (const char of selectedCharacters.value) {
+            if (char.characterType === "range" && (char.unit?.name.S === "m" || char.unit?.base?.unit.name.S === "m")) {
+                const measurements: { label: string, min: number, max: number }[] = [];
+                let max = 0;
+                for (const taxon of selectedTaxa.value) {
+                    const m = taxon.measurements[char.id];
+                    if (m) {
+                        max = Math.max(max, m.max);
+                        measurements.push({ label: taxon.name.S, min: m.min, max: m.max });
+                    }
+                }
+                comp.push({ char, max, measurements });
+            }
+        }
+        return comp;
     });
 
     function addCharacter(id: string) {
