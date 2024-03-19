@@ -59,11 +59,11 @@
                     <template v-for="m in measurements.measurements">
                         <div class="medium-padding">{{ m.label }}</div>
                         <div class="measurement-comparison-container">
-                            <div class="inline-flexbox measurement-comparison-line measurement-min medium-padding right-text" :style="'width:' + (100*m.min/measurements.max) + '%'">
-                                <Spacer></Spacer><div>{{ m.min }}m</div>
+                            <div v-if="m.min" class="inline-flexbox end-justified text-ellipsed measurement-comparison-line measurement-min right-text flex-row-wrap" :style="'width:' + (100*m.min/measurements.max) + '%'">
+                                <div></div><div class="medium-padding flex-grow-1">{{ m.min }}m</div>
                             </div>
-                            <div class="inline-flexbox measurement-comparison-line measurement-max medium-padding right-text" :style="'width:' + (100*(m.max-m.min)/measurements.max) + '%'">
-                                <Spacer></Spacer><div>{{ m.max }}m</div>
+                            <div v-if="m.max" class="inline-flexbox end-justified text-ellipsed measurement-comparison-line measurement-max right-text flex-row-wrap" :style="'width:' + (100*(m.max-m.min)/measurements.max) + '%'">
+                                <div></div><div class="medium-padding flex-grow-1">{{ m.max }}m</div>
                             </div>
                         </div>
                     </template>
@@ -83,11 +83,18 @@
     .measurement-comparison-container {
         border: 1px solid black;
         background-color: #e3dfdf;
+        height: 29px;
+        overflow: hidden;
     }
 
     .measurement-comparison-line {
         border-right: 1px solid black;
         color: white;
+        height: 27px;
+    }
+
+    .measurement-comparison-line:first-child {
+        width: 0;
     }
 
     .measurement-min {

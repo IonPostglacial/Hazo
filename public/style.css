@@ -466,6 +466,10 @@ div.invisible {
     flex-wrap: wrap;
 }
 
+.flex-row-wrap {
+    flex-flow: row wrap;
+}
+
 .medium-square {
     width: 200px;
     padding-bottom: 200px;
