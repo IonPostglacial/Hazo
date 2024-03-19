@@ -56,7 +56,7 @@
             <div v-for="measurements in measurementComparisons" class="white-background rounded relative medium-padding medium-margin">
                 <h2>{{ measurements.char.name.S }}</h2>
                 <VBox v-for="m in measurements.measurements" class="medium-margin">
-                    <div>{{ m.label }}: {{ m.min }} - {{ m.max }} {{ measurements.char.unit?.name.S }}</div>
+                    <div>{{ m.label }}: {{ m.min }} - {{ m.max }} m</div>
                     <div :style="'border-bottom: solid 1px black;width:' + (100*m.min/measurements.max) + '%'"></div>
                     <div :style="'border-bottom: solid 1px black;width:' + (100*m.max/measurements.max) + '%'"></div>
                 </VBox>
