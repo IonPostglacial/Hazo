@@ -301,7 +301,7 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 			statesById: new Map(ds.statesById),
 			...item,
 			path,
-			color: character.color,
+			color: character.color === "#84bf3d" ? undefined : character.color,
 			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
 			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],
 			unit: character.unit,

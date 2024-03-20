@@ -16,7 +16,7 @@
         <SquareGrid v-if="!floweringMode && !isRange" class="square-grid relative">
             <SquareCard v-for="item in itemsToDisplay" :key="item.id" :clickable="isClickable(item)"
                     :image="item.pictures.length > 0 ? item.pictures[0].url : undefined"
-                    :style="(isSelected(item) && 'color' in item) ? ('border:3px solid ' + item.color) : ''"
+                    :style="(isSelected(item) && 'color' in item) ? ('background-color: color-mix(in hsl, ' + item.color + ', transparent 75%);') : ''"
                     @click="openItem(item)">
                 <template v-slot:background>
                     <Flowering v-if="item.pictures.length === 0 && isFlowering(item)" :model-value="monthsFromItem(item)"></Flowering>
