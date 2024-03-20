@@ -5,7 +5,7 @@
             <HBox v-if="breadCrumbs.length > 0">
                 <div class="flex-wrap button-group">
                     <button type="button" @click="backToTop">Top</button>
-                    <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name.S }}</button>
+                    <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name?.S }}</button>
                 </div>
                 <Spacer></Spacer>
                 <router-link class="button" :to="'/characters/' + breadCrumbs[breadCrumbs.length - 1].id">

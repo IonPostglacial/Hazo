@@ -131,9 +131,9 @@ export const useDatasetStore = defineStore("dataset", {
             if (typeof taxon === "undefined") { return []; }
             return taxonDescriptions(this.$state, taxon);
         },
-        taxonDescriptionSections(taxon: Taxon|undefined): Array<Array<Description|Measurement>> {
+        taxonDescriptionSections(taxon: Taxon|undefined, filter?: (ch: Character) => boolean): Array<Array<Description|Measurement>> {
             if (typeof taxon === "undefined") { return []; }
-            return taxonDescriptorSections(this.$state, taxon);
+            return taxonDescriptorSections(this.$state, taxon, filter);
         },
         itemFloweringDescription(taxon: Taxon): Description[] {
             return this.taxonDescriptions(taxon)

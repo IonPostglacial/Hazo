@@ -330,7 +330,7 @@ function decodeCharacter(ds: Dataset, character: EncodedCharacter, states: Map<s
 			preset: character.preset,
 			mapFile,
 			states: Array.from(charStates.values()),
-			color: character.color,
+			color: character.color === "#84bf3d" ? undefined : character.color,
 			inherentState,
 			inapplicableStates: character.inapplicableStatesIds?.map(id => states.get(id)!) ?? [],
 			requiredStates: character.requiredStatesIds?.map(id => states.get(id)!) ?? [],

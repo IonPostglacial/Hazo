@@ -166,7 +166,7 @@
                                 <MultiSelector :choices="charNameFields.map(field => field.label)" v-model="selectedSummaryLangIds">
                                 </MultiSelector>
                             </HBox>
-                            <VBox v-for="section in taxonDescriptionSections(selectedTaxon)" class="thin-border rounded white-background medium-padding spaced-vertical">
+                            <VBox v-for="section in taxonDescriptionSections(selectedTaxon, ch => ch.characterType === 'range' || ch.preset !== 'flowering')" class="thin-border rounded white-background medium-padding spaced-vertical">
                                 <ul class="big-margin-left">
                                     <li v-for="desc in section" :key="desc.character.id" class="medium-padding rounded"
                                             :style="desc.character.color ? ('background-color:color-mix(in hsl, '+desc.character.color+', transparent 75%)') : ''">
@@ -179,7 +179,7 @@
                                             </GeoView>
                                             <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                                 <li v-for="state in desc.states" :key="state.id">
-                                                    <div v-if="state.color" :style="state.color ? ('background-color:color-mix(in hsl, '+state.color+', transparent 75%)') : ''" class="inline-block medium-padding">
+                                                    <div :style="state.color ? ('background-color:color-mix(in hsl, '+state.color+', transparent 75%)') : ''" class="inline-block medium-padding">
                                                         {{ selectedSummaryLangProperties.map((prop: string) => state.name[prop]).join(" / ") }}
                                                     </div>
                                                     <button @click="removeState(state)">

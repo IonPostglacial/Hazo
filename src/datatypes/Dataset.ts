@@ -144,11 +144,12 @@ export function taxonDescriptions(ds: Dataset, taxon: Taxon): Array<Description>
     return descriptions;
 }
 
-export function taxonDescriptorSections(ds: Dataset, taxon: Taxon): Array<Array<Description|Measurement>> {
+export function taxonDescriptorSections(ds: Dataset, taxon: Taxon, filter?: (ch: Character) => boolean): Array<Array<Description|Measurement>> {
     const sections = new Array<Array<Description|Measurement>>();
     for (const ch of ds.charactersHierarchy.children) {
         const descriptions = new Array<Description|Measurement>();
         forEachHierarchy(ch, character => {
+            if (filter && !filter(character)) { return; }
             if (character.characterType === "discrete") {
                 const states = [];
                 for (const state of character.states) {
