@@ -31,6 +31,11 @@
                     </div>
                 </div>
                 <HBox>
+                    <button v-if="item.type === 'character' && item.characterType === 'discrete'" 
+                        @click.stop="selectWithoutOpening(item)"
+                        :class="[isSelected(item) ? 'background-color-1' : 'glass-background']">
+                        No more info
+                    </button>
                     <router-link v-if="item.type === 'character'" class="button" :to="'/characters/' + item.id">
                         <font-awesome-icon icon="fa-solid fa-edit" />
                     </router-link>
@@ -72,12 +77,9 @@ import Spacer from "./toolkit/Spacer.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
 import Months from "@/datatypes/Months";
-import clone from "@/tools/clone";
-import makeid from "@/tools/makeid";
 import { Character, Item, Measurement, MultilangText, Unit } from "@/datatypes/types";
 import { mapActions, mapWritableState } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
-import { getParentId, pathToItem } from "@/datatypes/Dataset";
 import { fromNormalizedValue, toNormalizedValue } from "@/features/unit";
 import { useHazoStore } from "@/stores/hazo";
 
@@ -274,17 +276,8 @@ export default {
         },
         selectWithoutOpening(character: Item) {
             if (character.type !== "character" || character.characterType !== "discrete") return;
-            const ch = this.characterWithId(character.id);
-            let inherentState = ch?.characterType === "range" ? undefined : ch?.inherentState;
-            if (typeof inherentState === "undefined") {
-                const parentCharacter = this.characterWithId(getParentId(character));
-                if (typeof parentCharacter !== "undefined" && parentCharacter.characterType === "discrete") {
-                    inherentState = { id: "s" + makeid(8), path: pathToItem(parentCharacter), type: "state", name: clone(character.name), detail: character.detail, pictures: [] };
-                    this.addState({ state: inherentState, character: parentCharacter });
-                    this.setInherentState({ state: inherentState, character });
-                }
-            }
-            this.$emit("item-selection-toggled", { item: inherentState });
+            // TODO: fix reactivity issue
+            this.$emit("character-selection-toggled", { character });
         },
         monthToggled(monthIndex: number) {
             const character = this.breadCrumbs[this.breadCrumbs.length - 1];

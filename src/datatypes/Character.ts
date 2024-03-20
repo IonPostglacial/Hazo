@@ -54,6 +54,16 @@ export function createCharacter(init: CharacterInit): DiscreteCharacter {
 	};
 }
 
+export function createInherentState(character: Character): State {
+	return {
+		id: "s-auto-" + character.id,
+		path: [...character.path, character.id],
+		type: "state",
+		name: Object.assign({}, character.name), pictures: [],
+		detail: character.detail,
+	};
+}
+
 export function createRangeCharacter(init: CharacterInit): RangeCharacter {
 	let states: State[] = init.states ?? [];
 	return {

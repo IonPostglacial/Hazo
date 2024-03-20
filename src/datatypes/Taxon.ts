@@ -74,7 +74,7 @@ export function taxonPropertiesEquals(taxon: Taxon, other: Taxon): boolean {
 				}));
 }
 
-export function taxonHasState(taxon: Taxon, state: State) {
+export function taxonHasState(taxon: Taxon, state: { id: string }) {
 	return taxon.states.some(s => s.id === state.id);
 }
 

@@ -103,7 +103,6 @@ import { useHazoStore } from "@/stores/hazo";
 import { useDatasetStore } from "./stores/dataset";
 import { mapActions, mapState } from "pinia";
 import makeid from "./tools/makeid";
-import { datasetToCsvZip } from "./features/relationalexport";
 
 export default {
     name: "App",

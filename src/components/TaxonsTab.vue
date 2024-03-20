@@ -147,6 +147,7 @@
                             :selected-items="selectedStateIds"
                             :measurements="selectedTaxon.measurements"
                             @item-selection-toggled="taxonStateToggle"
+                            @character-selection-toggled="taxonCharacterToggle"
                             @measurement-updated="updateTaxonMeasurement({ taxon: selectedTaxon, ...$event })"
                             @item-open="openCharacter">
                         </SquareTreeViewer>
@@ -368,7 +369,7 @@ export default {
         ...mapActions(useDatasetStore, [
             "addTaxon", "removeTaxon", "addTaxonPicture", "setTaxon", "setTaxonPicture", "removeTaxonPicture",
             "characterWithId", "taxonWithId", "taxonChildren", "taxonCalendarTracks",
-            "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonState",
+            "changeTaxonParent", "moveTaxonDown", "moveTaxonUp", "setTaxonLocations", "setTaxonCharacter", "setTaxonState",
             "createTexExporter", "taxonDescriptions", "taxonDescriptionSections", "taxonParentChain", "taxonCharactersTree", "updateTaxonMeasurement",
         ]),
         fromNormalizedValue: fromNormalizedValue,
@@ -470,14 +471,20 @@ export default {
         setExtraProperty(e: { detail: { property: string, value: string } }) {
             this.selectedTaxon!.extra[e.detail.property] = e.detail.value;
         },
-        taxonStateToggle(e: { item: State|Character }) {
-            const ch = e.item as Character;
-            const isDiscreteCharacter = ch.type === "character" && ch.characterType === "discrete";
-            const stateToAdd = isDiscreteCharacter ? (ch as DiscreteCharacter).inherentState : e.item as State;
-
+        taxonStateToggle(e: { item: State }) {
+            const stateToAdd = e.item;
             if (typeof this.selectedTaxon !== "undefined" && typeof stateToAdd !== "undefined") {
                 const selected = !taxonHasState(this.selectedTaxon, stateToAdd);
                 this.setTaxonState({ taxon: this.selectedTaxon, state: stateToAdd, has: selected });
+            }
+        },
+        taxonCharacterToggle(e: { character: Character }) {
+            const character = e.character as Character;
+            if(character.characterType !== "discrete") { return; }
+            const stateToAdd = character.inherentState;
+            if (typeof this.selectedTaxon !== "undefined") {
+                const selected = typeof stateToAdd !== "undefined" && taxonHasState(this.selectedTaxon, stateToAdd);
+                this.setTaxonCharacter({ taxon: this.selectedTaxon, character, has: !selected });
             }
         },
         removeState(state: State) {

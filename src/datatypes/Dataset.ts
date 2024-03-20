@@ -1,6 +1,7 @@
 import { Book, Character, Dataset, Description, DiscreteCharacter, Field, HierarchicalItem, State, Taxon, AnyItem, Item, AnyDocument, Measurement } from "./types";
 import { standardBooks } from "./stdcontent";
 import { cloneHierarchy, forEachHierarchy, Hierarchy, iterHierarchy, transformHierarchy } from './hierarchy';
+import { createInherentState } from "./Character";
 import clone from "@/tools/clone";
 import { generateId } from "@/tools/generateid";
 import { fixPicturesPaths } from "@/tools/fixes";
@@ -269,13 +270,7 @@ export function addCharacter(ds: Dataset, character: Character): Character {
     if (autoid && c.characterType === "discrete") {
         const parentCharacter = characterFromId(ds, getParentId(c));
         if (parentCharacter?.characterType === "discrete") {
-            const newState: State = {
-                id: "s-auto-" + c.id,
-                path: [...parentCharacter.path, parentCharacter.id],
-                type: "state",
-                name: Object.assign({}, c.name), pictures: [],
-                detail: c.detail,
-            };
+            const newState = createInherentState(c);
             addState(ds, newState, parentCharacter);
             c.inherentState = newState;
         }
@@ -311,9 +306,11 @@ export function removeCharacter(ds: Dataset, id: string) {
 export function setTaxonState(ds: Dataset, taxonId: string, state: State) {
     const s = ds.statesById.get(state.id);
     const t = taxonFromId(ds, taxonId);
-    if (typeof s !== "undefined" && typeof t !== "undefined") {
-        t.states.push(s);
+    if (typeof s === "undefined" || typeof t === "undefined") {
+        console.warn("could not add state", state.id, "to", taxonId);
+        return;
     }
+    t.states.push(s);
 }
 
 export function removeTaxonState(ds: Dataset, taxonId: string, state: State) {

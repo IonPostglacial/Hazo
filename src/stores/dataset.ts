@@ -1,4 +1,4 @@
-import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter, Measurement, forEachLeaves, iterHierarchy, forEachHierarchy } from "@/datatypes";
+import { Item, Character, Hierarchy, Picture, Taxon, Dataset, Description, setState, createTaxon, createCharacter, standardBooks, Field, State, DiscreteCharacter, Measurement, forEachLeaves, iterHierarchy, forEachHierarchy, createInherentState } from "@/datatypes";
 import { addTaxon, createDataset, moveCharacterDown, moveCharacterUp, taxonFromId, characterFromId, setTaxon, removeTaxon, changeTaxonParent, addCharacter, setCharacter, removeCharacter, setTaxonState, removeTaxonState, addState, removeAllCharacterStates, removeState, taxonDescriptions, taxonParentChain, allStates, taxonCharactersTree, pathToItem, taxonDescriptorSections, characterParentChain } from "@/datatypes/Dataset";
 import { defineStore } from "pinia";
 import clone from '@/tools/clone';
@@ -285,11 +285,14 @@ export const useDatasetStore = defineStore("dataset", {
         },
         setInherentState(payload: { character: DiscreteCharacter, state: State }) {
             const ch = characterFromId(this.$state, payload.character.id);
-            if (ch?.characterType === "discrete") {
-                ch.inherentState = payload.state;
-                setState(ch.requiredStates, payload.state, false);
-                setState(ch.inapplicableStates, payload.state, false);
+            if (ch?.characterType !== "discrete") {
+                console.warn("could not set inherent state for", payload.character.id);
+                return;
             }
+            ch.inherentState = payload.state;
+            setState(ch.requiredStates, payload.state, false);
+            setState(ch.inapplicableStates, payload.state, false);
+            setCharacter(this.$state, ch.id, ch);
         },
         setTaxonState(p: { taxon: Taxon, state: State, has: boolean }) {
             if (p.has) {
@@ -297,6 +300,14 @@ export const useDatasetStore = defineStore("dataset", {
             } else {
                 removeTaxonState(this.$state, p.taxon.id, p.state);
             }
+        },
+        setTaxonCharacter(p: { taxon: Taxon, character: DiscreteCharacter, has: boolean }) {
+            let state = p.character.inherentState;
+            if (typeof state === "undefined") {
+                state = this.addState({ state: createInherentState(p.character), character: p.character });
+                this.setInherentState({ character: p.character, state });
+            }
+            this.setTaxonState({ taxon: p.taxon, state, has: p.has });
         },
         addExtraField({ detail }: { detail: string }) {
             this.extraFields.push({ id: detail, std: false, label: detail, icon: "" });
