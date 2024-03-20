@@ -1,5 +1,5 @@
 <template>
-    <div class="relative vertical-flexbox white-background button">
+    <div class="relative vertical-flexbox white-background button" :style="color?('background-color:'+color):''">
         <div class="absolute square-card-inner vertical-flexbox">
             <slot name="background">
                 <div class="full-background flex-grow-1" :style="image ? 'background-image: url(' + image + ')' : ''">
@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 
-const { image } = defineProps({ image: String });
+defineProps({ image: String, color: String });
 </script>
 
 <style>

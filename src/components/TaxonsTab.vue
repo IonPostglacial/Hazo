@@ -178,6 +178,7 @@
                                             </GeoView>
                                             <ul v-if="desc.states.length > 0 && !(desc.character.characterType === 'discrete' && desc.character.preset === 'flowering')" class="indented">
                                                 <li v-for="state in desc.states" :key="state.id">
+                                                    <div v-if="state.color" :style="'background-color:'+state.color" class="button">&nbsp;</div>
                                                     {{ selectedSummaryLangProperties.map((prop: string) => state.name[prop]).join(" / ") }}
                                                     <button @click="removeState(state)">
                                                         <font-awesome-icon icon="fa-solid fa-close" />
