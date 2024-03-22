@@ -23,7 +23,7 @@
                             <div style="max-width: 50ch" class="text-ellipsed">Website <a target="_blank" :href="taxon.website">{{ taxon.website }}</a></div>
                         </div>
                         <VBox v-for="section in taxonDescriptionSections(taxon)" class="thin-border white-background medium-padding spaced-vertical">
-                            <VBox v-for="description in section" :key="description.character.id" class="limited-width">
+                            <VBox v-for="description in section.descriptions" :key="description.character.id" class="limited-width">
                                 <div v-if="'states' in description" class="display-contents">
                                     <h3>{{ charName(description.character) }}</h3>
                                     <HBox v-if="description.character.preset !== 'map'" class="gap-1">

@@ -145,10 +145,12 @@ export function taxonDescriptions(ds: Dataset, taxon: Taxon): Array<Description>
     return descriptions;
 }
 
-export function taxonDescriptorSections(ds: Dataset, taxon: Taxon, filter?: (ch: Character) => boolean): Array<Array<Description|Measurement>> {
-    const sections = new Array<Array<Description|Measurement>>();
+export type DescriptorSection = { character: Character, descriptions: Array<Description|Measurement> };
+
+export function taxonDescriptorSections(ds: Dataset, taxon: Taxon, filter?: (ch: Character) => boolean): DescriptorSection[] {
+    const sections: DescriptorSection[] = [];
     for (const ch of ds.charactersHierarchy.children) {
-        const descriptions = new Array<Description|Measurement>();
+        const section = { character: ch, descriptions: new Array<Description|Measurement>() };
         forEachHierarchy(ch, character => {
             if (filter && !filter(character)) { return; }
             if (character.characterType === "discrete") {
@@ -159,17 +161,17 @@ export function taxonDescriptorSections(ds: Dataset, taxon: Taxon, filter?: (ch:
                     }
                 }
                 if (states.length > 0) {
-                    descriptions.push({ character, states })
+                    section.descriptions.push({ character, states })
                 }
             } else if (character.characterType === "range") {
                 const measurement = taxon.measurements[character.id];
                 if (typeof measurement !== "undefined") {
-                    descriptions.push(measurement);
+                    section.descriptions.push(measurement);
                 }
             }
         });
-        if (descriptions.length > 0) {
-            sections.push(descriptions);
+        if (section.descriptions.length > 0) {
+            sections.push(section);
         }
     }
     return sections;
