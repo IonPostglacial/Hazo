@@ -8,9 +8,12 @@
                     <button v-for="breadCrumb in breadCrumbs" :key="breadCrumb.id" @click="goToBreadCrumb(breadCrumb)">{{ breadCrumb.name?.S }}</button>
                 </div>
                 <Spacer></Spacer>
-                <router-link class="button" :to="'/characters/' + breadCrumbs[breadCrumbs.length - 1].id">
-                    <font-awesome-icon icon="fa-solid fa-edit" />
-                </router-link>
+                <HBox class="button-group">
+                    <MultiSelector :choices="langNames" v-model="langIds"></MultiSelector>
+                    <router-link v-if="breadCrumbs.length > 1" class="button" :to="'/characters/' + breadCrumbs[breadCrumbs.length - 1].id">
+                        <font-awesome-icon icon="fa-solid fa-edit" />
+                    </router-link>
+                </HBox>
             </HBox>
         </VBox>
         <SquareGrid v-if="!floweringMode && !isRange" class="square-grid relative">
@@ -76,12 +79,14 @@ import SquareGrid from "./toolkit/SquareGrid.vue";
 import Spacer from "./toolkit/Spacer.vue";
 import HBox from "./toolkit/HBox.vue";
 import VBox from "./toolkit/VBox.vue";
+import MultiSelector from "./toolkit/MultiSelector.vue";
 import Months from "@/datatypes/Months";
 import { Character, Item, Measurement, MultilangText, Unit } from "@/datatypes/types";
 import { mapActions, mapWritableState } from "pinia";
 import { useDatasetStore } from "@/stores/dataset";
 import { fromNormalizedValue, toNormalizedValue } from "@/features/unit";
 import { useHazoStore } from "@/stores/hazo";
+import { Language } from "@/db-index";
 
 
 function floweringFromStates(color: string, currentItems: 
@@ -100,17 +105,19 @@ const geographyNames = ["Geography", "Geographie", "Géographie", "地理分布"
 
 export default {
     name: "SquareTreeViewer",
-    components: { Flowering, GeoView, HBox, ScaleComparator, Spacer, SquareCard, SquareGrid, VBox },
+    components: { Flowering, GeoView, HBox, MultiSelector, ScaleComparator, Spacer, SquareCard, SquareGrid, VBox },
     props: {
         measurements: { required: true, type: Object as PropType<Partial<Record<string, Measurement>>> },
         selectedItems: Array<string>,
         rootItems: Object as PropType<Hierarchy<Item>>,
-        nameFields: Array<string>,
     },
     data() {
         const currentItems = [...this.rootItems!.children];
         const breadCrumbs: Hierarchy<Item>[] = [...this.characterParentChain(this.rootItems), this.rootItems];
+        const langNames: Language[] = ["FR", "CN", "EN"];
         return {
+            langNames,
+            langIds: [...langNames.keys()],
             isRoot: true,
             currentItems,
             breadCrumbs,
@@ -133,6 +140,9 @@ export default {
     },
     computed: {
         ...mapWritableState(useHazoStore, ["selectedDescriptorId"]),
+        selectedLangs(): string[] {
+            return this.langIds.map(n => n === 0 ? "S" : this.langNames[n]);
+        },
         floweringMode(): boolean {
             if (this.currentCharacter) {
                 return this.isFlowering(this.currentCharacter);
@@ -225,7 +235,7 @@ export default {
             return [];
         },
         nameFieldsForItem(item: any): Iterable<string> {
-            return this.nameFields?.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
+            return this.selectedLangs.filter(field => typeof item.name[field] !== "undefined" && item.name[field] !== null && item.name[field] !== "") ?? [];
         },
         isClickable(item: Hierarchy<Item>): boolean {
             return this.hasChildren(item) || this.isSelectable(item);

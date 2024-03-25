@@ -142,7 +142,6 @@
                             @maximize="zoomColumn('desc')">
                         </ColumnHeader>
                         <SquareTreeViewer
-                            :name-fields="['S', 'EN', 'CN']" 
                             :rootItems="itemDescriptorTree"
                             :selected-items="selectedStateIds"
                             :measurements="selectedTaxon.measurements"
