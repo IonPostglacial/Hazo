@@ -162,7 +162,7 @@
                 if (column.type === "state") {
                     cells.push({ type: "state", column, states: taxon.states
                                 .filter(state => column.character.states?.some(s => s.id === state.id))
-                                .map(s => ({ label: s.name[column.lang] ?? "" })) });
+                                .map(s => ({ label: s.name[column.lang === "FR" ? "S" : column.lang] ?? "" })) });
                 }
                 if (column.type === "measure") {
                     const measurement = taxon.measurements[column.character.id];
