@@ -14,11 +14,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import HBox from './HBox.vue';
-import VBox from './VBox.vue';
+import { ref, watch } from "vue";
+import HBox from "./HBox.vue";
+import VBox from "./VBox.vue";
 
+function collapsiblePanelId(id: string) {
+    return `collapsible-panel-open-${id}`;
+}
 
-const { label } = defineProps({ label: String });
-const open = ref(true);
+function getSavedOpenState(id: string): boolean {
+    const text = window.localStorage.getItem(collapsiblePanelId(id));
+    if (text === null) {
+        return true;
+    }
+    try {
+        const value = JSON.parse(text);
+        if (typeof value === "boolean") {
+            return value;
+        } else {
+            return true;
+        }
+    } catch {
+        return true;
+    }
+}
+
+const { label, panelId } = defineProps({ label: String, panelId: String });
+const open = ref(panelId ? getSavedOpenState(panelId) : true);
+
+watch(open, (value: boolean) => {
+    if (panelId) {
+        window.localStorage.setItem(collapsiblePanelId(panelId), JSON.stringify(value));
+    }
+});
 </script>

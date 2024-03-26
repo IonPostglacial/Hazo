@@ -85,7 +85,7 @@
                             @delete-photo="deleteItemPhoto"
                             :pictures="selectedTaxon.pictures">
                         </PictureBox>
-                        <CollapsiblePanel label="Properties">
+                        <CollapsiblePanel label="Properties" panel-id="taxon-properties">
                             <div class="scroll large-max-width form-grid center-items medium-padding">
                                 <div class="display-contents">
                                     <label>NS</label>
@@ -119,7 +119,7 @@
                                 </ItemPropertyField>
                             </div>
                         </CollapsiblePanel>
-                        <CollapsiblePanel v-for="book in books" :key="book.id" :label="book.label">
+                        <CollapsiblePanel v-for="book in books" :key="book.id" :label="book.label" :panel-id="'taxon-book-info-' + book.id">
                             <VBox class="medium-padding" v-if="taxonValue && taxonValue.bookInfoByIds">
                                 <div class="form-grid center-items" v-if="taxonValue.bookInfoByIds[book.id]">
                                     <ItemPropertyField v-model="taxonValue.bookInfoByIds[book.id].fasc">
@@ -132,7 +132,7 @@
                                 </TextEditor>
                             </VBox>
                         </CollapsiblePanel>
-                        <CollapsiblePanel label="Additional Text" id="item-detail">
+                        <CollapsiblePanel label="Additional Text" id="item-detail" panel-id="taxon-details">
                             <TextEditor v-model="selectedTaxon.detail"></TextEditor>
                         </CollapsiblePanel>
                     </VBox>
