@@ -2,14 +2,15 @@
     <HBox class="center-items glass-background thin-border">
         <b class="medium-padding">{{ label }}</b>
         <Spacer></Spacer>
-        <div class="button-group">
+        <HBox class="button-group">
+            <slot></slot>
             <button v-if="!hideActions" @click="emit('maximize')">
                 <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
             </button>
             <button v-if="!hideActions" @click="emit('minimize')">
                 <font-awesome-icon icon="fa-solid fa-close" />
             </button>
-        </div>
+        </HBox>
     </HBox>
 </template>
 

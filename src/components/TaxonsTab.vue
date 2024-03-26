@@ -155,17 +155,13 @@
                         <ColumnHeader class="stick-to-top" label="Summary"
                             @minimize="removeColumn('summary')"
                             @maximize="zoomColumn('summary')">
+                            <MultiSelector :choices="charNameFields.map(field => field.label)" v-model="selectedSummaryLangIds">
+                            </MultiSelector>
                         </ColumnHeader>
                         <section v-if="selectedTaxon.website.length > 0" class="white-background medium-padding medium-margin thin-border">
                             <a :href="selectedTaxon.website" target="_blank">{{ selectedTaxon.website }}</a>
                         </section>
-                        <div class="thin-border medium-padding medium-margin flex-grow-1">
-                            <HBox class="white-background medium-margin medium-padding thin-border center-items">
-                                <div class="inline-block medium-padding medium-margin"><i>{{ selectedTaxon.name.S }}</i> {{ selectedTaxon.author }}</div>
-                                <Spacer></Spacer>
-                                <MultiSelector :choices="charNameFields.map(field => field.label)" v-model="selectedSummaryLangIds">
-                                </MultiSelector>
-                            </HBox>
+                        <div class="thin-border flex-grow-1">
                             <VBox v-for="section in taxonDescriptionSections(selectedTaxon, ch => ch.characterType === 'range' || ch.preset !== 'flowering')" 
                                 class="thin-border rounded white-background medium-padding spaced-vertical"
                                 :style="section.character.color ? ('background-color:color-mix(in hsl, '+section.character.color+', transparent 75%)') : ''">
